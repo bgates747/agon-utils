@@ -1,5 +1,6 @@
 import tkinter as tk
 from PIL import Image, ImageTk
+from CustomWidgets import CustomWidgets
 
 class ImageDisplayWidget(tk.Frame):
     """A widget to display and zoom an image on a canvas, handle mouse clicks, and extract characters."""
@@ -14,17 +15,24 @@ class ImageDisplayWidget(tk.Frame):
         self.current_zoom_index = app_reference.config_manager.get_default_zoom_level()
         self.original_image = None
         self.grid_shown = False
-        self.zoom_levels = [12.5, 25, 50, 100, 200, 300, 400]
+        self.zoom_levels = [25, 50, 100, 200, 300, 400]
 
-        # Button controls at the top
+        # Control frame to hold toggle button and zoom controls in the same row
         control_frame = tk.Frame(self)
-        control_frame.pack(side=tk.TOP, pady=5)
-        self.zoom_in_button = tk.Button(control_frame, text="Zoom In", command=self.zoom_in)
-        self.zoom_in_button.pack(side=tk.LEFT, padx=5)
-        self.zoom_out_button = tk.Button(control_frame, text="Zoom Out", command=self.zoom_out)
-        self.zoom_out_button.pack(side=tk.LEFT, padx=5)
-        self.toggle_grid_button = tk.Button(control_frame, text="Toggle Grid", command=self.toggle_grid)
-        self.toggle_grid_button.pack(side=tk.LEFT, padx=5)
+        control_frame.pack(side=tk.TOP, anchor="nw", pady=5)
+
+        # Create the custom grid toggle button
+        self.grid_toggle_button = CustomWidgets.GridToggleButton(control_frame, on_toggle=self.toggle_grid)
+        self.grid_toggle_button.pack(side=tk.LEFT, padx=5)
+
+        # Create the zoom control and provide callback
+        self.zoom_control = CustomWidgets.ZoomControl(
+            control_frame, 
+            zoom_levels=self.zoom_levels, 
+            current_zoom_index=self.current_zoom_index, 
+            on_zoom_change=self.change_zoom
+        )
+        self.zoom_control.pack(side=tk.LEFT, padx=5)  # Place zoom control next to the toggle button
 
         # Canvas for displaying image
         self.canvas = tk.Canvas(self, bg="white")
@@ -41,24 +49,19 @@ class ImageDisplayWidget(tk.Frame):
             char_x, char_y = self.ascii_to_coordinates(self.current_ascii_code)
             self.draw_selection_box(char_x, char_y)  # Update selection box
 
-    def zoom_in(self):
-        """Increase the zoom level and update the display."""
-        if self.current_zoom_index < len(self.zoom_levels) - 1:
-            self.current_zoom_index += 1
-            self.update_display_dimensions()
-            self.redraw()
-
-    def zoom_out(self):
-        """Decrease the zoom level and update the display."""
-        if self.current_zoom_index > 0:
-            self.current_zoom_index -= 1
-            self.update_display_dimensions()
-            self.redraw()
-
-    def toggle_grid(self):
-        """Toggle cyan gridlines on and off and redraw."""
-        self.grid_shown = not self.grid_shown
+    def change_zoom(self, zoom_index):
+        """Update zoom level and redraw widget."""
+        self.current_zoom_index = zoom_index
+        self.update_display_dimensions()
         self.redraw()
+
+    def toggle_grid(self, grid_on):
+        """Toggle the grid on the canvas based on the grid toggle button state."""
+        self.grid_shown = grid_on
+        if self.grid_shown:
+            self.draw_grid()
+        else:
+            self.clear_grid()
 
     def display_image(self):
         """Display the image on the canvas based on the current zoom level."""
@@ -67,10 +70,17 @@ class ImageDisplayWidget(tk.Frame):
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
         new_width = int(self.original_image.width * zoom_factor)
         new_height = int(self.original_image.height * zoom_factor)
+        
+        # Resize the image according to the new dimensions
         self.image = self.original_image.resize((new_width, new_height), Image.NEAREST)
         self.tk_image = ImageTk.PhotoImage(self.image)
+
+        # Set scroll region and display image
         self.canvas.config(scrollregion=(0, 0, new_width, new_height))
         self.canvas.create_image(0, 0, anchor=tk.NW, image=self.tk_image)
+
+        # Adjust the canvas size if needed
+        self.canvas.config(width=new_width, height=new_height)
 
     def draw_grid(self):
         """Draw cyan gridlines based on the font dimensions and current zoom level."""
