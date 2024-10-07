@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/src",               // Your project src directory
+                "/usr/include/python3.11",              // Python include directory
+                "${workspaceFolder}/.venv/include",      // Virtual environment include path (if any)
+                "/usr/include/aarch64-linux-gnu",       // Architecture-specific include path (for ARM architecture)
+                "/usr/local/include"                    // General include path for local installations
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/aarch64-linux-gnu-gcc",  // Path to your compiler
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-arm64"
+        }
+    ],
+    "version": 4
+}
