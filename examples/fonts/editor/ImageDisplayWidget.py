@@ -12,10 +12,12 @@ class ImageDisplayWidget(tk.Frame):
         self.font_height = None
         self.ascii_range = None
         self.current_ascii_code = None
-        self.current_zoom_index = app_reference.config_manager.get_default_zoom_level()
+        self.zoom_levels = [25, 50, 100, 200, 300, 400]
+        zoom_level = int(app_reference.config_manager.get_setting('default_zoom_level', '200'))
+        self.current_zoom_index = self.zoom_levels.index(zoom_level)
+
         self.original_image = None
         self.grid_shown = False
-        self.zoom_levels = [25, 50, 100, 200, 300, 400]
 
         # Control frame to hold toggle button and zoom controls in the same row
         control_frame = tk.Frame(self)

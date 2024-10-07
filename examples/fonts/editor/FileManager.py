@@ -67,17 +67,19 @@ class FileManager:
         config.read(ini_filepath)
 
         # Update application state with loaded metadata or defaults from config manager
-        self.app_reference.font_name = config.get('font', 'font_name', fallback='default_font')
-        self.app_reference.font_variant = config.get('font', 'font_variant', fallback='Regular')
-        self.app_reference.font_width = config.getint('font', 'font_width', fallback=self.app_reference.config_manager.get_default_font_width())
-        self.app_reference.font_height = config.getint('font', 'font_height', fallback=self.app_reference.config_manager.get_default_font_height())
-        self.app_reference.offset_left = config.getint('font', 'offset_left', fallback=self.app_reference.config_manager.get_default_offset_left())
-        self.app_reference.offset_top = config.getint('font', 'offset_top', fallback=self.app_reference.config_manager.get_default_offset_top())
-        self.app_reference.offset_width = config.getint('font', 'offset_width', fallback=self.app_reference.config_manager.get_default_offset_width())
-        self.app_reference.offset_height = config.getint('font', 'offset_height', fallback=self.app_reference.config_manager.get_default_offset_height())
+        self.app_reference.font_name = config.get('font', 'font_name', fallback=self.app_reference.config_manager.get_setting('font_name', 'default_font'))
+        self.app_reference.font_variant = config.get('font', 'font_variant', fallback=self.app_reference.config_manager.get_setting('font_variant', 'Regular'))
+        self.app_reference.font_width = config.getint('font', 'font_width', fallback=int(self.app_reference.config_manager.get_setting('default_font_width', '8')))
+        self.app_reference.font_height = config.getint('font', 'font_height', fallback=int(self.app_reference.config_manager.get_setting('default_font_height', '11')))
+        self.app_reference.offset_left = config.getint('font', 'offset_left', fallback=int(self.app_reference.config_manager.get_setting('default_offset_left', '0')))
+        self.app_reference.offset_top = config.getint('font', 'offset_top', fallback=int(self.app_reference.config_manager.get_setting('default_offset_top', '0')))
+        self.app_reference.offset_width = config.getint('font', 'offset_width', fallback=int(self.app_reference.config_manager.get_setting('default_offset_width', '0')))
+        self.app_reference.offset_height = config.getint('font', 'offset_height', fallback=int(self.app_reference.config_manager.get_setting('default_offset_height', '0')))
+        
+        # For ASCII range, retrieve both start and end with defaults from config manager
         self.app_reference.ascii_range = (
-            config.getint('font', 'ascii_range_start', fallback=self.app_reference.config_manager.get_default_ascii_range()[0]),
-            config.getint('font', 'ascii_range_end', fallback=self.app_reference.config_manager.get_default_ascii_range()[1])
+            config.getint('font', 'ascii_range_start', fallback=int(self.app_reference.config_manager.get_setting('ascii_range_start', '32'))),
+            config.getint('font', 'ascii_range_end', fallback=int(self.app_reference.config_manager.get_setting('ascii_range_end', '127')))
         )
 
     def derive_font_metadata_from_filename(self, file_path):

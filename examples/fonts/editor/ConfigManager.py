@@ -20,8 +20,8 @@ class ConfigManager:
         with open(self.config_file, 'w') as file:
             self.config.write(file)
 
-    def get_default(self, key, fallback=None):
-        """Get a generic default value from the config file, with an optional fallback."""
+    def get_setting(self, key, fallback=None):
+        """Retrieve a setting from the config file with an optional fallback."""
         return self.config['settings'].get(key, fallback)
 
     def set_setting(self, key, value):
@@ -29,58 +29,23 @@ class ConfigManager:
         if 'settings' not in self.config:
             self.config['settings'] = {}
         self.config['settings'][key] = str(value)
-        self.save_config()  # Save the updated config
+        self.save_config()
 
     def get_default_directory(self):
-        """Get the default directory from the config, or use the directory containing the application."""
-        return self.get_default('default_directory', os.path.dirname(os.path.abspath(__file__)))
-    
+        """Get the default directory, or use the directory containing the application."""
+        return self.get_setting('default_directory', os.path.dirname(os.path.abspath(__file__)))
+
     def set_default_directory(self, directory):
-        """Set a new default directory and update the config file."""
-        self.config['settings']['default_directory'] = directory
-        self.save_config()
-
-    def get_default_zoom_level(self):
-        """Get the default zoom level from the config."""
-        return int(self.get_default('default_zoom_level', '200'))
-
-    def set_default_zoom_level(self, zoom_level):
-        """Set a new default zoom level and update the config file."""
-        self.config['settings']['default_zoom_level'] = str(zoom_level)
-        self.save_config()
+        """Set a new default directory."""
+        self.set_setting('default_directory', directory)
 
     def get_default_ascii_range(self):
-        """Get the default ASCII range from the config."""
-        start = int(self.get_default('ascii_range_start', '32'))
-        end = int(self.get_default('ascii_range_end', '127'))
+        """Get the default ASCII range from the config, with a specific fallback."""
+        start = int(self.get_setting('ascii_range_start', '32'))
+        end = int(self.get_setting('ascii_range_end', '127'))
         return (start, end)
 
     def set_default_ascii_range(self, start, end):
-        """Set a new default ASCII range and update the config file."""
-        self.config['settings']['ascii_range_start'] = str(start)
-        self.config['settings']['ascii_range_end'] = str(end)
-        self.save_config()
-
-    def get_default_font_width(self):
-        """Get the default font width from the config."""
-        return int(self.get_default('default_font_width', '8'))
-
-    def get_default_font_height(self):
-        """Get the default font height from the config."""
-        return int(self.get_default('default_font_height', '11'))
-
-    def get_default_offset_left(self):
-        """Get the default left offset from the config."""
-        return int(self.get_default('default_offset_left', '0'))
-
-    def get_default_offset_top(self):
-        """Get the default top offset from the config."""
-        return int(self.get_default('default_offset_top', '0'))
-
-    def get_default_offset_width(self):
-        """Get the default width offset from the config."""
-        return int(self.get_default('default_offset_width', '0'))
-
-    def get_default_offset_height(self):
-        """Get the default height offset from the config."""
-        return int(self.get_default('default_offset_height', '0'))
+        """Set a new default ASCII range."""
+        self.set_setting('ascii_range_start', start)
+        self.set_setting('ascii_range_end', end)

@@ -20,15 +20,18 @@ class FontEditorApp(tk.Frame):
         self.current_ascii_code = ord('A')   # Default to ASCII code for 'A'
 
         # Initialize default font metadata using the config manager
-        self.font_name = self.config_manager.get_default('font_name', 'default_font')
-        self.font_variant = self.config_manager.get_default('font_variant', 'Regular')
-        self.font_width = self.config_manager.get_default_font_width()
-        self.font_height = self.config_manager.get_default_font_height()
-        self.offset_left = self.config_manager.get_default_offset_left()
-        self.offset_top = self.config_manager.get_default_offset_top()
-        self.offset_width = self.config_manager.get_default_offset_width()
-        self.offset_height = self.config_manager.get_default_offset_height()
-        self.ascii_range = self.config_manager.get_default_ascii_range()
+        self.font_name = self.config_manager.get_setting('font_name', 'default_font')
+        self.font_variant = self.config_manager.get_setting('font_variant', 'Regular')
+        self.font_width = int(self.config_manager.get_setting('default_font_width', '8'))
+        self.font_height = int(self.config_manager.get_setting('default_font_height', '11'))
+        self.offset_left = int(self.config_manager.get_setting('default_offset_left', '0'))
+        self.offset_top = int(self.config_manager.get_setting('default_offset_top', '0'))
+        self.offset_width = int(self.config_manager.get_setting('default_offset_width', '0'))
+        self.offset_height = int(self.config_manager.get_setting('default_offset_height', '0'))
+        self.ascii_range = (
+            int(self.config_manager.get_setting('ascii_range_start', '32')),
+            int(self.config_manager.get_setting('ascii_range_end', '127'))
+        )
 
         # Create and add the menu bar
         self.menubar = MenuBar(master, self)
