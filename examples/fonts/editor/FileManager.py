@@ -151,8 +151,14 @@ class FileManager:
     def open_png_image(self, file_path):
         """Load and display the PNG image along with its metadata."""
         self.load_image_and_metadata(file_path)
+        
+        # Update the default directory
         new_default_directory = os.path.dirname(file_path)
         self.app_reference.config_manager.set_default_directory(new_default_directory)
+
+        # Save the most recent file path to config.ini
+        self.app_reference.config_manager.set_setting("most_recent_file", file_path)
+
 
     def open_font_file(self, file_path):
         """Stub for handling opening a .font file."""

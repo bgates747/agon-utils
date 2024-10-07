@@ -24,6 +24,13 @@ class ConfigManager:
         """Get a generic default value from the config file, with an optional fallback."""
         return self.config['settings'].get(key, fallback)
 
+    def set_setting(self, key, value):
+        """Set a new setting in the config and save it."""
+        if 'settings' not in self.config:
+            self.config['settings'] = {}
+        self.config['settings'][key] = str(value)
+        self.save_config()  # Save the updated config
+
     def get_default_directory(self):
         """Get the default directory from the config, or use the directory containing the application."""
         return self.get_default('default_directory', os.path.dirname(os.path.abspath(__file__)))
