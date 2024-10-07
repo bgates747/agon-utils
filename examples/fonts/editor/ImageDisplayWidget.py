@@ -45,12 +45,14 @@ class ImageDisplayWidget(tk.Frame):
         """Increase the zoom level and update the display."""
         if self.current_zoom_index < len(self.zoom_levels) - 1:
             self.current_zoom_index += 1
+            self.update_display_dimensions()
             self.redraw()
 
     def zoom_out(self):
         """Decrease the zoom level and update the display."""
         if self.current_zoom_index > 0:
             self.current_zoom_index -= 1
+            self.update_display_dimensions()
             self.redraw()
 
     def toggle_grid(self):
@@ -217,3 +219,11 @@ class ImageDisplayWidget(tk.Frame):
         new_image = Image.new("L", (target_width, target_height), color=255)  # White background
         new_image.paste(image, (0, 0))  # Paste original image at top-left
         return new_image
+    
+    def update_display_dimensions(self):
+        """Update the entire widget's size based on the zoomed image dimensions."""
+        zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
+        new_width = int(self.original_image.width * zoom_factor)
+        new_height = int(self.original_image.height * zoom_factor)
+        self.canvas.config(width=new_width, height=new_height)
+        self.config(width=new_width, height=new_height)
