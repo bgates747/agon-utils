@@ -3,6 +3,7 @@ from PIL import Image, ImageTk
 
 class ImageDisplayWidget(tk.Frame):
     """A widget to display and zoom an image on a canvas, handle mouse clicks, and extract characters."""
+    
     def __init__(self, parent, app_reference, **kwargs):
         super().__init__(parent, **kwargs)
         self.app_reference = app_reference
@@ -12,56 +13,62 @@ class ImageDisplayWidget(tk.Frame):
         self.current_ascii_code = None
         self.current_zoom_index = app_reference.config_manager.get_default_zoom_level()
         self.original_image = None
-
         self.grid_shown = False
-
-        # Zoom levels: 1/8, 1/4, 1/2, 1, 2, 3, 4
         self.zoom_levels = [12.5, 25, 50, 100, 200, 300, 400]
 
         # Button controls at the top
         control_frame = tk.Frame(self)
         control_frame.pack(side=tk.TOP, pady=5)
-
         self.zoom_in_button = tk.Button(control_frame, text="Zoom In", command=self.zoom_in)
         self.zoom_in_button.pack(side=tk.LEFT, padx=5)
-
         self.zoom_out_button = tk.Button(control_frame, text="Zoom Out", command=self.zoom_out)
         self.zoom_out_button.pack(side=tk.LEFT, padx=5)
-
         self.toggle_grid_button = tk.Button(control_frame, text="Toggle Grid", command=self.toggle_grid)
         self.toggle_grid_button.pack(side=tk.LEFT, padx=5)
 
         # Canvas for displaying image
         self.canvas = tk.Canvas(self, bg="white")
         self.canvas.pack(fill=tk.BOTH, expand=True)
-
-        # Bind resizing events
         self.canvas.bind("<Configure>", self.resize_canvas)
         self.canvas.bind("<Button-1>", self.on_click)
 
-    def draw_selection_box(self, char_x, char_y):
-        """Draw a green selection box around the selected character without obscuring edge pixels."""
-        self.clear_selection_box()
-        zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
-        box_width = int(self.font_width * zoom_factor)
-        box_height = int(self.font_height * zoom_factor)
-        x1 = char_x * box_width - 1
-        y1 = char_y * box_height - 1
-        x2 = x1 + box_width + 1
-        y2 = y1 + box_height + 1
-        self.canvas.create_rectangle(x1, y1, x2, y2, outline="green", width=2, tags="selection_box")
+    def redraw(self):
+        """Redraw the canvas elements including the image, grid, and selection box."""
+        self.display_image()  # Adjust image based on zoom level
+        if self.grid_shown:
+            self.draw_grid()  # Draw the grid if enabled
+        if self.current_ascii_code is not None:
+            char_x, char_y = self.ascii_to_coordinates(self.current_ascii_code)
+            self.draw_selection_box(char_x, char_y)  # Update selection box
 
-    def clear_selection_box(self):
-        """Remove the existing selection box from the canvas."""
-        self.canvas.delete("selection_box")
+    def zoom_in(self):
+        """Increase the zoom level and update the display."""
+        if self.current_zoom_index < len(self.zoom_levels) - 1:
+            self.current_zoom_index += 1
+            self.redraw()
+
+    def zoom_out(self):
+        """Decrease the zoom level and update the display."""
+        if self.current_zoom_index > 0:
+            self.current_zoom_index -= 1
+            self.redraw()
 
     def toggle_grid(self):
-        """Toggle cyan gridlines on and off."""
+        """Toggle cyan gridlines on and off and redraw."""
         self.grid_shown = not self.grid_shown
-        if self.grid_shown:
-            self.draw_grid()
-        else:
-            self.clear_grid()
+        self.redraw()
+
+    def display_image(self):
+        """Display the image on the canvas based on the current zoom level."""
+        if self.original_image is None:
+            return
+        zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
+        new_width = int(self.original_image.width * zoom_factor)
+        new_height = int(self.original_image.height * zoom_factor)
+        self.image = self.original_image.resize((new_width, new_height), Image.NEAREST)
+        self.tk_image = ImageTk.PhotoImage(self.image)
+        self.canvas.config(scrollregion=(0, 0, new_width, new_height))
+        self.canvas.create_image(0, 0, anchor=tk.NW, image=self.tk_image)
 
     def draw_grid(self):
         """Draw cyan gridlines based on the font dimensions and current zoom level."""
@@ -76,6 +83,27 @@ class ImageDisplayWidget(tk.Frame):
             self.canvas.create_line(x, 0, x, img_height, fill="cyan", tags="gridline")
         for y in range(0, img_height, grid_height):
             self.canvas.create_line(0, y, img_width, y, fill="cyan", tags="gridline")
+
+    def draw_selection_box(self, char_x, char_y):
+        """Draw a green selection box around the selected character without obscuring edge pixels."""
+        self.clear_selection_box()
+        zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
+        box_width = int(self.font_width * zoom_factor)
+        box_height = int(self.font_height * zoom_factor)
+        x1 = char_x * box_width - 1
+        y1 = char_y * box_height - 1
+        x2 = x1 + box_width + 1
+        y2 = y1 + box_height + 1
+        self.canvas.create_rectangle(x1, y1, x2, y2, outline="green", width=2, tags="selection_box")
+
+    def resize_canvas(self, event):
+        """Resize the canvas to fit the image and redraw."""
+        if self.original_image:
+            self.redraw()
+
+    def clear_selection_box(self):
+        """Remove the existing selection box from the canvas."""
+        self.canvas.delete("selection_box")
 
     def clear_grid(self):
         """Remove all gridlines from the canvas."""
@@ -95,8 +123,7 @@ class ImageDisplayWidget(tk.Frame):
         self.original_image = original_image
         img_width, img_height = self.original_image.size
         print(f"Loaded image with size: {img_width}x{img_height}")
-        self.update_display_dimensions()
-        self.display_image()
+        self.redraw()
 
     def trigger_click_on_ascii_code(self, ascii_code):
         """Simulate a click on the given ASCII code and display the selection box."""
@@ -104,57 +131,6 @@ class ImageDisplayWidget(tk.Frame):
             char_x, char_y = self.ascii_to_coordinates(ascii_code)
             self.extract_character(ascii_code, char_x, char_y)
             self.draw_selection_box(char_x, char_y)
-
-    def display_image(self):
-        """Display the image on the canvas based on the current zoom level."""
-        if self.original_image is None:
-            return
-        zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
-        new_width = int(self.original_image.width * zoom_factor)
-        new_height = int(self.original_image.height * zoom_factor)
-        self.image = self.original_image.resize((new_width, new_height), Image.NEAREST)
-
-        self.tk_image = ImageTk.PhotoImage(self.image)
-        self.canvas.config(scrollregion=(0, 0, new_width, new_height))
-        self.canvas.create_image(0, 0, anchor=tk.NW, image=self.tk_image)
-
-    def update_display_dimensions(self):
-        """Update the entire widget's size based on the zoomed image dimensions."""
-        zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
-        new_width = int(self.original_image.width * zoom_factor)
-        new_height = int(self.original_image.height * zoom_factor)
-        self.canvas.config(width=new_width, height=new_height)
-        self.config(width=new_width, height=new_height)
-
-    def resize_canvas(self, event):
-        """Resize the canvas to fit the image."""
-        if self.original_image:
-            self.update_display_dimensions()
-            self.display_image()
-
-    def zoom_in(self):
-        """Increase the zoom level and update the display."""
-        if self.current_zoom_index < len(self.zoom_levels) - 1:
-            self.current_zoom_index += 1
-            self.update_display_dimensions()
-            self.display_image()
-            if self.grid_shown:
-                self.draw_grid()
-            if self.current_ascii_code is not None:
-                char_x, char_y = self.ascii_to_coordinates(self.current_ascii_code)
-                self.draw_selection_box(char_x, char_y)
-
-    def zoom_out(self):
-        """Decrease the zoom level and update the display."""
-        if self.current_zoom_index > 0:
-            self.current_zoom_index -= 1
-            self.update_display_dimensions()
-            self.display_image()
-            if self.grid_shown:
-                self.draw_grid()
-            if self.current_ascii_code is not None:
-                char_x, char_y = self.ascii_to_coordinates(self.current_ascii_code)
-                self.draw_selection_box(char_x, char_y)
 
     def on_click(self, event):
         """Handle mouse click on the image and delegate to helper functions to get the character."""
@@ -170,9 +146,6 @@ class ImageDisplayWidget(tk.Frame):
         else:
             self.clear_selection_box()
             print("Clicked outside the ASCII range.")
-
-    # Additional methods to update pixels, extract characters, and handle image operations remain unchanged.
-
 
     def extract_character(self, ascii_code, char_x, char_y):
         """ Extract the character image from the original image using char_x, char_y, and display it in the editor """
@@ -207,8 +180,7 @@ class ImageDisplayWidget(tk.Frame):
         self.original_image.putpixel((char_x * self.font_width + x, char_y * self.font_height + y), pixel_color)
         
         # Refresh the image on the canvas to reflect the change
-        self.display_image()
-
+        self.redraw()
 
     # Centralized conversion functions
     def ascii_to_coordinates(self, ascii_code):
@@ -245,4 +217,3 @@ class ImageDisplayWidget(tk.Frame):
         new_image = Image.new("L", (target_width, target_height), color=255)  # White background
         new_image.paste(image, (0, 0))  # Paste original image at top-left
         return new_image
-    
