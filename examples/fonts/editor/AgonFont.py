@@ -1,7 +1,11 @@
 
 from PIL import Image
+import math
 
-def round_up_to_multiple_of_8(value):
+# =============================================================================
+# Helper functions
+# =============================================================================
+def pad_to_byte(value):
     """Rounds up the given value to the nearest multiple of 8."""
     return (value + 7) // 8 * 8
 
@@ -13,7 +17,10 @@ def byteify(pixels):
             byte |= (1 << (7 - i))  # Set the corresponding bit for the white pixel
     return byte
 
-def read_font_file(font_filepath, char_width, char_height, num_chars=256):
+# =============================================================================
+# Font to png functions
+# =============================================================================
+def read_font_file(font_filepath, char_width, char_height, ascii_range=(32, 127)):
     """
     Reads a .font file and returns a list of character images.
     Each byte in the file represents 8 horizontal pixels.
@@ -21,20 +28,23 @@ def read_font_file(font_filepath, char_width, char_height, num_chars=256):
     :param font_filepath: Path to the .font file
     :param char_width: True width of each character in pixels
     :param char_height: Height of each character in pixels
-    :param num_chars: Total number of characters in the font file (default: 256)
+    :param ascii_range: Tuple indicating the ASCII range of characters to include (default: (32, 127))
     :return: A list of PIL images representing each character
     """
     # Round the true width up to the nearest multiple of 8 (padded width)
-    padded_width = round_up_to_multiple_of_8(char_width)
+    padded_width = pad_to_byte(char_width)
 
     with open(font_filepath, 'rb') as f:
         font_data = f.read()
+
+    # Determine the number of characters based on the ASCII range
+    num_chars = ascii_range[1] - ascii_range[0] + 1
 
     char_images = []
     bytes_per_row = padded_width // 8  # Number of bytes per row of the character
 
     for i in range(num_chars):
-        # Now, we use the padded width to create the image, not the true width
+        # Use the padded width to create the image, not the true width
         char_img = Image.new('L', (padded_width, char_height), color=0)  # 'L' mode for grayscale (1 byte per pixel)
         pixels = char_img.load()
         
@@ -77,3 +87,70 @@ def create_font_image(char_images, char_width, char_height, chars_per_row=16):
         font_img.paste(char_img, (x, y))
     
     return font_img
+
+# =============================================================================
+# png to font functions
+# =============================================================================
+
+def image_to_bitstream(padded_img):
+    """ Converts the cropped and padded image into a bitstream (bytearray). """
+    bitstream = bytearray()
+    width, height = padded_img.size
+    
+    # Convert image row by row into the bitstream
+    for row in range(height):
+        row_pixels = [padded_img.getpixel((col, row)) for col in range(width)]
+        
+        # Convert pixels to bytes (8 pixels per byte)
+        for i in range(0, len(row_pixels), 8):
+            byte = byteify(row_pixels[i:i+8])
+            bitstream.append(byte)
+    
+    return bitstream
+
+def precomputations(font_width, font_height, offset_width, offset_height, ascii_range, src_img_filepath):
+    font_width_mod = font_width + offset_width
+    font_height_mod = font_height + offset_height
+    font_width_padded = math.ceil(font_width_mod / 8) * 8
+    sample_width = font_width if offset_width >= 0 else font_width_mod
+    sample_height = font_height if offset_height >= 0 else font_height
+    
+    # Open the source image
+    src_img = Image.open(src_img_filepath)
+
+    # Create a new source image the size of a full 256 character grid (16x16 grid of characters)
+    src_img_new = Image.new('L', (font_width * 16, font_height * 16), color=0)
+
+    # Paste the cropped image into the correct position in the new source image
+    src_img_new.paste(src_img, (0, (ascii_range[0] // 16) * font_height))
+
+    # Return necessary values
+    return font_width_padded, font_height_mod, sample_width, sample_height, src_img_new
+
+def sample_char_image(ascii_code, font_width, font_height, sample_width, sample_height, src_img_new):
+    # Calculate the character's x and y coordinates in the grid
+    chars_per_row = 16
+    char_x = (ascii_code % chars_per_row) * font_width
+    char_y = (ascii_code // chars_per_row) * font_height
+
+    # Calculate the cropping box for the character
+    crop_box = (char_x, char_y, char_x + sample_width, char_y + sample_height)
+
+    # Crop and return the character image
+    char_img = src_img_new.crop(crop_box)
+
+    return char_img
+
+def make_font(src_img_filepath, tgt_font_filepath, metadata_filepath, font_name, font_variant, font_width, font_height, offset_left, offset_top, offset_width, offset_height, ascii_range, sources_dir, tgt_dir):
+    # Precompute offsets and image
+    font_width_padded, font_height_mod, sample_width, sample_height, src_img_new = precomputations(font_width, font_height, offset_width, offset_height, ascii_range, src_img_filepath)
+
+    font_data = bytearray()
+
+    for ascii_code in range(0,256):
+        char_img = Image.new('L', (font_width_padded, font_height_mod), color=0)
+        char_img.paste(sample_char_image(ascii_code, font_width, font_height, sample_width, sample_height, src_img_new), (offset_left, offset_top))
+        font_data.extend(image_to_bitstream(char_img))
+
+    with open(tgt_font_filepath, 'wb') as f:
+        f.write(font_data)

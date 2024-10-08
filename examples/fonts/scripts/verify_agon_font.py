@@ -84,9 +84,9 @@ def display_font_image(font_img):
     font_img.show()
 
 if __name__ == "__main__":
-    font_filepath = 'examples/fonts/editor/fabfont/Regular/fabfont_9x15.font'
+    font_filepath = 'examples/fonts/tgt/ttf/8_bit_fortress_Regular_9x8.font'
     char_width = 9  # True character width
-    char_height = 15  # Character height
+    char_height = 8  # Character height
     
     # Round up the width to the nearest multiple of 8 for rendering
     padded_width = round_up_to_multiple_of_8(char_width)

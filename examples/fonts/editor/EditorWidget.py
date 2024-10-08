@@ -29,8 +29,7 @@ class EditorWidget(tk.Frame):
         self.char_height = char_height
 
         # Resize the canvas based on the new character width and height
-        self.canvas.config(width=self.char_width * self.pixel_size + 1, 
-                           height=self.char_height * self.pixel_size + 1)
+        self.canvas.config(width=self.char_width * self.pixel_size + 1, height=self.char_height * self.pixel_size + 1)
 
         # Re-initialize the internal character image as a blank image (black/white array)
         self.char_image = [[0 for _ in range(self.char_height)] for _ in range(self.char_width)]

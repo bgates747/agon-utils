@@ -1,15 +1,12 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
-import configparser
-import os
 
 class FontConfigEditor(tk.Frame):
-    """A widget for editing and saving font configurations in .ini files."""
+    """A widget for editing font configurations with optional pre-filled values."""
     
-    def __init__(self, parent, config_file=None, **kwargs):
+    def __init__(self, parent, config_dict=None, **kwargs):
         super().__init__(parent, **kwargs)
         
-        # Configuration parameters
+        # Configuration parameters with Tkinter variable types for easy binding to Entry widgets
         self.config_params = {
             'font_name': tk.StringVar(),
             'font_variant': tk.StringVar(),
@@ -22,13 +19,17 @@ class FontConfigEditor(tk.Frame):
             'ascii_range_start': tk.IntVar(),
             'ascii_range_end': tk.IntVar()
         }
-
-        # Initialize the layout
+        
+        # Initialize layout
         self.create_widgets()
 
-        # Load config from file if provided
-        if config_file and os.path.exists(config_file):
-            self.load_config(config_file)
+        # Load provided config dictionary, if any
+        if config_dict:
+            self.set_config(config_dict)
+
+        # Configure the close button to trigger the cancel action
+        parent.protocol("WM_DELETE_WINDOW", self.cancel)
+        self.result = None  # Store the result for retrieval after closing
 
     def create_widgets(self):
         """Create form entries for each configuration parameter."""
@@ -40,61 +41,12 @@ class FontConfigEditor(tk.Frame):
             entry.grid(row=row, column=1, sticky="w", padx=5, pady=5)
             row += 1
 
-        # Save and Load buttons
-        self.load_button = tk.Button(self, text="Load Config", command=self.load_config_dialog)
-        self.load_button.grid(row=row, column=0, pady=10)
+        # "Set" and "Cancel" buttons
+        self.set_button = tk.Button(self, text="Set", command=self.set)
+        self.set_button.grid(row=row, column=0, pady=10)
 
-        self.save_button = tk.Button(self, text="Save Config", command=self.save_config_dialog)
-        self.save_button.grid(row=row, column=1, pady=10)
-
-    def load_config(self, config_file):
-        """Load font configuration from an .ini file."""
-        config = configparser.ConfigParser()
-        config.read(config_file)
-
-        # Update entry fields with values from the config file
-        if 'font' in config:
-            font_config = config['font']
-            for param, var in self.config_params.items():
-                value = font_config.get(param)
-                if value is not None:
-                    # Set variable type accordingly
-                    if isinstance(var, tk.IntVar):
-                        try:
-                            var.set(int(value))
-                        except ValueError:
-                            messagebox.showerror("Invalid Value", f"{param} should be an integer.")
-                    else:
-                        var.set(value)
-        else:
-            messagebox.showerror("Invalid Config", "No [font] section found in the file.")
-
-    def save_config(self, config_file):
-        """Save font configuration to an .ini file."""
-        config = configparser.ConfigParser()
-        config['font'] = {param: str(var.get()) for param, var in self.config_params.items()}
-
-        with open(config_file, 'w') as file:
-            config.write(file)
-
-    def load_config_dialog(self):
-        """Open a dialog to select a configuration file to load."""
-        config_file = filedialog.askopenfilename(
-            title="Select Config File",
-            filetypes=(("INI files", "*.ini"), ("All files", "*.*"))
-        )
-        if config_file:
-            self.load_config(config_file)
-
-    def save_config_dialog(self):
-        """Open a dialog to select a location to save the configuration file."""
-        config_file = filedialog.asksaveasfilename(
-            title="Save Config File",
-            defaultextension=".ini",
-            filetypes=(("INI files", "*.ini"), ("All files", "*.*"))
-        )
-        if config_file:
-            self.save_config(config_file)
+        self.cancel_button = tk.Button(self, text="Cancel", command=self.cancel)
+        self.cancel_button.grid(row=row, column=1, pady=10)
 
     def set_config(self, config_dict):
         """Populate the editor with values from the provided configuration dictionary."""
@@ -108,3 +60,11 @@ class FontConfigEditor(tk.Frame):
     def get_config(self):
         """Retrieve the current configuration as a dictionary."""
         return {param: var.get() for param, var in self.config_params.items()}
+
+    def set(self):
+        """Store the current configuration as result."""
+        self.result = self.get_config()
+
+    def cancel(self):
+        """Cancel editing and set result to None."""
+        self.result = None

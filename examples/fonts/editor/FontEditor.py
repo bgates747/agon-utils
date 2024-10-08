@@ -19,19 +19,17 @@ class FontEditorApp(tk.Frame):
         self.current_font_ini_file = None    # Path to the currently open .ini file
         self.current_ascii_code = ord('A')   # Default to ASCII code for 'A'
 
-        # Initialize default font metadata using the config manager
-        self.font_name = self.config_manager.get_setting('font_name', 'default_font')
-        self.font_variant = self.config_manager.get_setting('font_variant', 'Regular')
-        self.font_width = int(self.config_manager.get_setting('default_font_width', '8'))
-        self.font_height = int(self.config_manager.get_setting('default_font_height', '11'))
-        self.offset_left = int(self.config_manager.get_setting('default_offset_left', '0'))
-        self.offset_top = int(self.config_manager.get_setting('default_offset_top', '0'))
-        self.offset_width = int(self.config_manager.get_setting('default_offset_width', '0'))
-        self.offset_height = int(self.config_manager.get_setting('default_offset_height', '0'))
-        self.ascii_range = (
-            int(self.config_manager.get_setting('ascii_range_start', '32')),
-            int(self.config_manager.get_setting('ascii_range_end', '127'))
-        )
+        # Initialize font metadata to None
+        self.font_name = 'no_font_loaded'
+        self.font_variant = 'Regular'
+        self.font_width = int(self.config_manager.get_setting('default_font_width', 9))
+        self.font_height = int(self.config_manager.get_setting('default_font_height', 15))
+        self.offset_left = int(self.config_manager.get_setting('default_offset_left', 0))
+        self.offset_top = int(self.config_manager.get_setting('default_offset_top', 0))
+        self.offset_width = int(self.config_manager.get_setting('default_offset_width', 0))
+        self.offset_height = int(self.config_manager.get_setting('default_offset_height', 0))
+        self.ascii_range_start = int(self.config_manager.get_setting('default_ascii_range_start', 32))
+        self.ascii_range_end = int(self.config_manager.get_setting('default_ascii_range_end', 127))
 
         # Create and add the menu bar
         self.menubar = MenuBar(master, self)
@@ -61,9 +59,11 @@ class FontEditorApp(tk.Frame):
         self.image_display.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
         # Load default metadata from the config manager
-        default_font_width = self.font_width
-        default_font_height = self.font_height
-        default_ascii_range = self.ascii_range
+        default_font_width = int(self.config_manager.get_setting('default_font_width', 9))
+        default_font_height = int(self.config_manager.get_setting('default_font_height', 15))
+        default_ascii_range_start = int(self.config_manager.get_setting('default_ascii_range_start', 32))
+        default_ascii_range_end = int(self.config_manager.get_setting('default_ascii_range_end', 127))
+        default_ascii_range = (default_ascii_range_start, default_ascii_range_end)
 
         # Initialize EditorWidget with default metadata
         self.editor_widget.initialize_grid(default_font_width, default_font_height)
@@ -71,6 +71,36 @@ class FontEditorApp(tk.Frame):
         # Set metadata for ImageDisplayWidget after initialization
         self.image_display.set_font_metadata(default_font_width, default_font_height, default_ascii_range)
 
+# ==============================================================================
+# Font configuration methods
+# ==============================================================================
+    def get_font_metadata(self):
+        """Retrieve font metadata from the application state."""
+        return {
+            'font_name': self.font_name,
+            'font_variant': self.font_variant,
+            'font_width': self.font_width,
+            'font_height': self.font_height,
+            'offset_left': self.offset_left,
+            'offset_top': self.offset_top,
+            'offset_width': self.offset_width,
+            'offset_height': self.offset_height,
+            'ascii_range_start': self.ascii_range_start,
+            'ascii_range_end': self.ascii_range_end
+        }
+    
+    def set_font_metadata(self, font_config):
+        """Set font font configuration in the application state."""
+        self.font_name = font_config['font_name']
+        self.font_variant = font_config['font_variant']
+        self.font_width = font_config['font_width']
+        self.font_height = font_config['font_height']
+        self.offset_left = font_config['offset_left']
+        self.offset_top = font_config['offset_top']
+        self.offset_width = font_config['offset_width']
+        self.offset_height = font_config['offset_height']
+        self.ascii_range_start = font_config['ascii_range_start']
+        self.ascii_range_end = font_config['ascii_range_end']
 
 # Example Usage
 if __name__ == "__main__":
