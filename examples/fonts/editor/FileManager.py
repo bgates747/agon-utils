@@ -134,11 +134,11 @@ class FileManager:
 
     def open_file(self):
         """Handle the Open action."""
-        default_directory = self.app_reference.config_manager.get_default_directory()
+        most_recent_directory = self.app_reference.config_manager.get_most_recent_directory()
         file_path = filedialog.askopenfilename(
             title="Open File",
             filetypes=(("PNG Images", "*.png"), ("Font Files", "*.font"), ("All Files", "*.*")),
-            initialdir=default_directory
+            initialdir=most_recent_directory
         )
 
         if file_path:
@@ -155,8 +155,8 @@ class FileManager:
         self.load_image_and_metadata(file_path)
         
         # Update the default directory
-        new_default_directory = os.path.dirname(file_path)
-        self.app_reference.config_manager.set_default_directory(new_default_directory)
+        new_most_recent_directory = os.path.dirname(file_path)
+        self.app_reference.config_manager.set_most_recent_directory(new_most_recent_directory)
 
         # Save the most recent file path to config.ini
         self.app_reference.config_manager.set_setting("most_recent_file", file_path)
@@ -172,7 +172,7 @@ class FileManager:
             title="Save As",
             defaultextension=".png",
             filetypes=(("PNG Images", "*.png"), ("Font Files", "*.font"), ("All Files", "*.*")),
-            initialdir=self.app_reference.config_manager.get_default_directory()
+            initialdir=self.app_reference.config_manager.get_most_recent_directory()
         )
 
         if not file_path:
@@ -189,6 +189,6 @@ class FileManager:
     def save_png_image(self, file_path):
         """Save the current image as a PNG."""
         self.app_reference.image_display.original_image.save(file_path)
-        new_default_directory = os.path.dirname(file_path)
-        self.app_reference.config_manager.set_default_directory(new_default_directory)
+        new_most_recent_directory = os.path.dirname(file_path)
+        self.app_reference.config_manager.set_most_recent_directory(new_most_recent_directory)
         messagebox.showinfo("Save Successful", f"Image saved successfully to {file_path}")

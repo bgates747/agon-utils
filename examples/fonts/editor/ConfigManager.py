@@ -31,13 +31,13 @@ class ConfigManager:
         self.config['settings'][key] = str(value)
         self.save_config()
 
-    def get_default_directory(self):
+    def get_most_recent_directory(self):
         """Get the default directory, or use the directory containing the application."""
-        return self.get_setting('default_directory', os.path.dirname(os.path.abspath(__file__)))
+        return self.get_setting('most_recent_directory', os.path.dirname(os.path.abspath(__file__)))
 
-    def set_default_directory(self, directory):
+    def set_most_recent_directory(self, directory):
         """Set a new default directory."""
-        self.set_setting('default_directory', directory)
+        self.set_setting('most_recent_directory', directory)
 
     def get_default_ascii_range(self):
         """Get the default ASCII range from the config, with a specific fallback."""
