@@ -132,7 +132,7 @@ class FileManager:
             config.write(configfile)
             print(f"Metadata saved successfully to {ini_file_path}")
 
-    def open_file(self):
+    def get_open_filename(self):
         """Handle the Open action."""
         most_recent_directory = self.app_reference.config_manager.get_most_recent_directory()
         file_path = filedialog.askopenfilename(
@@ -140,7 +140,9 @@ class FileManager:
             filetypes=(("PNG Images", "*.png"), ("Font Files", "*.font"), ("All Files", "*.*")),
             initialdir=most_recent_directory
         )
-
+        self.open_file(file_path)
+    
+    def open_file(self, file_path):
         if file_path:
             file_extension = os.path.splitext(file_path)[1].lower()
             if file_extension == '.png':

@@ -42,7 +42,10 @@ class FontEditorApp(tk.Frame):
         # Create a blank control panel without loading any image initially
         self.create_control_panel()
 
-        # 
+        # Open the most recently opened file or load default if it doesn't exist
+        most_recent_file = self.config_manager.get_most_recent_file()
+        self.file_manager.open_file(most_recent_file)
+
 
     def create_control_panel(self):
         """ Create a control panel to hold widgets (Image display and Editor) """

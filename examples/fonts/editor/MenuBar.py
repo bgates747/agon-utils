@@ -11,7 +11,7 @@ class MenuBar:
 
         # File Menu
         file_menu = Menu(self.menubar, tearoff=0)
-        file_menu.add_command(label="Open", command=self.open_file)
+        file_menu.add_command(label="Open", command=self.get_open_filename)
         file_menu.add_command(label="Save", command=self.save_file)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.exit_app)
@@ -34,9 +34,9 @@ class MenuBar:
         # Attach the menubar to the parent window
         self.parent.config(menu=self.menubar)
 
-    def open_file(self):
-        """Handle the Open action by invoking the FileManager's open_file method."""
-        self.app_reference.file_manager.open_file()
+    def get_open_filename(self):
+        """Handle the Open action by invoking the FileManager's get_open_filename method."""
+        self.app_reference.file_manager.get_open_filename()
 
     def save_file(self):
         """Handle the Save action by invoking the FileManager's save_file method."""
