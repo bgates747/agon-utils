@@ -20,7 +20,7 @@ def byteify(pixels):
 # =============================================================================
 # Font to png functions
 # =============================================================================
-def read_font_file(font_filepath, char_width, char_height, ascii_range=(32, 127)):
+def read_font_file(font_filepath, char_width, char_height, ascii_range=(0, 255)):
     """
     Reads a .font file and returns a list of character images.
     Each byte in the file represents 8 horizontal pixels.
@@ -28,30 +28,37 @@ def read_font_file(font_filepath, char_width, char_height, ascii_range=(32, 127)
     :param font_filepath: Path to the .font file
     :param char_width: True width of each character in pixels
     :param char_height: Height of each character in pixels
-    :param ascii_range: Tuple indicating the ASCII range of characters to include (default: (32, 127))
+    :param ascii_range: Tuple indicating the ASCII range of characters to include (default: (0, 255))
     :return: A list of PIL images representing each character
     """
     # Round the true width up to the nearest multiple of 8 (padded width)
     padded_width = pad_to_byte(char_width)
+    bytes_per_row = padded_width // 8  # Number of bytes per row of the character
+    bytes_per_character = bytes_per_row * char_height
 
-    with open(font_filepath, 'rb') as f:
-        font_data = f.read()
+    # Calculate the start and end character indices in the file
+    start_char = ascii_range[0]
+    num_chars = ascii_range[1] - start_char + 1  # Number of characters to read
 
-    # Determine the number of characters based on the ASCII range
-    num_chars = ascii_range[1] - ascii_range[0] + 1
+    # Calculate the starting byte offset for the specified ASCII range
+    start_offset = start_char * bytes_per_character
 
     char_images = []
-    bytes_per_row = padded_width // 8  # Number of bytes per row of the character
+
+    # Read the font data starting from the calculated offset
+    with open(font_filepath, 'rb') as f:
+        f.seek(start_offset)  # Move to the starting position in the file
+        font_data = f.read(num_chars * bytes_per_character)
 
     for i in range(num_chars):
-        # Use the padded width to create the image, not the true width
+        # Create an image for each character with the padded width
         char_img = Image.new('L', (padded_width, char_height), color=0)  # 'L' mode for grayscale (1 byte per pixel)
         pixels = char_img.load()
         
-        # Extract character data from the font file
+        # Extract character data from the font data
         for y in range(char_height):
-            row_byte_start = i * char_height * bytes_per_row + y * bytes_per_row
-            row_data = font_data[row_byte_start:row_byte_start + bytes_per_row]
+            row_start = i * bytes_per_character + y * bytes_per_row
+            row_data = font_data[row_start:row_start + bytes_per_row]
             
             for byte_idx, byte in enumerate(row_data):
                 for bit in range(8):

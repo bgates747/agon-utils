@@ -23,10 +23,10 @@ class EditorWidget(tk.Frame):
         # Internal representation of the character (black/white)
         self.char_image = None
 
-    def initialize_grid(self, char_width, char_height):
+    def initialize_grid(self):
         """ Initialize the character grid and canvas based on font metadata """
-        self.char_width = char_width
-        self.char_height = char_height
+        self.char_width = self.app_reference.font_width
+        self.char_height = self.app_reference.font_height
 
         # Resize the canvas based on the new character width and height
         self.canvas.config(width=self.char_width * self.pixel_size + 1, height=self.char_height * self.pixel_size + 1)

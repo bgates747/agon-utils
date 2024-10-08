@@ -66,10 +66,7 @@ class FontEditorApp(tk.Frame):
         default_ascii_range = (default_ascii_range_start, default_ascii_range_end)
 
         # Initialize EditorWidget with default metadata
-        self.editor_widget.initialize_grid(default_font_width, default_font_height)
-
-        # Set metadata for ImageDisplayWidget after initialization
-        self.image_display.set_font_metadata(default_font_width, default_font_height, default_ascii_range)
+        self.editor_widget.initialize_grid()
 
 # ==============================================================================
 # Font configuration methods

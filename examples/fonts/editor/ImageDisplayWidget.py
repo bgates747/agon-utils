@@ -120,15 +120,6 @@ class ImageDisplayWidget(tk.Frame):
         """Remove all gridlines from the canvas."""
         self.canvas.delete("gridline")
 
-    def set_font_metadata(self, font_width, font_height, ascii_range):
-        """Set the font metadata for width, height, and ASCII range."""
-        print(f"Setting font metadata: width={font_width}, height={font_height}, ascii_range={ascii_range}")
-        self.app_reference.font_width = font_width
-        self.app_reference.font_height = font_height
-        self.app_reference.ascii_range = ascii_range
-        if self.grid_shown:
-            self.draw_grid()
-
     def load_image(self, original_image):
         """Load the image into the widget."""
         self.original_image = original_image
@@ -150,7 +141,7 @@ class ImageDisplayWidget(tk.Frame):
         click_x, click_y = self.get_click_coordinates(event)
         char_x, char_y = self.get_character_coordinates(click_x, click_y)
         ascii_code = self.coordinates_to_ascii(char_x, char_y)
-        if self.app_reference.ascii_range[0] <= ascii_code <= self.app_reference.ascii_range[1]:
+        if self.app_reference.ascii_range_start <= ascii_code <= self.app_reference.ascii_range_end:
             self.current_ascii_code = ascii_code
             self.extract_character(ascii_code, char_x, char_y)
             self.draw_selection_box(char_x, char_y)
@@ -196,13 +187,13 @@ class ImageDisplayWidget(tk.Frame):
     # Centralized conversion functions
     def ascii_to_coordinates(self, ascii_code):
         """ Convert an ASCII code to character coordinates (char_x, char_y) in the image picker """
-        char_x = (ascii_code - self.app_reference.ascii_range[0]) % 16
-        char_y = (ascii_code - self.app_reference.ascii_range[0]) // 16
+        char_x = (ascii_code - self.app_reference.ascii_range_start) % 16
+        char_y = (ascii_code - self.app_reference.ascii_range_start) // 16
         return char_x, char_y
 
     def coordinates_to_ascii(self, char_x, char_y):
         """ Convert character coordinates (char_x, char_y) to the corresponding ASCII code """
-        return char_y * 16 + char_x + self.app_reference.ascii_range[0]
+        return char_y * 16 + char_x + self.app_reference.ascii_range_start
 
     def get_click_coordinates(self, event):
         """ Convert the click event coordinates to be relative to the image, accounting for zoom """

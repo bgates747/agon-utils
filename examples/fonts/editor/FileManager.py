@@ -158,12 +158,6 @@ class FileManager:
                 # Set application font metadata based on the finalized configuration
                 self.app_reference.set_font_metadata(font_config)
 
-                # Load image into the ImageDisplayWidget
-                self.app_reference.image_display.load_image(font_img)
-
-                # Trigger the click on ASCII 'A' after setup
-                self.app_reference.image_display.trigger_click_on_ascii_code(ord('A'))
-
                 # Save font metadata directly to the .ini file
                 ini_filepath = file_path + '.ini'
                 self.save_font_metadata(font_config, ini_filepath)
@@ -173,6 +167,12 @@ class FileManager:
                 new_most_recent_directory = os.path.dirname(file_path)
                 self.app_reference.config_manager.set_most_recent_directory(new_most_recent_directory)
                 self.app_reference.config_manager.set_most_recent_file(file_path)
+
+                # Load image into the ImageDisplayWidget
+                self.app_reference.image_display.load_image(font_img)
+
+                # Trigger the click on ASCII 'A' after setup
+                # self.app_reference.image_display.trigger_click_on_ascii_code(ord('A'))
 
     def open_config_editor_popup(self, font_config):
         """Open the FontConfigEditor as a modal popup to adjust metadata."""
@@ -207,11 +207,10 @@ class FileManager:
     def open_font_file(self, file_path, font_config):
         """Load font configuration and character images from a .font file, allowing user review of the configuration."""
 
-        final_config = font_config
-    # while True:
-        char_width = final_config['font_width']
-        char_height = final_config['font_height']
-        ascii_range = (final_config['ascii_range_start'], final_config['ascii_range_end'])
+        char_width = font_config['font_width']
+        char_height = font_config['font_height']
+        ascii_range = (font_config['ascii_range_start'], font_config['ascii_range_end'])
+        print(f'Loading font file: {file_path} with width={char_width}, height={char_height}, range={ascii_range}')
 
         # Read character images from the .font file with the specified configuration
         char_images = read_font_file(
@@ -230,15 +229,8 @@ class FileManager:
         )
 
         # Use the helper function to finalize the configuration
-        modified, final_config = self.validate_font_config(font_image, final_config)
+        modified, final_config = self.validate_font_config(font_image, font_config)
         return modified, final_config, font_image
-
-            # if modified and not final_config:
-            #     # Case: User modified, but modification is invalid; retry
-            #     continue
-            # else:
-            #     # Return font image and metadata
-            #     return modified, final_config, font_image
 
     def save_file(self):
         """Handle the Save action for saving both the image and metadata."""
