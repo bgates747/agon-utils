@@ -84,9 +84,9 @@ def display_font_image(font_img):
     font_img.show()
 
 if __name__ == "__main__":
-    font_filepath = 'tgt/ttf/computer_pixel_7_Regular_8x17.font'  # Replace with the actual path to your .font file
-    char_width = 8  # True character width
-    char_height = 17  # Character height
+    font_filepath = 'examples/fonts/editor/fabfont/Regular/fabfont_9x15.font'  # Replace with the actual path to your .font file
+    char_width = 9  # True character width
+    char_height = 15  # Character height
     
     # Round up the width to the nearest multiple of 8 for rendering
     padded_width = round_up_to_multiple_of_8(char_width)
@@ -95,7 +95,8 @@ if __name__ == "__main__":
     char_images = read_font_file(font_filepath, char_width, char_height)
     
     # Create a single PNG image of the font with padded width
-    font_img = create_font_image(char_images, padded_width, char_height)
+    # font_img = create_font_image(char_images, padded_width, char_height)
+    font_img = create_font_image(char_images, char_width, char_height)
     
     # Display the PNG image
     display_font_image(font_img)

@@ -42,6 +42,8 @@ class FontEditorApp(tk.Frame):
         # Create a blank control panel without loading any image initially
         self.create_control_panel()
 
+        # 
+
     def create_control_panel(self):
         """ Create a control panel to hold widgets (Image display and Editor) """
         control_frame = tk.Frame(self)
