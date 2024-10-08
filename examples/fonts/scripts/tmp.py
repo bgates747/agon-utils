@@ -1,87 +1,30 @@
-import zipfile
-from fontTools.ttLib import TTFont
 import os
 
-def unzip_files_in_downloads():
-    """
-    Unzips all .zip files in /home/smith/Downloads into a new folder 
-    with the same name as the base zip file name. Then, renames the .ttf file 
-    found inside the folder to match the base zip file name.
-    """
-    downloads_dir = '/home/smith/Downloads'
+def rename_png_files(base_dir):
+    for root, dirs, files in os.walk(base_dir):
+        for file in files:
+            if file.endswith(".png"):
+                # Determine the font name and variant based on directory structure
+                path_parts = os.path.normpath(root).split(os.sep)
+                
+                # Check that there are enough directories above to get font name and variant
+                if len(path_parts) >= 2:
+                    font_name = path_parts[-2]
+                    font_variant = path_parts[-1]
 
-    # Iterate over all files in the downloads directory
-    for filename in os.listdir(downloads_dir):
-        if filename.endswith('.zip'):
-            # Define the full path to the zip file
-            zip_filepath = os.path.join(downloads_dir, filename)
+                    # Construct the new filename
+                    original_path = os.path.join(root, file)
+                    filename_parts = file.split('_')
+                    dimensions = filename_parts[-1]
+                    new_filename = f"{font_name}_{font_variant}_{dimensions}"
 
-            # Define the target extraction folder based on the base filename
-            base_name = os.path.splitext(filename)[0]
-            extract_folder = os.path.join(downloads_dir, base_name)
+                    # Rename the file
+                    new_path = os.path.join(root, new_filename)
+                    os.rename(original_path, new_path)
+                    print(f"Renamed '{original_path}' to '{new_path}'")
+                else:
+                    print(f"Skipping '{file}': Insufficient directory depth")
 
-            # Create the directory if it doesn't exist
-            os.makedirs(extract_folder, exist_ok=True)
-
-            # Unzip the file into the new folder
-            with zipfile.ZipFile(zip_filepath, 'r') as zip_ref:
-                zip_ref.extractall(extract_folder)
-                print(f'Unzipped {filename} to {extract_folder}')
-
-            # Find the .ttf file in the extracted folder
-            ttf_file = None
-            for root, dirs, files in os.walk(extract_folder):
-                for file in files:
-                    if file.endswith('.ttf'):
-                        ttf_file = os.path.join(root, file)
-                        break
-                if ttf_file:
-                    break
-
-            # If a .ttf file is found, rename it to match the base .zip filename
-            if ttf_file:
-                ttf_new_name = os.path.join(extract_folder, f"{base_name}.ttf")
-                os.rename(ttf_file, ttf_new_name)
-                print(f'Renamed {ttf_file} to {ttf_new_name}')
-
-def extract_ttf_metadata(ttf_path):
-    """
-    Extracts metadata from a .ttf file and dumps it into a metadata file in the same directory.
-    
-    :param ttf_path: Path to the .ttf file.
-    """
-    # Load the TTF file
-    font = TTFont(ttf_path)
-    
-    # Define the metadata file path
-    metadata_filepath = os.path.splitext(ttf_path)[0] + '_metadata.txt'
-    
-    # Extract metadata
-    metadata = {}
-    
-    # Get font name table
-    name_records = font['name'].names
-    for record in name_records:
-        try:
-            # Some records are in bytes, so decode them if needed
-            name = record.toUnicode()
-            metadata[record.nameID] = name
-        except UnicodeDecodeError:
-            pass
-
-    # Dump the metadata to a file with UTF-8 encoding
-    with open(metadata_filepath, 'w', encoding='utf-8') as f:
-        f.write("TTF Metadata:\n")
-        f.write("================\n")
-        for nameID, name in metadata.items():
-            f.write(f"Name ID {nameID}: {name}\n")
-
-    print(f"Metadata saved as {metadata_filepath}")
-
-if __name__ == "__main__":
-    # Run the function
-    # unzip_files_in_downloads()
-
-    font_name = 'amiga_forever'
-    ttf_path = f'src/assets/ttf/{font_name}/{font_name}.ttf'
-    extract_ttf_metadata(ttf_path)
+# Specify the base directory to start the scan
+base_dir = "examples/fonts/editor/fonts/ttf"
+rename_png_files(base_dir)
