@@ -25,6 +25,19 @@ def rename_png_files(base_dir):
                 else:
                     print(f"Skipping '{file}': Insufficient directory depth")
 
+def delete_txt_ini_in_leaf_dirs(base_dir):
+    for root, dirs, files in os.walk(base_dir):
+        # Check if the directory has no subdirectories (i.e., a leaf directory)
+        if not dirs:
+            for file in files:
+                if file.endswith(".txt") or file.endswith(".ini"):
+                    file_path = os.path.join(root, file)
+                    os.remove(file_path)
+                    print(f"Deleted '{file_path}'")
+
 # Specify the base directory to start the scan
 base_dir = "examples/fonts/editor/fonts/ttf"
-rename_png_files(base_dir)
+
+# rename_png_files(base_dir)
+
+delete_txt_ini_in_leaf_dirs(base_dir)
