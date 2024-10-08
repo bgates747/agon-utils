@@ -128,11 +128,11 @@ class FileManager:
 
     def get_open_filename(self):
         """Handle the Open action."""
-        most_recent_directory = self.app_reference.config_manager.get_most_recent_directory()
+        most_recent_open_directory = self.app_reference.config_manager.get_most_recent_open_directory()
         file_path = filedialog.askopenfilename(
             title="Open File",
             filetypes=(("All Files", "*.*"), ("PNG Images", "*.png"), ("Font Files", "*.font")),
-            initialdir=most_recent_directory
+            initialdir=most_recent_open_directory
         )
         self.open_file(file_path)
     
@@ -164,8 +164,8 @@ class FileManager:
                 print("Saved font metadata: ", font_config)
                 
                 # Update the most recent directory and file path in the config
-                new_most_recent_directory = os.path.dirname(file_path)
-                self.app_reference.config_manager.set_most_recent_directory(new_most_recent_directory)
+                new_most_recent_open_directory = os.path.dirname(file_path)
+                self.app_reference.config_manager.set_most_recent_open_directory(new_most_recent_open_directory)
                 self.app_reference.config_manager.set_most_recent_file(file_path)
 
                 # Load image into the ImageDisplayWidget
@@ -234,28 +234,37 @@ class FileManager:
 
     def save_file(self):
         """Handle the Save action for saving both the image and metadata."""
+        # Retrieve font metadata to construct the default save filename
+        font_config = self.app_reference.get_font_metadata()
+        default_name = f"{font_config['font_name']}_{font_config['font_variant']}_{font_config['font_width']}x{font_config['font_height']}"
+
+        # Ask user for filename, setting default name and directory
         file_path = filedialog.asksaveasfilename(
             title="Save As",
             defaultextension=".png",
             filetypes=(("PNG Images", "*.png"), ("Font Files", "*.font"), ("All Files", "*.*")),
-            initialdir=self.app_reference.config_manager.get_most_recent_directory()
+            initialdir=self.app_reference.config_manager.get_most_recent_save_directory(),
+            initialfile=default_name  # Set default filename based on metadata
         )
 
         if not file_path:
             return  # User canceled the save
 
-        # Define paths for both .png and .ini files
+        # Define paths for both .png and .ini files based on user-selected filename
         png_file_path = file_path if file_path.endswith('.png') else f"{file_path}.png"
-        ini_file_path = f"{file_path}.ini"
+        ini_file_path = f"{os.path.splitext(file_path)[0]}.ini"
 
         # Save image and metadata
         self.save_png_image(png_file_path)
-        font_config = self.app_reference.get_font_metadata()
         self.save_font_metadata(font_config, ini_file_path)
+
+        # Update most recent save directory with the chosen directory
+        self.app_reference.config_manager.set_most_recent_save_directory(os.path.dirname(file_path))
+
 
     def save_png_image(self, file_path):
         """Save the current image as a PNG."""
         self.app_reference.image_display.original_image.save(file_path)
-        new_most_recent_directory = os.path.dirname(file_path)
-        self.app_reference.config_manager.set_most_recent_directory(new_most_recent_directory)
+        new_most_recent_save_directory = os.path.dirname(file_path)
+        self.app_reference.config_manager.set_most_recent_save_directory(new_most_recent_save_directory)
         messagebox.showinfo("Save Successful", f"Image saved successfully to {file_path}")

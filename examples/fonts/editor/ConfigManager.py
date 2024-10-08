@@ -47,17 +47,29 @@ class ConfigManager:
             default_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), default_file)
         return default_file
 
-    def get_most_recent_directory(self):
-        """Get the most recent directory if valid, or fall back to default directory."""
-        most_recent_dir = self.get_setting('most_recent_directory')
-        if most_recent_dir and os.path.isdir(most_recent_dir):
-            return most_recent_dir
+    def get_most_recent_open_directory(self):
+        """Get the most recent open directory if valid, or fall back to default directory."""
+        most_recent_open_dir = self.get_setting('most_recent_open_directory')
+        if most_recent_open_dir and os.path.isdir(most_recent_open_dir):
+            return most_recent_open_dir
         # If not valid, use default directory
         return self.get_default_directory()
 
-    def set_most_recent_directory(self, directory):
-        """Set a new most recent directory."""
-        self.set_setting('most_recent_directory', directory)
+    def set_most_recent_open_directory(self, directory):
+        """Set a new most recent open directory."""
+        self.set_setting('most_recent_open_directory', directory)
+
+    def get_most_recent_save_directory(self):
+        """Get the most recent save directory if valid, or fall back to default directory."""
+        most_recent_save_dir = self.get_setting('most_recent_save_directory')
+        if most_recent_save_dir and os.path.isdir(most_recent_save_dir):
+            return most_recent_save_dir
+        # If not valid, use default directory
+        return self.get_default_directory()
+
+    def set_most_recent_save_directory(self, directory):
+        """Set a new most recent save directory."""
+        self.set_setting('most_recent_save_directory', directory)
 
     def get_most_recent_file(self):
         """Retrieve the most recent file path if it exists, otherwise return the default font file."""
