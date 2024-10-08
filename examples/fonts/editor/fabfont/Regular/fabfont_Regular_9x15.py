@@ -263,5 +263,5 @@ hex_values = data.replace("\n", "").replace(" ", "").split(',')
 binary_data = bytes(int(value, 16) for value in hex_values if value)
 
 # Write to a binary file
-with open("examples/fonts/editor/fabfont/Regular/fabfont_9x15.font", "wb") as f:
+with open("examples/fonts/editor/fabfont/Regular/fabfont_Regular_9x15.font", "wb") as f:
     f.write(binary_data)
