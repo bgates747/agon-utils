@@ -1,5 +1,4 @@
 
-import os
 from PIL import Image
 
 def round_up_to_multiple_of_8(value):
@@ -55,12 +54,12 @@ def read_font_file(font_filepath, char_width, char_height, num_chars=256):
 
     return char_images
 
-def create_font_image(char_images, padded_width, char_height, chars_per_row=16):
+def create_font_image(char_images, char_width, char_height, chars_per_row=16):
     """
     Creates a PNG image from the list of character images and arranges them in a grid.
     
     :param char_images: List of PIL Images representing each character
-    :param padded_width: Padded width of each character (nearest multiple of 8)
+    :param char_width: True width of each character
     :param char_height: Height of each character
     :param chars_per_row: Number of characters per row in the final image
     :return: A PIL Image object with all characters arranged in a grid
@@ -69,34 +68,12 @@ def create_font_image(char_images, padded_width, char_height, chars_per_row=16):
     rows = (num_chars + chars_per_row - 1) // chars_per_row
     
     # Create an empty image to hold the font grid
-    font_img = Image.new('L', (chars_per_row * padded_width, rows * char_height), color=0)
+    font_img = Image.new('L', (chars_per_row * char_width, rows * char_height), color=0)
     
     # Paste each character into the final image
     for i, char_img in enumerate(char_images):
-        x = (i % chars_per_row) * padded_width
+        x = (i % chars_per_row) * char_width
         y = (i // chars_per_row) * char_height
         font_img.paste(char_img, (x, y))
     
     return font_img
-
-def display_font_image(font_img):
-    """ Displays the final font image. """
-    font_img.show()
-
-if __name__ == "__main__":
-    font_filepath = 'examples/fonts/editor/fabfont/Regular/fabfont_9x15.font'
-    char_width = 9  # True character width
-    char_height = 15  # Character height
-    
-    # Round up the width to the nearest multiple of 8 for rendering
-    padded_width = round_up_to_multiple_of_8(char_width)
-    
-    # Read the .font file and get individual character images (padded width for rendering)
-    char_images = read_font_file(font_filepath, char_width, char_height)
-    
-    # Create a single PNG image of the font with padded width
-    # font_img = create_font_image(char_images, padded_width, char_height)
-    font_img = create_font_image(char_images, char_width, char_height)
-    
-    # Display the PNG image
-    display_font_image(font_img)

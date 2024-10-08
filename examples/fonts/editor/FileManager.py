@@ -4,6 +4,7 @@ from tkinter import filedialog, messagebox, Toplevel
 from PIL import Image
 import configparser
 from FontConfigEditor import FontConfigEditor
+from AgonFont import read_font_file, create_font_image
 
 class FileManager:
     def __init__(self, app_reference):
@@ -31,6 +32,48 @@ class FileManager:
             except ValueError:
                 print("Warning: Unable to parse width and height from filename.")
         
+        ascii_range_start = int(self.app_reference.config_manager.get_setting('ascii_range_start', '32'))
+        ascii_range_end = int(self.app_reference.config_manager.get_setting('ascii_range_end', '127'))
+
+        config = {
+            'font_name': font_name,
+            'font_variant': font_variant,
+            'font_width': width,
+            'font_height': height,
+            'offset_left': 0,
+            'offset_top': 0,
+            'offset_width': 0,
+            'offset_height': 0,
+            'ascii_range_start': ascii_range_start,
+            'ascii_range_end': ascii_range_end
+        }
+        
+        return config
+    
+    def parse_font_config_from_font_filepath(self, file_path):
+        """Parse font configuration from a font filename and return as a dictionary."""
+        # Remove the path from the filename
+        file_name = os.path.basename(file_path)
+        
+        # Remove the file extension to isolate the main part of the filename
+        base_name = os.path.splitext(file_name)[0]
+        
+        # Split the filename into parts by underscores
+        parts = base_name.split('_')
+        
+        # Extract width and height from the last part
+        width, height = 0, 0
+        try:
+            dimensions_part = parts[-1]  # The final part should contain dimensions like "8x9"
+            width, height = map(int, dimensions_part.split('x'))
+        except ValueError:
+            print("Warning: Unable to parse width and height from filename.")
+
+        # Extract variant and font name
+        font_variant = parts[-2] if len(parts) >= 2 else "Regular"
+        font_name = '_'.join(parts[:-2]) if len(parts) > 2 else "unknown_font"
+        
+        # Retrieve ASCII range from the config manager with fallback
         ascii_range_start = int(self.app_reference.config_manager.get_setting('ascii_range_start', '32'))
         ascii_range_end = int(self.app_reference.config_manager.get_setting('ascii_range_end', '127'))
 
@@ -241,7 +284,7 @@ class FileManager:
         # Save the most recent file path to config.ini
         self.app_reference.config_manager.set_most_recent_file(file_path)
 
-    def open_config_editor_popup(self, font_config, ini_filepath):
+    def open_config_editor_popup(self, font_config, ini_filepath=None):
         """Open the FontConfigEditor as a modal popup to adjust metadata."""
         # Create a Toplevel window to act as a modal dialog
         popup = Toplevel(self.app_reference)
@@ -249,15 +292,20 @@ class FileManager:
         popup.grab_set()  # Set the popup as modal
 
         # Instantiate the FontConfigEditor within the popup with pre-populated config
-        config_editor = FontConfigEditor(popup, config_file=ini_filepath)
+        config_editor = FontConfigEditor(popup)
         config_editor.set_config(font_config)  # Populate with font_config values
         config_editor.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
         # Wait for the popup window to close before proceeding
         popup.wait_window(popup)
 
-        # Reload updated metadata after user closes the editor
-        self.load_font_metadata_from_ini(ini_filepath)
+        # Reload updated metadata from file only if ini_filepath is provided
+        if ini_filepath:
+            self.load_font_metadata_from_ini(ini_filepath)
+        else:
+            # Re-apply the modified config from the editor if no .ini file exists
+            modified_config = config_editor.get_config()
+            self.apply_font_config(modified_config)
 
     def apply_font_config(self, font_config):
         """Apply font configuration values to the app."""
@@ -275,8 +323,55 @@ class FileManager:
         )
 
     def open_font_file(self, file_path):
-        """Stub for handling opening a .font file."""
-        messagebox.showinfo("Not Implemented", "Opening .font files is not implemented yet.")
+        """Load font configuration and character images from a .font file, allowing user review of the configuration."""
+        
+        # Parse font file for font name, variant, width, and height
+        font_config = self.parse_font_config_from_font_filepath(file_path)
+        char_width = font_config['font_width']
+        char_height = font_config['font_height']
+        
+        # Read character images and create a composite font image from the .font file
+        char_images = read_font_file(file_path, char_width, char_height)
+        font_image = create_font_image(char_images, char_width, char_height)
+
+        # Validate the font configuration against the generated font image dimensions
+        modified, validated_config = self.validate_font_config(font_image, font_config)
+
+        # Update font configuration if suggested adjustments are available
+        if modified and validated_config:
+            font_config.update(validated_config)  # Use suggested values if found
+
+        # Always open the configuration editor for user review
+        self.open_config_editor_popup(font_config, ini_filepath=None)  # No ini file, using in-memory config
+
+        # Re-apply any user-modified configuration values
+        self.apply_font_config(font_config)
+
+        # Set font metadata in the ImageDisplayWidget
+        self.app_reference.image_display.set_font_metadata(
+            self.app_reference.font_width,
+            self.app_reference.font_height,
+            self.app_reference.ascii_range
+        )
+
+        # Initialize editor widget grid dimensions based on font metadata
+        self.app_reference.editor_widget.initialize_grid(
+            self.app_reference.font_width,
+            self.app_reference.font_height
+        )
+
+        # Load font image into the ImageDisplayWidget without saving/opening a PNG file
+        self.app_reference.image_display.load_image(font_image)
+
+        # Trigger the click on ASCII 'A' after setup (optional, for demonstration)
+        self.app_reference.image_display.trigger_click_on_ascii_code(ord('A'))
+
+        # Update the most recent directory for subsequent actions
+        new_most_recent_directory = os.path.dirname(file_path)
+        self.app_reference.config_manager.set_most_recent_directory(new_most_recent_directory)
+
+        # Save the most recent file path to config.ini
+        self.app_reference.config_manager.set_most_recent_file(file_path)
 
     def save_file(self):
         """Handle the Save action for saving both the image and metadata."""
