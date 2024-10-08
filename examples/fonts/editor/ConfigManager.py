@@ -73,3 +73,15 @@ class ConfigManager:
     def set_most_recent_file(self, file_path):
         """Set the most recent file path."""
         self.set_setting('most_recent_file', file_path)
+
+    def get_default_ascii_range(self):
+        """Retrieve the default ASCII range from the config file."""
+        start = int(self.get_setting('ascii_range_start', '32'))
+        end = int(self.get_setting('ascii_range_end', '127'))
+        return start, end
+
+    def set_default_ascii_range(self, start, end):
+        """Set the default ASCII range in the config file and save it."""
+        self.set_setting('ascii_range_start', start)
+        self.set_setting('ascii_range_end', end)
+        self.save_config()

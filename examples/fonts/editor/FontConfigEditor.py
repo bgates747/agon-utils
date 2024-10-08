@@ -95,3 +95,16 @@ class FontConfigEditor(tk.Frame):
         )
         if config_file:
             self.save_config(config_file)
+
+    def set_config(self, config_dict):
+        """Populate the editor with values from the provided configuration dictionary."""
+        for param, value in config_dict.items():
+            if param in self.config_params:
+                try:
+                    self.config_params[param].set(value)
+                except (ValueError, tk.TclError):
+                    print(f"Warning: Could not set {param} to {value}. Check data types.")
+
+    def get_config(self):
+        """Retrieve the current configuration as a dictionary."""
+        return {param: var.get() for param, var in self.config_params.items()}

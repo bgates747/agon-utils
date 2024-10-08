@@ -9,6 +9,78 @@ class FileManager:
     def __init__(self, app_reference):
         self.app_reference = app_reference  # Store reference to the main app
 
+    def parse_font_config_from_image_path(self, file_path):
+        """Parse font configuration from an image file path and return as a dictionary."""
+        
+        # Extract parts from the file path
+        path_parts = file_path.split(os.sep)
+        
+        # Font name is assumed to be the directory two levels up
+        font_name = path_parts[-3] if len(path_parts) >= 3 else "unknown_font"
+        
+        # Font variant is the directory just above the file
+        font_variant = path_parts[-2] if len(path_parts) >= 2 else "Regular"
+        
+        # Extract font dimensions from the filename (e.g., 8_bit_fortress_9x15.png)
+        filename = os.path.splitext(os.path.basename(file_path))[0]
+        width, height = 0, 0
+        if '_' in filename and 'x' in filename:
+            dimensions_part = filename.split('_')[-1]
+            try:
+                width, height = map(int, dimensions_part.split('x'))
+            except ValueError:
+                print("Warning: Unable to parse width and height from filename.")
+        
+        ascii_range_start = int(self.app_reference.config_manager.get_setting('ascii_range_start', '32'))
+        ascii_range_end = int(self.app_reference.config_manager.get_setting('ascii_range_end', '127'))
+
+        config = {
+            'font_name': font_name,
+            'font_variant': font_variant,
+            'font_width': width,
+            'font_height': height,
+            'offset_left': 0,
+            'offset_top': 0,
+            'offset_width': 0,
+            'offset_height': 0,
+            'ascii_range_start': ascii_range_start,
+            'ascii_range_end': ascii_range_end
+        }
+        
+        return config
+
+    def validate_font_config(self, image, font_config):
+        """Validate and adjust font config based on image dimensions."""
+        
+        # Calculate expected image dimensions based on font config
+        expected_width = font_config['font_width'] * 16
+        ascii_range_start = font_config['ascii_range_start']
+        ascii_range_end = font_config['ascii_range_end']
+        ascii_range_count = ascii_range_end - ascii_range_start + 1
+        expected_height = font_config['font_height'] * ((ascii_range_count + 15) // 16)
+        
+        # If dimensions match, return unmodified
+        if image.size == (expected_width, expected_height):
+            return False, font_config  # No modifications needed
+
+        # First try: default ASCII range from config.ini
+        default_ascii_range = self.app_reference.config_manager.get_default_ascii_range()
+        possible_ranges = [default_ascii_range, (32, 127), (0, 127), (0, 255)]
+        
+        for start, end in possible_ranges:
+            range_count = end - start + 1
+            adjusted_height = font_config['font_height'] * ((range_count + 15) // 16)
+            
+            if image.size == (expected_width, adjusted_height):
+                # Update font config with the corrected ASCII range
+                modified_config = font_config.copy()
+                modified_config['ascii_range_start'] = start
+                modified_config['ascii_range_end'] = end
+                return True, modified_config  # Modified with corrected ASCII range
+        
+        # If no match, return modified = True and an empty config
+        return True, {}
+
     def load_font_metadata_from_ini(self, ini_filepath):
         """Load font metadata from a .ini file and update the application state."""
         config = configparser.ConfigParser()
@@ -103,28 +175,42 @@ class FileManager:
     def open_png_image(self, file_path):
         """Load the image and associated font metadata."""
         ini_filepath = file_path + '.ini'
-
-        # Load metadata from .ini file if it exists; otherwise, derive it from filename
+        
+        # Initialize font_config by loading from .ini or deriving from the filename
         if os.path.exists(ini_filepath):
             self.load_font_metadata_from_ini(ini_filepath)
+            font_config = {
+                'font_name': self.app_reference.font_name,
+                'font_variant': self.app_reference.font_variant,
+                'font_width': self.app_reference.font_width,
+                'font_height': self.app_reference.font_height,
+                'offset_left': self.app_reference.offset_left,
+                'offset_top': self.app_reference.offset_top,
+                'offset_width': self.app_reference.offset_width,
+                'offset_height': self.app_reference.offset_height,
+                'ascii_range_start': self.app_reference.ascii_range[0],
+                'ascii_range_end': self.app_reference.ascii_range[1]
+            }
         else:
-            self.derive_font_metadata_from_filename(file_path)
-
+            font_config = self.parse_font_config_from_image_path(file_path)
+            self.apply_font_config(font_config)
+        
         # Load the image and validate dimensions against metadata
         image = Image.open(file_path)
-        img_width, img_height = image.size
+        modified, validated_config = self.validate_font_config(image, font_config)
 
-        expected_width = self.app_reference.font_width * 16
-        ascii_range = self.app_reference.ascii_range
-        expected_height = self.app_reference.font_height * ((ascii_range[1] - ascii_range[0]) // 16 + 1)
+        # Check for discrepancies and open config editor if necessary
+        if modified:
+            if validated_config:
+                font_config.update(validated_config)  # Use suggested values if found
+            else:
+                font_config = {}  # Empty config if no valid settings were inferred
 
-        # Check for image size discrepancies
-        if img_width != expected_width or img_height != expected_height:
-            self.open_config_editor_popup(ini_filepath)
-            # Re-check dimensions after user edits in FontConfigEditor
-            expected_width = self.app_reference.font_width * 16
-            expected_height = self.app_reference.font_height * ((self.app_reference.ascii_range[1] - self.app_reference.ascii_range[0]) // 16 + 1)
-
+            self.open_config_editor_popup(font_config, ini_filepath)
+        
+        # Reload metadata after possible adjustments from FontConfigEditor
+        self.apply_font_config(font_config)
+        
         # Pass font metadata to ImageDisplayWidget
         self.app_reference.image_display.set_font_metadata(
             self.app_reference.font_width,
@@ -155,15 +241,16 @@ class FileManager:
         # Save the most recent file path to config.ini
         self.app_reference.config_manager.set_most_recent_file(file_path)
 
-    def open_config_editor_popup(self, ini_filepath):
+    def open_config_editor_popup(self, font_config, ini_filepath):
         """Open the FontConfigEditor as a modal popup to adjust metadata."""
         # Create a Toplevel window to act as a modal dialog
         popup = Toplevel(self.app_reference)
         popup.title("Font Configuration Editor")
         popup.grab_set()  # Set the popup as modal
 
-        # Instantiate the FontConfigEditor within the popup
+        # Instantiate the FontConfigEditor within the popup with pre-populated config
         config_editor = FontConfigEditor(popup, config_file=ini_filepath)
+        config_editor.set_config(font_config)  # Populate with font_config values
         config_editor.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
         # Wait for the popup window to close before proceeding
@@ -171,6 +258,21 @@ class FileManager:
 
         # Reload updated metadata after user closes the editor
         self.load_font_metadata_from_ini(ini_filepath)
+
+    def apply_font_config(self, font_config):
+        """Apply font configuration values to the app."""
+        self.app_reference.font_name = font_config.get('font_name', "unknown_font")
+        self.app_reference.font_variant = font_config.get('font_variant', "Regular")
+        self.app_reference.font_width = font_config.get('font_width', 0)
+        self.app_reference.font_height = font_config.get('font_height', 0)
+        self.app_reference.offset_left = font_config.get('offset_left', 0)
+        self.app_reference.offset_top = font_config.get('offset_top', 0)
+        self.app_reference.offset_width = font_config.get('offset_width', 0)
+        self.app_reference.offset_height = font_config.get('offset_height', 0)
+        self.app_reference.ascii_range = (
+            font_config.get('ascii_range_start', 32),
+            font_config.get('ascii_range_end', 127)
+        )
 
     def open_font_file(self, file_path):
         """Stub for handling opening a .font file."""
