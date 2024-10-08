@@ -40,12 +40,12 @@ exit:
 main:
 ; 19    1024  768   4     60hz
     ; ld a,19
-    ; ld a,8 ; 320x240x64 single-buffered
-    xor a ; 640x480x16 single-buffered
+    ld a,8 ; 320x240x64 single-buffered
+    ; xor a ; 640x480x16 single-buffered
     call vdu_set_screen_mode
 
 ; inputs: hl = bufferId; iy = pointer to filename
-    ld e,computer_pixel_7_Regular_8x17
+    ld e,neutrino_Regular_5x5
     ld d,12 ; bytes per font list record
     mlt de
     ld iy,font_list

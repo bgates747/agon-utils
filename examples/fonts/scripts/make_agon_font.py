@@ -79,20 +79,20 @@ def make_font(src_img_filepath, tgt_font_filepath, metadata_filepath, font_name,
 
                       
 if __name__ == "__main__":
-    font_name = 'computer_pixel_7'
+    font_name = 'neutrino'
     font_variant = 'Regular'
-    font_width = 8
-    font_height = 17
+    font_width = 5
+    font_height = 10
     offset_left = 0
-    offset_top = 0
+    offset_top = -5
     offset_width = 0
-    offset_height = 0
+    offset_height = -5
 
     ascii_range = (32, 127)
-    sources_dir = 'src/ttf'
-    tgt_dir = 'tgt/ttf'
+    sources_dir = 'examples/fonts/editor/fonts/ttf'
+    tgt_dir = 'examples/fonts/tgt/ttf'
     src_base_filename = f'{font_name}_{font_width}x{font_height}'
-    tgt_base_filename = f'{font_name}_{font_variant}_{font_width}x{font_height}'
+    tgt_base_filename = f'{font_name}_{font_variant}_{font_width+offset_width}x{font_height+offset_height}'
     src_img_filename = f'{src_base_filename}.png'
     tgt_font_filename = f'{tgt_base_filename}.font'
     src_img_filepath = f'{sources_dir}/{font_name}/{font_variant}/{src_img_filename}'
