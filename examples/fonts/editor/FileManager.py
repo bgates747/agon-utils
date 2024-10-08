@@ -1,65 +1,13 @@
 import os
-from tkinter import filedialog, messagebox
-import configparser
+import tkinter as tk
+from tkinter import filedialog, messagebox, Toplevel
 from PIL import Image
+import configparser
+from FontConfigEditor import FontConfigEditor
 
 class FileManager:
     def __init__(self, app_reference):
         self.app_reference = app_reference  # Store reference to the main app
-
-    def load_image_and_metadata(self, file_path):
-        """Load the image and associated font metadata."""
-        ini_filepath = file_path + '.ini'
-
-        # Load metadata from .ini file if it exists; otherwise, derive it from filename
-        if os.path.exists(ini_filepath):
-            self.load_font_metadata_from_ini(ini_filepath)
-        else:
-            self.derive_font_metadata_from_filename(file_path)
-
-        # Load the image and validate dimensions against metadata
-        image = Image.open(file_path)
-        img_width, img_height = image.size
-
-        expected_width = self.app_reference.font_width * 16
-        ascii_range = self.app_reference.ascii_range
-        expected_height = self.app_reference.font_height * ((ascii_range[1] - ascii_range[0]) // 16 + 1)
-
-        if img_width != expected_width or img_height != expected_height:
-            response = messagebox.askyesnocancel(
-                "Image Size Mismatch",
-                f"The image dimensions {img_width}x{img_height} do not match the expected {expected_width}x{expected_height}.\n"
-                "Would you like to crop or enlarge the image to fit the grid?"
-            )
-            if response is None:  # Cancel operation
-                return
-            elif response:  # Enlarge the image
-                image = self.app_reference.image_display.enlarge_image(image, expected_width, expected_height)
-            else:  # Crop the image
-                image = self.app_reference.image_display.crop_image(image, expected_width, expected_height)
-
-        # Pass font metadata to ImageDisplayWidget
-        self.app_reference.image_display.set_font_metadata(
-            self.app_reference.font_width,
-            self.app_reference.font_height,
-            self.app_reference.ascii_range
-        )
-
-        # Initialize editor widget grid dimensions
-        self.app_reference.editor_widget.initialize_grid(
-            self.app_reference.font_width,
-            self.app_reference.font_height
-        )
-
-        # Load image into the ImageDisplayWidget
-        self.app_reference.image_display.load_image(image)
-
-        # Trigger the click on ASCII 'A' after setup
-        self.app_reference.image_display.trigger_click_on_ascii_code(ord('A'))
-
-        # Save derived or loaded font metadata directly to the .ini file
-        self.save_font_metadata(ini_filepath)
-        print("Saved font metadata:", self.get_font_metadata())
 
     def load_font_metadata_from_ini(self, ini_filepath):
         """Load font metadata from a .ini file and update the application state."""
@@ -153,8 +101,52 @@ class FileManager:
                 messagebox.showerror("Unsupported File", f"The file type {file_extension} is not supported.")
 
     def open_png_image(self, file_path):
-        """Load and display the PNG image along with its metadata."""
-        self.load_image_and_metadata(file_path)
+        """Load the image and associated font metadata."""
+        ini_filepath = file_path + '.ini'
+
+        # Load metadata from .ini file if it exists; otherwise, derive it from filename
+        if os.path.exists(ini_filepath):
+            self.load_font_metadata_from_ini(ini_filepath)
+        else:
+            self.derive_font_metadata_from_filename(file_path)
+
+        # Load the image and validate dimensions against metadata
+        image = Image.open(file_path)
+        img_width, img_height = image.size
+
+        expected_width = self.app_reference.font_width * 16
+        ascii_range = self.app_reference.ascii_range
+        expected_height = self.app_reference.font_height * ((ascii_range[1] - ascii_range[0]) // 16 + 1)
+
+        # Check for image size discrepancies
+        if img_width != expected_width or img_height != expected_height:
+            self.open_config_editor_popup(ini_filepath)
+            # Re-check dimensions after user edits in FontConfigEditor
+            expected_width = self.app_reference.font_width * 16
+            expected_height = self.app_reference.font_height * ((self.app_reference.ascii_range[1] - self.app_reference.ascii_range[0]) // 16 + 1)
+
+        # Pass font metadata to ImageDisplayWidget
+        self.app_reference.image_display.set_font_metadata(
+            self.app_reference.font_width,
+            self.app_reference.font_height,
+            self.app_reference.ascii_range
+        )
+
+        # Initialize editor widget grid dimensions
+        self.app_reference.editor_widget.initialize_grid(
+            self.app_reference.font_width,
+            self.app_reference.font_height
+        )
+
+        # Load image into the ImageDisplayWidget
+        self.app_reference.image_display.load_image(image)
+
+        # Trigger the click on ASCII 'A' after setup
+        self.app_reference.image_display.trigger_click_on_ascii_code(ord('A'))
+
+        # Save derived or loaded font metadata directly to the .ini file
+        self.save_font_metadata(ini_filepath)
+        print("Saved font metadata:", self.get_font_metadata())
         
         # Update the most recent directory
         new_most_recent_directory = os.path.dirname(file_path)
@@ -163,6 +155,22 @@ class FileManager:
         # Save the most recent file path to config.ini
         self.app_reference.config_manager.set_most_recent_file(file_path)
 
+    def open_config_editor_popup(self, ini_filepath):
+        """Open the FontConfigEditor as a modal popup to adjust metadata."""
+        # Create a Toplevel window to act as a modal dialog
+        popup = Toplevel(self.app_reference)
+        popup.title("Font Configuration Editor")
+        popup.grab_set()  # Set the popup as modal
+
+        # Instantiate the FontConfigEditor within the popup
+        config_editor = FontConfigEditor(popup, config_file=ini_filepath)
+        config_editor.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+        # Wait for the popup window to close before proceeding
+        popup.wait_window(popup)
+
+        # Reload updated metadata after user closes the editor
+        self.load_font_metadata_from_ini(ini_filepath)
 
     def open_font_file(self, file_path):
         """Stub for handling opening a .font file."""

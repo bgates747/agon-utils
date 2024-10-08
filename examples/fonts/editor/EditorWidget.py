@@ -59,17 +59,6 @@ class EditorWidget(tk.Frame):
         """ Populate the editor grid with pixel data from a character image. """
         char_pixels = char_img.load()
 
-        # Make sure the image matches the editor's grid size
-        img_width, img_height = char_img.size
-
-        if img_width != self.char_width or img_height != self.char_height:
-            messagebox.showerror(
-                "Image Size Mismatch", 
-                f"The character image size ({img_width}x{img_height}) does not match the expected "
-                f"grid size ({self.char_width}x{self.char_height})."
-            )
-            return
-
         for x in range(self.char_width):
             for y in range(self.char_height):
                 # Get the pixel value (0-255 grayscale)
