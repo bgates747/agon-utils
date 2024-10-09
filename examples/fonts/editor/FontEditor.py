@@ -4,6 +4,7 @@ from EditorWidget import EditorWidget
 from MenuBar import MenuBar
 from ConfigManager import ConfigManager
 from FileManager import FileManager
+from FontConfigEditor import FontConfigEditor
 
 class FontEditorApp(tk.Frame):
     """ The main application for the font editor """
@@ -19,7 +20,7 @@ class FontEditorApp(tk.Frame):
         self.current_font_ini_file = None    # Path to the currently open .ini file
         self.current_ascii_code = ord('A')   # Default to ASCII code for 'A'
 
-        # Initialize font metadata to None
+        # Initialize font metadata to defaults or None
         self.font_name = 'no_font_loaded'
         self.font_variant = 'Regular'
         self.font_width = int(self.config_manager.get_setting('default_font_width', 9))
@@ -40,37 +41,36 @@ class FontEditorApp(tk.Frame):
         # Create a blank control panel without loading any image initially
         self.create_control_panel()
 
-        # # Open the most recently opened file or load default if it doesn't exist
-        # most_recent_file = self.config_manager.get_most_recent_file()
-        # self.file_manager.open_file(most_recent_file)
-
-
     def create_control_panel(self):
-        """ Create a control panel to hold widgets (Image display and Editor) """
+        """ Create a control panel to hold widgets (Image display and Editor with Config Manager) """
         control_frame = tk.Frame(self)
-        control_frame.pack(fill=tk.BOTH, expand=True)  # This frame now expands to hold both widgets horizontally
+        control_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Editor Widget for character editing (placed on the left)
-        self.editor_widget = EditorWidget(control_frame, self)
-        self.editor_widget.pack(side=tk.LEFT, padx=10, pady=10)
+        # Create a sub-frame for the EditorWidget and FontConfigEditor
+        editor_frame = tk.Frame(control_frame)
+        editor_frame.pack(side=tk.LEFT, padx=10, pady=10, anchor="n")  # Keep aligned at top
+
+        # Editor Widget for character editing (placed on the left, in editor_frame)
+        self.editor_widget = EditorWidget(editor_frame, self)
+        self.editor_widget.pack(pady=(0, 5))  # Add padding between widgets
+
+        # FontConfigEditor for managing font metadata below the editor widget
+        self.font_config_manager = FontConfigEditor(editor_frame, config_dict=self.get_font_metadata())
+        self.font_config_manager.pack(fill=tk.X, pady=5)
 
         # Image Display Widget for character selection (placed on the right)
         self.image_display = ImageDisplayWidget(control_frame, self)
         self.image_display.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-        # Load default metadata from the config manager
-        default_font_width = int(self.config_manager.get_setting('default_font_width', 9))
-        default_font_height = int(self.config_manager.get_setting('default_font_height', 15))
-        default_ascii_range_start = int(self.config_manager.get_setting('default_ascii_range_start', 32))
-        default_ascii_range_end = int(self.config_manager.get_setting('default_ascii_range_end', 127))
-        default_ascii_range = (default_ascii_range_start, default_ascii_range_end)
-
         # Initialize EditorWidget with default metadata
         self.editor_widget.initialize_grid()
 
-# ==============================================================================
-# Font configuration methods
-# ==============================================================================
+        # # Update image display to recognize editor and config manager as a single unit
+        # self.image_display.set_editor_and_config_manager(self.editor_widget, self.font_config_manager)
+
+    # ==============================================================================
+    # Font configuration methods
+    # ==============================================================================
     def get_font_metadata(self):
         """Retrieve font metadata from the application state."""
         return {
@@ -87,7 +87,7 @@ class FontEditorApp(tk.Frame):
         }
     
     def set_font_metadata(self, font_config):
-        """Set font font configuration in the application state."""
+        """Set font configuration in the application state."""
         self.font_name = font_config['font_name']
         self.font_variant = font_config['font_variant']
         self.font_width = font_config['font_width']
@@ -98,6 +98,8 @@ class FontEditorApp(tk.Frame):
         self.offset_height = font_config['offset_height']
         self.ascii_range_start = font_config['ascii_range_start']
         self.ascii_range_end = font_config['ascii_range_end']
+
+        self.font_config_manager.set_config(font_config)
 
 # Example Usage
 if __name__ == "__main__":
@@ -111,4 +113,3 @@ if __name__ == "__main__":
     
     # Start the Tkinter event loop
     root.mainloop()
-# test change
