@@ -132,5 +132,13 @@ class FontConfigEditor(tk.Frame):
         self.update_apply_button_state()
 
     def get_config(self):
-        """Return the current configuration as a dictionary."""
+        """Return the modified configuration as a dictionary."""
+        return self.mod_config.copy()
+
+    def get_original_config(self):
+        """Return the current configuration as a dictionary (unmodified)."""
         return self.curr_config.copy()
+
+    def get_modified_config(self):
+        """Return the modified configuration as a dictionary."""
+        return self.mod_config.copy()

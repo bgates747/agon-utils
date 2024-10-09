@@ -171,3 +171,56 @@ def make_font(font_config, src_image, tgt_font_filepath):
 
     with open(tgt_font_filepath, 'wb') as f:
         f.write(font_data)
+
+# =============================================================================
+# Modify font config functions
+# =============================================================================
+from PIL import Image
+
+def resample_image(curr_config, mod_config, original_image):
+    """
+    Resample the original image to fit the modified configuration.
+    
+    :param curr_config: Dictionary with the current font configuration.
+    :param mod_config: Dictionary with the modified font configuration.
+    :param original_image: The original PIL image to be resampled.
+    :return: A new PIL image resampled to fit the modified configuration.
+    """
+    
+    # Calculate parameters for the modified image
+    mod_width = mod_config['font_width'] * 16  # Width for a 16-character row
+    mod_height = mod_config['font_height'] * ((mod_config['ascii_range_end'] - mod_config['ascii_range_start'] + 1) // 16 + 1)
+    mod_image = Image.new('L', (mod_width, mod_height), color=0)  # New blank image in grayscale ('L')
+
+    # Calculate the necessary offsets and dimensions
+    offset_left = mod_config['offset_left']
+    offset_top = mod_config['offset_top']
+    offset_width = mod_config['offset_width']
+    offset_height = mod_config['offset_height']
+
+    # Paste each character with the new configuration
+    for ascii_code in range(mod_config['ascii_range_start'], mod_config['ascii_range_end'] + 1):
+        # Determine the coordinates of the character in the grid
+        char_x = (ascii_code % 16) * curr_config['font_width']
+        char_y = (ascii_code // 16) * curr_config['font_height']
+        
+        # Crop the character from the original image
+        char_crop_box = (
+            char_x,
+            char_y,
+            char_x + curr_config['font_width'],
+            char_y + curr_config['font_height']
+        )
+        char_img = original_image.crop(char_crop_box)
+
+        # Resize and place character in the modified image
+        mod_char_width = mod_config['font_width'] + offset_width
+        mod_char_height = mod_config['font_height'] + offset_height
+        resized_char_img = char_img.resize((mod_char_width, mod_char_height), Image.NEAREST)
+        
+        # Determine new position for the character in the modified image
+        mod_char_x = (ascii_code % 16) * mod_config['font_width'] + offset_left
+        mod_char_y = (ascii_code // 16) * mod_config['font_height'] + offset_top
+        mod_image.paste(resized_char_img, (mod_char_x, mod_char_y))
+
+    return mod_image
