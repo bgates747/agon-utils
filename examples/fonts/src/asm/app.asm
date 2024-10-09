@@ -30,7 +30,7 @@ exit:
     include "mos_api.inc"
     include "functions.inc"
     include "files.inc"
-    include "fonts.inc"
+    include "fonts_list.inc"
     include "timer.inc"
     include "vdu.inc"
     include "vdu_fonts.inc"
@@ -45,7 +45,7 @@ main:
     call vdu_set_screen_mode
 
 ; inputs: hl = bufferId; iy = pointer to filename
-    ld e,neutrino_Regular_5x5
+    ld e,computer_pixel_7_Regular_8x17
     ld d,12 ; bytes per font list record
     mlt de
     ld iy,font_list
