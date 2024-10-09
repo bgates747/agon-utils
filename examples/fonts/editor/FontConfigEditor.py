@@ -156,8 +156,16 @@ class FontConfigEditor(tk.Frame):
         return changes_exist
 
     def apply_changes(self):
-        """Apply changes by updating current config to match modified config, and reset deltas."""
+        """Apply changes by updating current config to match modified config, reset deltas, and clear offsets."""
+        # Set all offset-related parameters to zero in the modified config
+        for key in self.mod_config:
+            if key.startswith("offset"):
+                self.mod_config[key] = 0
+
+        # Copy the modified config to the current config
         self.curr_config = self.mod_config.copy()
+
+        # Update the display to reflect the applied changes and reset deltas
         self.update_config_display()
         self.update_apply_button_state()
 
