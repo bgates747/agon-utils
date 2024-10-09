@@ -1,6 +1,6 @@
 import tkinter as tk
 from PIL import Image, ImageTk
-from CustomWidgets import CustomWidgets
+from CustomWidgets import GridToggleButton, ZoomControl
 
 class ImageDisplayWidget(tk.Frame):
     """A widget to display and zoom an image on a canvas, handle mouse clicks, and extract characters."""
@@ -23,11 +23,11 @@ class ImageDisplayWidget(tk.Frame):
         control_frame.pack(side=tk.TOP, anchor="nw", pady=5)
 
         # Create custom grid toggle button
-        self.grid_toggle_button = CustomWidgets.GridToggleButton(control_frame, on_toggle=self.toggle_grid)
+        self.grid_toggle_button = GridToggleButton(control_frame, on_toggle=self.toggle_grid)
         self.grid_toggle_button.pack(side=tk.LEFT, padx=5)
 
         # Zoom control
-        self.zoom_control = CustomWidgets.ZoomControl(
+        self.zoom_control = ZoomControl(
             control_frame, 
             zoom_levels=self.zoom_levels, 
             current_zoom_index=self.current_zoom_index, 
@@ -136,8 +136,9 @@ class ImageDisplayWidget(tk.Frame):
         if self.working_image:
             self.current_ascii_code = ascii_code
             char_x, char_y = self.ascii_to_coordinates(ascii_code)
-            self.extract_character(ascii_code, char_x, char_y)
             self.draw_selection_box(char_x, char_y)
+            char_img = self.get_char_img_xy(char_x, char_y)
+            self.app_reference.editor_widget.populate_from_image(char_img)
 
     def on_click(self, event):
         """Handle mouse click on the image and delegate to helper functions to get the character."""
@@ -149,13 +150,14 @@ class ImageDisplayWidget(tk.Frame):
         ascii_range = self.app_reference.font_config_manager.get_config()
         if ascii_range['ascii_range_start'] <= ascii_code <= ascii_range['ascii_range_end']:
             self.current_ascii_code = ascii_code
-            self.extract_character(ascii_code, char_x, char_y)
             self.draw_selection_box(char_x, char_y)
+            char_img = self.get_char_img_xy(char_x, char_y)
+            self.app_reference.editor_widget.populate_from_image(char_img)
         else:
             self.clear_selection_box()
             print("Clicked outside the ASCII range.")
 
-    def extract_character(self, ascii_code, char_x, char_y):
+    def get_char_img_xy(self, char_x, char_y):
         """ Extract the character image from the original image using char_x, char_y, and display it in the editor """
         if not self.working_image:
             return
@@ -166,8 +168,12 @@ class ImageDisplayWidget(tk.Frame):
         x2 = x1 + font_config['font_width']
         y2 = y1 + font_config['font_height']
 
-        char_img = self.working_image.crop((x1, y1, x2, y2))
-        self.app_reference.editor_widget.populate_from_image(char_img)
+        return self.working_image.crop((x1, y1, x2, y2))
+    
+    def get_char_img_ascii(self, ascii_code):
+        """ Extract the character image from the original image using the ASCII code and display it in the editor """
+        char_x, char_y = self.ascii_to_coordinates(ascii_code)
+        return self.get_char_img_xy(char_x, char_y)
 
     def update_pixel(self, x, y, new_value):
         """ Update the clicked pixel in the character image and paste it back to the working image """

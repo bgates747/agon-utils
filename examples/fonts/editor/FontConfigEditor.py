@@ -108,7 +108,9 @@ class FontConfigEditor(tk.Frame):
         # Update the modified and delta displays consistently
         self.update_mod_display(param)
         self.update_delta_display(param)
-        self.app_reference.image_display.redraw()  # Ensure GUI reflects any updates
+        self.app_reference.image_display.redraw()
+        self.app_reference.editor_widget.initialize_grid()
+        self.app_reference.image_display.trigger_click_on_ascii_code(self.app_reference.current_ascii_code)
 
     def resample_working_image(self):
         """Helper function to resample working image based on modified config."""
