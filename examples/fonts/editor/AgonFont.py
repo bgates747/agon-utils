@@ -175,11 +175,10 @@ def make_font(font_config, src_image, tgt_font_filepath):
 # =============================================================================
 # Modify font config functions
 # =============================================================================
-from PIL import Image
 
 def resample_image(curr_config, mod_config, original_image):
     """
-    Resample the original image to fit the modified configuration.
+    Resample the original image to fit the modified configuration, handling offsets, padding, and ASCII range overlap.
     
     :param curr_config: Dictionary with the current font configuration.
     :param mod_config: Dictionary with the modified font configuration.
@@ -187,40 +186,51 @@ def resample_image(curr_config, mod_config, original_image):
     :return: A new PIL image resampled to fit the modified configuration.
     """
     
-    # Calculate parameters for the modified image
+    # Step 1: Prepare `adjusted_image` with offsets and padding applied to `original_image`
+    adjusted_image = Image.new("L", original_image.size, color=0)
+    crop_x1 = max(0, curr_config['offset_left'])
+    crop_y1 = max(0, curr_config['offset_top'])
+    crop_x2 = min(original_image.width, original_image.width + curr_config['offset_left'])
+    crop_y2 = min(original_image.height, original_image.height + curr_config['offset_top'])
+    cropped_original = original_image.crop((crop_x1, crop_y1, crop_x2, crop_y2))
+    paste_x = max(0, -curr_config['offset_left'])
+    paste_y = max(0, -curr_config['offset_top'])
+    adjusted_image.paste(cropped_original, (paste_x, paste_y))
+
+    # Step 2: Determine dimensions for the modified image
+    mod_ascii_range_start = mod_config['ascii_range_start']
+    mod_ascii_range_end = mod_config['ascii_range_end']
     mod_width = mod_config['font_width'] * 16  # Width for a 16-character row
-    mod_height = mod_config['font_height'] * ((mod_config['ascii_range_end'] - mod_config['ascii_range_start'] + 1) // 16 + 1)
-    mod_image = Image.new('L', (mod_width, mod_height), color=0)  # New blank image in grayscale ('L')
+    mod_height = mod_config['font_height'] * ((mod_ascii_range_end - mod_ascii_range_start + 1) // 16 + 1)
+    mod_image = Image.new('L', (mod_width, mod_height), color=0)
 
-    # Calculate the necessary offsets and dimensions
-    offset_left = mod_config['offset_left']
-    offset_top = mod_config['offset_top']
-    offset_width = mod_config['offset_width']
-    offset_height = mod_config['offset_height']
+    # Step 3: Determine the overlap of ASCII ranges
+    curr_ascii_start = curr_config['ascii_range_start']
+    curr_ascii_end = curr_config['ascii_range_end']
+    overlap_start = max(curr_ascii_start, mod_ascii_range_start)
+    overlap_end = min(curr_ascii_end, mod_ascii_range_end)
 
-    # Paste each character with the new configuration
-    for ascii_code in range(mod_config['ascii_range_start'], mod_config['ascii_range_end'] + 1):
-        # Determine the coordinates of the character in the grid
-        char_x = (ascii_code % 16) * curr_config['font_width']
-        char_y = (ascii_code // 16) * curr_config['font_height']
-        
-        # Crop the character from the original image
-        char_crop_box = (
-            char_x,
-            char_y,
-            char_x + curr_config['font_width'],
-            char_y + curr_config['font_height']
-        )
-        char_img = original_image.crop(char_crop_box)
+    # If no overlap exists, return a blank image
+    if overlap_start > overlap_end:
+        return mod_image
 
-        # Resize and place character in the modified image
-        mod_char_width = mod_config['font_width'] + offset_width
-        mod_char_height = mod_config['font_height'] + offset_height
-        resized_char_img = char_img.resize((mod_char_width, mod_char_height), Image.NEAREST)
-        
-        # Determine new position for the character in the modified image
-        mod_char_x = (ascii_code % 16) * mod_config['font_width'] + offset_left
-        mod_char_y = (ascii_code // 16) * mod_config['font_height'] + offset_top
-        mod_image.paste(resized_char_img, (mod_char_x, mod_char_y))
+    # Step 4: Copy overlapping characters from `adjusted_image` to `mod_image`
+    for ascii_code in range(overlap_start, overlap_end + 1):
+        # Character's location in the current configuration
+        char_x = (ascii_code - curr_ascii_start) % 16 * curr_config['font_width']
+        char_y = (ascii_code - curr_ascii_start) // 16 * curr_config['font_height']
+        char_crop_box = (char_x, char_y, char_x + curr_config['font_width'], char_y + curr_config['font_height'])
+        char_img = adjusted_image.crop(char_crop_box)
+
+        # Determine the position for the character in the modified image, with any offsets
+        mod_char_x = (ascii_code - mod_ascii_range_start) % 16 * mod_config['font_width'] + mod_config['offset_left']
+        mod_char_y = (ascii_code - mod_ascii_range_start) // 16 * mod_config['font_height'] + mod_config['offset_top']
+
+        # Ensure we don’t paste out of bounds in `mod_image`
+        mod_char_x = max(0, mod_char_x)
+        mod_char_y = max(0, mod_char_y)
+
+        # Paste character onto `mod_image` at the computed position
+        mod_image.paste(char_img, (mod_char_x, mod_char_y))
 
     return mod_image
