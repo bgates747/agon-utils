@@ -2,98 +2,109 @@ import configparser
 import os
 
 class ConfigManager:
-    def __init__(self, config_file='config.ini'):
-        # Ensure the config file is always relative to the script directory
+    def __init__(self, app_config_file='config.ini', font_meta_file='fontmetaconfig.cfg'):
+        # Paths to config files, relative to the script directory
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        self.config_file = os.path.join(script_dir, config_file)
-        self.config = configparser.ConfigParser()
-
-        # Load the config file
+        self.app_config_file = os.path.join(script_dir, app_config_file)
+        self.font_meta_file = os.path.join(script_dir, font_meta_file)
+        
+        # ConfigParser instances for each config file
+        self.app_config = configparser.ConfigParser()
+        self.font_meta_config = configparser.ConfigParser()
+        
+        # Load both config files
         self.load_config()
 
     def load_config(self):
-        """Load the configuration from the config file."""
-        self.config.read(self.config_file)
+        """Load both application and font metadata configurations."""
+        self.app_config.read(self.app_config_file)
+        self.font_meta_config.read(self.font_meta_file)
 
-    def save_config(self):
-        """Write the current config to the file."""
-        with open(self.config_file, 'w') as file:
-            self.config.write(file)
+    def save_config(self, config_type='app'):
+        """Save configuration to the specified file."""
+        config = self.app_config if config_type == 'app' else self.font_meta_config
+        config_file = self.app_config_file if config_type == 'app' else self.font_meta_file
+        with open(config_file, 'w') as file:
+            config.write(file)
 
+    # =========================================================================
+    # Application settings methods (config.ini)
+    # =========================================================================
+    
     def get_setting(self, key, fallback=None):
-        """Retrieve a setting from the config file with an optional fallback."""
-        return self.config['settings'].get(key, fallback)
+        """Retrieve an application setting with an optional fallback."""
+        return self.app_config['settings'].get(key, fallback)
 
     def set_setting(self, key, value):
-        """Set a new setting in the config and save it."""
-        if 'settings' not in self.config:
-            self.config['settings'] = {}
-        self.config['settings'][key] = str(value)
-        self.save_config()
+        """Set a new application setting and save it."""
+        if 'settings' not in self.app_config:
+            self.app_config['settings'] = {}
+        self.app_config['settings'][key] = str(value)
+        self.save_config(config_type='app')
 
+    # Directory-related methods (remain as is)
     def get_default_directory(self):
-        """Retrieve and return the default directory, interpreting relative paths correctly."""
         default_dir = self.get_setting('default_directory', 'fabfont/Regular')
-        # Convert to absolute path if it's relative
         if not os.path.isabs(default_dir):
             default_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), default_dir)
         return default_dir
 
     def get_default_font_file(self):
-        """Retrieve and return the default font file path, interpreting relative paths correctly."""
         default_file = self.get_setting('default_font_file', 'fabfont/Regular/fabfont_9x15.png')
-        # Convert to absolute path if it's relative
         if not os.path.isabs(default_file):
             default_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), default_file)
         return default_file
 
     def get_most_recent_open_directory(self):
-        """Get the most recent open directory if valid, or fall back to default directory."""
         most_recent_open_dir = self.get_setting('most_recent_open_directory')
         if most_recent_open_dir and os.path.isdir(most_recent_open_dir):
             return most_recent_open_dir
-        # If not valid, use default directory
         return self.get_default_directory()
 
     def set_most_recent_open_directory(self, directory):
-        """Set a new most recent open directory."""
         self.set_setting('most_recent_open_directory', directory)
 
     def get_most_recent_save_directory(self):
-        """Get the most recent save directory if valid, or fall back to default directory."""
         most_recent_save_dir = self.get_setting('most_recent_save_directory')
         if most_recent_save_dir and os.path.isdir(most_recent_save_dir):
             return most_recent_save_dir
-        # If not valid, use default directory
         return self.get_default_directory()
 
     def set_most_recent_save_directory(self, directory):
-        """Set a new most recent save directory."""
         self.set_setting('most_recent_save_directory', directory)
 
     def get_most_recent_file(self):
-        """Retrieve the most recent file path if it exists, otherwise return the default font file."""
         most_recent_file = self.get_setting('most_recent_file')
-        
-        # Check if the most recent file exists and is valid
         if most_recent_file and os.path.isfile(most_recent_file):
             return most_recent_file
-        
-        # Fall back to the default font file
         return self.get_default_font_file()
 
     def set_most_recent_file(self, file_path):
-        """Set the most recent file path."""
         self.set_setting('most_recent_file', file_path)
 
+    # =========================================================================
+    # Font metadata methods (fontmetaconfig.cfg)
+    # =========================================================================
+
+    def get_font_meta(self, key, fallback=None):
+        """Retrieve a font metadata setting with an optional fallback."""
+        return self.font_meta_config['font_metadata'].get(key, fallback)
+
+    def set_font_meta(self, key, value):
+        """Set a new font metadata setting and save it."""
+        if 'font_metadata' not in self.font_meta_config:
+            self.font_meta_config['font_metadata'] = {}
+        self.font_meta_config['font_metadata'][key] = str(value)
+        self.save_config(config_type='font_meta')
+
     def get_default_ascii_range(self):
-        """Retrieve the default ASCII range from the config file."""
-        start = int(self.get_setting('ascii_range_start', '32'))
-        end = int(self.get_setting('ascii_range_end', '127'))
+        """Retrieve the default ASCII range for font metadata."""
+        start = int(self.get_font_meta('ascii_range_start', '32'))
+        end = int(self.get_font_meta('ascii_range_end', '127'))
         return start, end
 
     def set_default_ascii_range(self, start, end):
-        """Set the default ASCII range in the config file and save it."""
-        self.set_setting('ascii_range_start', start)
-        self.set_setting('ascii_range_end', end)
-        self.save_config()
+        """Set the default ASCII range in the font metadata file."""
+        self.set_font_meta('ascii_range_start', start)
+        self.set_font_meta('ascii_range_end', end)
+        self.save_config(config_type='font_meta')
