@@ -4,7 +4,7 @@ from tkinter import filedialog, messagebox, Toplevel
 from PIL import Image
 import configparser
 from FontConfigEditor import FontConfigEditor
-from AgonFont import read_font_file, create_font_image
+from AgonFont import read_font_file, create_font_image, make_font
 
 class FileManager:
     def __init__(self, app_reference):
@@ -237,6 +237,7 @@ class FileManager:
 
     def save_file(self):
         """Handle the Save action for saving both the image and metadata."""
+
         # Retrieve font metadata to construct the default save filename
         font_config = self.app_reference.get_font_metadata()
         default_name = f"{font_config['font_name']}_{font_config['font_variant']}_{font_config['font_width']}x{font_config['font_height']}"
@@ -244,7 +245,7 @@ class FileManager:
         # Ask user for filename, setting default name and directory
         file_path = filedialog.asksaveasfilename(
             title="Save As",
-            defaultextension=".png",
+            defaultextension=".font",
             filetypes=(("PNG Images", "*.png"), ("Font Files", "*.font"), ("All Files", "*.*")),
             initialdir=self.app_reference.config_manager.get_most_recent_save_directory(),
             initialfile=default_name  # Set default filename based on metadata
@@ -253,21 +254,45 @@ class FileManager:
         if not file_path:
             return  # User canceled the save
 
-        # Define paths for both .png and .ini files based on user-selected filename
-        png_file_path = file_path if file_path.endswith('.png') else f"{file_path}.png"
-        ini_file_path = f"{os.path.splitext(file_path)[0]}.ini"
+        # Check if an extension exists and default to .font if not
+        _, ext = os.path.splitext(file_path)
+        if not ext:
+            ext = '.font'
+            file_path = f"{file_path}{ext}"
 
-        # Save image and metadata
-        self.save_png_image(png_file_path)
-        self.save_font_metadata(font_config, ini_file_path)
+        if ext == '.png':
+            self.save_as_png(file_path, font_config)
+        elif ext == '.font':
+            self.save_as_font(file_path, font_config)
+        else:
+            messagebox.showerror("Unsupported File Type", f"Unsupported file extension: {ext}")
 
         # Update most recent save directory with the chosen directory
         self.app_reference.config_manager.set_most_recent_save_directory(os.path.dirname(file_path))
 
+    def save_as_png(self, file_path, font_config):
+        """Save the current image as a PNG with accompanying metadata."""
+        # Define paths for .png and .ini files based on selected filename
+        png_file_path = file_path if file_path.endswith('.png') else f"{file_path}.png"
+        ini_file_path = f"{os.path.splitext(file_path)[0]}.ini"
 
-    def save_png_image(self, file_path):
-        """Save the current image as a PNG."""
-        self.app_reference.image_display.original_image.save(file_path)
-        new_most_recent_save_directory = os.path.dirname(file_path)
-        self.app_reference.config_manager.set_most_recent_save_directory(new_most_recent_save_directory)
-        messagebox.showinfo("Save Successful", f"Image saved successfully to {file_path}")
+        # Save image and metadata
+        self.app_reference.image_display.original_image.save(png_file_path)
+        self.save_font_metadata(font_config, ini_file_path)
+
+        messagebox.showinfo("Save Successful", f"PNG image and metadata saved successfully to {png_file_path} and {ini_file_path}")
+
+    def save_as_font(self, file_path, font_config):
+        """Save the current font data as a .font file."""
+        font_width = font_config['font_width']
+        font_height = font_config['font_height']
+        offset_left = font_config['offset_left']
+        offset_top = font_config['offset_top']
+        offset_width = font_config['offset_width']
+        offset_height = font_config['offset_height']
+        ascii_range = (font_config['ascii_range_start'], font_config['ascii_range_end'])
+        src_image = self.app_reference.image_display.original_image
+
+        make_font(src_image, file_path, font_width, font_height, offset_left, offset_top, offset_width, offset_height, ascii_range)
+
+        messagebox.showinfo("Save Successful", f"Font file saved successfully to {file_path}")

@@ -115,15 +115,12 @@ def image_to_bitstream(padded_img):
     
     return bitstream
 
-def precomputations(font_width, font_height, offset_width, offset_height, ascii_range, src_img_filepath):
+def precomputations(font_width, font_height, offset_width, offset_height, ascii_range, src_img):
     font_width_mod = font_width + offset_width
     font_height_mod = font_height + offset_height
     font_width_padded = math.ceil(font_width_mod / 8) * 8
     sample_width = font_width if offset_width >= 0 else font_width_mod
     sample_height = font_height if offset_height >= 0 else font_height
-    
-    # Open the source image
-    src_img = Image.open(src_img_filepath)
 
     # Create a new source image the size of a full 256 character grid (16x16 grid of characters)
     src_img_new = Image.new('L', (font_width * 16, font_height * 16), color=0)
@@ -148,9 +145,9 @@ def sample_char_image(ascii_code, font_width, font_height, sample_width, sample_
 
     return char_img
 
-def make_font(src_img_filepath, tgt_font_filepath, metadata_filepath, font_name, font_variant, font_width, font_height, offset_left, offset_top, offset_width, offset_height, ascii_range, sources_dir, tgt_dir):
+def make_font(src_image, tgt_font_filepath, font_width, font_height, offset_left, offset_top, offset_width, offset_height, ascii_range):
     # Precompute offsets and image
-    font_width_padded, font_height_mod, sample_width, sample_height, src_img_new = precomputations(font_width, font_height, offset_width, offset_height, ascii_range, src_img_filepath)
+    font_width_padded, font_height_mod, sample_width, sample_height, src_img_new = precomputations(font_width, font_height, offset_width, offset_height, ascii_range, src_image)
 
     font_data = bytearray()
 
