@@ -131,7 +131,7 @@ class FileManager:
         most_recent_open_directory = self.app_reference.config_manager.get_most_recent_open_directory()
         file_path = filedialog.askopenfilename(
             title="Open File",
-            filetypes=(("All Files", "*.*"), ("PNG Images", "*.png"), ("Font Files", "*.font")),
+            filetypes=(("Font Files", "*.font"), ("All Files", "*.*"), ("PNG Images", "*.png")), 
             initialdir=most_recent_open_directory
         )
         self.open_file(file_path)
@@ -247,7 +247,7 @@ class FileManager:
         file_path = filedialog.asksaveasfilename(
             title="Save As",
             defaultextension=".font",
-            filetypes=(("PNG Images", "*.png"), ("Font Files", "*.font"), ("All Files", "*.*")),
+            filetypes=(("Font Files", "*.font"), ("PNG Images", "*.png"), ("All Files", "*.*")),
             initialdir=self.app_reference.config_manager.get_most_recent_save_directory(),
             initialfile=default_name  # Set default filename based on metadata
         )
