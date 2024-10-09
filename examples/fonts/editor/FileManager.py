@@ -171,8 +171,11 @@ class FileManager:
                 # Load image into the ImageDisplayWidget
                 self.app_reference.image_display.load_image(font_img)
 
+                # Initialize the editor grid with the loaded font configuration
+                self.app_reference.editor_widget.initialize_grid()
+
                 # Trigger the click on ASCII 'A' after setup
-                # self.app_reference.image_display.trigger_click_on_ascii_code(ord('A'))
+                self.app_reference.image_display.trigger_click_on_ascii_code(ord('A'))
 
     def open_config_editor_popup(self, font_config):
         """Open the FontConfigEditor as a modal popup to adjust metadata."""

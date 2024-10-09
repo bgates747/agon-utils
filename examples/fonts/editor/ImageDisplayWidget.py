@@ -130,6 +130,7 @@ class ImageDisplayWidget(tk.Frame):
     def trigger_click_on_ascii_code(self, ascii_code):
         """Simulate a click on the given ASCII code and display the selection box."""
         if self.original_image:
+            self.current_ascii_code = ascii_code
             char_x, char_y = self.ascii_to_coordinates(ascii_code)
             self.extract_character(ascii_code, char_x, char_y)
             self.draw_selection_box(char_x, char_y)

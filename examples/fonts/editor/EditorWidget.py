@@ -54,20 +54,24 @@ class EditorWidget(tk.Frame):
             for y in range(self.char_height):
                 self.update_pixel(x, y, 'black')
 
-    def populate_from_image(self, char_img):
+    def populate_from_image(self, char_image):
         """ Populate the editor grid with pixel data from a character image. """
-        char_pixels = char_img.load()
+        # Use the pixel access object for char_image
+        pixels = char_image.load()
+        width, height = char_image.size
 
-        for x in range(self.char_width):
-            for y in range(self.char_height):
+        # Ensure that self.char_image matches the dimensions of char_image
+        self.char_image = [[0 for _ in range(height)] for _ in range(width)]
+
+        for x in range(width):
+            for y in range(height):
                 # Get the pixel value (0-255 grayscale)
-                pixel_value = char_pixels[x, y]
+                pixel_value = pixels[x, y]
 
                 # Assume threshold for binary conversion: below 128 = black, above = white
                 color = 'black' if pixel_value < 128 else 'white'
                 self.char_image[x][y] = 0 if pixel_value < 128 else 1
                 self.update_pixel(x, y, color)
-
 
     def on_click(self, event):
         """ Handle mouse click on the editor grid and toggle the pixel """
