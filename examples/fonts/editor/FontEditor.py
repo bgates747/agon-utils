@@ -10,8 +10,9 @@ class FontEditorApp(tk.Frame):
     """ The main application for the font editor """
     def __init__(self, master, config_manager):
         super().__init__(master)
-        
+
         # Set the title of the main window
+        master.title("Agon Font Editor")  # Set the window title here
         self.pack(fill=tk.BOTH, expand=True)
         self.config_manager = config_manager  # Pass config manager
 
@@ -52,13 +53,13 @@ class FontEditorApp(tk.Frame):
             'ascii_range_end': int(self.config_manager.get_setting('default_ascii_range_end', 127))
         }
 
+        # Editor Widget for character editing (placed above the FontConfigEditor)
+        self.editor_widget = EditorWidget(editor_frame, self)
+        self.editor_widget.pack(pady=(0, 5))  # Add padding between widgets
+
         # FontConfigEditor for managing font metadata below the editor widget
         self.font_config_manager = FontConfigEditor(editor_frame, config_dict=default_metadata)
         self.font_config_manager.pack(fill=tk.X, pady=5)
-
-        # Editor Widget for character editing
-        self.editor_widget = EditorWidget(editor_frame, self)
-        self.editor_widget.pack(pady=(0, 5))  # Add padding between widgets
 
         # Image Display Widget for character selection (placed on the right)
         self.image_display = ImageDisplayWidget(control_frame, self)

@@ -116,17 +116,24 @@ class FileManager:
                 messagebox.showerror("Unsupported File", f"The file type {file_extension} is not supported.")
                 return
 
-            if font_config:
-                self.app_reference.font_config_manager.set_config(font_config)
-                self.save_font_metadata(font_config, ini_filepath)
-                print("Saved font metadata: ", font_config)
-                
-                self.app_reference.config_manager.set_most_recent_open_directory(os.path.dirname(file_path))
-                self.app_reference.config_manager.set_most_recent_file(file_path)
+        if font_config:
+            # Set the font configuration in the editor
+            self.app_reference.font_config_manager.set_config(font_config)
+            self.save_font_metadata(font_config, ini_filepath)
+            print("Saved font metadata: ", font_config)
+            
+            # Update the most recent open directory and file path in the configuration manager
+            self.app_reference.config_manager.set_most_recent_open_directory(os.path.dirname(file_path))
+            self.app_reference.config_manager.set_most_recent_file(file_path)
 
-                self.app_reference.image_display.load_image(font_img)
-                self.app_reference.editor_widget.initialize_grid()
-                self.app_reference.image_display.trigger_click_on_ascii_code(ord('A'))
+            # Load image and trigger related updates
+            self.app_reference.image_display.load_image(font_img)
+            self.app_reference.editor_widget.initialize_grid()
+            self.app_reference.image_display.trigger_click_on_ascii_code(ord('A'))
+
+            # Extract filename and update the title bar
+            filename = os.path.basename(file_path)
+            self.app_reference.master.title(f"Agon Font Editor - {filename}")
 
     def open_png_image(self, file_path, font_config):
         font_image = Image.open(file_path)
@@ -163,33 +170,48 @@ class FileManager:
             ext = '.font'
             file_path += ext
 
+        # Attempt to save and capture the result
         if ext == '.png':
-            self.save_as_png(file_path, font_config)
+            result = self.save_as_png(file_path, font_config)
         elif ext == '.font':
-            self.save_as_font(file_path, font_config)
+            result = self.save_as_font(file_path, font_config)
         else:
             messagebox.showerror("Unsupported File Type", f"Unsupported file extension: {ext}")
+            return
 
-        self.app_reference.config_manager.set_most_recent_save_directory(os.path.dirname(file_path))
+        # Handle success or error messages based on the save result
+        if result is True:
+            self.app_reference.config_manager.set_most_recent_save_directory(os.path.dirname(file_path))
+            # Update title to reflect the saved file name
+            filename = os.path.basename(file_path)
+            self.app_reference.master.title(f"Agon Font Editor - {filename}")
+        else:
+            messagebox.showerror("Save Failed", result)  # Show error message if save failed
 
     def save_as_png(self, file_path, font_config):
-        ini_file_path = f"{file_path}.ini"
-        self.app_reference.image_display.working_image.save(file_path)
-        self.save_font_metadata(font_config, ini_file_path)
-        messagebox.showinfo("Save Successful", f".png image and metadata saved successfully to {file_path} and {ini_file_path}")
+        try:
+            ini_file_path = f"{file_path}.ini"
+            self.app_reference.image_display.working_image.save(file_path)
+            self.save_font_metadata(font_config, ini_file_path)
+            return True
+        except Exception as e:
+            return f"Failed to save PNG: {e}"
 
     def save_as_font(self, file_path, font_config):
-        ini_file_path = f"{file_path}.ini"
-        make_font(
-            self.app_reference.image_display.working_image,
-            file_path,
-            font_config['font_width'],
-            font_config['font_height'],
-            font_config['offset_left'],
-            font_config['offset_top'],
-            font_config['offset_width'],
-            font_config['offset_height'],
-            (font_config['ascii_range_start'], font_config['ascii_range_end'])
-        )
-        self.save_font_metadata(font_config, ini_file_path)
-        messagebox.showinfo("Save Successful", f".font image and metadata saved successfully to {file_path} and {ini_file_path}")
+        try:
+            ini_file_path = f"{file_path}.ini"
+            make_font(
+                self.app_reference.image_display.working_image,
+                file_path,
+                font_config['font_width'],
+                font_config['font_height'],
+                font_config['offset_left'],
+                font_config['offset_top'],
+                font_config['offset_width'],
+                font_config['offset_height'],
+                (font_config['ascii_range_start'], font_config['ascii_range_end'])
+            )
+            self.save_font_metadata(font_config, ini_file_path)
+            return True
+        except Exception as e:
+            return f"Failed to save font file: {e}"
