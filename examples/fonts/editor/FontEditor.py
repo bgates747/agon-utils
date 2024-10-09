@@ -67,17 +67,6 @@ class FontEditorApp(tk.Frame):
         # Initialize EditorWidget with default metadata
         self.editor_widget.initialize_grid()
 
-    # ==============================================================================
-    # Font configuration methods
-    # ==============================================================================
-    def get_font_metadata(self):
-        """Retrieve current font metadata from the FontConfigEditor."""
-        return self.font_config_manager.get_config()
-    
-    def set_font_metadata(self, font_config):
-        """Set font configuration in the FontConfigEditor."""
-        self.font_config_manager.set_config(font_config)
-
 # Example Usage
 if __name__ == "__main__":
     root = tk.Tk()
