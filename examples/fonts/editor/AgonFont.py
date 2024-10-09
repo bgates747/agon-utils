@@ -1,4 +1,3 @@
-
 from PIL import Image
 import math
 
@@ -20,17 +19,19 @@ def byteify(pixels):
 # =============================================================================
 # Font to png functions
 # =============================================================================
-def read_font_file(font_filepath, char_width, char_height, ascii_range=(0, 255)):
+def read_font_file(font_filepath, font_config):
     """
     Reads a .font file and returns a list of character images.
     Each byte in the file represents 8 horizontal pixels.
     
     :param font_filepath: Path to the .font file
-    :param char_width: True width of each character in pixels
-    :param char_height: Height of each character in pixels
-    :param ascii_range: Tuple indicating the ASCII range of characters to include (default: (0, 255))
+    :param font_config: Dictionary with font configuration
     :return: A list of PIL images representing each character
     """
+    char_width = font_config['font_width']
+    char_height = font_config['font_height']
+    ascii_range = (font_config['ascii_range_start'], font_config['ascii_range_end'])
+    
     # Round the true width up to the nearest multiple of 8 (padded width)
     padded_width = pad_to_byte(char_width)
     bytes_per_row = padded_width // 8  # Number of bytes per row of the character
@@ -71,16 +72,17 @@ def read_font_file(font_filepath, char_width, char_height, ascii_range=(0, 255))
 
     return char_images
 
-def create_font_image(char_images, char_width, char_height, chars_per_row=16):
+def create_font_image(char_images, font_config, chars_per_row=16):
     """
     Creates a PNG image from the list of character images and arranges them in a grid.
     
     :param char_images: List of PIL Images representing each character
-    :param char_width: True width of each character
-    :param char_height: Height of each character
+    :param font_config: Dictionary with font configuration
     :param chars_per_row: Number of characters per row in the final image
     :return: A PIL Image object with all characters arranged in a grid
     """
+    char_width = font_config['font_width']
+    char_height = font_config['font_height']
     num_chars = len(char_images)
     rows = (num_chars + chars_per_row - 1) // chars_per_row
     
@@ -115,7 +117,13 @@ def image_to_bitstream(padded_img):
     
     return bitstream
 
-def precomputations(font_width, font_height, offset_width, offset_height, ascii_range, src_img):
+def precomputations(font_config, src_img):
+    font_width = font_config['font_width']
+    font_height = font_config['font_height']
+    offset_width = font_config['offset_width']
+    offset_height = font_config['offset_height']
+    ascii_range = (font_config['ascii_range_start'], font_config['ascii_range_end'])
+    
     font_width_mod = font_width + offset_width
     font_height_mod = font_height + offset_height
     font_width_padded = math.ceil(font_width_mod / 8) * 8
@@ -131,7 +139,12 @@ def precomputations(font_width, font_height, offset_width, offset_height, ascii_
     # Return necessary values
     return font_width_padded, font_height_mod, sample_width, sample_height, src_img_new
 
-def sample_char_image(ascii_code, font_width, font_height, sample_width, sample_height, src_img_new):
+def sample_char_image(ascii_code, font_config, src_img_new):
+    font_width = font_config['font_width']
+    font_height = font_config['font_height']
+    sample_width = font_config['font_width']
+    sample_height = font_config['font_height']
+
     # Calculate the character's x and y coordinates in the grid
     chars_per_row = 16
     char_x = (ascii_code % chars_per_row) * font_width
@@ -145,15 +158,15 @@ def sample_char_image(ascii_code, font_width, font_height, sample_width, sample_
 
     return char_img
 
-def make_font(src_image, tgt_font_filepath, font_width, font_height, offset_left, offset_top, offset_width, offset_height, ascii_range):
+def make_font(font_config, src_image, tgt_font_filepath):
     # Precompute offsets and image
-    font_width_padded, font_height_mod, sample_width, sample_height, src_img_new = precomputations(font_width, font_height, offset_width, offset_height, ascii_range, src_image)
+    font_width_padded, font_height_mod, sample_width, sample_height, src_img_new = precomputations(font_config, src_image)
 
     font_data = bytearray()
 
-    for ascii_code in range(0,256):
+    for ascii_code in range(0, 256):
         char_img = Image.new('L', (font_width_padded, font_height_mod), color=0)
-        char_img.paste(sample_char_image(ascii_code, font_width, font_height, sample_width, sample_height, src_img_new), (offset_left, offset_top))
+        char_img.paste(sample_char_image(ascii_code, font_config, src_img_new), (font_config['offset_left'], font_config['offset_top']))
         font_data.extend(image_to_bitstream(char_img))
 
     with open(tgt_font_filepath, 'wb') as f:

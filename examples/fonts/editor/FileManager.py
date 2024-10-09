@@ -141,11 +141,9 @@ class FileManager:
         return modified, final_config, font_image
 
     def open_font_file(self, file_path, font_config):
-        char_width, char_height = font_config['font_width'], font_config['font_height']
-        ascii_range = (font_config['ascii_range_start'], font_config['ascii_range_end'])
         
-        char_images = read_font_file(file_path, char_width, char_height, ascii_range)
-        font_image = create_font_image(char_images, char_width, char_height, chars_per_row=16)
+        char_images = read_font_file(file_path, font_config)
+        font_image = create_font_image(char_images, font_config, chars_per_row=16)
 
         modified, final_config = self.validate_font_config(font_image, font_config)
         return modified, final_config, font_image
@@ -200,17 +198,8 @@ class FileManager:
     def save_as_font(self, file_path, font_config):
         try:
             ini_file_path = f"{file_path}.ini"
-            make_font(
-                self.app_reference.image_display.working_image,
-                file_path,
-                font_config['font_width'],
-                font_config['font_height'],
-                font_config['offset_left'],
-                font_config['offset_top'],
-                font_config['offset_width'],
-                font_config['offset_height'],
-                (font_config['ascii_range_start'], font_config['ascii_range_end'])
-            )
+            # Pass font_config directly instead of individual parameters
+            make_font(font_config, self.app_reference.image_display.working_image, file_path)
             self.save_font_metadata(font_config, ini_file_path)
             return True
         except Exception as e:
