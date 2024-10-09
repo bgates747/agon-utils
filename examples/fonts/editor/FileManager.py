@@ -169,6 +169,7 @@ class FileManager:
                 self.app_reference.config_manager.set_most_recent_file(file_path)
 
                 # Load image into the ImageDisplayWidget
+                self.app_reference.image_display.original_image = font_img
                 self.app_reference.image_display.load_image(font_img)
 
                 # Initialize the editor grid with the loaded font configuration

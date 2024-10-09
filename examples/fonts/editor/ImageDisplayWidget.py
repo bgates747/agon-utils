@@ -13,6 +13,7 @@ class ImageDisplayWidget(tk.Frame):
         zoom_level = int(app_reference.config_manager.get_setting('default_zoom_level', '200'))
         self.current_zoom_index = self.zoom_levels.index(zoom_level)
 
+        self.original_image = None
         self.working_image = None
         self.grid_shown = False
 
