@@ -1,4 +1,5 @@
 import tkinter as tk
+from AgonFont import resample_image
 
 class FontConfigEditor(tk.Frame):
     """A widget for viewing and editing font configurations, with numeric adjustment controls and apply functionality."""
@@ -16,9 +17,9 @@ class FontConfigEditor(tk.Frame):
         'ascii_range_end': 127
     }
 
-    def __init__(self, parent, config_dict=None, **kwargs):
+    def __init__(self, parent, app_reference, config_dict=None, **kwargs):
         super().__init__(parent, **kwargs)
-
+        self.app_reference = app_reference
         # Initialize current config and modified config dictionary
         self.curr_config = config_dict or FontConfigEditor.DEFAULT_CONFIG.copy()
         self.mod_config = self.curr_config.copy()
@@ -86,12 +87,40 @@ class FontConfigEditor(tk.Frame):
         new_value = self.curr_config[param] + self.delta_vars[param].get() + delta
         self.mod_config[param] = new_value
 
-        # Update the displayed modified and delta values
+        # Check if Apply Changes should be enabled
+        changes_exist = self.update_apply_button_state()
+
+        # Helper for setting up or destroying pre_resample_image based on changes
+        if changes_exist:
+            # If pre_resample_image doesn't exist, create a backup from working_image
+            if self.app_reference.image_display.pre_resample_image is None:
+                self.app_reference.image_display.pre_resample_image = self.app_reference.image_display.working_image.copy()
+
+            # Resample the working image with current config and modified values
+            self.resample_working_image()
+
+        else:
+            # If no changes and pre_resample_image exists, revert to pre_resample_image and clear it
+            if self.app_reference.image_display.pre_resample_image is not None:
+                self.app_reference.image_display.working_image = self.app_reference.image_display.pre_resample_image.copy()
+                self.app_reference.image_display.pre_resample_image = None
+
+        # Update the modified and delta displays consistently
         self.update_mod_display(param)
         self.update_delta_display(param)
+        self.app_reference.image_display.redraw()  # Ensure GUI reflects any updates
 
-        # Check if Apply Changes should be enabled
-        self.update_apply_button_state()
+    def resample_working_image(self):
+        """Helper function to resample working image based on modified config."""
+        curr_config = self.get_original_config()  # Using current image config as a base
+        mod_config = self.get_modified_config()
+        pre_resample_image = self.app_reference.image_display.pre_resample_image
+
+        # Call resample_image to adjust the working image
+        resampled_image = resample_image(curr_config, mod_config, pre_resample_image)
+        
+        # Update the working image and refresh display
+        self.app_reference.image_display.working_image = resampled_image
 
     def set_config(self, config_dict):
         """Set the current configuration and update all displays accordingly."""
@@ -124,6 +153,7 @@ class FontConfigEditor(tk.Frame):
         """Enable or disable the Apply Changes button based on changes in modified values."""
         changes_exist = any(self.curr_config.get(param) != self.mod_config.get(param) for param in self.curr_config)
         self.apply_button.config(state=tk.NORMAL if changes_exist else tk.DISABLED)
+        return changes_exist
 
     def apply_changes(self):
         """Apply changes by updating current config to match modified config, and reset deltas."""

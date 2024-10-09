@@ -15,6 +15,7 @@ class ImageDisplayWidget(tk.Frame):
 
         self.original_image = None
         self.working_image = None
+        self.pre_resample_image = None  # New: Holds the original image before resampling
         self.grid_shown = False
 
         # Control frame for toggle and zoom controls
@@ -169,7 +170,7 @@ class ImageDisplayWidget(tk.Frame):
         self.app_reference.editor_widget.populate_from_image(char_img)
 
     def update_pixel(self, x, y, new_value):
-        """ Update the clicked pixel in the character image and paste it back to the original image """
+        """ Update the clicked pixel in the character image and paste it back to the working image """
         if self.current_ascii_code is None or self.working_image is None:
             print("No character selected or no image loaded.")
             return

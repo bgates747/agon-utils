@@ -58,7 +58,7 @@ class FontEditorApp(tk.Frame):
         self.editor_widget.pack(pady=(0, 5))  # Add padding between widgets
 
         # FontConfigEditor for managing font metadata below the editor widget
-        self.font_config_manager = FontConfigEditor(editor_frame, config_dict=default_metadata)
+        self.font_config_manager = FontConfigEditor(editor_frame, self, config_dict=default_metadata)
         self.font_config_manager.pack(fill=tk.X, pady=5)
 
         # Image Display Widget for character selection (placed on the right)
