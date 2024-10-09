@@ -272,18 +272,21 @@ class FileManager:
 
     def save_as_png(self, file_path, font_config):
         """Save the current image as a PNG with accompanying metadata."""
-        # Define paths for .png and .ini files based on selected filename
-        png_file_path = file_path if file_path.endswith('.png') else f"{file_path}.png"
-        ini_file_path = f"{os.path.splitext(file_path)[0]}.ini"
+        # Define path for .ini file based on selected filename
+        ini_file_path = f"{file_path}.ini"
 
         # Save image and metadata
-        self.app_reference.image_display.original_image.save(png_file_path)
+        self.app_reference.image_display.working_image.save(file_path)
         self.save_font_metadata(font_config, ini_file_path)
 
-        messagebox.showinfo("Save Successful", f"PNG image and metadata saved successfully to {png_file_path} and {ini_file_path}")
+        messagebox.showinfo("Save Successful", f".png image and metadata saved successfully to {file_path} and {ini_file_path}")
 
     def save_as_font(self, file_path, font_config):
         """Save the current font data as a .font file."""
+        # Define path for .ini file based on selected filename
+        ini_file_path = f"{file_path}.ini"
+
+        # Extract font metadata to pass to the make_font function
         font_width = font_config['font_width']
         font_height = font_config['font_height']
         offset_left = font_config['offset_left']
@@ -291,8 +294,10 @@ class FileManager:
         offset_width = font_config['offset_width']
         offset_height = font_config['offset_height']
         ascii_range = (font_config['ascii_range_start'], font_config['ascii_range_end'])
-        src_image = self.app_reference.image_display.original_image
+        src_image = self.app_reference.image_display.working_image
 
+        # Save font data and metadata
         make_font(src_image, file_path, font_width, font_height, offset_left, offset_top, offset_width, offset_height, ascii_range)
+        self.save_font_metadata(font_config, ini_file_path)
 
-        messagebox.showinfo("Save Successful", f"Font file saved successfully to {file_path}")
+        messagebox.showinfo("Save Successful", f".font image and metadata saved successfully to {file_path} and {ini_file_path}")

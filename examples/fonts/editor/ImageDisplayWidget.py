@@ -13,7 +13,7 @@ class ImageDisplayWidget(tk.Frame):
         zoom_level = int(app_reference.config_manager.get_setting('default_zoom_level', '200'))
         self.current_zoom_index = self.zoom_levels.index(zoom_level)
 
-        self.original_image = None
+        self.working_image = None
         self.grid_shown = False
 
         # Control frame to hold toggle button and zoom controls in the same row
@@ -64,14 +64,14 @@ class ImageDisplayWidget(tk.Frame):
 
     def display_image(self):
         """Display the image on the canvas based on the current zoom level."""
-        if self.original_image is None:
+        if self.working_image is None:
             return
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
-        new_width = int(self.original_image.width * zoom_factor)
-        new_height = int(self.original_image.height * zoom_factor)
+        new_width = int(self.working_image.width * zoom_factor)
+        new_height = int(self.working_image.height * zoom_factor)
         
         # Resize the image according to the new dimensions
-        self.image = self.original_image.resize((new_width, new_height), Image.NEAREST)
+        self.image = self.working_image.resize((new_width, new_height), Image.NEAREST)
         self.tk_image = ImageTk.PhotoImage(self.image)
 
         # Set scroll region and display image
@@ -87,8 +87,8 @@ class ImageDisplayWidget(tk.Frame):
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
         grid_width = int(self.app_reference.font_width * zoom_factor)
         grid_height = int(self.app_reference.font_height * zoom_factor)
-        img_width = int(self.original_image.width * zoom_factor)
-        img_height = int(self.original_image.height * zoom_factor)
+        img_width = int(self.working_image.width * zoom_factor)
+        img_height = int(self.working_image.height * zoom_factor)
 
         for x in range(0, img_width, grid_width):
             self.canvas.create_line(x, 0, x, img_height, fill="cyan", tags="gridline")
@@ -109,7 +109,7 @@ class ImageDisplayWidget(tk.Frame):
 
     def resize_canvas(self, event):
         """Resize the canvas to fit the image and redraw."""
-        if self.original_image:
+        if self.working_image:
             self.redraw()
 
     def clear_selection_box(self):
@@ -120,16 +120,16 @@ class ImageDisplayWidget(tk.Frame):
         """Remove all gridlines from the canvas."""
         self.canvas.delete("gridline")
 
-    def load_image(self, original_image):
+    def load_image(self, working_image):
         """Load the image into the widget."""
-        self.original_image = original_image
-        img_width, img_height = self.original_image.size
+        self.working_image = working_image
+        img_width, img_height = self.working_image.size
         print(f"Loaded image with size: {img_width}x{img_height}")
         self.redraw()
 
     def trigger_click_on_ascii_code(self, ascii_code):
         """Simulate a click on the given ASCII code and display the selection box."""
-        if self.original_image:
+        if self.working_image:
             self.current_ascii_code = ascii_code
             char_x, char_y = self.ascii_to_coordinates(ascii_code)
             self.extract_character(ascii_code, char_x, char_y)
@@ -137,7 +137,7 @@ class ImageDisplayWidget(tk.Frame):
 
     def on_click(self, event):
         """Handle mouse click on the image and delegate to helper functions to get the character."""
-        if not self.original_image:
+        if not self.working_image:
             return
         click_x, click_y = self.get_click_coordinates(event)
         char_x, char_y = self.get_character_coordinates(click_x, click_y)
@@ -152,7 +152,7 @@ class ImageDisplayWidget(tk.Frame):
 
     def extract_character(self, ascii_code, char_x, char_y):
         """ Extract the character image from the original image using char_x, char_y, and display it in the editor """
-        if not self.original_image:
+        if not self.working_image:
             return  # Do nothing if no image is loaded
 
         # Calculate the bounding box for the character
@@ -162,14 +162,14 @@ class ImageDisplayWidget(tk.Frame):
         y2 = y1 + self.app_reference.font_height
 
         # Crop the character from the original image
-        char_img = self.original_image.crop((x1, y1, x2, y2))
+        char_img = self.working_image.crop((x1, y1, x2, y2))
 
         # Pass the character image to the editor widget to populate the grid
         self.app_reference.editor_widget.populate_from_image(char_img)
 
     def update_pixel(self, x, y, new_value):
         """ Update the clicked pixel in the character image and paste it back to the original image """
-        if self.current_ascii_code is None or self.original_image is None:
+        if self.current_ascii_code is None or self.working_image is None:
             print("No character selected or no image loaded.")
             return
 
@@ -180,7 +180,7 @@ class ImageDisplayWidget(tk.Frame):
         pixel_color = new_value * 255
 
         # Update only the selected pixel in the original image
-        self.original_image.putpixel((char_x * self.app_reference.font_width + x, char_y * self.app_reference.font_height + y), pixel_color)
+        self.working_image.putpixel((char_x * self.app_reference.font_width + x, char_y * self.app_reference.font_height + y), pixel_color)
         
         # Refresh the image on the canvas to reflect the change
         self.redraw()
@@ -224,7 +224,7 @@ class ImageDisplayWidget(tk.Frame):
     def update_display_dimensions(self):
         """Update the entire widget's size based on the zoomed image dimensions."""
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
-        new_width = int(self.original_image.width * zoom_factor)
-        new_height = int(self.original_image.height * zoom_factor)
+        new_width = int(self.working_image.width * zoom_factor)
+        new_height = int(self.working_image.height * zoom_factor)
         self.canvas.config(width=new_width, height=new_height)
         self.config(width=new_width, height=new_height)
