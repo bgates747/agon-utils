@@ -3,33 +3,39 @@ import tkinter as tk
 class FontConfigEditor(tk.Frame):
     """A widget for viewing and editing font configurations, with numeric adjustment controls and apply functionality."""
 
+    DEFAULT_CONFIG = {
+        'font_name': 'no_font_loaded',
+        'font_variant': 'Regular',
+        'font_width': 9,
+        'font_height': 15,
+        'offset_left': 0,
+        'offset_top': 0,
+        'offset_width': 0,
+        'offset_height': 0,
+        'ascii_range_start': 32,
+        'ascii_range_end': 127
+    }
+
     def __init__(self, parent, config_dict=None, **kwargs):
         super().__init__(parent, **kwargs)
 
-        # Configuration parameters with Tkinter variable types for easy binding to Entry widgets
-        self.config_params = {
-            'font_name': tk.StringVar(),
-            'font_variant': tk.StringVar(),
-            'font_width': tk.IntVar(),
-            'font_height': tk.IntVar(),
-            'offset_left': tk.IntVar(),
-            'offset_top': tk.IntVar(),
-            'offset_width': tk.IntVar(),
-            'offset_height': tk.IntVar(),
-            'ascii_range_start': tk.IntVar(),
-            'ascii_range_end': tk.IntVar()
-        }
+        # Initialize current config and modified config dictionary
+        self.curr_config = config_dict or FontConfigEditor.DEFAULT_CONFIG.copy()
+        self.mod_config = self.curr_config.copy()
 
-        # Initialize original and current config dictionaries
-        self.orig_config = config_dict.copy() if config_dict else {}
-        self.curr_config = config_dict.copy() if config_dict else {}
+        # Tkinter variables for UI
+        self.config_params = {param: (tk.StringVar() if isinstance(val, str) else tk.IntVar())
+                              for param, val in self.curr_config.items()}
+        self.delta_vars = {param: tk.IntVar(value=0) for param, val in self.curr_config.items() if isinstance(val, int)}
+
+        # Dictionary to hold references to numeric labels
+        self.curr_labels = {}
 
         # Initialize layout
         self.create_widgets()
 
-        # Load provided config dictionary, if any
-        if config_dict:
-            self.set_config(config_dict)
+        # Set initial values in the editor
+        self.update_config_display()
 
     def create_widgets(self):
         """Create form entries for each configuration parameter."""
@@ -43,7 +49,6 @@ class FontConfigEditor(tk.Frame):
             else:  # Standard entry for text fields
                 entry = tk.Entry(self, textvariable=var)
                 entry.grid(row=row, column=1, columnspan=3, sticky="w", padx=5, pady=0)
-                var.trace("w", self.check_apply_needed)  # Trace for enabling Apply Changes button
 
             row += 1
 
@@ -52,69 +57,80 @@ class FontConfigEditor(tk.Frame):
         self.apply_button.grid(row=row, column=0, columnspan=5, pady=10)
 
     def create_numeric_controls(self, row, param, var):
-        """Creates a three-column layout with Original, Delta, and New values, and +/- controls."""
-        # Original value display
-        orig_value = self.orig_config.get(param, 0)
-        orig_label = tk.Label(self, text=str(orig_value))  # Show original value
-        orig_label.grid(row=row, column=1, padx=5)
+        """Creates a three-column layout with current, Delta, and Mod labels, and +/- controls."""
+        curr_value = self.curr_config.get(param, 0)
+
+        # Current value display, store reference in curr_labels for later updating
+        curr_label = tk.Label(self, text=str(curr_value))
+        curr_label.grid(row=row, column=1, padx=5)
+        self.curr_labels[param] = curr_label  # Store the label reference for numeric fields only
 
         # Change (delta) display and +/- buttons
-        delta_var = tk.IntVar(value=0)
-        minus_button = tk.Button(self, text="-", command=lambda v=var, d=delta_var: self.update_new_value(v, d, -1))
+        delta_var = self.delta_vars[param]
+        minus_button = tk.Button(self, text="-", command=lambda p=param, d=-1: self.modify_value(p, d))
         minus_button.grid(row=row, column=2, sticky="e", padx=2)
-        
+
         delta_label = tk.Label(self, textvariable=delta_var)
         delta_label.grid(row=row, column=3)
 
-        plus_button = tk.Button(self, text="+", command=lambda v=var, d=delta_var: self.update_new_value(v, d, 1))
+        plus_button = tk.Button(self, text="+", command=lambda p=param, d=1: self.modify_value(p, d))
         plus_button.grid(row=row, column=4, sticky="w", padx=2)
 
-        # New value entry
-        new_var = tk.IntVar(value=orig_value)  # Initially set to original value
-        new_entry = tk.Entry(self, textvariable=new_var, width=5)
-        new_entry.grid(row=row, column=5, padx=5)
+        # Modified value display
+        mod_label = tk.Label(self, textvariable=var)
+        mod_label.grid(row=row, column=5, padx=5)
 
-        # Link new_var to update delta and check if Apply Changes button is needed
-        new_var.trace("w", lambda *args, o=orig_value, n=new_var, d=delta_var: self.update_delta(o, n, d, param))
+    def modify_value(self, param, delta):
+        """Adjust the modified value based on the delta and update displays."""
+        # Apply delta to modified config value
+        new_value = self.curr_config[param] + self.delta_vars[param].get() + delta
+        self.mod_config[param] = new_value
 
-    def update_new_value(self, new_var, delta_var, increment):
-        """Update the new value by increment/decrement and adjust delta accordingly."""
-        new_value = new_var.get() + increment
-        new_var.set(new_value)  # Update new value
-        self.check_apply_needed()  # Check if Apply Changes should be enabled
+        # Update the displayed modified and delta values
+        self.update_mod_display(param)
+        self.update_delta_display(param)
 
-    def update_delta(self, orig_value, new_var, delta_var, param):
-        """Update delta value when new value changes and check if Apply Changes is needed."""
-        try:
-            new_value = int(new_var.get())
-            delta_var.set(new_value - orig_value)  # Set delta to difference between new and original
-            self.curr_config[param] = new_value  # Update current configuration
-            self.check_apply_needed()  # Enable Apply if there are changes
-        except ValueError:
-            pass  # Ignore if new_var is not a valid integer
+        # Check if Apply Changes should be enabled
+        self.update_apply_button_state()
 
     def set_config(self, config_dict):
-        """Populate the editor with values from the provided configuration dictionary."""
-        self.orig_config = config_dict.copy()
+        """Set the current configuration and update all displays accordingly."""
         self.curr_config = config_dict.copy()
-        for param, value in config_dict.items():
-            if param in self.config_params:
-                try:
-                    self.config_params[param].set(value)
-                except (ValueError, tk.TclError):
-                    print(f"Warning: Could not set {param} to {value}. Check data types.")
+        self.mod_config = config_dict.copy()
+        self.update_config_display()
 
-    def get_config(self):
-        """Retrieve the current configuration as a dictionary."""
-        return {param: var.get() for param, var in self.config_params.items()}
+    def update_config_display(self):
+        """Refresh all display fields based on the current configuration."""
+        for param, value in self.curr_config.items():
+            self.config_params[param].set(value)
+            # Only update curr_labels for numeric fields
+            if param in self.curr_labels:
+                self.curr_labels[param].config(text=str(value))
+            # Reset delta to 0 for numeric fields
+            if param in self.delta_vars:
+                self.delta_vars[param].set(0)
 
-    def check_apply_needed(self):
-        """Check if Apply Changes button should be enabled based on unsaved changes."""
-        changes_exist = any(self.orig_config.get(param) != var.get() for param, var in self.config_params.items())
+    def update_mod_display(self, param):
+        """Update the modified display field for a single parameter."""
+        mod_value = self.mod_config[param]
+        self.config_params[param].set(mod_value)
+
+    def update_delta_display(self, param):
+        """Update the delta display field for a single parameter."""
+        delta_value = self.mod_config[param] - self.curr_config[param]
+        self.delta_vars[param].set(delta_value)
+
+    def update_apply_button_state(self):
+        """Enable or disable the Apply Changes button based on changes in modified values."""
+        changes_exist = any(self.curr_config.get(param) != self.mod_config.get(param) for param in self.curr_config)
         self.apply_button.config(state=tk.NORMAL if changes_exist else tk.DISABLED)
 
     def apply_changes(self):
-        """Apply changes by updating original config to match current config."""
-        for param, var in self.config_params.items():
-            self.orig_config[param] = var.get()  # Update orig_config with the new values
-        self.check_apply_needed()  # Update button state after applying changes
+        """Apply changes by updating current config to match modified config, and reset deltas."""
+        self.curr_config = self.mod_config.copy()
+        self.update_config_display()
+        self.update_apply_button_state()
+
+    def get_config(self):
+        """Return the current configuration as a dictionary."""
+        return self.curr_config.copy()

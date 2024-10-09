@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import Menu
 
 class MenuBar:
+    """Menu bar for the application, providing access to file operations, edit options, and help."""
     def __init__(self, parent, app_reference):
         self.parent = parent
         self.app_reference = app_reference
@@ -48,17 +49,25 @@ class MenuBar:
 
     # Placeholder methods for Edit Menu actions
     def undo_action(self):
+        """Placeholder for undo functionality."""
         print("Undo action triggered")
 
     def redo_action(self):
+        """Placeholder for redo functionality."""
         print("Redo action triggered")
 
     def open_preferences(self):
+        """Open preferences dialog; placeholder for functionality."""
         print("Open preferences dialog")
+        # Placeholder: Add logic to open a preferences dialog if needed
 
     # Placeholder methods for Help Menu actions
     def show_about(self):
+        """Show about dialog; placeholder for functionality."""
         print("Show about dialog")
+        # Placeholder: Add logic to open an About dialog if needed
 
     def show_help(self):
+        """Show help dialog; placeholder for functionality."""
         print("Show help dialog")
+        # Placeholder: Add logic to open a Help dialog if needed

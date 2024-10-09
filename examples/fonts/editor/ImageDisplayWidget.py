@@ -17,22 +17,22 @@ class ImageDisplayWidget(tk.Frame):
         self.working_image = None
         self.grid_shown = False
 
-        # Control frame to hold toggle button and zoom controls in the same row
+        # Control frame for toggle and zoom controls
         control_frame = tk.Frame(self)
         control_frame.pack(side=tk.TOP, anchor="nw", pady=5)
 
-        # Create the custom grid toggle button
+        # Create custom grid toggle button
         self.grid_toggle_button = CustomWidgets.GridToggleButton(control_frame, on_toggle=self.toggle_grid)
         self.grid_toggle_button.pack(side=tk.LEFT, padx=5)
 
-        # Create the zoom control and provide callback
+        # Zoom control
         self.zoom_control = CustomWidgets.ZoomControl(
             control_frame, 
             zoom_levels=self.zoom_levels, 
             current_zoom_index=self.current_zoom_index, 
             on_zoom_change=self.change_zoom
         )
-        self.zoom_control.pack(side=tk.LEFT, padx=5)  # Place zoom control next to the toggle button
+        self.zoom_control.pack(side=tk.LEFT, padx=5)
 
         # Canvas for displaying image
         self.canvas = tk.Canvas(self, bg="white")
@@ -86,8 +86,9 @@ class ImageDisplayWidget(tk.Frame):
         """Draw cyan gridlines based on the font dimensions and current zoom level."""
         self.clear_grid()
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
-        grid_width = int(self.app_reference.font_width * zoom_factor)
-        grid_height = int(self.app_reference.font_height * zoom_factor)
+        font_config = self.app_reference.font_config_manager.get_config()
+        grid_width = int(font_config['font_width'] * zoom_factor)
+        grid_height = int(font_config['font_height'] * zoom_factor)
         img_width = int(self.working_image.width * zoom_factor)
         img_height = int(self.working_image.height * zoom_factor)
 
@@ -100,8 +101,9 @@ class ImageDisplayWidget(tk.Frame):
         """Draw a green selection box around the selected character without obscuring edge pixels."""
         self.clear_selection_box()
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
-        box_width = int(self.app_reference.font_width * zoom_factor)
-        box_height = int(self.app_reference.font_height * zoom_factor)
+        font_config = self.app_reference.font_config_manager.get_config()
+        box_width = int(font_config['font_width'] * zoom_factor)
+        box_height = int(font_config['font_height'] * zoom_factor)
         x1 = char_x * box_width - 1
         y1 = char_y * box_height - 1
         x2 = x1 + box_width + 1
@@ -143,7 +145,8 @@ class ImageDisplayWidget(tk.Frame):
         click_x, click_y = self.get_click_coordinates(event)
         char_x, char_y = self.get_character_coordinates(click_x, click_y)
         ascii_code = self.coordinates_to_ascii(char_x, char_y)
-        if self.app_reference.ascii_range_start <= ascii_code <= self.app_reference.ascii_range_end:
+        ascii_range = self.app_reference.font_config_manager.get_config()
+        if ascii_range['ascii_range_start'] <= ascii_code <= ascii_range['ascii_range_end']:
             self.current_ascii_code = ascii_code
             self.extract_character(ascii_code, char_x, char_y)
             self.draw_selection_box(char_x, char_y)
@@ -154,18 +157,15 @@ class ImageDisplayWidget(tk.Frame):
     def extract_character(self, ascii_code, char_x, char_y):
         """ Extract the character image from the original image using char_x, char_y, and display it in the editor """
         if not self.working_image:
-            return  # Do nothing if no image is loaded
+            return
 
-        # Calculate the bounding box for the character
-        x1 = char_x * self.app_reference.font_width
-        y1 = char_y * self.app_reference.font_height
-        x2 = x1 + self.app_reference.font_width
-        y2 = y1 + self.app_reference.font_height
+        font_config = self.app_reference.font_config_manager.get_config()
+        x1 = char_x * font_config['font_width']
+        y1 = char_y * font_config['font_height']
+        x2 = x1 + font_config['font_width']
+        y2 = y1 + font_config['font_height']
 
-        # Crop the character from the original image
         char_img = self.working_image.crop((x1, y1, x2, y2))
-
-        # Pass the character image to the editor widget to populate the grid
         self.app_reference.editor_widget.populate_from_image(char_img)
 
     def update_pixel(self, x, y, new_value):
@@ -174,56 +174,44 @@ class ImageDisplayWidget(tk.Frame):
             print("No character selected or no image loaded.")
             return
 
-        # Convert the ASCII code to character coordinates using helper function
+        font_config = self.app_reference.font_config_manager.get_config()
         char_x, char_y = self.ascii_to_coordinates(self.current_ascii_code)
-
-        # Calculate the absolute pixel position within the selected character
         pixel_color = new_value * 255
-
-        # Update only the selected pixel in the original image
-        self.working_image.putpixel((char_x * self.app_reference.font_width + x, char_y * self.app_reference.font_height + y), pixel_color)
-        
-        # Refresh the image on the canvas to reflect the change
+        self.working_image.putpixel((char_x * font_config['font_width'] + x, char_y * font_config['font_height'] + y), pixel_color)
         self.redraw()
 
-    # Centralized conversion functions
+    # Helper functions
     def ascii_to_coordinates(self, ascii_code):
-        """ Convert an ASCII code to character coordinates (char_x, char_y) in the image picker """
-        char_x = (ascii_code - self.app_reference.ascii_range_start) % 16
-        char_y = (ascii_code - self.app_reference.ascii_range_start) // 16
+        font_config = self.app_reference.font_config_manager.get_config()
+        char_x = (ascii_code - font_config['ascii_range_start']) % 16
+        char_y = (ascii_code - font_config['ascii_range_start']) // 16
         return char_x, char_y
 
     def coordinates_to_ascii(self, char_x, char_y):
-        """ Convert character coordinates (char_x, char_y) to the corresponding ASCII code """
-        return char_y * 16 + char_x + self.app_reference.ascii_range_start
+        font_config = self.app_reference.font_config_manager.get_config()
+        return char_y * 16 + char_x + font_config['ascii_range_start']
 
     def get_click_coordinates(self, event):
-        """ Convert the click event coordinates to be relative to the image, accounting for zoom """
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
-
-        # Adjust the click position based on the zoom factor and return the coordinates
         click_x = int(event.x / zoom_factor)
         click_y = int(event.y / zoom_factor)
         return click_x, click_y
 
     def get_character_coordinates(self, click_x, click_y):
-        """ Calculate which character coordinates (char_x, char_y) were clicked based on click position """
-        char_x = click_x // self.app_reference.font_width
-        char_y = click_y // self.app_reference.font_height
+        font_config = self.app_reference.font_config_manager.get_config()
+        char_x = click_x // font_config['font_width']
+        char_y = click_y // font_config['font_height']
         return char_x, char_y
-    
+
     def crop_image(self, image, target_width, target_height):
-        """Crop the image to match the target dimensions."""
-        return image.crop((0, 0, target_width, target_height))  # Top-left crop
+        return image.crop((0, 0, target_width, target_height)) 
 
     def enlarge_image(self, image, target_width, target_height):
-        """Enlarge the image by padding it to match the target dimensions."""
-        new_image = Image.new("L", (target_width, target_height), color=255)  # White background
-        new_image.paste(image, (0, 0))  # Paste original image at top-left
+        new_image = Image.new("L", (target_width, target_height), color=255)
+        new_image.paste(image, (0, 0))
         return new_image
     
     def update_display_dimensions(self):
-        """Update the entire widget's size based on the zoomed image dimensions."""
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
         new_width = int(self.working_image.width * zoom_factor)
         new_height = int(self.working_image.height * zoom_factor)

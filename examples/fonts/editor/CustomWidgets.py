@@ -1,4 +1,3 @@
-
 import tkinter as tk
 from tkinter import font
 
@@ -10,7 +9,7 @@ class CustomWidgets:
         
         def __init__(self, parent, zoom_levels, current_zoom_index, on_zoom_change, **kwargs):
             super().__init__(parent, **kwargs)
-            self.zoom_levels = zoom_levels  # List of zoom levels
+            self.zoom_levels = zoom_levels  # List of available zoom levels
             self.on_zoom_change = on_zoom_change  # Callback for zoom change events
             self.current_zoom_index = current_zoom_index  # Default zoom level index
 
@@ -18,9 +17,11 @@ class CustomWidgets:
             self.zoom_out_button = tk.Button(self, text="–", command=self.zoom_out, width=2)
             self.zoom_out_button.pack(side=tk.LEFT, padx=2)
 
-            # Dropdown for zoom levels
+            # Dropdown for selecting zoom levels
             self.zoom_var = tk.StringVar(value=f"{zoom_levels[current_zoom_index]}%")
-            self.zoom_dropdown = tk.OptionMenu(self, self.zoom_var, *[f"{level}%" for level in zoom_levels], command=self._on_dropdown_change)
+            self.zoom_dropdown = tk.OptionMenu(
+                self, self.zoom_var, *[f"{level}%" for level in zoom_levels], command=self._on_dropdown_change
+            )
             self.zoom_dropdown.config(width=6)
             self.zoom_dropdown.pack(side=tk.LEFT, padx=2)
 
@@ -32,7 +33,7 @@ class CustomWidgets:
             """Handle dropdown changes by updating the zoom level."""
             new_zoom_level = int(selected_value.strip('%'))
             self.current_zoom_index = self.zoom_levels.index(new_zoom_level)
-            self.on_zoom_change(self.current_zoom_index)  # Call the zoom change callback
+            self.on_zoom_change(self.current_zoom_index)  # Trigger zoom change callback
 
         def zoom_in(self):
             """Increase the zoom level if possible."""
@@ -47,20 +48,20 @@ class CustomWidgets:
                 self.update_zoom()
 
         def update_zoom(self):
-            """Update zoom level display and invoke the callback."""
+            """Update the zoom level display and invoke the callback."""
             new_zoom_level = self.zoom_levels[self.current_zoom_index]
-            self.zoom_var.set(f"{new_zoom_level}%")  # Update dropdown text
+            self.zoom_var.set(f"{new_zoom_level}%")  # Update dropdown display
             self.on_zoom_change(self.current_zoom_index)  # Trigger zoom level change callback
 
     class GridToggleButton(tk.Button):
-        """A custom toggle button that switches between bold and regular hash (#) for grid control."""
-
+        """A custom toggle button to control grid display, toggling between bold and regular text."""
+        
         def __init__(self, parent, on_toggle, **kwargs):
             super().__init__(parent, text="#", command=self.toggle, **kwargs)
-            self.on_toggle = on_toggle  # Callback to notify on toggle
-            self.grid_on = False  # Initial grid state
+            self.on_toggle = on_toggle  # Callback to notify parent of toggle state
+            self.grid_on = False  # Initial state of the grid display
 
-            # Configure fonts for regular and bold states
+            # Configure fonts for the regular and bold states
             self.regular_font = font.nametofont("TkDefaultFont")
             self.bold_font = self.regular_font.copy()
             self.bold_font.configure(weight="bold")
@@ -70,6 +71,6 @@ class CustomWidgets:
 
         def toggle(self):
             """Toggle the grid state and update the button's appearance."""
-            self.grid_on = not self.grid_on  # Switch the state
+            self.grid_on = not self.grid_on  # Toggle the state
             self.config(font=self.bold_font if self.grid_on else self.regular_font)
             self.on_toggle(self.grid_on)  # Notify the parent widget of the new state
