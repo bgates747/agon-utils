@@ -2,7 +2,7 @@ import configparser
 import os
 
 class ConfigManager:
-    def __init__(self, app_config_file='config.ini', font_meta_file='fontmetaconfig.cfg'):
+    def __init__(self, app_config_file='config.ini', font_meta_file='fontmeta.cfg'):
         # Paths to config files, relative to the script directory
         script_dir = os.path.dirname(os.path.abspath(__file__))
         self.app_config_file = os.path.join(script_dir, app_config_file)
@@ -83,7 +83,30 @@ class ConfigManager:
         self.set_setting('most_recent_file', file_path)
 
     # =========================================================================
-    # Font metadata methods (fontmetaconfig.cfg)
+    # General method to get default values from any config file
+    # =========================================================================
+
+    def get_config_defaults(self, config_file):
+        """Retrieve default values from a specified configuration file."""
+        config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), config_file)
+        parser = configparser.ConfigParser()
+        
+        # Dictionary to hold default values
+        default_config = {}
+        
+        # Read the configuration file
+        if not parser.read(config_path):
+            raise FileNotFoundError(f"Configuration file '{config_file}' not found.")
+
+        for section in parser.sections():
+            default = parser.get(section, 'default')
+            datatype = parser.get(section, 'type').lower()
+            default_config[section] = self._parse_value(default, datatype)
+
+        return default_config
+
+    # =========================================================================
+    # Font metadata methods (fontmeta.cfg)
     # =========================================================================
 
     def get_font_meta(self, key, fallback=None):
@@ -108,3 +131,23 @@ class ConfigManager:
         self.set_font_meta('ascii_range_start', start)
         self.set_font_meta('ascii_range_end', end)
         self.save_config(config_type='font_meta')
+
+    # =========================================================================
+    # Helper Methods
+    # =========================================================================
+
+    def _parse_value(self, value, datatype):
+        """Parse the given value according to the specified data type, handling +Inf and -Inf."""
+        if value == '+Inf':
+            return float('inf')
+        elif value == '-Inf':
+            return float('-inf')
+
+        if datatype == 'int':
+            return int(value)
+        elif datatype == 'float':
+            return float(value)
+        elif datatype == 'string':
+            return value
+        else:
+            raise ValueError(f"Unsupported data type '{datatype}'")
