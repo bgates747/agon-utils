@@ -1,8 +1,8 @@
 import os
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
-from fontTools.ttLib import TTFont
-import matplotlib.pyplot as plt
+from fontTools.ttLib import TTFont # type: ignore
+import matplotlib.pyplot as plt # type: ignore
 
 def white_to_black(image):
     """
@@ -389,14 +389,14 @@ if __name__ == '__main__':
     # https://www.dafont.com/
     # Define parameters for creating the master font
     threshold = 255  # Threshold for binarizing the image
-    font_name = '8_bit_fortress'
-    font_variant = 'Regular'
+    font_name = 'dejavu'
+    font_variant = 'Sans'
 
-    sources_dir = 'src/ttf'
+    sources_dir = 'examples/fonts/src/fonts/ttf'
     font_path = f'{sources_dir}/{font_name}/{font_name}.ttf'
     output_dir = f'{sources_dir}/{font_name}/{font_variant}'
     metadata_dir = f'{sources_dir}/{font_name}/{font_variant}'
-    metadata_filepath = f'{sources_dir}/{font_name}/{font_variant}/data.txt'
+    metadata_filepath = f'{sources_dir}/{font_name}/{font_variant}/{font_name}.txt'
 
     # Create directory for saving
     if not os.path.exists(output_dir):
