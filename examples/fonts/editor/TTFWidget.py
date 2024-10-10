@@ -1,28 +1,36 @@
-
-import os
 import tkinter as tk
-from tkinter import filedialog
 from PIL import Image, ImageDraw, ImageFont
-import numpy as np
 from CustomWidgets import DeltaControl
-from AgonFont import create_master_image, generate_metadata_file
+from AgonFont import create_font_image
 
-class TTF(tk.Frame):
+class TTFWidget(tk.Frame):
     """A widget for generating font images and metadata from a .ttf file with adjustable options."""
     
-    def __init__(self, parent, ttf_path, *args, **kwargs):
+    def __init__(self, parent, app_reference, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-        
-        self.ttf_path = ttf_path
-        self.point_size = 10
+        self.app_reference = app_reference
+        self.point_size = 10  # Default point size, updated on file open
         self.ascii_range = (32, 127)
         self.output_type = 'grayscale'
+        self.ttf_path = None  # Filepath for the currently loaded TTF file
 
         # Set up UI controls
         self.create_controls()
         
         # Display the frame in the parent widget
         self.pack(fill=tk.BOTH, expand=True)
+
+    def read_ttf_file(self, file_path, point_size):
+        """Sets the TTF file path and initializes default settings."""
+        self.ttf_path = file_path
+        self.point_size_control.set_value(point_size)
+        self.point_size = point_size
+
+        # Generate default font image and metadata
+        font_config, font_image = self.generate_font_image()
+
+        # Pass results to main app
+        return font_config, font_image
 
     def create_controls(self):
         """Set up controls for point size, ASCII range, and output type selection."""
@@ -46,8 +54,13 @@ class TTF(tk.Frame):
             tk.Radiobutton(self, text=option.title(), variable=self.output_type_var, value=option).grid(row=2, column=idx+1, sticky="w", padx=5, pady=5)
 
         # Generate Button
-        self.generate_button = tk.Button(self, text="Generate", command=self.generate_font_image)
+        self.generate_button = tk.Button(self, text="Generate", command=self.generate_and_return)
         self.generate_button.grid(row=3, column=0, columnspan=3, pady=10)
+
+    def generate_and_return(self):
+        """Generates the font image and metadata, and passes it to the main app."""
+        font_config, font_image = self.generate_font_image()
+        self.app_reference.consume_font_image(font_config, font_image)  # Pass result to main app
 
     def update_point_size(self, size):
         """Update the point size when changed via DeltaControl."""
@@ -55,30 +68,47 @@ class TTF(tk.Frame):
 
     def generate_font_image(self):
         """Generate the font image and metadata based on user-selected options."""
+        if not self.ttf_path:
+            print("No TTF file loaded.")
+            return None, None
+
         # Parse ASCII range
         try:
             ascii_start, ascii_end = map(int, self.ascii_range_entry.get().split("-"))
             self.ascii_range = (ascii_start, ascii_end)
         except ValueError:
             print("Invalid ASCII range. Please use 'start-end' format.")
-            return
+            return None, None
         
         # Render and measure characters
         char_images, max_width, max_height = self.render_characters()
 
         # Create the font image based on output type
         if self.output_type_var.get() == 'thresholded':
-            processed_images = [self.apply_threshold(img, threshold=128) for img in char_images.values()]
+            char_images = [self.apply_threshold(img, threshold=128) for img in char_images.values()]
         elif self.output_type_var.get() == 'quantized':
-            processed_images = [self.quantize_image(img) for img in char_images.values()]
+            char_images = [self.quantize_image(img) for img in char_images.values()]
         else:
-            processed_images = list(char_images.values())
+            char_images = list(char_images.values())
+
+        # Create the font configuration
+        font_config = {
+            'font_name': 'ttf_font',
+            'font_variant': 'ttf_variant',
+            'font_width': max_width,
+            'font_height': max_height,
+            'offset_left': 0,
+            'offset_top': 0,
+            'offset_width': 0,
+            'offset_height': 0,
+            'ascii_range_start': ascii_start,
+            'ascii_range_end': ascii_end
+        }
 
         # Generate the master image
-        font_image = create_master_image(processed_images, max_width, max_height, self.ascii_range)
+        font_image = create_font_image(char_images, font_config, chars_per_row=16)
         
-        # Save the font image and metadata
-        self.save_font_image_and_metadata(font_image, max_width, max_height)
+        return font_config, font_image
 
     def render_characters(self):
         """Render each character within the specified ASCII range and return images with max dimensions."""
@@ -108,20 +138,3 @@ class TTF(tk.Frame):
     def quantize_image(self, image):
         """Quantize a grayscale image to a 4-level palette."""
         return image.quantize(colors=4)
-
-    def save_font_image_and_metadata(self, font_image, max_width, max_height):
-        """Save the generated font image and metadata."""
-        output_dir = filedialog.askdirectory(title="Select Directory to Save Font Image")
-        if not output_dir:
-            return  # User canceled the directory selection
-
-        # Save font image
-        font_name = os.path.splitext(os.path.basename(self.ttf_path))[0]
-        output_image_path = os.path.join(output_dir, f"{font_name}_{max_width}x{max_height}.png")
-        font_image.save(output_image_path)
-        print(f"Font image saved: {output_image_path}")
-
-        # Save metadata
-        metadata_dir = filedialog.askdirectory(title="Select Directory to Save Metadata")
-        generate_metadata_file(max_width, max_height, self.point_size, metadata_dir)
-        print("Metadata generated successfully.")

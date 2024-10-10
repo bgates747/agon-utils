@@ -5,6 +5,7 @@ from MenuBar import MenuBar
 from ConfigManager import ConfigManager
 from FileManager import FileManager
 from FontConfigEditor import FontConfigEditor
+from TTFWidget import TTFWidget 
 from AgonFont import create_blank_font_image
 
 class FontEditorApp(tk.Frame):
@@ -36,13 +37,17 @@ class FontEditorApp(tk.Frame):
         control_frame = tk.Frame(self)
         control_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Create a frame for FontConfigEditor on the left
+        # Create a frame for FontConfigEditor and TTFWidget on the left
         config_frame = tk.Frame(control_frame)
         config_frame.pack(side=tk.LEFT, padx=10, pady=10, anchor="n", fill=tk.Y) 
 
         # FontConfigEditor for managing font metadata, placed on the left side
         self.font_config_editor = FontConfigEditor(config_frame, self, self.default_font_config)
         self.font_config_editor.pack(fill=tk.Y, pady=5, expand=True)
+
+        # Add TTFWidget below FontConfigEditor
+        self.ttf_widget = TTFWidget(config_frame, self)
+        self.ttf_widget.pack(fill=tk.X, pady=(5, 0))
 
         # Create a frame for ImageDisplayWidget and EditorWidget stacked vertically on the right
         display_editor_frame = tk.Frame(control_frame)

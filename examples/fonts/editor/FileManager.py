@@ -1,9 +1,8 @@
 import os
 import tkinter as tk
-from tkinter import filedialog, messagebox, Toplevel
+from tkinter import filedialog, messagebox
 from PIL import Image
 import configparser
-from FontConfigEditor import FontConfigEditor
 from AgonFont import read_font_file, create_font_image, make_font
 
 class FileManager:
@@ -97,21 +96,28 @@ class FileManager:
         """Handle the Open action."""
         file_path = filedialog.askopenfilename(
             title="Open File",
-            filetypes=(("Font Files", "*.font"), ("PNG Images", "*.png"), ("All Files", "*.*")),
+            filetypes=(("TrueType Font Files", "*.ttf"), ("Font Files", "*.font"), ("PNG Images", "*.png"), ("All Files", "*.*")),
             initialdir=self.app_reference.config_manager.get_most_recent_open_directory()
         )
         self.open_file(file_path)
-    
+
     def open_file(self, file_path):
         if file_path:
             ini_filepath = file_path + '.ini'
             font_config = self.load_font_metadata_from_ini(ini_filepath) if os.path.exists(ini_filepath) else self.parse_font_filename(file_path)
 
             file_extension = os.path.splitext(file_path)[1].lower()
-            if file_extension == '.png':
+            
+            if file_extension == '.ttf':
+                # Open the TTF file without passing font_config
+                modified, font_config, font_img = self.open_ttf_file(file_path)
+            
+            elif file_extension == '.png':
                 modified, font_config, font_img = self.open_png_image(file_path, font_config)
+            
             elif file_extension == '.font':
                 modified, font_config, font_img = self.open_font_file(file_path, font_config)
+            
             else:
                 messagebox.showerror("Unsupported File", f"The file type {file_extension} is not supported.")
                 return
@@ -119,8 +125,8 @@ class FileManager:
         if font_config:
             # Set the font configuration in the editor
             self.app_reference.font_config_editor.set_config(font_config)
-            self.save_font_metadata(font_config, ini_filepath)
-            print("Saved font metadata: ", font_config)
+            # self.save_font_metadata(font_config, ini_filepath)
+            # print("Saved font metadata: ", font_config)
             
             # Update the most recent open directory and file path in the configuration manager
             self.app_reference.config_manager.set_most_recent_open_directory(os.path.dirname(file_path))
@@ -147,6 +153,24 @@ class FileManager:
 
         modified, final_config = self.validate_font_config(font_image, font_config)
         return modified, final_config, font_image
+    
+    def open_ttf_file(self, file_path):
+        """
+        Opens a .ttf font file, spawns the TTF widget to generate font image and metadata,
+        and returns the generated font image and final configuration to the caller.
+        
+        :param file_path: Path to the .ttf file.
+        :param default_font_config: Dictionary with default font configuration values.
+        :return: Modified configuration (boolean), final font configuration, generated font image.
+        """
+        
+        # Generate default image and metadata with the widget
+        font_config, font_image = self.app_reference.ttf_widget.read_ttf_file(file_path, point_size=10)
+
+        modified = False
+        
+        # Return the modification status, final configuration, and generated font image
+        return modified, font_config, font_image
 
     def save_file(self):
         font_config = self.app_reference.font_config_editor.get_config()
