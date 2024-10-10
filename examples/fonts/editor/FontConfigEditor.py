@@ -12,9 +12,17 @@ class FontConfigEditor(tk.Frame):
         self.mod_config = self.curr_config.copy()
 
         # Tkinter variables for UI
-        self.config_params = {param: (tk.StringVar() if isinstance(val, str) else tk.IntVar())
-                              for param, val in self.curr_config.items()}
-        self.delta_vars = {param: tk.IntVar(value=0) for param, val in self.curr_config.items() if isinstance(val, int)}
+        self.config_params = {
+            param: (tk.StringVar() if isinstance(val, str) else tk.IntVar())
+            for param, val in self.curr_config.items()
+        }
+        self.delta_vars = {
+            param: tk.IntVar(value=0) for param, val in self.curr_config.items() if isinstance(val, int)
+        }
+
+        # Bind traces to update dictionaries when font_name or font_variant are modified
+        self.config_params['font_name'].trace("w", self.update_string_params)
+        self.config_params['font_variant'].trace("w", self.update_string_params)
 
         # Dictionary to hold references to numeric labels
         self.curr_labels = {}
@@ -24,6 +32,15 @@ class FontConfigEditor(tk.Frame):
 
         # Set initial values in the editor
         self.update_config_display()
+
+    def update_string_params(self, *args):
+        """Handler to update font_name and font_variant in the configuration dictionaries."""
+        self.curr_config['font_name'] = self.config_params['font_name'].get()
+        self.curr_config['font_variant'] = self.config_params['font_variant'].get()
+        self.mod_config['font_name'] = self.curr_config['font_name']
+        self.mod_config['font_variant'] = self.curr_config['font_variant']
+        # Enable the Apply button since there's a change
+        self.update_apply_button_state()
 
     def create_widgets(self):
         """Create form entries for each configuration parameter."""
@@ -91,9 +108,6 @@ class FontConfigEditor(tk.Frame):
             if self.app_reference.image_display.pre_resample_image is not None:
                 self.app_reference.image_display.working_image = self.app_reference.image_display.pre_resample_image.copy()
                 self.app_reference.image_display.pre_resample_image = None
-
-        # # Debug print modified font config
-        # print(f"Modified Font Config: {self.mod_config}")
 
         # Update the modified and delta displays consistently
         self.update_mod_display(param)

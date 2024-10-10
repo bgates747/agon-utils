@@ -51,7 +51,7 @@ main:
     call printNewLine
 
 ; inputs: hl = bufferId; iy = pointer to filename
-    ld e,amiga_forever_8x8
+    ld e,mbf_pexo_Regular_6x8
     ld d,12 ; bytes per font list record
     mlt de
     ld iy,font_list

@@ -60,7 +60,9 @@ class TTFWidget(tk.Frame):
     def generate_and_return(self):
         """Generates the font image and metadata, and passes it to the main app."""
         font_config, font_image = self.generate_font_image()
-        self.app_reference.consume_font_image(font_config, font_image)  # Pass result to main app
+        self.app_reference.font_config_editor.set_config(font_config)
+        self.app_reference.image_display.load_image(font_image)
+        self.app_reference.editor_widget.initialize_grid()
 
     def update_point_size(self, size):
         """Update the point size when changed via DeltaControl."""
@@ -91,10 +93,14 @@ class TTFWidget(tk.Frame):
         else:
             char_images = list(char_images.values())
 
+        curr_config = self.app_reference.font_config_editor.get_config()
+        font_name = curr_config.get('font_name', 'ttf_font')
+        font_variant = curr_config.get('font_variant', 'ttf_variant')
+
         # Create the font configuration
         font_config = {
-            'font_name': 'ttf_font',
-            'font_variant': 'ttf_variant',
+            'font_name': font_name,
+            'font_variant': font_variant,
             'font_width': max_width,
             'font_height': max_height,
             'offset_left': 0,
@@ -111,11 +117,14 @@ class TTFWidget(tk.Frame):
         return font_config, font_image
 
     def render_characters(self):
-        """Render each character within the specified ASCII range and return images with max dimensions."""
+        """
+        Render each character within the specified ASCII range and return images cropped to max dimensions.
+        """
         char_images = {}
         max_width, max_height = 0, 0
         font = ImageFont.truetype(self.ttf_path, self.point_size)
 
+        # First Pass: Render each character and calculate max width and height without altering the original images
         for char_code in range(self.ascii_range[0], self.ascii_range[1] + 1):
             char = chr(char_code)
             char_img = Image.new("L", (256, 256), color=0)  # Black background
@@ -125,11 +134,19 @@ class TTFWidget(tk.Frame):
 
             if bbox:
                 width, height = bbox[2], bbox[3]
-                max_width, max_height = max(max_width, width), max(max_height, height)
-                cropped_img = char_img.crop(bbox)
-                char_images[char_code] = cropped_img
+                max_width = max(max_width, width)
+                max_height = max(max_height, height)
 
-        return char_images, max_width, max_height
+            # Store the original unaltered image for the second pass
+            char_images[char_code] = char_img
+
+        # Second Pass: Crop each image to max width and height determined from the first pass
+        cropped_images = {}
+        for char_code, char_img in char_images.items():
+            cropped_img = char_img.crop((0, 0, max_width, max_height))
+            cropped_images[char_code] = cropped_img
+
+        return cropped_images, max_width, max_height
 
     def apply_threshold(self, image, threshold=128):
         """Apply a threshold to a grayscale image to convert it to binary (black and white)."""
