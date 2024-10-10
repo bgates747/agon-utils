@@ -92,6 +92,9 @@ class FontConfigEditor(tk.Frame):
                 self.app_reference.image_display.working_image = self.app_reference.image_display.pre_resample_image.copy()
                 self.app_reference.image_display.pre_resample_image = None
 
+        # # Debug print modified font config
+        # print(f"Modified Font Config: {self.mod_config}")
+
         # Update the modified and delta displays consistently
         self.update_mod_display(param)
         self.update_delta_display(param)
