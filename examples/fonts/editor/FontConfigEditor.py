@@ -158,6 +158,9 @@ class FontConfigEditor(tk.Frame):
         self.update_config_display()
         self.update_apply_button_state()
 
+        # Clear the pre_resample_image and refresh the working image
+        self.app_reference.image_display.pre_resample_image = None
+
     def get_config(self):
         """Return the modified configuration as a dictionary."""
         return self.mod_config.copy()

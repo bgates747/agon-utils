@@ -36,22 +36,26 @@ class FontEditorApp(tk.Frame):
         control_frame = tk.Frame(self)
         control_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Create a sub-frame for the EditorWidget and FontConfigEditor
-        editor_frame = tk.Frame(control_frame)
-        editor_frame.pack(side=tk.LEFT, padx=10, pady=10, anchor="n")  # Keep aligned at top
+        # Create a frame for FontConfigEditor on the left
+        config_frame = tk.Frame(control_frame)
+        config_frame.pack(side=tk.LEFT, padx=10, pady=10, anchor="n", fill=tk.Y) 
 
-        # Editor Widget for character editing (placed above the FontConfigEditor)
-        self.editor_widget = EditorWidget(editor_frame, self)
-        self.editor_widget.pack(pady=(0, 5))  # Add padding between widgets
+        # FontConfigEditor for managing font metadata, placed on the left side
+        self.font_config_editor = FontConfigEditor(config_frame, self, self.default_font_config)
+        self.font_config_editor.pack(fill=tk.Y, pady=5, expand=True)
 
-        # FontConfigEditor for managing font metadata below the editor widget
-        self.font_config_editor = FontConfigEditor(editor_frame, self, self.default_font_config)
-        self.font_config_editor.pack(fill=tk.X, pady=5)
+        # Create a frame for ImageDisplayWidget and EditorWidget stacked vertically on the right
+        display_editor_frame = tk.Frame(control_frame)
+        display_editor_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-        # Image Display Widget for character selection (placed on the right)
+        # Image Display Widget for character selection (placed on top)
         blank_font_img = create_blank_font_image(self.default_font_config)
-        self.image_display = ImageDisplayWidget(control_frame, self, blank_font_img)
-        self.image_display.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        self.image_display = ImageDisplayWidget(display_editor_frame, self, blank_font_img)
+        self.image_display.pack(fill=tk.BOTH, expand=True, pady=(0, 5))
+
+        # Editor Widget for character editing (placed below the ImageDisplayWidget)
+        self.editor_widget = EditorWidget(display_editor_frame, self)
+        self.editor_widget.pack(fill=tk.X, pady=(5, 0))
 
         # Initialize EditorWidget with default metadata
         self.editor_widget.initialize_grid()
