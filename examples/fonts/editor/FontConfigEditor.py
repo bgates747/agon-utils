@@ -4,24 +4,11 @@ from AgonFont import resample_image
 class FontConfigEditor(tk.Frame):
     """A widget for viewing and editing font configurations, with numeric adjustment controls and apply functionality."""
 
-    DEFAULT_CONFIG = {
-        'font_name': 'no_font_loaded',
-        'font_variant': 'Regular',
-        'font_width': 9,
-        'font_height': 15,
-        'offset_left': 0,
-        'offset_top': 0,
-        'offset_width': 0,
-        'offset_height': 0,
-        'ascii_range_start': 32,
-        'ascii_range_end': 127
-    }
-
-    def __init__(self, parent, app_reference, config_dict=None, **kwargs):
+    def __init__(self, parent, app_reference, default_font_config, **kwargs):
         super().__init__(parent, **kwargs)
         self.app_reference = app_reference
         # Initialize current config and modified config dictionary
-        self.curr_config = config_dict or FontConfigEditor.DEFAULT_CONFIG.copy()
+        self.curr_config = default_font_config
         self.mod_config = self.curr_config.copy()
 
         # Tkinter variables for UI

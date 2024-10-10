@@ -72,6 +72,30 @@ def read_font_file(font_filepath, font_config):
 
     return char_images
 
+def create_blank_font_image(font_config):
+    """
+    Creates a blank PNG image with dimensions to fit all characters in the specified ASCII range.
+    
+    :param font_config: Dictionary with font configuration
+    :return: A blank PIL Image object with the font dimensions to fit the ASCII range
+    """
+    font_width = font_config['font_width']
+    font_height = font_config['font_height']
+    ascii_start = font_config.get('ascii_range_start', 32)
+    ascii_end = font_config.get('ascii_range_end', 127)
+    
+    # Calculate the number of characters and arrange them in a grid with 16 characters per row
+    num_chars = ascii_end - ascii_start + 1
+    chars_per_row = 16
+    num_rows = (num_chars + chars_per_row - 1) // chars_per_row  # Round up to account for partial rows
+
+    # Determine the overall image dimensions
+    image_width = chars_per_row * font_width
+    image_height = num_rows * font_height
+    
+    return Image.new('L', (image_width, image_height), color=0)
+
+
 def create_font_image(char_images, font_config, chars_per_row=16):
     """
     Creates a PNG image from the list of character images and arranges them in a grid.
@@ -87,7 +111,7 @@ def create_font_image(char_images, font_config, chars_per_row=16):
     rows = (num_chars + chars_per_row - 1) // chars_per_row
     
     # Create an empty image to hold the font grid
-    font_img = Image.new('L', (chars_per_row * char_width, rows * char_height), color=0)
+    font_img = create_blank_font_image(font_config)
     
     # Paste each character into the final image
     for i, char_img in enumerate(char_images):

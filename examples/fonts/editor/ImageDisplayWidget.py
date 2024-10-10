@@ -5,7 +5,7 @@ from CustomWidgets import GridToggleButton, ZoomControl
 class ImageDisplayWidget(tk.Frame):
     """A widget to display and zoom an image on a canvas, handle mouse clicks, and extract characters."""
     
-    def __init__(self, parent, app_reference, **kwargs):
+    def __init__(self, parent, app_reference, blank_font_img, **kwargs):
         super().__init__(parent, **kwargs)
         self.app_reference = app_reference
         self.current_ascii_code = None
@@ -13,10 +13,10 @@ class ImageDisplayWidget(tk.Frame):
         zoom_level = int(app_reference.config_manager.get_setting('default_zoom_level', '200'))
         self.current_zoom_index = self.zoom_levels.index(zoom_level)
 
-        self.original_image = None
-        self.working_image = None
+        self.original_image = blank_font_img
+        self.working_image = blank_font_img
         self.pre_resample_image = None  # New: Holds the original image before resampling
-        self.grid_shown = False
+        self.grid_shown = True
 
         # Control frame for toggle and zoom controls
         control_frame = tk.Frame(self)
@@ -40,6 +40,9 @@ class ImageDisplayWidget(tk.Frame):
         self.canvas.pack(fill=tk.BOTH, expand=True)
         self.canvas.bind("<Configure>", self.resize_canvas)
         self.canvas.bind("<Button-1>", self.on_click)
+
+        # # Load the blank font image
+        # self.load_image(self.working_image)
 
     def redraw(self):
         """Redraw the canvas elements including the image, grid, and selection box."""
@@ -87,7 +90,7 @@ class ImageDisplayWidget(tk.Frame):
         """Draw cyan gridlines based on the font dimensions and current zoom level."""
         self.clear_grid()
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
-        font_config = self.app_reference.font_config_manager.get_config()
+        font_config = self.app_reference.font_config_editor.get_config()
         grid_width = int(font_config['font_width'] * zoom_factor)
         grid_height = int(font_config['font_height'] * zoom_factor)
         img_width = int(self.working_image.width * zoom_factor)
@@ -102,7 +105,7 @@ class ImageDisplayWidget(tk.Frame):
         """Draw a green selection box around the selected character without obscuring edge pixels."""
         self.clear_selection_box()
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
-        font_config = self.app_reference.font_config_manager.get_config()
+        font_config = self.app_reference.font_config_editor.get_config()
         box_width = int(font_config['font_width'] * zoom_factor)
         box_height = int(font_config['font_height'] * zoom_factor)
         x1 = char_x * box_width - 1
@@ -147,7 +150,7 @@ class ImageDisplayWidget(tk.Frame):
         click_x, click_y = self.get_click_coordinates(event)
         char_x, char_y = self.get_character_coordinates(click_x, click_y)
         ascii_code = self.coordinates_to_ascii(char_x, char_y)
-        ascii_range = self.app_reference.font_config_manager.get_config()
+        ascii_range = self.app_reference.font_config_editor.get_config()
         if ascii_range['ascii_range_start'] <= ascii_code <= ascii_range['ascii_range_end']:
             self.current_ascii_code = ascii_code
             self.draw_selection_box(char_x, char_y)
@@ -162,7 +165,7 @@ class ImageDisplayWidget(tk.Frame):
         if not self.working_image:
             return
 
-        font_config = self.app_reference.font_config_manager.get_config()
+        font_config = self.app_reference.font_config_editor.get_config()
         x1 = char_x * font_config['font_width']
         y1 = char_y * font_config['font_height']
         x2 = x1 + font_config['font_width']
@@ -181,7 +184,7 @@ class ImageDisplayWidget(tk.Frame):
             print("No character selected or no image loaded.")
             return
 
-        font_config = self.app_reference.font_config_manager.get_config()
+        font_config = self.app_reference.font_config_editor.get_config()
         char_x, char_y = self.ascii_to_coordinates(self.current_ascii_code)
         pixel_color = new_value * 255
         self.working_image.putpixel((char_x * font_config['font_width'] + x, char_y * font_config['font_height'] + y), pixel_color)
@@ -189,13 +192,13 @@ class ImageDisplayWidget(tk.Frame):
 
     # Helper functions
     def ascii_to_coordinates(self, ascii_code):
-        font_config = self.app_reference.font_config_manager.get_config()
+        font_config = self.app_reference.font_config_editor.get_config()
         char_x = (ascii_code - font_config['ascii_range_start']) % 16
         char_y = (ascii_code - font_config['ascii_range_start']) // 16
         return char_x, char_y
 
     def coordinates_to_ascii(self, char_x, char_y):
-        font_config = self.app_reference.font_config_manager.get_config()
+        font_config = self.app_reference.font_config_editor.get_config()
         return char_y * 16 + char_x + font_config['ascii_range_start']
 
     def get_click_coordinates(self, event):
@@ -205,7 +208,7 @@ class ImageDisplayWidget(tk.Frame):
         return click_x, click_y
 
     def get_character_coordinates(self, click_x, click_y):
-        font_config = self.app_reference.font_config_manager.get_config()
+        font_config = self.app_reference.font_config_editor.get_config()
         char_x = click_x // font_config['font_width']
         char_y = click_y // font_config['font_height']
         return char_x, char_y

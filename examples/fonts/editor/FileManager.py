@@ -118,7 +118,7 @@ class FileManager:
 
         if font_config:
             # Set the font configuration in the editor
-            self.app_reference.font_config_manager.set_config(font_config)
+            self.app_reference.font_config_editor.set_config(font_config)
             self.save_font_metadata(font_config, ini_filepath)
             print("Saved font metadata: ", font_config)
             
@@ -149,7 +149,7 @@ class FileManager:
         return modified, final_config, font_image
 
     def save_file(self):
-        font_config = self.app_reference.font_config_manager.get_config()
+        font_config = self.app_reference.font_config_editor.get_config()
         default_name = f"{font_config['font_name']}_{font_config['font_variant']}_{font_config['font_width']}x{font_config['font_height']}"
         
         file_path = filedialog.asksaveasfilename(

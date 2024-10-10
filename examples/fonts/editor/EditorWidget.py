@@ -23,7 +23,7 @@ class EditorWidget(tk.Frame):
     def initialize_grid(self):
         """ Initialize the character grid and canvas based on the current font configuration """
         # Get font dimensions directly from the font configuration
-        font_config = self.app_reference.font_config_manager.get_config()
+        font_config = self.app_reference.font_config_editor.get_config()
         char_width = font_config['font_width']
         char_height = font_config['font_height']
 
@@ -50,7 +50,7 @@ class EditorWidget(tk.Frame):
             return  # Make sure the grid is initialized
 
         # Fetch current dimensions from font config for each row and column
-        font_config = self.app_reference.font_config_manager.get_config()
+        font_config = self.app_reference.font_config_editor.get_config()
         char_width = font_config['font_width']
         char_height = font_config['font_height']
 
@@ -79,7 +79,7 @@ class EditorWidget(tk.Frame):
             return
 
         # Retrieve dimensions from font config for consistency
-        font_config = self.app_reference.font_config_manager.get_config()
+        font_config = self.app_reference.font_config_editor.get_config()
         char_width = font_config['font_width']
         char_height = font_config['font_height']
 
