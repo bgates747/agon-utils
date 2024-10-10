@@ -44,8 +44,14 @@ main:
     xor a ; 640x480x16 single-buffered
     call vdu_set_screen_mode
 
+; print test string
+    call printNewLine
+    ld hl,lorem_ipsum
+    call printString
+    call printNewLine
+
 ; inputs: hl = bufferId; iy = pointer to filename
-    ld e,computer_pixel_7_Regular_8x12
+    ld e,amiga_forever_8x8
     ld d,12 ; bytes per font list record
     mlt de
     ld iy,font_list
@@ -93,7 +99,7 @@ main:
 
 ; print test string
     call printNewLine
-    ld hl,uxor_balnea
+    ld hl,lorem_ipsum
     call printString
     call printNewLine
 
@@ -133,7 +139,7 @@ lorem_ipsum:
     db "cognitionem, Quirine, si tibi probatur, repudiandam non esse\r\n"
     db "dices. Quae cum dixisset paulumque institisset, Quid est?\r\n"
     db "\r\n"
-    ; db 0
+    db 0
 
 uxor_balnea:
     db "Erat mulier, uxor Balnea, quae quinque viros tenuit sub vinculo\r\n"
