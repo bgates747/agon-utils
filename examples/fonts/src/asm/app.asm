@@ -41,11 +41,11 @@ main:
 ; 19    1024  768   4     60hz
     ; ld a,19
     ld a,8 ; 320x240x64 single-buffered
-    ; xor a ; 640x480x16 single-buffered
+    xor a ; 640x480x16 single-buffered
     call vdu_set_screen_mode
 
 ; inputs: hl = bufferId; iy = pointer to filename
-    ld e,wendy_neue_Regular_6x8
+    ld e,computer_pixel_7_Regular_8x12
     ld d,12 ; bytes per font list record
     mlt de
     ld iy,font_list
@@ -92,8 +92,8 @@ main:
     call vdu_font_select
 
 ; print test string
-    ; call printNewLine
-    ld hl,test_string
+    call printNewLine
+    ld hl,uxor_balnea
     call printString
     call printNewLine
 
@@ -118,3 +118,95 @@ test_string:
     ; db 0xE0,0xE1,0xE2,0xE3,0xE4,0xE5,0xE6,0xE7,0xE8,0xE9,0xEA,0xEB,0xEC,0xED,0xEE,0xEF,13,10
     ; db 0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF,13,10
     db 0x00
+
+lorem_ipsum:
+    db "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\r\n"
+    db "Nulla autem virtuosa tristitia, sed gloria virtutis in ipso est.\r\n"
+    db "Nam sapientis animum fluctibus movet; in vita, res novae,\r\n"
+    db "novas tempestates ferunt. Fortis enim est, qui dolorem, cum\r\n"
+    db "potest, arcet. Nemo tam divitiis abundat, qui, si desit libertas,\r\n"
+    db "beatus. Hic igitur ratio victum etiam sine voluptas quaerit.\r\n"
+    db "Nam in medio stat virtus: tam paupertas quam divitiae vitandae.\r\n"
+    db "Mens sibi conscia recti, semper aditum ad libertatem invocat.\r\n"
+    db "Quid est enim aliud esse versutum? Quod si ita se habeat,\r\n"
+    db "non possit beatam praestare vitam sapientia. Quamquam tu hanc\r\n"
+    db "cognitionem, Quirine, si tibi probatur, repudiandam non esse\r\n"
+    db "dices. Quae cum dixisset paulumque institisset, Quid est?\r\n"
+    db "\r\n"
+    ; db 0
+
+uxor_balnea:
+    db "Erat mulier, uxor Balnea, quae quinque viros tenuit sub vinculo\r\n"
+    db "matrimonii, una post alterum, et omnis vitam per amorem egit.\r\n"
+    db "Nulla mors amoris ipsam superavit. Cui rogatus est, vir novus,\r\n"
+    db "de matrimonio. At narravit fabulam miram, magna et risum.\r\n"
+    db "\r\n"
+    db "Adeo fabula incepit: Vir nobilis, eques, in diebus Arthuri, errans\r\n"
+    db "per silvas obscuras, invenit puellam pulcherrimam. Sed, ah, homo\r\n"
+    db "luxuriae succubuit; deliquit eam contra voluntatem. Rex dedit\r\n"
+    db "eum damnum multum, et iussit mortem. Regina tamen eius vitam\r\n"
+    db "servavit, sed tantum si responsum verum ad quaestionem sciret:\r\n"
+    db "'Quid volunt mulieres vere?'. Ita iter periculosum cepit.\r\n"
+    db "\r\n"
+    db "Eques per terras erravit, quaerens responsum ab omnibus: damas\r\n"
+    db "divas, ancillas, et vetulas. Quis rogavit, varia respondit; nescivit\r\n"
+    db "vere, quid volunt mulieres, donec foemina vetus decrepita, sed\r\n"
+    db "sapientia abundans, obtulit ei responsum rectum. Pretium erat\r\n"
+    db "parvulum, vel, sic putavit ille. Nam vetula rogavit quod ipse\r\n"
+    db "eam uxoraret. Illum hoc taeduit, sed voto facto, promissum tenuit.\r\n"
+    db "\r\n"
+    db "In nuptiali die, vetula dixit: 'Mulieres volunt dominari in vita;\r\n"
+    db "velint regnum suum tenere, dominam esse in domo et anima\r\n"
+    db "sua libere vivere.' Hoc scivit verum esse, et licentiam in vitam\r\n"
+    db "ipsam dedit ut ipsa dominaretur. Tunc mutatio mirabilis facta!\r\n"
+    db "\r\n"
+    db "Vetula ipsa repente pulcherrima facta est, iuvenis mulier dulcis\r\n"
+    db "atque praeclara. Et eques tandem laetus fuit; ex illo die beatus,\r\n"
+    db "quod sibi consortem novam benigneque passus est dominam.\r\n"
+    db "Amorem suum vera vidit: non tantum pulchritudinem quaesivit\r\n"
+    db "sed libertatem suam ac respectum quae amica vere debet.\r\n"
+    db "\r\n"
+    db "Sic uxor Balnea, fabulam finiens, risit amice, exemplo vitae suae.\r\n"
+    db "Ipsa, quinque viris domitam, vel audaciam habuit de vita docere.\r\n"
+    db "Licet risum multum ferre, fabula ipsa veritatem sapientem tenet:\r\n"
+    db "ipsa vita est dulcis, et in amore pari dominatio verum gaudium.\r\n"
+    db "\r\n"
+    db 0
+
+wife_of_bath:
+    db "She was a woman, wife of Bath, who held five husbands in her\r\n"
+    db "matrimonial chains, one after another, and lived all through love.\r\n"
+    db "No fear of loss could conquer her. When a new man asked her\r\n"
+    db "for marriage, she told him a marvelous tale, great and merry.\r\n"
+    db "\r\n"
+    db "So the tale begins: A noble knight, in Arthur's days, wandered\r\n"
+    db "through shadowed woods and found a lovely young maiden. Alas,\r\n"
+    db "the man fell to his lust and wronged her against her will. The king\r\n"
+    db "sentenced him to death, but the queen spared his life, if only he\r\n"
+    db "could answer one true question: 'What do women truly want?' So,\r\n"
+    db "he began a perilous quest.\r\n"
+    db "\r\n"
+    db "The knight roamed far, seeking answers from all: fine ladies,\r\n"
+    db "maids, even old women. Each gave him something different; he\r\n"
+    db "had no true answer, until a shriveled crone, wise in knowledge,\r\n"
+    db "offered him the right response. But her price was small, or so he\r\n"
+    db "thought—for the old woman demanded he wed her. Loath, but\r\n"
+    db "bound by his vow, he kept his word.\r\n"
+    db "\r\n"
+    db "On their wedding day, the crone said: 'Women wish for mastery,\r\n"
+    db "to hold their realm, to be the lady at home and in heart, and\r\n"
+    db "to live free in spirit.' He knew this to be true, so he gave her\r\n"
+    db "freedom in their life together. Then, a wondrous change took place!\r\n"
+    db "\r\n"
+    db "The old crone transformed, becoming young, sweet, and fair.\r\n"
+    db "The knight was overjoyed; from that day forth he was blessed,\r\n"
+    db "for his new bride was both noble and gentle. In her, he saw real\r\n"
+    db "love: not just beauty, but the freedom and respect a true partner\r\n"
+    db "deserves.\r\n"
+    db "\r\n"
+    db "Thus, the wife of Bath, ending her tale, laughed fondly, with\r\n"
+    db "a lesson from her own life. With five husbands tamed, she had\r\n"
+    db "dared to teach on life and love. Though jesting, her tale held\r\n"
+    db "wisdom: life is sweet, and in equal love, true joy is shared.\r\n"
+    db "\r\n"
+    db 0
