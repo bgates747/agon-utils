@@ -349,7 +349,7 @@ def render_psf_glyphs(psf_data):
     max_height = psf_data['height']
 
     for glyph_data in psf_data['glyphs']:
-        glyph_img = Image.new('1', (max_width, max_height), color=1)  # White background
+        glyph_img = Image.new('1', (max_width, max_height), color=0)  # Black background
         bytes_per_row = (max_width + 7) // 8
         
         for y in range(max_height):
@@ -358,7 +358,7 @@ def render_psf_glyphs(psf_data):
                 for bit in range(8):
                     pixel_x = byte_index * 8 + bit
                     if pixel_x < max_width and (byte & (0x80 >> bit)):
-                        glyph_img.putpixel((pixel_x, y), 0)  # Black pixel
+                        glyph_img.putpixel((pixel_x, y), 1)  # White pixel
         
         glyph_images.append(glyph_img)
     
