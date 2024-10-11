@@ -165,7 +165,7 @@ class FileManager:
         """
         
         # Generate default image and metadata with the widget
-        font_config, font_image = self.app_reference.ttf_widget.read_ttf_file(file_path, point_size=10)
+        font_config, font_image = self.app_reference.ttf_widget.read_ttf_file(file_path)
 
         modified = False
         

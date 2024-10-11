@@ -6,12 +6,17 @@ from AgonFont import create_font_image
 class TTFWidget(tk.Frame):
     """A widget for generating font images and metadata from a .ttf file with adjustable options."""
     
+    # Default values for the widget
+    DEFAULT_POINT_SIZE = 16
+    DEFAULT_ASCII_RANGE = (32, 127)
+    DEFAULT_OUTPUT_TYPE = 'thresholded'
+
     def __init__(self, parent, app_reference, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
         self.app_reference = app_reference
-        self.point_size = 10  # Default point size, updated on file open
-        self.ascii_range = (32, 127)
-        self.output_type = 'grayscale'
+        self.point_size = self.DEFAULT_POINT_SIZE  # Initialize with default point size
+        self.ascii_range = self.DEFAULT_ASCII_RANGE
+        self.output_type = self.DEFAULT_OUTPUT_TYPE
         self.ttf_path = None  # Filepath for the currently loaded TTF file
 
         # Set up UI controls
@@ -20,7 +25,7 @@ class TTFWidget(tk.Frame):
         # Display the frame in the parent widget
         self.pack(fill=tk.BOTH, expand=True)
 
-    def read_ttf_file(self, file_path, point_size):
+    def read_ttf_file(self, file_path, point_size=DEFAULT_POINT_SIZE):
         """Sets the TTF file path and initializes default settings."""
         self.ttf_path = file_path
         self.point_size_control.set_value(point_size)
@@ -36,19 +41,20 @@ class TTFWidget(tk.Frame):
         """Set up controls for point size, ASCII range, and output type selection."""
         # Point Size Control
         tk.Label(self, text="Point Size:").grid(row=0, column=0, sticky="e", padx=5, pady=5)
-        self.point_size_control = DeltaControl(self, label="Point Size", initial_value=self.point_size, step=1,
+        self.point_size_control = DeltaControl(self, label="Point Size", initial_value=self.DEFAULT_POINT_SIZE, step=1,
                                                min_value=1, max_value=100, callback=self.update_point_size)
         self.point_size_control.grid(row=0, column=1, sticky="w", padx=5, pady=5)
 
         # ASCII Range Entry
         tk.Label(self, text="ASCII Range:").grid(row=1, column=0, sticky="e", padx=5, pady=5)
         self.ascii_range_entry = tk.Entry(self)
-        self.ascii_range_entry.insert(0, "32-127")
+        # Set the default ASCII range
+        self.ascii_range_entry.insert(0, f"{self.DEFAULT_ASCII_RANGE[0]}-{self.DEFAULT_ASCII_RANGE[1]}")
         self.ascii_range_entry.grid(row=1, column=1, sticky="w", padx=5, pady=5)
 
         # Output Type Selection
         tk.Label(self, text="Output Type:").grid(row=2, column=0, sticky="e", padx=5, pady=5)
-        self.output_type_var = tk.StringVar(value="grayscale")
+        self.output_type_var = tk.StringVar(value=self.DEFAULT_OUTPUT_TYPE)
         output_options = ["grayscale", "thresholded", "quantized"]
         for idx, option in enumerate(output_options):
             tk.Radiobutton(self, text=option.title(), variable=self.output_type_var, value=option).grid(row=2, column=idx+1, sticky="w", padx=5, pady=5)
@@ -127,7 +133,7 @@ class TTFWidget(tk.Frame):
         # First Pass: Render each character and calculate max width and height without altering the original images
         for char_code in range(self.ascii_range[0], self.ascii_range[1] + 1):
             char = chr(char_code)
-            char_img = Image.new("L", (256, 256), color=0)  # Black background
+            char_img = Image.new("L", (64, 64), color=0)  # Black background
             draw = ImageDraw.Draw(char_img)
             draw.text((0, 0), char, font=font, fill=255)  # White character
             bbox = char_img.getbbox()
