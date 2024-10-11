@@ -250,13 +250,15 @@ def read_freetype_font(file_path, font_config_input):
 
 def generate_font_image(font, font_config_input):
     char_images, max_width, max_height = render_characters(font, font_config_input)
+    
+    # Check the raster_type directly
     raster_type = font_config_input.get('raster_type', 'thresholded')
-    if raster_type.get() == 'thresholded':
+    if raster_type == 'thresholded':
         threshold = font_config_input.get('threshold', 128)
         char_images = [apply_threshold(img, threshold) for img in char_images.values()]
-    elif raster_type.get() == 'quantized':
+    elif raster_type == 'quantized':
         char_images = [quantize_image(img) for img in char_images.values()]
-    elif raster_type.get() == 'palette':
+    elif raster_type == 'palette':
         fg_color = font_config_input.get('fg_color', 255)
         bg_color = font_config_input.get('bg_color', 0)
         # TODO: Implement palette rendering
@@ -282,7 +284,7 @@ def render_characters(font, font_config_input):
     """
     char_images = {}
     max_width, max_height = 0, 0
-    ascii_range = (font_config_input['ascii_range_start'], font_config_input['ascii_range_end'])
+    ascii_range = (font_config_input.get('ascii_range_start', 32), font_config_input.get('ascii_range_end', 127))
 
     # First Pass: Render each character and calculate max width and height without altering the original images
     for char_code in range(ascii_range[0], ascii_range[1] + 1):
@@ -308,10 +310,10 @@ def render_characters(font, font_config_input):
 
     return cropped_images, max_width, max_height
 
-def apply_threshold(self, image, threshold=128):
+def apply_threshold(image, threshold=128):
     """Apply a threshold to a grayscale image to convert it to binary (black and white)."""
     return image.point(lambda p: 255 if p > threshold else 0, mode="1")
 
-def quantize_image(self, image):
+def quantize_image(image):
     """Quantize a grayscale image to a 4-level palette."""
     return image.quantize(colors=4)
