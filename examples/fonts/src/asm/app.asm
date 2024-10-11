@@ -50,7 +50,7 @@ main:
     call printNewLine
 
 ; inputs: hl = bufferId; iy = pointer to filename
-    ld e,Chalkboard2_Bold_16x20
+    ld e,MarkerFelt1_Regular_16x18
     ld d,12 ; bytes per font list record
     mlt de
     ld iy,font_list
