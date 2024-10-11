@@ -36,11 +36,10 @@ exit:
     include "vdu_fonts.inc"
 
 ; Application includes
+    include "cfg.inc"
 
 main:
-    ld a,19 ; 1024  768   4     60hz
-    ; ld a,8 ; 320x240x64 single-buffered
-    ; xor a ; 640x480x16 single-buffered
+    ld a,screen_mode
     call vdu_set_screen_mode
 
 ; print test string
@@ -50,7 +49,7 @@ main:
     call printNewLine
 
 ; inputs: hl = bufferId; iy = pointer to filename
-    ld e,MarkerFelt1_Regular_16x18
+    ld e,font_name
     ld d,12 ; bytes per font list record
     mlt de
     ld iy,font_list
