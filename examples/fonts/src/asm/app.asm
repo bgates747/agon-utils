@@ -38,10 +38,9 @@ exit:
 ; Application includes
 
 main:
-; 19    1024  768   4     60hz
-    ; ld a,19
-    ld a,8 ; 320x240x64 single-buffered
-    xor a ; 640x480x16 single-buffered
+    ld a,19 ; 1024  768   4     60hz
+    ; ld a,8 ; 320x240x64 single-buffered
+    ; xor a ; 640x480x16 single-buffered
     call vdu_set_screen_mode
 
 ; print test string
@@ -51,7 +50,7 @@ main:
     call printNewLine
 
 ; inputs: hl = bufferId; iy = pointer to filename
-    ld e,mbf_pexo_Regular_6x8
+    ld e,AppleSDGothicNeo10_Regular_16x18
     ld d,12 ; bytes per font list record
     mlt de
     ld iy,font_list
