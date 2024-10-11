@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import math
 
 # =============================================================================
@@ -237,3 +237,81 @@ def resample_image(curr_config, mod_config, original_image):
 
     # Step 4: Use `create_font_image` to arrange the characters in a grid with modified configuration
     return create_font_image(char_images, mod_config)
+
+# =============================================================================
+# FreeTypeFont Functions
+# =============================================================================
+
+def read_freetype_font(file_path, font_config_input):
+    point_size = font_config_input.get('point_size', 16)
+    font = ImageFont.truetype(file_path, point_size)
+    font_config, font_image = generate_font_image(font, font_config_input)
+    return font_config, font_image
+
+def generate_font_image(font, font_config_input):
+    char_images, max_width, max_height = render_characters(font, font_config_input)
+    raster_type = font_config_input.get('raster_type', 'thresholded')
+    if raster_type.get() == 'thresholded':
+        threshold = font_config_input.get('threshold', 128)
+        char_images = [apply_threshold(img, threshold) for img in char_images.values()]
+    elif raster_type.get() == 'quantized':
+        char_images = [quantize_image(img) for img in char_images.values()]
+    elif raster_type.get() == 'palette':
+        fg_color = font_config_input.get('fg_color', 255)
+        bg_color = font_config_input.get('bg_color', 0)
+        # TODO: Implement palette rendering
+        char_images = list(char_images.values())
+    else:
+        char_images = list(char_images.values())
+
+    # Update the font configuration
+    font_config = font_config_input.copy()
+    font_config.update({
+        'font_width': max_width,
+        'font_height': max_height,
+    })
+
+    # Generate the master image
+    font_image = create_font_image(char_images, font_config)
+    
+    return font_config, font_image
+
+def render_characters(font, font_config_input):
+    """
+    Render each character within the specified ASCII range and return images cropped to max dimensions.
+    """
+    char_images = {}
+    max_width, max_height = 0, 0
+    ascii_range = (font_config_input['ascii_range_start'], font_config_input['ascii_range_end'])
+
+    # First Pass: Render each character and calculate max width and height without altering the original images
+    for char_code in range(ascii_range[0], ascii_range[1] + 1):
+        char = chr(char_code)
+        char_img = Image.new("L", (64, 64), color=0)  # Black background
+        draw = ImageDraw.Draw(char_img)
+        draw.text((0, 0), char, font=font, fill=255)  # White character
+        bbox = char_img.getbbox()
+
+        if bbox:
+            width, height = bbox[2], bbox[3]
+            max_width = max(max_width, width)
+            max_height = max(max_height, height)
+
+        # Store the original unaltered image for the second pass
+        char_images[char_code] = char_img
+
+    # Second Pass: Crop each image to max width and height determined from the first pass
+    cropped_images = {}
+    for char_code, char_img in char_images.items():
+        cropped_img = char_img.crop((0, 0, max_width, max_height))
+        cropped_images[char_code] = cropped_img
+
+    return cropped_images, max_width, max_height
+
+def apply_threshold(self, image, threshold=128):
+    """Apply a threshold to a grayscale image to convert it to binary (black and white)."""
+    return image.point(lambda p: 255 if p > threshold else 0, mode="1")
+
+def quantize_image(self, image):
+    """Quantize a grayscale image to a 4-level palette."""
+    return image.quantize(colors=4)
