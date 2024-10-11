@@ -8,7 +8,7 @@ font_config = {
 }
 
 # Path to the PSF font file (PSF1 or PSF2)
-psf_file_path = '/home/smith/Agon/mystuff/agon-utils/examples/fonts/src/fonts/cfonts/Lat2-VGA8.psf'
+psf_file_path = '/home/smith/Agon/mystuff/agon-utils/examples/fonts/src/fonts/cfonts/Lat2-VGA16.psf'
 
 # Read the PSF font and retrieve metadata and glyphs
 psf_data = read_psf_font(psf_file_path, font_config)
