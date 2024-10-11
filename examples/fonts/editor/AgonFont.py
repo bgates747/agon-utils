@@ -1,5 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 import math
+import struct
 
 # =============================================================================
 # Helper functions
@@ -317,3 +318,123 @@ def apply_threshold(image, threshold=128):
 def quantize_image(image):
     """Quantize a grayscale image to a 4-level palette."""
     return image.quantize(colors=4)
+
+# =============================================================================
+# PSF Font Functions
+# =============================================================================
+
+# PSF1 and PSF2 magic numbers
+PSF1_MAGIC = b'\x36\x04'
+PSF2_MAGIC = b'\x72\xb5\x4a\x86'
+PSF1_MODE512 = 1
+
+def read_psf_font(file_path, font_config):
+    """Detects PSF version and reads the PSF font file."""
+    with open(file_path, 'rb') as f:
+        magic = f.read(4)
+        
+        if magic[:2] == PSF1_MAGIC:
+            return read_psf1(file_path)
+        elif magic == PSF2_MAGIC:
+            return read_psf2(file_path)
+        else:
+            raise ValueError(f"Not a valid PSF1 or PSF2 file: {file_path}")
+
+def render_psf_glyphs(psf_data):
+    """
+    Render each glyph from PSF font data as images and return images and max dimensions.
+    """
+    glyph_images = []
+    max_width = psf_data['width']
+    max_height = psf_data['height']
+
+    for glyph_data in psf_data['glyphs']:
+        glyph_img = Image.new('1', (max_width, max_height), color=1)  # White background
+        bytes_per_row = (max_width + 7) // 8
+        
+        for y in range(max_height):
+            row_data = glyph_data[y * bytes_per_row:(y + 1) * bytes_per_row]
+            for byte_index, byte in enumerate(row_data):
+                for bit in range(8):
+                    pixel_x = byte_index * 8 + bit
+                    if pixel_x < max_width and (byte & (0x80 >> bit)):
+                        glyph_img.putpixel((pixel_x, y), 0)  # Black pixel
+        
+        glyph_images.append(glyph_img)
+    
+    return glyph_images, max_width, max_height
+
+def generate_psf_font_image(psf_data, font_config, chars_per_row=16):
+    """
+    Generate a master image from PSF glyph images in a grid.
+    """
+    glyph_images, max_width, max_height = render_psf_glyphs(psf_data)
+    num_glyphs = len(glyph_images)
+    rows = (num_glyphs + chars_per_row - 1) // chars_per_row
+    font_img = Image.new('1', (chars_per_row * max_width, rows * max_height), color=1)  # White background
+
+    for i, glyph_img in enumerate(glyph_images):
+        x = (i % chars_per_row) * max_width
+        y = (i // chars_per_row) * max_height
+        font_img.paste(glyph_img, (x, y))
+    
+    return font_img
+
+def read_psf1(file_path):
+    """Reads a PSF1 font file and returns glyph bitmaps and metadata."""
+    with open(file_path, 'rb') as f:
+        magic, mode, charsize = struct.unpack('2sBB', f.read(4))
+        if magic != PSF1_MAGIC:
+            raise ValueError(f"Not a valid PSF1 file: {file_path}")
+        
+        num_glyphs = 512 if mode & PSF1_MODE512 else 256
+        glyphs = [f.read(charsize) for _ in range(num_glyphs)]
+        
+        return {
+            'glyphs': glyphs,
+            'num_glyphs': num_glyphs,
+            'charsize': charsize,
+            'height': charsize,
+            'width': 8
+        }
+    
+def read_psf2(file_path):
+    """Reads a PSF2 font file and returns glyph bitmaps and metadata."""
+    with open(file_path, 'rb') as f:
+        header = f.read(32)
+        magic, version, header_size, flags, num_glyphs, glyph_size, height, width = struct.unpack('Iiiiiiii', header[:32])
+        
+        if magic != 0x864ab572:
+            raise ValueError(f"Not a valid PSF2 file: {file_path}")
+        
+        glyphs = [f.read(glyph_size) for _ in range(num_glyphs)]
+        unicode_table = extract_unicode_table(f) if flags & 0x01 else {}
+
+        return {
+            'glyphs': glyphs,
+            'num_glyphs': num_glyphs,
+            'glyph_size': glyph_size,
+            'height': height,
+            'width': width,
+            'unicode_table': unicode_table
+        }
+
+def extract_unicode_table(file_obj):
+    """Extracts the Unicode table from a PSF2 file if present."""
+    unicode_table = {}
+    while True:
+        byte = file_obj.read(1)
+        if not byte or byte == b'\xFF':
+            break
+        glyph_index = struct.unpack('B', byte)[0]
+        unicodes = []
+        while True:
+            codepoint_data = file_obj.read(2)
+            if len(codepoint_data) < 2:
+                break
+            codepoint = struct.unpack('H', codepoint_data)[0]
+            if codepoint == 0xFFFF:
+                break
+            unicodes.append(codepoint)
+        unicode_table[glyph_index] = unicodes
+    return unicode_table
