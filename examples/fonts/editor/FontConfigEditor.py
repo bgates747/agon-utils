@@ -118,7 +118,6 @@ class FontConfigEditor(tk.Frame):
             widget.destroy()
         self.create_widgets()
         self.update_config_display()
-        self.resample_working_image()
 
     def redraw_ui(self):
         """Redraw the UI layout without altering any metadata dictionaries."""

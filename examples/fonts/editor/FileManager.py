@@ -134,14 +134,12 @@ class FileManager:
             font_config, font_image = read_font(file_path, font_config)
 
             self.app_reference.font_config_editor.setup_ui_from_config(font_config)
-            
-            self.app_reference.config_manager.set_most_recent_open_directory(os.path.dirname(file_path))
-            self.app_reference.config_manager.set_most_recent_file(file_path)
-
             self.app_reference.image_display.load_image(font_image)
             self.app_reference.editor_widget.initialize_grid()
-            self.app_reference.image_display.trigger_click_on_ascii_code(ord('A'))
+            # self.app_reference.image_display.trigger_click_on_ascii_code(ord('A'))
 
+            self.app_reference.config_manager.set_most_recent_open_directory(os.path.dirname(file_path))
+            self.app_reference.config_manager.set_most_recent_file(file_path)
             filename = os.path.basename(file_path)
             self.app_reference.master.title(f"Agon Font Editor - {filename}")
 

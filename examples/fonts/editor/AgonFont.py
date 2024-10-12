@@ -501,7 +501,7 @@ def read_font(file_path, font_config_input):
 
     font_config_code = generate_font_config_code(font_config)
     print(font_config_code)
-    font_image.show()
+    # font_image.show()
     # Generate font image and configuration metadata
     return font_config, font_image
 

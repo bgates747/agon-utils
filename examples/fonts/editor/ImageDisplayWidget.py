@@ -71,6 +71,7 @@ class ImageDisplayWidget(tk.Frame):
         """Display the image on the canvas based on the current zoom level."""
         if self.working_image is None:
             return
+        
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
         new_width = int(self.working_image.width * zoom_factor)
         new_height = int(self.working_image.height * zoom_factor)
@@ -85,6 +86,8 @@ class ImageDisplayWidget(tk.Frame):
 
         # Adjust the canvas size if needed
         self.canvas.config(width=new_width, height=new_height)
+
+        self.image.show() # DEBUG
 
     def draw_grid(self):
         """Draw cyan gridlines based on the font dimensions and current zoom level."""
