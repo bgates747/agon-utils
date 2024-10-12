@@ -1,5 +1,5 @@
 import tkinter as tk
-from AgonFont import resample_image
+from AgonFont import resample_image, generate_font_config_code
 
 class FontConfigEditor(tk.Frame):
     """A widget for viewing and editing font configurations, with numeric adjustment controls and apply functionality."""
@@ -23,25 +23,10 @@ class FontConfigEditor(tk.Frame):
 
     def setup_ui_from_config(self, font_config):
         """Convenience function to reset and rebuild the UI based on a provided font_config dictionary."""
-        # Step 1: Clear existing configurations and reset dictionaries
-        self.reset_config()                # Resets curr_config and mod_config
-        self.set_config(font_config)       # Sets curr_config and mod_config to font_config
-        self.set_tk_variables()            # Initializes Tkinter variables based on the new configuration
-
-        # Step 2: Clear current UI elements
-        for widget in self.winfo_children():
-            widget.destroy()               # Removes all existing widgets
-
-        # Step 3: Rebuild the UI layout
-        self.create_widgets()              # Recreate all form entries and labels for the new configuration
-
-        # Step 4: Update display fields with the new configuration
-        self.update_config_display()       # Refreshes display fields to reflect the values in curr_config
-
-        # Set the apply button to disabled initially since no changes are made yet
-        self.apply_button.config(state=tk.DISABLED)
-
-        print("UI setup complete for new font configuration.")
+        self.reset_config()
+        self.set_config(font_config)
+        self.set_tk_variables()
+        self.clear_and_rebuild_ui()
 
     # =========================================================================
     # Configuration Metadata (Reset, Set, and Get)
@@ -59,7 +44,6 @@ class FontConfigEditor(tk.Frame):
 
     def set_tk_variables(self):
         """Initialize Tkinter variables for config based on current configuration dictionaries."""
-        # Initialize or update Tkinter variables for both params and delta vars
         self.config_params = {
             param: (tk.StringVar() if isinstance(val, str) else tk.IntVar())
             for param, val in self.curr_config.items()
@@ -101,18 +85,20 @@ class FontConfigEditor(tk.Frame):
 
         # Apply Changes button at the bottom, initially disabled
         self.apply_button = tk.Button(self, text="Apply Changes", state=tk.DISABLED, command=self.apply_changes)
-        self.apply_button.grid(row=row, column=0, columnspan=5, pady=10)
+        self.apply_button.grid(row=row, column=0, columnspan=2, pady=10)
+
+        # Add Redraw UI button to refresh the layout without altering metadata dictionaries
+        self.redraw_button = tk.Button(self, text="Redraw UI", command=self.redraw_ui)
+        self.redraw_button.grid(row=row, column=2, columnspan=2, pady=10)
 
     def create_numeric_controls(self, row, param, var):
         """Creates a three-column layout with current, Delta, and Mod labels, and +/- controls."""
         curr_value = self.curr_config.get(param, 0)
 
-        # Current value display, store reference in curr_labels for later updating
         curr_label = tk.Label(self, text=str(curr_value))
         curr_label.grid(row=row, column=1, padx=5)
-        self.curr_labels[param] = curr_label  # Store the label reference for numeric fields only
+        self.curr_labels[param] = curr_label
 
-        # Change (delta) display and +/- buttons
         delta_var = self.delta_vars[param]
         minus_button = tk.Button(self, text="-", command=lambda p=param, d=-1: self.modify_value(p, d))
         minus_button.grid(row=row, column=2, sticky="e", padx=2)
@@ -123,9 +109,27 @@ class FontConfigEditor(tk.Frame):
         plus_button = tk.Button(self, text="+", command=lambda p=param, d=1: self.modify_value(p, d))
         plus_button.grid(row=row, column=4, sticky="w", padx=2)
 
-        # Modified value display
         mod_label = tk.Label(self, textvariable=var)
         mod_label.grid(row=row, column=5, padx=5)
+
+    def clear_and_rebuild_ui(self):
+        """Clear and rebuild the UI layout based on current config_params values."""
+        for widget in self.winfo_children():
+            widget.destroy()
+        self.create_widgets()
+        self.update_config_display()
+        self.resample_working_image()
+
+    def redraw_ui(self):
+        """Redraw the UI layout without altering any metadata dictionaries."""
+        # Rebuild the UI and update all related display fields and widgets
+        self.clear_and_rebuild_ui()
+        self.update_config_display()
+        
+        # Additional refresh calls for connected widgets
+        self.app_reference.image_display.redraw()
+        self.app_reference.editor_widget.initialize_grid()
+        print("UI has been redrawn, and all connected widgets have been refreshed.")
 
     # =========================================================================
     # Display Update Methods
@@ -133,25 +137,12 @@ class FontConfigEditor(tk.Frame):
 
     def update_config_display(self):
         """Refresh all display fields based on the current configuration."""
-        debug_output = []  # Collect debug info here
-        
         for param, value in self.curr_config.items():
-            # Set the value for the display widget
             self.config_params[param].set(value)
-            
-            # Update current labels for numeric fields
             if param in self.curr_labels:
                 self.curr_labels[param].config(text=str(value))
-            
-            # Reset delta to 0 for numeric fields
             if param in self.delta_vars:
                 self.delta_vars[param].set(0)
-            
-            # Collect debug info
-            debug_output.append(f"{param}={value}")
-        
-        # Print all debug info in a single line after loop completes
-        print("Config display updated:", ", ".join(debug_output))
 
     def update_mod_display(self, param):
         """Update the modified display field for a single parameter."""

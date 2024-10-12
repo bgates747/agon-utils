@@ -317,45 +317,51 @@ def quantize_image(image):
 # PSF Font Functions
 # =============================================================================
 
-# PSF1 and PSF2 magic numbers
 PSF1_MAGIC = b'\x36\x04'
 PSF2_MAGIC = b'\x72\xb5\x4a\x86'
 PSF1_MODE512 = 1
 
 def read_psf_font(file_path, font_config_input):
-    """Detects PSF version, reads the PSF font file, and returns font config and font image."""
+    """Detects PSF version, reads the PSF font file, and returns standardized font config and font image."""
+    # Extract the base filename to use as the font name
+    font_name = os.path.splitext(os.path.basename(file_path))[0]
+    
+    # Read the magic number to determine PSF version
     with open(file_path, 'rb') as f:
         magic = f.read(4)
         
-        # Read the appropriate PSF file type and get glyph data
+        # Determine the appropriate PSF file type and read glyph data
         if magic[:2] == PSF1_MAGIC:
             psf_data = read_psf1(file_path)
+            font_variant = 'PSF1'
         elif magic == PSF2_MAGIC:
             psf_data = read_psf2(file_path)
+            font_variant = 'PSF2'
         else:
             raise ValueError(f"Not a valid PSF1 or PSF2 file: {file_path}")
 
-    # Set up the font configuration based on the provided font_config_input and PSF data
+    # Update font configuration based on provided input and PSF data
     font_config = font_config_input.copy()
     font_config.update({
+        'font_name': font_name,
+        'font_variant': font_variant,
         'font_width': psf_data['width'],
         'font_height': psf_data['height'],
-        'num_glyphs': psf_data['num_glyphs']
+        'num_glyphs': psf_data['num_glyphs'],
+        'ascii_range_start': 0,
+        'ascii_range_end': psf_data['num_glyphs'] - 1
     })
 
-    # Generate the master font image from glyph images
-    font_image = generate_psf_font_image(psf_data, font_config, chars_per_row=16)
+    # Generate the master font image from the glyph images
+    font_image = generate_psf_font_image(psf_data, chars_per_row=16)
     
     return font_config, font_image
 
 def render_psf_glyphs(psf_data):
-    """
-    Render each glyph from PSF font data as images and return images and max dimensions.
-    """
+    """Renders each glyph from PSF font data as images, returning the images and dimensions."""
     glyph_images = []
-    max_width = psf_data['width']
-    max_height = psf_data['height']
-
+    max_width, max_height = psf_data['width'], psf_data['height']
+    
     for glyph_data in psf_data['glyphs']:
         glyph_img = Image.new('1', (max_width, max_height), color=0)  # Black background
         bytes_per_row = (max_width + 7) // 8
@@ -372,10 +378,8 @@ def render_psf_glyphs(psf_data):
     
     return glyph_images, max_width, max_height
 
-def generate_psf_font_image(psf_data, font_config, chars_per_row=16):
-    """
-    Generate a master image from PSF glyph images in a grid.
-    """
+def generate_psf_font_image(psf_data, chars_per_row=16):
+    """Generate a master image from PSF glyph images arranged in a grid."""
     glyph_images, max_width, max_height = render_psf_glyphs(psf_data)
     num_glyphs = len(glyph_images)
     rows = (num_glyphs + chars_per_row - 1) // chars_per_row
@@ -389,7 +393,7 @@ def generate_psf_font_image(psf_data, font_config, chars_per_row=16):
     return font_image
 
 def read_psf1(file_path):
-    """Reads a PSF1 font file and returns glyph bitmaps and metadata."""
+    """Reads a PSF1 font file and returns glyph bitmaps and standardized metadata."""
     with open(file_path, 'rb') as f:
         magic, mode, charsize = struct.unpack('2sBB', f.read(4))
         if magic != PSF1_MAGIC:
@@ -401,13 +405,12 @@ def read_psf1(file_path):
         return {
             'glyphs': glyphs,
             'num_glyphs': num_glyphs,
-            'charsize': charsize,
             'height': charsize,
             'width': 8
         }
-    
+
 def read_psf2(file_path):
-    """Reads a PSF2 font file and returns glyph bitmaps and metadata."""
+    """Reads a PSF2 font file and returns glyph bitmaps and standardized metadata."""
     with open(file_path, 'rb') as f:
         header = f.read(32)
         magic, version, header_size, flags, num_glyphs, glyph_size, height, width = struct.unpack('Iiiiiiii', header[:32])
@@ -496,5 +499,19 @@ def read_font(file_path, font_config_input):
     else:
         raise ValueError(f"Unsupported font file type: {file_extension}")
 
+    font_config_code = generate_font_config_code(font_config)
+    print(font_config_code)
+    font_image.show()
     # Generate font image and configuration metadata
     return font_config, font_image
+
+def generate_font_config_code(font_config):
+    """Generate Python code to recreate a given font_config dictionary."""
+    lines = ["font_config = {"]
+    for key, value in font_config.items():
+        if isinstance(value, str):
+            lines.append(f"    '{key}': '{value}',")
+        else:
+            lines.append(f"    '{key}': {value},")
+    lines.append("}")
+    return "\n".join(lines)
