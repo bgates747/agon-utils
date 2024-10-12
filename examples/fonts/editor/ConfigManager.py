@@ -2,7 +2,7 @@ import configparser
 import os
 
 class ConfigManager:
-    def __init__(self, app_config_file='config.ini', font_meta_file='fontmeta.cfg'):
+    def __init__(self, app_config_file='data/config.ini', font_meta_file='data/fontmeta.cfg'):
         # Paths to config files, relative to the script directory
         script_dir = os.path.dirname(os.path.abspath(__file__))
         self.app_config_file = os.path.join(script_dir, app_config_file)
@@ -99,14 +99,19 @@ class ConfigManager:
             raise FileNotFoundError(f"Configuration file '{config_file}' not found.")
 
         for section in parser.sections():
-            default = parser.get(section, 'default')
-            datatype = parser.get(section, 'type').lower()
-            default_config[section] = self._parse_value(default, datatype)
-
+            # Check if the section has a 'default' option
+            if parser.has_option(section, 'default'):
+                default = parser.get(section, 'default')
+                datatype = parser.get(section, 'type').lower()
+                default_config[section] = self._parse_value(default, datatype)
+            else:
+                # Handle sections without 'default' as needed
+                print(f"Warning: No 'default' option found in section '{section}' of {config_file}")
+        
         return default_config
 
     # =========================================================================
-    # Font metadata methods (fontmeta.cfg)
+    # Font metadata methods (data/fontmeta.cfg)
     # =========================================================================
 
     def get_font_meta(self, key, fallback=None):
@@ -149,5 +154,7 @@ class ConfigManager:
             return float(value)
         elif datatype == 'string':
             return value
+        elif datatype == 'bool':
+            return value.lower() in ['true', '1', 'yes']
         else:
             raise ValueError(f"Unsupported data type '{datatype}'")

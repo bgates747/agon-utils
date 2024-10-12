@@ -1,6 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import math
 import struct
+import os
 
 # =============================================================================
 # Helper functions
@@ -108,19 +109,17 @@ def create_font_image(char_images, font_config, chars_per_row=16):
     """
     char_width = font_config['font_width']
     char_height = font_config['font_height']
-    num_chars = len(char_images)
-    rows = (num_chars + chars_per_row - 1) // chars_per_row
     
     # Create an empty image to hold the font grid
-    font_img = create_blank_font_image(font_config)
+    font_image = create_blank_font_image(font_config)
     
     # Paste each character into the final image
     for i, char_img in enumerate(char_images):
         x = (i % chars_per_row) * char_width
         y = (i // chars_per_row) * char_height
-        font_img.paste(char_img, (x, y))
+        font_image.paste(char_img, (x, y))
     
-    return font_img
+    return font_image
 
 # =============================================================================
 # png to font functions
@@ -243,12 +242,6 @@ def resample_image(curr_config, mod_config, original_image):
 # FreeTypeFont Functions
 # =============================================================================
 
-def read_freetype_font(file_path, font_config_input):
-    point_size = font_config_input.get('point_size', 16)
-    font = ImageFont.truetype(file_path, point_size)
-    font_config, font_image = generate_font_image(font, font_config_input)
-    return font_config, font_image
-
 def generate_font_image(font, font_config_input):
     char_images, max_width, max_height = render_characters(font, font_config_input)
     
@@ -328,17 +321,31 @@ PSF1_MAGIC = b'\x36\x04'
 PSF2_MAGIC = b'\x72\xb5\x4a\x86'
 PSF1_MODE512 = 1
 
-def read_psf_font(file_path, font_config):
-    """Detects PSF version and reads the PSF font file."""
+def read_psf_font(file_path, font_config_input):
+    """Detects PSF version, reads the PSF font file, and returns font config and font image."""
     with open(file_path, 'rb') as f:
         magic = f.read(4)
         
+        # Read the appropriate PSF file type and get glyph data
         if magic[:2] == PSF1_MAGIC:
-            return read_psf1(file_path)
+            psf_data = read_psf1(file_path)
         elif magic == PSF2_MAGIC:
-            return read_psf2(file_path)
+            psf_data = read_psf2(file_path)
         else:
             raise ValueError(f"Not a valid PSF1 or PSF2 file: {file_path}")
+
+    # Set up the font configuration based on the provided font_config_input and PSF data
+    font_config = font_config_input.copy()
+    font_config.update({
+        'font_width': psf_data['width'],
+        'font_height': psf_data['height'],
+        'num_glyphs': psf_data['num_glyphs']
+    })
+
+    # Generate the master font image from glyph images
+    font_image = generate_psf_font_image(psf_data, font_config, chars_per_row=16)
+    
+    return font_config, font_image
 
 def render_psf_glyphs(psf_data):
     """
@@ -371,14 +378,14 @@ def generate_psf_font_image(psf_data, font_config, chars_per_row=16):
     glyph_images, max_width, max_height = render_psf_glyphs(psf_data)
     num_glyphs = len(glyph_images)
     rows = (num_glyphs + chars_per_row - 1) // chars_per_row
-    font_img = Image.new('1', (chars_per_row * max_width, rows * max_height), color=1)  # White background
+    font_image = Image.new('1', (chars_per_row * max_width, rows * max_height), color=1)  # White background
 
     for i, glyph_img in enumerate(glyph_images):
         x = (i % chars_per_row) * max_width
         y = (i // chars_per_row) * max_height
-        font_img.paste(glyph_img, (x, y))
+        font_image.paste(glyph_img, (x, y))
     
-    return font_img
+    return font_image
 
 def read_psf1(file_path):
     """Reads a PSF1 font file and returns glyph bitmaps and metadata."""
@@ -438,3 +445,50 @@ def extract_unicode_table(file_obj):
             unicodes.append(codepoint)
         unicode_table[glyph_index] = unicodes
     return unicode_table
+
+# =============================================================================
+# PNG Font Functions
+# =============================================================================
+
+def open_png_image(file_path, font_config):
+    font_image = Image.open(file_path)
+    return font_config, font_image
+
+# =============================================================================
+# Agon .font File Functions
+# =============================================================================
+
+def open_font_file(file_path, font_config):
+    char_images = read_font_file(file_path, font_config)
+    font_image = create_font_image(char_images, font_config)
+    return font_config, font_image
+
+# =============================================================================
+# Master Font Functions
+# =============================================================================
+
+def read_font(file_path, font_config_input):
+    # Determine the font type based on the file extension
+    _, file_extension = os.path.splitext(file_path)
+    point_size = font_config_input.get('point_size', 16)
+
+    # Load the appropriate font object
+    if file_extension.lower() in ['.ttf', '.otf']:  # TrueType or OpenType font
+        font = ImageFont.truetype(file_path, point_size)
+        font_config, font_image = generate_font_image(font, font_config_input)
+    elif file_extension.lower() == '.ttc':  # TrueType Collection
+        # In case of font collections, use index for specific font face if needed
+        font_index = font_config_input.get('font_index', 0)
+        font = ImageFont.truetype(file_path, point_size, index=font_index)
+        font_config, font_image = generate_font_image(font, font_config_input)
+    elif file_extension == '.psf':
+        font_config, font_image = read_psf_font(file_path, font_config_input)
+    elif file_extension == '.png':
+        font_config, font_image = open_png_image(file_path, font_config)
+    elif file_extension == '.font':
+        font_config, font_image = open_font_file(file_path, font_config)
+    else:
+        raise ValueError(f"Unsupported font file type: {file_extension}")
+
+    # Generate font image and configuration metadata
+    return font_config, font_image

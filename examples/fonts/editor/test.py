@@ -1,14 +1,14 @@
 import os
 from ConfigManager import ConfigManager
 
-# Assuming that fontmeta.cfg is in the same directory as this script
+# Assuming that data/fontmeta.cfg is in the same directory as this script
 def main():
     # Initialize ConfigManager with specified config file names
-    config_manager = ConfigManager(app_config_file='config.ini', font_meta_file='fontmeta.cfg')
+    config_manager = ConfigManager(app_config_file='config.ini', font_meta_file='data/fontmeta.cfg')
     
-    # Get defaults from fontmeta.cfg
+    # Get defaults from data/fontmeta.cfg
     try:
-        fontmeta_defaults = config_manager.get_config_defaults('fontmeta.cfg')
+        fontmeta_defaults = config_manager.get_config_defaults('data/fontmeta.cfg')
         print("Font Metadata Defaults:")
         for key, value in fontmeta_defaults.items():
             print(f"{key}: {value}")
