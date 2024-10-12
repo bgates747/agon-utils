@@ -15,7 +15,7 @@ class FontEditorApp(tk.Frame):
         master.title("Agon Font Editor")  
         self.pack(fill=tk.BOTH, expand=True)
         self.config_manager = config_manager
-        self.default_font_config = self.config_manager.get_config_defaults('data/fontmeta.cfg')
+        self.default_font_config = self.config_manager.get_config_defaults('data/font.cfg')
 
         # Initialize application state variables for the currently loaded font files
         self.current_font_file = None  # Path to the currently open font file

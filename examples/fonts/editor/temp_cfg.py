@@ -4,7 +4,7 @@ import glob
 
 def create_specific_cfg(template_cfg, specific_ini, output_cfg):
     """Generates a specific .cfg file based on the template and a given .ini file."""
-    # Load the template data/fontmeta.cfg
+    # Load the template data/font.cfg
     template = configparser.ConfigParser()
     template.read(template_cfg)
     
@@ -62,6 +62,6 @@ if __name__ == "__main__":
     cfg_files = glob.glob(os.path.join(directory, "font_*.cfg"))
     for cfg_file in cfg_files:
         os.remove(cfg_file)
-        template_cfg_path = os.path.join(directory, "data/fontmeta.cfg")  # Path to template data/fontmeta.cfg
+        template_cfg_path = os.path.join(directory, "data/font.cfg")  # Path to template data/font.cfg
 
     process_all_ini_files(directory, template_cfg_path)

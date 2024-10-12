@@ -2,7 +2,7 @@ import configparser
 import os
 
 class ConfigManager:
-    def __init__(self, app_config_file='data/config.ini', font_meta_file='data/fontmeta.cfg'):
+    def __init__(self, app_config_file='data/config.ini', font_meta_file='data/font.cfg'):
         # Paths to config files, relative to the script directory
         script_dir = os.path.dirname(os.path.abspath(__file__))
         self.app_config_file = os.path.join(script_dir, app_config_file)
@@ -111,7 +111,7 @@ class ConfigManager:
         return default_config
 
     # =========================================================================
-    # Font metadata methods (data/fontmeta.cfg)
+    # Font metadata methods (data/font.cfg)
     # =========================================================================
 
     def get_font_meta(self, key, fallback=None):

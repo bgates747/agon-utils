@@ -21,8 +21,8 @@ class FontConfigEditor(tk.Frame):
         }
 
         # Bind traces to update dictionaries when font_name or font_variant are modified
-        self.config_params['font_name'].trace("w", self.update_string_params)
-        self.config_params['font_variant'].trace("w", self.update_string_params)
+        self.config_params['font_name'].trace_add("write", self.update_string_params)
+        self.config_params['font_variant'].trace_add("write", self.update_string_params)
 
         # Dictionary to hold references to numeric labels
         self.curr_labels = {}
