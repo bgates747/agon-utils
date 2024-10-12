@@ -160,3 +160,29 @@ class DeltaControl(tk.Frame):
     def set_callback(self, callback):
         """Set the callback function."""
         self.callback = callback
+
+class ConsoleDisplay(tk.Frame):
+    """A console-like text display widget with a method to append messages."""
+    
+    def __init__(self, parent, **kwargs):
+        super().__init__(parent, **kwargs)
+        
+        # Create a frame to hold the text display and scrollbar
+        text_frame = tk.Frame(self)
+        text_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        # Initialize text widget for console output
+        self.text_display = tk.Text(text_frame, wrap='word', height=5, width=70, state='disabled', bg='black', fg='white')
+        self.text_display.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        # Add scrollbar within the text_frame, aligned to the right
+        self.scrollbar = tk.Scrollbar(text_frame, command=self.text_display.yview)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.text_display.config(yscrollcommand=self.scrollbar.set)
+
+    def append_message(self, message):
+        """Append a new message to the console display."""
+        self.text_display.config(state='normal')  # Enable editing
+        self.text_display.insert(tk.END, message + "\n")  # Add the message
+        self.text_display.config(state='disabled')  # Disable editing
+        self.text_display.see(tk.END)  # Scroll to the end

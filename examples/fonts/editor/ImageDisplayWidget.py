@@ -8,6 +8,7 @@ class ImageDisplayWidget(tk.Frame):
     def __init__(self, parent, app_reference, blank_font_img, **kwargs):
         super().__init__(parent, **kwargs)
         self.app_reference = app_reference
+
         self.current_ascii_code = None
         self.zoom_levels = [25, 50, 100, 200, 300, 400]
         zoom_level = int(app_reference.config_manager.get_setting('default_zoom_level', '200'))
@@ -87,7 +88,8 @@ class ImageDisplayWidget(tk.Frame):
         # Adjust the canvas size if needed
         self.canvas.config(width=new_width, height=new_height)
 
-        self.image.show() # DEBUG
+        # self.image.show() # DEBUG
+        self.app_reference.console_display.append_message(f'Image displayed at {new_width}x{new_height} pixels.')
 
     def draw_grid(self):
         """Draw cyan gridlines based on the font dimensions and current zoom level."""

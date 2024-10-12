@@ -1,3 +1,4 @@
+
 import tkinter as tk
 from ImageDisplayWidget import ImageDisplayWidget
 from EditorWidget import EditorWidget
@@ -6,6 +7,7 @@ from ConfigManager import ConfigManager
 from FileManager import FileManager
 from FontConfigEditor import FontConfigEditor
 from AgonFont import create_blank_font_image
+from CustomWidgets import ConsoleDisplay
 
 class FontEditorApp(tk.Frame):
     """ The main application for the font editor """
@@ -27,6 +29,13 @@ class FontEditorApp(tk.Frame):
         # Create a control panel that contains widgets for font editing
         self.create_control_panel()
 
+        # ConsoleDisplay for output messages, placed across the bottom of control_frame
+        self.console_display = ConsoleDisplay(self)
+        self.console_display.pack(fill=tk.X, padx=10, pady=(10, 0), side=tk.BOTTOM)
+
+        # Example usage
+        self.console_display.append_message("Console initialized. Ready for output.")
+
         # Initialize the FileManager
         self.file_manager = FileManager(self)
 
@@ -43,24 +52,29 @@ class FontEditorApp(tk.Frame):
         self.font_config_editor = FontConfigEditor(config_frame, self)
         self.font_config_editor.pack(fill=tk.Y, pady=5, expand=True)
 
-        # Create a frame for ImageDisplayWidget and EditorWidget stacked vertically on the right
+        # Create a frame for ImageDisplayWidget and EditorWidget in a shared space on the right
         display_editor_frame = tk.Frame(control_frame)
         display_editor_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-        # Image Display Widget for character selection (placed on top)
-        blank_font_img = create_blank_font_image(self.config_manager.get_config_defaults('data/font.cfg'))
-        self.image_display = ImageDisplayWidget(display_editor_frame, self, blank_font_img)
-        self.image_display.pack(fill=tk.BOTH, expand=True, pady=(0, 5))
+        # Create a container frame to hold EditorWidget and ImageDisplayWidget together
+        editor_display_container = tk.Frame(display_editor_frame)
+        editor_display_container.pack(fill=tk.BOTH, expand=True)
 
-        # Editor Widget for character editing (placed below the ImageDisplayWidget)
-        self.editor_widget = EditorWidget(display_editor_frame, self)
-        self.editor_widget.pack(fill=tk.X, pady=(5, 0))
+        # Editor Widget in the top-left corner of the container
+        self.editor_widget = EditorWidget(editor_display_container, self)
+        self.editor_widget.pack(side=tk.LEFT, anchor="n", padx=5, pady=5)
+
+        # Image Display Widget, placed to the right of the EditorWidget
+        blank_font_img = create_blank_font_image(self.config_manager.get_config_defaults('data/font.cfg'))
+        self.image_display = ImageDisplayWidget(editor_display_container, self, blank_font_img)
+        self.image_display.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
 
         # Initialize EditorWidget with default metadata
         self.editor_widget.initialize_grid()
 
         # Trigger ImageDisplayWidget redraw with the blank font image
         self.image_display.trigger_click_on_ascii_code(self.current_ascii_code)
+
 
 # Example Usage
 if __name__ == "__main__":
