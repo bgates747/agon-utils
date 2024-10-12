@@ -4,14 +4,32 @@ from AgonFont import resample_image
 class FontConfigEditor(tk.Frame):
     """A widget for viewing and editing font configurations, with numeric adjustment controls and apply functionality."""
 
-    def __init__(self, parent, app_reference, default_font_config, **kwargs):
+    def __init__(self, parent, app_reference, **kwargs):
         super().__init__(parent, **kwargs)
         self.app_reference = app_reference
-        # Initialize current config and modified config dictionary
-        self.curr_config = default_font_config
+
+        # Initialize configuration metadata
+        self.reset_config()
+
+        # Dictionary to hold references to numeric labels
+        self.curr_labels = {}
+
+        # Initialize layout
+        self.create_widgets()
+
+        # Set initial values in the editor UI
+        self.update_config_display()
+
+    # =========================================================================
+    # Configuration Metadata (Reset, Set, and Get)
+    # =========================================================================
+
+    def reset_config(self):
+        """Clear the configuration dictionaries to their default values."""
+        self.curr_config = self.app_reference.config_manager.get_config_defaults('data/font_none.cfg')
         self.mod_config = self.curr_config.copy()
 
-        # Tkinter variables for UI
+        # Initialize Tkinter variables for config, without affecting UI
         self.config_params = {
             param: (tk.StringVar() if isinstance(val, str) else tk.IntVar())
             for param, val in self.curr_config.items()
@@ -20,27 +38,32 @@ class FontConfigEditor(tk.Frame):
             param: tk.IntVar(value=0) for param, val in self.curr_config.items() if isinstance(val, int)
         }
 
-        # Bind traces to update dictionaries when font_name or font_variant are modified
-        self.config_params['font_name'].trace_add("write", self.update_string_params)
-        self.config_params['font_variant'].trace_add("write", self.update_string_params)
+    def set_config(self, font_config):
+        """Set the current configuration without updating UI."""
+        self.curr_config = font_config.copy()
+        self.mod_config = font_config.copy()
 
-        # Dictionary to hold references to numeric labels
-        self.curr_labels = {}
+        # Ensure all parameters in curr_config have corresponding Tkinter variables
+        for param, value in self.curr_config.items():
+            if param not in self.config_params:
+                self.config_params[param] = tk.StringVar() if isinstance(value, str) else tk.IntVar()
+                self.delta_vars[param] = tk.IntVar(value=0) if isinstance(value, int) else None
 
-        # Initialize layout
-        self.create_widgets()
+    def get_config(self):
+        """Return the modified configuration as a dictionary."""
+        return self.mod_config.copy()
 
-        # Set initial values in the editor
-        self.update_config_display()
+    def get_original_config(self):
+        """Return the current configuration as a dictionary (unmodified)."""
+        return self.curr_config.copy()
 
-    def update_string_params(self, *args):
-        """Handler to update font_name and font_variant in the configuration dictionaries."""
-        self.curr_config['font_name'] = self.config_params['font_name'].get()
-        self.curr_config['font_variant'] = self.config_params['font_variant'].get()
-        self.mod_config['font_name'] = self.curr_config['font_name']
-        self.mod_config['font_variant'] = self.curr_config['font_variant']
-        # Enable the Apply button since there's a change
-        self.update_apply_button_state()
+    def get_modified_config(self):
+        """Return the modified configuration as a dictionary."""
+        return self.mod_config.copy()
+
+    # =========================================================================
+    # UI and Widget Creation
+    # =========================================================================
 
     def create_widgets(self):
         """Create form entries for each configuration parameter."""
@@ -85,6 +108,46 @@ class FontConfigEditor(tk.Frame):
         mod_label = tk.Label(self, textvariable=var)
         mod_label.grid(row=row, column=5, padx=5)
 
+    # =========================================================================
+    # Display Update Methods
+    # =========================================================================
+
+    def update_config_display(self):
+        """Refresh all display fields based on the current configuration."""
+        debug_output = []  # Collect debug info here
+        
+        for param, value in self.curr_config.items():
+            # Set the value for the display widget
+            self.config_params[param].set(value)
+            
+            # Update current labels for numeric fields
+            if param in self.curr_labels:
+                self.curr_labels[param].config(text=str(value))
+            
+            # Reset delta to 0 for numeric fields
+            if param in self.delta_vars:
+                self.delta_vars[param].set(0)
+            
+            # Collect debug info
+            debug_output.append(f"{param}={value}")
+        
+        # Print all debug info in a single line after loop completes
+        print("Config display updated:", ", ".join(debug_output))
+
+    def update_mod_display(self, param):
+        """Update the modified display field for a single parameter."""
+        mod_value = self.mod_config[param]
+        self.config_params[param].set(mod_value)
+
+    def update_delta_display(self, param):
+        """Update the delta display field for a single parameter."""
+        delta_value = self.mod_config[param] - self.curr_config[param]
+        self.delta_vars[param].set(delta_value)
+
+    # =========================================================================
+    # Parameter Modification Methods
+    # =========================================================================
+
     def modify_value(self, param, delta):
         """Adjust the modified value based on the delta and update displays."""
         # Apply delta to modified config value
@@ -116,6 +179,21 @@ class FontConfigEditor(tk.Frame):
         self.app_reference.editor_widget.initialize_grid()
         self.app_reference.image_display.trigger_click_on_ascii_code(self.app_reference.current_ascii_code)
 
+    def update_string_params(self, *args):
+        """Handler to update all string parameters in the configuration dictionaries."""
+        for param, var in self.config_params.items():
+            if isinstance(var, tk.StringVar):
+                # Update curr_config and mod_config with the current value of the StringVar
+                self.curr_config[param] = var.get()
+                self.mod_config[param] = var.get()
+        
+        # Enable the Apply button since there's a change
+        self.update_apply_button_state()
+
+    # =========================================================================
+    # Resampling and Apply Changes
+    # =========================================================================
+
     def resample_working_image(self):
         """Helper function to resample working image based on modified config."""
         curr_config = self.get_original_config()  # Using current image config as a base
@@ -127,39 +205,6 @@ class FontConfigEditor(tk.Frame):
         
         # Update the working image and refresh display
         self.app_reference.image_display.working_image = resampled_image
-
-    def set_config(self, config_dict):
-        """Set the current configuration and update all displays accordingly."""
-        self.curr_config = config_dict.copy()
-        self.mod_config = config_dict.copy()
-        self.update_config_display()
-
-    def update_config_display(self):
-        """Refresh all display fields based on the current configuration."""
-        for param, value in self.curr_config.items():
-            self.config_params[param].set(value)
-            # Only update curr_labels for numeric fields
-            if param in self.curr_labels:
-                self.curr_labels[param].config(text=str(value))
-            # Reset delta to 0 for numeric fields
-            if param in self.delta_vars:
-                self.delta_vars[param].set(0)
-
-    def update_mod_display(self, param):
-        """Update the modified display field for a single parameter."""
-        mod_value = self.mod_config[param]
-        self.config_params[param].set(mod_value)
-
-    def update_delta_display(self, param):
-        """Update the delta display field for a single parameter."""
-        delta_value = self.mod_config[param] - self.curr_config[param]
-        self.delta_vars[param].set(delta_value)
-
-    def update_apply_button_state(self):
-        """Enable or disable the Apply Changes button based on changes in modified values."""
-        changes_exist = any(self.curr_config.get(param) != self.mod_config.get(param) for param in self.curr_config)
-        self.apply_button.config(state=tk.NORMAL if changes_exist else tk.DISABLED)
-        return changes_exist
 
     def apply_changes(self):
         """Apply changes by updating current config to match modified config, reset deltas, and clear offsets."""
@@ -178,14 +223,8 @@ class FontConfigEditor(tk.Frame):
         # Clear the pre_resample_image and refresh the working image
         self.app_reference.image_display.pre_resample_image = None
 
-    def get_config(self):
-        """Return the modified configuration as a dictionary."""
-        return self.mod_config.copy()
-
-    def get_original_config(self):
-        """Return the current configuration as a dictionary (unmodified)."""
-        return self.curr_config.copy()
-
-    def get_modified_config(self):
-        """Return the modified configuration as a dictionary."""
-        return self.mod_config.copy()
+    def update_apply_button_state(self):
+        """Enable or disable the Apply Changes button based on changes in modified values."""
+        changes_exist = any(self.curr_config.get(param) != self.mod_config.get(param) for param in self.curr_config)
+        self.apply_button.config(state=tk.NORMAL if changes_exist else tk.DISABLED)
+        return changes_exist

@@ -15,7 +15,6 @@ class FontEditorApp(tk.Frame):
         master.title("Agon Font Editor")  
         self.pack(fill=tk.BOTH, expand=True)
         self.config_manager = config_manager
-        self.default_font_config = self.config_manager.get_config_defaults('data/font.cfg')
 
         # Initialize application state variables for the currently loaded font files
         self.current_font_file = None  # Path to the currently open font file
@@ -41,7 +40,7 @@ class FontEditorApp(tk.Frame):
         config_frame.pack(side=tk.LEFT, padx=10, pady=10, anchor="n", fill=tk.Y) 
 
         # FontConfigEditor for managing font metadata, placed on the left side
-        self.font_config_editor = FontConfigEditor(config_frame, self, self.default_font_config)
+        self.font_config_editor = FontConfigEditor(config_frame, self)
         self.font_config_editor.pack(fill=tk.Y, pady=5, expand=True)
 
         # Create a frame for ImageDisplayWidget and EditorWidget stacked vertically on the right
@@ -49,7 +48,7 @@ class FontEditorApp(tk.Frame):
         display_editor_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
         # Image Display Widget for character selection (placed on top)
-        blank_font_img = create_blank_font_image(self.default_font_config)
+        blank_font_img = create_blank_font_image(self.config_manager.get_config_defaults('data/font.cfg'))
         self.image_display = ImageDisplayWidget(display_editor_frame, self, blank_font_img)
         self.image_display.pack(fill=tk.BOTH, expand=True, pady=(0, 5))
 

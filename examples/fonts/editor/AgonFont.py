@@ -466,17 +466,23 @@ def open_font_file(file_path, font_config):
 # =============================================================================
 # Master Font Functions
 # =============================================================================
+from ConfigManager import ConfigManager
 
 def read_font(file_path, font_config_input):
+    config_manager = ConfigManager()
     # Determine the font type based on the file extension
     _, file_extension = os.path.splitext(file_path)
+    file_extension = file_extension.lower()
     point_size = font_config_input.get('point_size', 16)
+    default_config_file = f'data/font_{file_extension.replace(".","")}.cfg'
+    font_config_input = config_manager.append_defaults_to_config(font_config_input, default_config_file)
+    # print(f'read_font config input: {font_config_input}')
 
     # Load the appropriate font object
-    if file_extension.lower() in ['.ttf', '.otf']:  # TrueType or OpenType font
+    if file_extension in ['.ttf', '.otf']:  # TrueType or OpenType font
         font = ImageFont.truetype(file_path, point_size)
         font_config, font_image = generate_font_image(font, font_config_input)
-    elif file_extension.lower() == '.ttc':  # TrueType Collection
+    elif file_extension == '.ttc':  # TrueType Collection
         # In case of font collections, use index for specific font face if needed
         font_index = font_config_input.get('font_index', 0)
         font = ImageFont.truetype(file_path, point_size, index=font_index)
@@ -484,9 +490,9 @@ def read_font(file_path, font_config_input):
     elif file_extension == '.psf':
         font_config, font_image = read_psf_font(file_path, font_config_input)
     elif file_extension == '.png':
-        font_config, font_image = open_png_image(file_path, font_config)
+        font_config, font_image = open_png_image(file_path, font_config_input)
     elif file_extension == '.font':
-        font_config, font_image = open_font_file(file_path, font_config)
+        font_config, font_image = open_font_file(file_path, font_config_input)
     else:
         raise ValueError(f"Unsupported font file type: {file_extension}")
 

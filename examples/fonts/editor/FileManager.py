@@ -1,7 +1,5 @@
 import os
-import tkinter as tk
 from tkinter import filedialog, messagebox
-from PIL import Image
 import configparser
 from AgonFont import read_font, make_font
 
@@ -12,18 +10,35 @@ class FileManager:
     def parse_font_filename(self, file_path):
         """Parse font configuration from a font filename and return as a dictionary."""
         file_name = os.path.basename(file_path)
-        base_name = os.path.splitext(file_name)[0]
+        base_name, ext = os.path.splitext(file_name)
+        
+        # Check extensions we do parsing for
+        if ext not in {'.png', '.font'}:
+            # Return minimal configuration for unsupported file types
+            return {
+                'font_name': base_name,
+                'font_variant': "",
+                # 'font_width': 0,
+                # 'font_height': 0,
+                # 'offset_left': 0,
+                # 'offset_top': 0,
+                # 'offset_width': 0,
+                # 'offset_height': 0,
+                # 'ascii_range_start': 0,
+                # 'ascii_range_end': 0
+            }
+        
+        # Parse details from .png or .font file name
         parts = base_name.split('_')
-
-        # Attempt to parse width and height from filename
         try:
+            # Attempt to parse width and height from the last part
             dimensions_part = parts[-1]
             width, height = map(int, dimensions_part.split('x'))
         except ValueError:
             print("Warning: Unable to parse width and height from filename.")
             width, height = 0, 0
 
-        # Set name and variant
+        # Set name and variant based on filename
         font_variant = parts[-2] if len(parts) >= 2 else "Regular"
         font_name = '_'.join(parts[:-2]) if len(parts) > 2 else "unknown_font"
 
@@ -43,6 +58,7 @@ class FileManager:
             'ascii_range_start': ascii_range_start,
             'ascii_range_end': ascii_range_end
         }
+
 
     def validate_font_config(self, image, font_config):
         """Validate and adjust font config based on image dimensions."""
@@ -66,23 +82,57 @@ class FileManager:
         return True, {}
 
     def load_font_metadata_from_ini(self, ini_filepath):
-        """Load font metadata from a .ini file and return as a dictionary."""
-        config = configparser.ConfigParser()
-        config.read(ini_filepath)
-        font_section = config['font']
+        """Load font metadata from a .ini file, converting values based on types in the corresponding .cfg file."""
+        # Load the .ini file
+        ini_config = configparser.ConfigParser()
+        ini_config.read(ini_filepath)
+        font_section = ini_config['font']
+        
+        # Derive the font type from the filename pattern
+        base_name = os.path.basename(ini_filepath)
+        font_type = base_name.split('.')[-2]  # Get the part before '.ini' as the font type
+        
+        # Get the directory of the current script and construct the path for the .cfg file
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        cfg_filepath = os.path.join(script_dir, 'data', f'font_{font_type}.cfg')
+        
+        # print(f"Loading font metadata from {ini_filepath} using {cfg_filepath}")
 
-        return {
-            'font_name': font_section['font_name'],
-            'font_variant': font_section['font_variant'],
-            'font_width': config.getint('font', 'font_width'),
-            'font_height': config.getint('font', 'font_height'),
-            'offset_left': config.getint('font', 'offset_left'),
-            'offset_top': config.getint('font', 'offset_top'),
-            'offset_width': config.getint('font', 'offset_width'),
-            'offset_height': config.getint('font', 'offset_height'),
-            'ascii_range_start': config.getint('font', 'ascii_range_start'),
-            'ascii_range_end': config.getint('font', 'ascii_range_end')
-        }
+        # Load the .cfg file to get data types and check if it loaded correctly
+        cfg_config = configparser.ConfigParser()
+        cfg_read_result = cfg_config.read(cfg_filepath)
+
+        # Debug output to check if the .cfg file was read successfully
+        if not cfg_read_result:
+            print(f"Error: Failed to read .cfg file at {cfg_filepath}")
+        # else:
+        #     print(f"Successfully read .cfg file: {cfg_filepath}")
+        #     print(f"Sections found in .cfg file: {cfg_config.sections()}")
+
+        font_metadata = {}
+        
+        for key, value in font_section.items():
+            # Ensure the key exists as a section in the .cfg file
+            if cfg_config.has_section(key):
+                # Determine data type from .cfg section
+                datatype = cfg_config.get(key, 'type', fallback='string').lower()
+                # print(f"Key '{key}' found in .cfg file with data type '{datatype}'")
+
+                # Convert based on type
+                if datatype == 'int':
+                    font_metadata[key] = int(value)
+                elif datatype == 'float':
+                    font_metadata[key] = float(value)
+                elif datatype == 'bool':
+                    font_metadata[key] = value.lower() in ['true', '1', 'yes']
+                else:  # Default to string if no type specified
+                    font_metadata[key] = value
+            else:
+                print(f"Warning: '{key}' not found as a section in .cfg file. Defaulting to string.")
+                font_metadata[key] = value  # Default to string if the section is missing
+        
+        # print(f"Loaded font metadata from {ini_filepath}: {font_metadata}")
+        return font_metadata
 
     def save_font_metadata(self, font_config, ini_file_path):
         """Save the provided font configuration dictionary to an .ini file."""
@@ -117,6 +167,7 @@ class FileManager:
             font_config, font_image = read_font(file_path, font_config)
 
             # Set the font configuration in the editor
+            self.app_reference.font_config_editor.reset_config()
             self.app_reference.font_config_editor.set_config(font_config)
             # self.save_font_metadata(font_config, ini_filepath)
             # print("Saved font metadata: ", font_config)

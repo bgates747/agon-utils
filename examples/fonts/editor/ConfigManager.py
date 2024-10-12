@@ -83,7 +83,7 @@ class ConfigManager:
         self.set_setting('most_recent_file', file_path)
 
     # =========================================================================
-    # General method to get default values from any config file
+    # General methods for dealing with defaults
     # =========================================================================
 
     def get_config_defaults(self, config_file):
@@ -109,6 +109,14 @@ class ConfigManager:
                 print(f"Warning: No 'default' option found in section '{section}' of {config_file}")
         
         return default_config
+    
+    def append_defaults_to_config(self, font_config, config_file):
+        """Append default values to a font configuration dictionary."""
+        default_config = self.get_config_defaults(config_file)
+        for key, value in default_config.items():
+            if key not in font_config:
+                font_config[key] = value
+        return font_config
 
     # =========================================================================
     # Font metadata methods (data/font.cfg)
