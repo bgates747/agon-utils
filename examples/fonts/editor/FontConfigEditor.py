@@ -10,6 +10,7 @@ class FontConfigEditor(tk.Frame):
 
         # Initialize configuration metadata
         self.reset_config()
+        self.set_tk_variables()
 
         # Dictionary to hold references to numeric labels
         self.curr_labels = {}
@@ -20,6 +21,28 @@ class FontConfigEditor(tk.Frame):
         # Set initial values in the editor UI
         self.update_config_display()
 
+    def setup_ui_from_config(self, font_config):
+        """Convenience function to reset and rebuild the UI based on a provided font_config dictionary."""
+        # Step 1: Clear existing configurations and reset dictionaries
+        self.reset_config()                # Resets curr_config and mod_config
+        self.set_config(font_config)       # Sets curr_config and mod_config to font_config
+        self.set_tk_variables()            # Initializes Tkinter variables based on the new configuration
+
+        # Step 2: Clear current UI elements
+        for widget in self.winfo_children():
+            widget.destroy()               # Removes all existing widgets
+
+        # Step 3: Rebuild the UI layout
+        self.create_widgets()              # Recreate all form entries and labels for the new configuration
+
+        # Step 4: Update display fields with the new configuration
+        self.update_config_display()       # Refreshes display fields to reflect the values in curr_config
+
+        # Set the apply button to disabled initially since no changes are made yet
+        self.apply_button.config(state=tk.DISABLED)
+
+        print("UI setup complete for new font configuration.")
+
     # =========================================================================
     # Configuration Metadata (Reset, Set, and Get)
     # =========================================================================
@@ -29,7 +52,14 @@ class FontConfigEditor(tk.Frame):
         self.curr_config = self.app_reference.config_manager.get_config_defaults('data/font_none.cfg')
         self.mod_config = self.curr_config.copy()
 
-        # Initialize Tkinter variables for config, without affecting UI
+    def set_config(self, font_config):
+        """Set the current configuration without updating UI."""
+        self.curr_config = font_config.copy()
+        self.mod_config = font_config.copy()
+
+    def set_tk_variables(self):
+        """Initialize Tkinter variables for config based on current configuration dictionaries."""
+        # Initialize or update Tkinter variables for both params and delta vars
         self.config_params = {
             param: (tk.StringVar() if isinstance(val, str) else tk.IntVar())
             for param, val in self.curr_config.items()
@@ -37,17 +67,6 @@ class FontConfigEditor(tk.Frame):
         self.delta_vars = {
             param: tk.IntVar(value=0) for param, val in self.curr_config.items() if isinstance(val, int)
         }
-
-    def set_config(self, font_config):
-        """Set the current configuration without updating UI."""
-        self.curr_config = font_config.copy()
-        self.mod_config = font_config.copy()
-
-        # Ensure all parameters in curr_config have corresponding Tkinter variables
-        for param, value in self.curr_config.items():
-            if param not in self.config_params:
-                self.config_params[param] = tk.StringVar() if isinstance(value, str) else tk.IntVar()
-                self.delta_vars[param] = tk.IntVar(value=0) if isinstance(value, int) else None
 
     def get_config(self):
         """Return the modified configuration as a dictionary."""

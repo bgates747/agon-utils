@@ -2,6 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 import math
 import struct
 import os
+from ConfigManager import ConfigManager
 
 # =============================================================================
 # Helper functions
@@ -466,7 +467,6 @@ def open_font_file(file_path, font_config):
 # =============================================================================
 # Master Font Functions
 # =============================================================================
-from ConfigManager import ConfigManager
 
 def read_font(file_path, font_config_input):
     config_manager = ConfigManager()
