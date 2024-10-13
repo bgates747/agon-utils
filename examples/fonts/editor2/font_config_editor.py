@@ -1,7 +1,14 @@
 import os
 import tkinter as tk
 from tkinter import ttk
-from config_manager import read_xml_file, xml_element_to_dict
+from config_manager import (
+    read_xml_file,
+    xml_element_to_dict,
+    gather_includes,
+    save_combined_xml,
+    flatten_config,
+    dict_to_text
+)
 from custom_widgets import DeltaControl
 
 class FontConfigEditor(ttk.Frame):
@@ -74,11 +81,6 @@ class FontConfigEditor(ttk.Frame):
 
 # Main testing block
 if __name__ == "__main__":
-    import os
-    import tkinter as tk
-    from config_manager import gather_includes, save_combined_xml, read_xml_file, xml_element_to_dict, save_dict_as_text, flatten_config
-    from font_config_editor import FontConfigEditor
-
     # Define paths for configuration files
     config_directory = 'examples/fonts/editor2/data'
     config_filename = 'cfg.font.type.ttf.xml'
@@ -97,8 +99,9 @@ if __name__ == "__main__":
     flattened_config = flatten_config(config_dict)
 
     # Save the flattened configuration dictionary to a .py file for reference
-    save_dict_as_text(f'{combined_python_filepath}.flat.py', flattened_config)
-
+    config_dict_text = dict_to_text(flattened_config)
+    with open(f'{combined_python_filepath}.flat.py', 'w') as file:
+        file.write(config_dict_text)
     # Load DeltaControl configuration from XML for dynamic widgets
     delta_control_xml = read_xml_file(delta_control_config_path)[0]
     delta_control_config = xml_element_to_dict(delta_control_xml)

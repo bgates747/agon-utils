@@ -116,7 +116,7 @@ class DeltaControl(tk.Frame):
         self.data_type = self.get_data_type(config.get("value", {}).get("data_type"))
         self.precision = int(config.get("value", {}).get("precision", 2))
         self.step = float(config.get("value", {}).get("step", 1))
-        self.min_value = float(config.get("value", {}).get("min", float('-inf')))
+        self.min_value = float(config.get("value", {}).get("min", float('-Inf')))
         self.max_value = float(config.get("value", {}).get("max", float('inf')))
         self.value = float(config.get("value", {}).get("initial", 0))
         self.default_value = float(config.get("value", {}).get("default", self.value))

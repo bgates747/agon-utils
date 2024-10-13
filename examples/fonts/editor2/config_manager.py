@@ -3,8 +3,7 @@ import os
 
 def read_xml_file(file_path, tag=None):
     """
-    Extracts specified elements from an XML file. If `tag` is None, returns the full XML structure.
-    Returns elements in XML format.
+    Extracts specified elements from an XML file. If `tag` is None, returns the full XML root element.
     """
     tree = ET.parse(file_path)
     root = tree.getroot()
@@ -13,8 +12,8 @@ def read_xml_file(file_path, tag=None):
     if tag:
         return [element for element in root.findall(f".//{tag}")]
     
-    # If no specific tag is requested, return the full root element
-    return [root]
+    # If no specific tag is requested, return the full root element directly
+    return root
 
 def xml_element_to_dict(element):
     """
@@ -43,6 +42,18 @@ def xml_element_to_dict(element):
                 node[child.tag] = [node[child.tag], child_dict]
 
     return node
+
+def xml_to_dict(xml_input):
+    """
+    Converts an XML input (string or Element) to a nested dictionary.
+    """
+    # If the input is a string, parse it to an Element
+    if isinstance(xml_input, str):
+        root = ET.fromstring(xml_input)
+    else:
+        root = xml_input  # Assume it's already an Element
+    
+    return xml_element_to_dict(root)
 
 def gather_includes(file_path, loaded_files=None):
     """
@@ -91,36 +102,38 @@ def save_combined_xml(loaded_files, output_path):
     tree = ET.ElementTree(combined_root)
     tree.write(output_path, encoding="utf-8", xml_declaration=True)
 
-def save_dict_as_text(file_path, config_dict, indent=0):
+def dict_to_text(config_dict, indent=0):
     """
-    Saves a Python dictionary as a formatted text file with proper indentation.
+    Converts a Python dictionary to a formatted text string with proper indentation.
     """
-    with open(file_path, 'w') as file:
-        file.write("config = {\n")
-        _write_dict(config_dict, file, indent + 4)
-        file.write("}\n")
+    text = "config = {\n"
+    text += _dict_to_text(config_dict, indent + 4)
+    text += "}\n"
+    return text
 
-def _write_dict(d, file, indent):
+def _dict_to_text(d, indent):
     """
-    Helper function to recursively write dictionary contents with indentation.
+    Helper function to recursively format dictionary contents as a string with indentation.
     """
+    text = ""
     for key, value in d.items():
         if isinstance(value, dict):
-            file.write(" " * indent + f"'{key}': {{\n")
-            _write_dict(value, file, indent + 4)
-            file.write(" " * indent + "},\n")
+            text += " " * indent + f"'{key}': {{\n"
+            text += _dict_to_text(value, indent + 4)
+            text += " " * indent + "},\n"
         elif isinstance(value, list):
-            file.write(" " * indent + f"'{key}': [\n")
+            text += " " * indent + f"'{key}': [\n"
             for item in value:
                 if isinstance(item, dict):
-                    file.write(" " * (indent + 4) + "{\n")
-                    _write_dict(item, file, indent + 8)
-                    file.write(" " * (indent + 4) + "},\n")
+                    text += " " * (indent + 4) + "{\n"
+                    text += _dict_to_text(item, indent + 8)
+                    text += " " * (indent + 4) + "},\n"
                 else:
-                    file.write(" " * (indent + 4) + f"{repr(item)},\n")
-            file.write(" " * indent + "],\n")
+                    text += " " * (indent + 4) + f"{repr(item)},\n"
+            text += " " * indent + "],\n"
         else:
-            file.write(" " * indent + f"'{key}': {repr(value)},\n")
+            text += " " * indent + f"'{key}': {repr(value)},\n"
+    return text
 
 def flatten_config(
     nested_config,
@@ -186,7 +199,9 @@ if __name__ == "__main__":
     flattened_config = flatten_config(config_dict)
 
     # Save the parsed dictionary to a .py file
-    save_dict_as_text(f'{combined_python_filepath}.flat.py', flattened_config)
+    config_dict_text = dict_to_text(flattened_config)
+    with open(f'{combined_python_filepath}.flat.py', 'w') as file:
+        file.write(config_dict_text)
 
     # Print confirmation
     print(f"Combined XML saved to: {combined_xml_filepath}")
