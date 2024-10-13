@@ -5,7 +5,7 @@ from config_manager import (
     read_xml_file,
     xml_element_to_dict,
     gather_includes,
-    save_combined_xml,
+    combine_xml_files,
     flatten_config,
     dict_to_text
 )
@@ -85,33 +85,29 @@ if __name__ == "__main__":
     config_directory = 'examples/fonts/editor2/data'
     config_filename = 'cfg.font.type.ttf.xml'
     config_filepath = os.path.join(config_directory, config_filename)
-    combined_xml_filepath = os.path.join(config_directory, 'combined_config.xml')
-    combined_python_filepath = os.path.join(config_directory, 'combined_config.py')
     delta_control_config_path = os.path.join(config_directory, 'cfg.ui.delta_control.xml')
 
-    # Gather includes and save the combined XML to the specified path
+    # Gather includes and combine XML files, specifying the root tag
     loaded_files = gather_includes(config_filepath)
-    save_combined_xml(loaded_files, combined_xml_filepath)
+    combined_xml = combine_xml_files(loaded_files, root_tag="FontConfig")
 
-    # Parse the assembled XML back to a dictionary and flatten it
-    full_xml = read_xml_file(combined_xml_filepath)[0]
-    config_dict = xml_element_to_dict(full_xml)
-    flattened_config = flatten_config(config_dict)
+    # Convert the combined XML element directly to a dictionary
+    config_dict = xml_element_to_dict(combined_xml)
 
-    # Save the flattened configuration dictionary to a .py file for reference
-    config_dict_text = dict_to_text(flattened_config)
-    with open(f'{combined_python_filepath}.flat.py', 'w') as file:
-        file.write(config_dict_text)
+    # Flatten the configuration dictionary
+    flattened_config = flatten_config(config_dict, target_key="Setting", key_attr="name", value_attr="default", type_attr="type")
+
     # Load DeltaControl configuration from XML for dynamic widgets
-    delta_control_xml = read_xml_file(delta_control_config_path)[0]
+    delta_control_xml = read_xml_file(delta_control_config_path)
     delta_control_config = xml_element_to_dict(delta_control_xml)
 
-    # Initialize and run the Tkinter application
+    # Main application setup
     root = tk.Tk()
     root.title("Font Configuration Editor")
 
-    # Initialize FontConfigEditor with the full flattened configuration and DeltaControl config
+    # Initialize the FontConfigEditor widget with configuration parameters
     editor = FontConfigEditor(root, flattened_config, delta_control_config)
     editor.pack(fill="both", expand=True)
 
+    # Run the main application loop
     root.mainloop()

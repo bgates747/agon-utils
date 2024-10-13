@@ -3,8 +3,8 @@
     <value data_type="int" precision="0" step="1" min="-Inf" max="+Inf" initial="0" default="0"/>
     <button text_decrement="-" text_increment="+" width="3" font="Helvetica,8"/>
     <display>
-        <value_display width="5" anchor="e"/>
-        <delta_display width="5" anchor="e"/>
-        <net_display width="5" anchor="e"/>
+        <value_display width="5" anchor="center"/>
+        <delta_display width="5" anchor="center"/>
+        <net_display width="5" anchor="center"/>
     </display>
 </delta_control>

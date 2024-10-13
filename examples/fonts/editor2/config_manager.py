@@ -86,21 +86,45 @@ def gather_includes(file_path, loaded_files=None):
 
     return loaded_files
 
-def save_combined_xml(loaded_files, output_path):
+def combine_xml_files(loaded_files, root_tag=None):
     """
-    Combines XML elements from multiple files into a single XML structure and saves to output_path.
+    Combines XML elements from multiple files into a single XML structure.
+    Returns the combined XML Element, allowing for further processing.
     """
-    combined_root = ET.Element("FontConfig")
+    # Determine the root tag: use provided root_tag or fall back to the first file's root tag
+    if root_tag is None:
+        first_file_elements = next(iter(loaded_files.values()), None)
+        if first_file_elements:
+            root_tag = first_file_elements[0].tag
+        else:
+            raise ValueError("No files found to combine and no root tag specified.")
 
-    # Flatten structure: add only child elements of each root's <FontConfig> children
+    combined_root = ET.Element(root_tag)
+
+    # Add child elements from each loaded file, ensuring valid XML with a single root
     for file_elements in loaded_files.values():
         for element in file_elements:
-            for child in element:
-                combined_root.append(child)
+            if element.tag == root_tag:
+                # Add only the child elements if the element tag matches the root
+                for child in element:
+                    combined_root.append(child)
+            else:
+                # Directly add if the element tag doesn't match the root
+                combined_root.append(element)
 
-    # Save the combined XML to the specified output path
-    tree = ET.ElementTree(combined_root)
-    tree.write(output_path, encoding="utf-8", xml_declaration=True)
+    # Return the combined XML Element for further use
+    return combined_root
+
+def save_xml(file_path, xml_element):
+    """
+    Saves an entire XML structure to the specified file path.
+    
+    Parameters:
+    - file_path (str): The file path to save the XML.
+    - xml_element (Element): The root XML element to be saved as-is.
+    """
+    tree = ET.ElementTree(xml_element)
+    tree.write(file_path, encoding="utf-8", xml_declaration=True)
 
 def dict_to_text(config_dict, indent=0):
     """
@@ -135,13 +159,7 @@ def _dict_to_text(d, indent):
             text += " " * indent + f"'{key}': {repr(value)},\n"
     return text
 
-def flatten_config(
-    nested_config,
-    target_key="Setting",
-    key_attr="name",
-    value_attr="default",
-    type_attr="type"
-):
+def flatten_config(nested_config,target_key, key_attr, value_attr, type_attr):
     """
     Flattens a nested configuration dictionary, extracting specified attributes.
     
@@ -188,19 +206,22 @@ if __name__ == "__main__":
     combined_xml_filepath = os.path.join(config_directory, 'combined_config.xml')
     combined_python_filepath = os.path.join(config_directory, 'combined_config.py')
 
-    # Gather includes and save the combined XML to the specified path
+    # Gather includes and combine XML files, specifying the root tag
     loaded_files = gather_includes(config_filepath)
-    save_combined_xml(loaded_files, combined_xml_filepath)
+    combined_xml = combine_xml_files(loaded_files, root_tag="FontConfig")
 
-    # Parse the assembled XML back to a dictionary
-    full_xml = read_xml_file(combined_xml_filepath)[0]
-    config_dict = xml_element_to_dict(full_xml)
+    # Save the combined XML to a file for verification purposes
+    save_xml(combined_xml_filepath, combined_xml)
 
-    flattened_config = flatten_config(config_dict)
+    # Convert the combined XML element directly to a dictionary
+    config_dict = xml_element_to_dict(combined_xml)
 
-    # Save the parsed dictionary to a .py file
+    # Flatten the configuration dictionary
+    flattened_config = flatten_config(config_dict, target_key="Setting", key_attr="name", value_attr="default", type_attr="type")
+
+    # Save the flattened dictionary to a .py file for reference
     config_dict_text = dict_to_text(flattened_config)
-    with open(f'{combined_python_filepath}.flat.py', 'w') as file:
+    with open(f'{combined_python_filepath}', 'w') as file:
         file.write(config_dict_text)
 
     # Print confirmation
