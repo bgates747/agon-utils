@@ -1,0 +1,10 @@
+<delta_control>
+    <label text="Delta Control" width="15" anchor="w"/>
+    <value data_type="int" precision="0" step="1" min="-inf" max="+inf" initial="0" default="0"/>
+    <button text_decrement="-" text_increment="+" width="3" font="Helvetica,8"/>
+    <display>
+        <value_display width="10" anchor="e"/>
+        <delta_display width="10" anchor="e"/>
+        <net_display width="10" anchor="e"/>
+    </display>
+</delta_control>

@@ -1,5 +1,14 @@
 import os
 
+# Target directory
+target_directory = "examples/fonts/editor2"
+
+# Ensure the target directory exists, or create it
+os.makedirs(target_directory, exist_ok=True)
+
+# Change to the target directory
+os.chdir(target_directory)
+
 # Define the directory structure
 directories = {
     "": [
@@ -89,4 +98,4 @@ for dir_path, files in directories.items():
                 # Placeholder for configuration files
                 file.write(f"# Configuration file: {file_name}\n")
 
-print("Project structure created with stub files.")
+print("Project structure created with stub files in 'examples/fonts/editor2'.")

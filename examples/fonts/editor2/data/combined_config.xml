@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='utf-8'?>
+<FontConfig><IncludeFileConfig filename="data/cfg.font.type.all.xml" name="all" />
+    
+    
+    <Setting name="point_size" type="int" default="16" min="1" max="+Inf" description="Point size" />
+<Setting name="font_name" type="string" default="unnamed_font" description="Name of the font" />
+
+    <Setting name="font_variant" type="string" default="Regular" description="Font variant (e.g., Regular, Bold, Italic)" />
+
+    <Setting name="font_width" type="int" default="9" min="-Inf" max="+Inf" description="Width of each character" />
+
+    <Setting name="font_height" type="int" default="8" min="-Inf" max="+Inf" description="Height of each character" />
+
+    <Setting name="offset_left" type="int" default="0" min="-Inf" max="+Inf" description="Horizontal offset (e.g., for alignment)" />
+
+    <Setting name="offset_top" type="int" default="0" min="-Inf" max="+Inf" description="Vertical offset" />
+
+    <Setting name="offset_width" type="int" default="0" min="-Inf" max="+Inf" description="Additional width offset for specific rendering" />
+
+    <Setting name="offset_height" type="int" default="0" min="-Inf" max="+Inf" description="Additional height offset for specific rendering" />
+
+    <Setting name="scale_width" type="int" default="0" min="-Inf" max="+Inf" description="Additional width offset for specific rendering" />
+
+    <Setting name="scale_height" type="int" default="0" min="-Inf" max="+Inf" description="Additional height offset for specific rendering" />
+
+    <Setting name="ascii_start" type="int" default="32" min="0" max="255" description="ASCII start range for the font" />
+
+    <Setting name="ascii_end" type="int" default="127" min="0" max="255" description="ASCII end range for the font" />
+
+    <Setting name="chars_per_row" type="int" default="16" min="1" max="+Inf" description="Number of characters per row in the PNG grid" />
+
+    <Setting name="raster_type" type="string" default="thresholded" description="Rasterization type (options: grayscale, thresholded, quantized, palette)">
+        <AllowedValues>
+            <Value>grayscale</Value>
+            <Value>thresholded</Value>
+            <Value>quantized</Value>
+            <Value>palette</Value>
+        </AllowedValues>
+    </Setting>
+
+    <Setting name="threshold" type="int" default="128" min="0" max="255" description="Threshold value for binary conversion (if thresholded)" />
+
+    <Setting name="fg_color" type="int" default="255" min="0" max="255" description="Foreground color value for palette rendering" />
+
+    <Setting name="bg_color" type="int" default="0" min="0" max="255" description="Background color value for palette rendering" />
+</FontConfig>
