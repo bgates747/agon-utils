@@ -6,8 +6,7 @@ from config_manager import (
     xml_element_to_dict,
     gather_includes,
     combine_xml_files,
-    flatten_config,
-    dict_to_text
+    flatten_config
 )
 from custom_widgets import DeltaControl
 
@@ -15,14 +14,22 @@ class FontConfigEditor(ttk.Frame):
     """
     A dynamic editor for font configurations, creating controls based on configuration types.
     """
-    def __init__(self, parent, config, delta_control_config, *args, **kwargs):
+    def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-        self.config = config  # The flattened configuration dictionary
-        self.delta_control_config = delta_control_config
+
+        # Set config directories and file paths
+        self.config_directory = 'examples/fonts/editor2/data'
+        self.font_config_filename = 'cfg.font.type.all.xml'
+        self.font_config_filepath = os.path.join(self.config_directory, self.font_config_filename)
+
+        # Load configuration settings and prepare the editor
+        self.font_config = self.load_configurations(self.font_config_filepath)
+        self.delta_control_config = self.load_delta_control_config()
+
+        # Set up scrolling canvas and container for dynamic widgets
         self.canvas = tk.Canvas(self, borderwidth=0, background="#ffffff")
         self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
         self.scrollable_frame = ttk.Frame(self.canvas)
-
         self.scrollable_frame.bind(
             "<Configure>",
             lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
@@ -31,8 +38,10 @@ class FontConfigEditor(ttk.Frame):
         self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
 
+        # Initialize layout
         self.create_widgets()
 
+        # Pack the canvas and scrollbar
         self.canvas.grid(row=0, column=0, sticky="nsew")
         self.scrollbar.grid(row=0, column=1, sticky="ns")
         self.grid_rowconfigure(0, weight=1)
@@ -43,7 +52,7 @@ class FontConfigEditor(ttk.Frame):
         Create DeltaControls for numeric settings and Entry widgets for string settings.
         """
         row = 0
-        for key, value in self.config.items():
+        for key, value in self.font_config.items():
             if isinstance(value, (int, float)):
                 # Make a copy of delta_control_config for the current control
                 control_config = self.delta_control_config.copy()
@@ -72,6 +81,29 @@ class FontConfigEditor(ttk.Frame):
 
             row += 1
 
+    def load_configurations(self, font_config_filepath):
+        """
+        Load, combine, and flatten XML configuration for font settings.
+        """
+
+        # Gather includes and combine XML files, specifying the root tag
+        include_files = gather_includes(font_config_filepath)
+        font_config_xml = combine_xml_files(include_files, root_tag="FontConfig")
+
+        # Convert the combined XML element directly to a dictionary and flatten it
+        font_config = xml_element_to_dict(font_config_xml)
+        return flatten_config(font_config, target_key="Setting", key_attr="name", value_attr="default", type_attr="type")
+
+    def load_delta_control_config(self):
+        """
+        Load configuration from XML for DeltaControl widget settings.
+        """
+        delta_control_config_path = os.path.join(self.config_directory, 'cfg.ui.delta_control.xml')
+
+        # Read and parse the DeltaControl configuration
+        delta_control_config_xml = read_xml_file(delta_control_config_path)
+        return xml_element_to_dict(delta_control_config_xml)
+
     def update_config(self, key, value):
         """
         Update the configuration dictionary with the new value from the controls.
@@ -81,32 +113,12 @@ class FontConfigEditor(ttk.Frame):
 
 # Main testing block
 if __name__ == "__main__":
-    # Define paths for configuration files
-    config_directory = 'examples/fonts/editor2/data'
-    config_filename = 'cfg.font.type.ttf.xml'
-    config_filepath = os.path.join(config_directory, config_filename)
-    delta_control_config_path = os.path.join(config_directory, 'cfg.ui.delta_control.xml')
-
-    # Gather includes and combine XML files, specifying the root tag
-    loaded_files = gather_includes(config_filepath)
-    combined_xml = combine_xml_files(loaded_files, root_tag="FontConfig")
-
-    # Convert the combined XML element directly to a dictionary
-    config_dict = xml_element_to_dict(combined_xml)
-
-    # Flatten the configuration dictionary
-    flattened_config = flatten_config(config_dict, target_key="Setting", key_attr="name", value_attr="default", type_attr="type")
-
-    # Load DeltaControl configuration from XML for dynamic widgets
-    delta_control_xml = read_xml_file(delta_control_config_path)
-    delta_control_config = xml_element_to_dict(delta_control_xml)
-
     # Main application setup
     root = tk.Tk()
     root.title("Font Configuration Editor")
 
-    # Initialize the FontConfigEditor widget with configuration parameters
-    editor = FontConfigEditor(root, flattened_config, delta_control_config)
+    # Initialize the FontConfigEditor widget
+    editor = FontConfigEditor(root)
     editor.pack(fill="both", expand=True)
 
     # Run the main application loop
