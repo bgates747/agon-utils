@@ -1,0 +1,145 @@
+<settings>
+    <setting name="font_width">
+        <widget_type>DeltaControl</widget_type>
+        <label_text>Font Width</label_text>
+        <data_type>int</data_type>
+        <default_value>8</default_value>
+        <min_value>1</min_value>
+        <max_value>256</max_value>
+        <step_value>1</step_value>
+        <description>Width of each character</description>
+    </setting>
+
+    <setting name="font_height">
+        <widget_type>DeltaControl</widget_type>
+        <label_text>Font Height</label_text>
+        <data_type>int</data_type>
+        <default_value>8</default_value>
+        <min_value>1</min_value>
+        <max_value>256</max_value>
+        <step_value>1</step_value>
+        <description>Height of each character</description>
+    </setting>
+
+    <setting name="offset_left">
+        <widget_type>DeltaControl</widget_type>
+        <label_text>Offset Left</label_text>
+        <data_type>int</data_type>
+        <default_value>0</default_value>
+        <min_value>-256</min_value>
+        <max_value>+256</max_value>
+        <step_value>1</step_value>
+        <description>Horizontal offset (e.g., for alignment)</description>
+    </setting>
+
+    <setting name="offset_top">
+        <widget_type>DeltaControl</widget_type>
+        <label_text>Offset Top</label_text>
+        <data_type>int</data_type>
+        <default_value>0</default_value>
+        <min_value>-256</min_value>
+        <max_value>+256</max_value>
+        <step_value>1</step_value>
+        <description>Vertical offset</description>
+    </setting>
+
+    <setting name="offset_width">
+        <widget_type>DeltaControl</widget_type>
+        <label_text>Offset Width</label_text>
+        <data_type>int</data_type>
+        <default_value>0</default_value>
+        <min_value>-256</min_value>
+        <max_value>+256</max_value>
+        <step_value>1</step_value>
+        <description>Additional width offset for specific rendering</description>
+    </setting>
+
+    <setting name="offset_height">
+        <widget_type>DeltaControl</widget_type>
+        <label_text>Offset Height</label_text>
+        <data_type>int</data_type>
+        <default_value>0</default_value>
+        <min_value>-256</min_value>
+        <max_value>+256</max_value>
+        <step_value>1</step_value>
+        <description>Additional height offset for specific rendering</description>
+    </setting>
+
+    <setting name="scale_width">
+        <widget_type>DeltaControl</widget_type>
+        <label_text>Scale Width</label_text>
+        <data_type>int</data_type>
+        <default_value>0</default_value>
+        <min_value>-256</min_value>
+        <max_value>+256</max_value>
+        <step_value>1</step_value>
+        <description>Additional width offset for specific rendering</description>
+    </setting>
+
+    <setting name="scale_height">
+        <widget_type>DeltaControl</widget_type>
+        <label_text>Scale Height</label_text>
+        <data_type>int</data_type>
+        <default_value>0</default_value>
+        <min_value>-256</min_value>
+        <max_value>+256</max_value>
+        <step_value>1</step_value>
+        <description>Additional height offset for specific rendering</description>
+    </setting>
+
+    <setting name="ascii_start">
+        <widget_type>DeltaControl</widget_type>
+        <label_text>ASCII Start</label_text>
+        <data_type>int</data_type>
+        <default_value>32</default_value>
+        <min_value>0</min_value>
+        <max_value>255</max_value>
+        <step_value>16</step_value>
+        <description>ASCII start range for the font</description>
+    </setting>
+
+    <setting name="ascii_end">
+        <widget_type>DeltaControl</widget_type>
+        <label_text>ASCII End</label_text>
+        <data_type>int</data_type>
+        <default_value>127</default_value>
+        <min_value>0</min_value>
+        <max_value>255</max_value>
+        <step_value>16</step_value>
+        <description>ASCII end range for the font</description>
+    </setting>
+
+    <setting name="chars_per_row">
+        <widget_type>DeltaControl</widget_type>
+        <label_text>Chars per Row</label_text>
+        <data_type>int</data_type>
+        <default_value>16</default_value>
+        <min_value>1</min_value>
+        <max_value>256</max_value>
+        <step_value>1</step_value>
+        <description>Number of characters per row in the PNG grid</description>
+    </setting>
+
+    <setting name="threshold">
+        <widget_type>DeltaControl</widget_type>
+        <label_text>Threshold</label_text>
+        <data_type>int</data_type>
+        <default_value>128</default_value>
+        <min_value>0</min_value>
+        <max_value>255</max_value>
+        <step_value>1</step_value>
+        <description>Threshold value for binary conversion (if thresholded)</description>
+    </setting>
+
+    <setting name="point_size">
+        <widget_type>DeltaControl</widget_type>
+        <label_text>Point Size</label_text>
+        <data_type>int</data_type>
+        <default_value>8</default_value>
+        <min_value>1</min_value>
+        <max_value>+256</max_value>
+        <step_value>1</step_value>
+        <description>Size of the font in points</description>
+    </setting>
+
+</settings>

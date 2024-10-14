@@ -1,0 +1,16 @@
+<Values>
+  <List name="font_variant">
+    <Value>Regular</Value>
+    <Value>Bold</Value>
+    <Value>Italic</Value>
+  </List>
+  
+  <List name="raster_type">
+    <Value>grayscale</Value>
+    <Value>thresholded</Value>
+    <Value>quantized</Value>
+    <Value>palette</Value>
+  </List>
+
+  <!-- Additional lists as needed -->
+</Values>
