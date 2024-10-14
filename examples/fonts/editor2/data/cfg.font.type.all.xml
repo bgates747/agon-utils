@@ -3,6 +3,8 @@
 
     <Setting name="font_variant" type="string" default="Regular" description="Font variant (e.g., Regular, Bold, Italic)"/>
 
+    <Setting name="point_size" type="int" default="16" min="1" max="+Inf" description="Point size for scalable fonts (TrueType/OpenType)"/>
+
     <Setting name="font_width" type="int" default="9" min="-Inf" max="+Inf" description="Width of each character"/>
 
     <Setting name="font_height" type="int" default="8" min="-Inf" max="+Inf" description="Height of each character"/>
