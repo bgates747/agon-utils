@@ -1,19 +1,5 @@
 
 import tkinter as tk
-import json
-
-def get_typed_data(data_type, value):
-    if data_type == 'int':
-        return int(value)
-    elif data_type == 'float':
-        return float(value)
-    elif data_type == 'string':
-        return str(value)
-    return value
-
-def dict_to_text(data_dict):
-    """Return a nicely formatted string version of the dictionary, suitable for console printing or pasting into code."""
-    return json.dumps(data_dict, indent=4, sort_keys=False)
 
 class DeltaControl(tk.Frame):
     """A widget for handling delta_value adjustments with custom increment, bounds, and data-driven properties."""
