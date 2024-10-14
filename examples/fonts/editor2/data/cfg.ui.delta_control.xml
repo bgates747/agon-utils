@@ -1,5 +1,4 @@
 <delta_control>
-    <label text="Delta Control" width="12" anchor="w"/>
     <value data_type="int" precision="0" step="1" min="-Inf" max="+Inf" initial="0" default="0"/>
     <button text_decrement="-" text_increment="+" width="0" font="Helvetica,8"/>
     <display>

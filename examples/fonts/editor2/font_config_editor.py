@@ -42,7 +42,6 @@ class FontConfigEditor(ttk.Frame):
             if isinstance(value, (int, float)):
                 # Configure the DeltaControl for numeric settings
                 control_config = self.delta_control_config.copy()
-                control_config['label']['text'] = key.replace('_', ' ').capitalize()
                 control_config['value']['initial'] = value
                 control_config['value']['data_type'] = "int" if isinstance(value, int) else "float"
 
@@ -90,19 +89,5 @@ class FontConfigEditor(ttk.Frame):
         """
         Update the configuration dictionary with the new value from the controls.
         """
-        self.config[key] = value
+        self.font_config[key] = value
         print(f"Updated {key} to {value}")
-
-
-# Main testing block
-if __name__ == "__main__":
-    # Main application setup
-    root = tk.Tk()
-    root.title("Font Configuration Editor")
-
-    # Initialize the FontConfigEditor widget
-    editor = FontConfigEditor(root)
-    editor.pack(fill="both", expand=True)
-
-    # Run the main application loop
-    root.mainloop()

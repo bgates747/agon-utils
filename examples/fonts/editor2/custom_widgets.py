@@ -104,62 +104,66 @@ class DeltaControl(tk.Frame):
     def __init__(self, parent, config, callback=None, **kwargs):
         super().__init__(parent, **kwargs)
         
-        # Store callback as an instance attribute, not as a Tkinter option
-        self.callback = callback  
+        # Store callback as an instance attribute
+        self.callback = callback
 
-        # Retrieve configuration values from the dictionary
-        label_text = config.get("label", {}).get("text")
-        label_width = config.get("label", {}).get("width")
-        label_anchor = config.get("label", {}).get("anchor")
-
-        # Use get_data_type to interpret the data_type string from config
+        # Initialize values from XML config
         self.data_type = self.get_data_type(config.get("value", {}).get("data_type"))
-        self.precision = int(config.get("value", {}).get("precision", 2))
+        self.precision = int(config.get("value", {}).get("precision", 0))
         self.step = float(config.get("value", {}).get("step", 1))
         self.min_value = float(config.get("value", {}).get("min", float('-Inf')))
         self.max_value = float(config.get("value", {}).get("max", float('inf')))
-        self.value = float(config.get("value", {}).get("initial", 0))
-        self.default_value = float(config.get("value", {}).get("default", self.value))
+        
+        # Store initial and default values, set delta to 0
+        self.initial_value = float(config.get("value", {}).get("initial", 0))
+        self.default_value = float(config.get("value", {}).get("default", 0))
+        self.delta = 0
+        self.computed_value = self.initial_value
 
-        # Parse font settings for buttons
-        button_font = config.get("button", {}).get("font", "Helvetica,8").split(",")
+        # Button configuration
+        button_config = config.get("button", {})
+        button_font = button_config.get("font", "Helvetica,8").split(",")
         button_font = (button_font[0], int(button_font[1])) if len(button_font) == 2 else ("Helvetica", 8)
-        button_width = int(config.get("button", {}).get("width", 3))
+        button_width = int(button_config.get("width", 3))
 
-        # Label for the control description
-        self.label = tk.Label(self, text=label_text, width=int(label_width), anchor=label_anchor)
-        self.label.grid(row=0, column=0, padx=(0, 5))
+        # Display configurations
+        display_config = config.get("display", {})
+        value_display_config = display_config.get("value_display", {})
+        delta_display_config = display_config.get("delta_display", {})
+        net_display_config = display_config.get("net_display", {})
 
-        # Label for displaying the current value (instead of entry)
-        self.var = tk.StringVar(value=self.format_value(self.value))
-        value_display_width = int(config.get("display", {}).get("value_display", {}).get("width", 10))
-        value_display_anchor = config.get("display", {}).get("value_display", {}).get("anchor", "center")
-        self.value_display = tk.Label(self, textvariable=self.var, width=value_display_width, anchor=value_display_anchor)
-        self.value_display.grid(row=0, column=1)
+        # Original value display
+        self.var_original = tk.StringVar(value=self.format_value(self.initial_value))
+        self.original_display = tk.Label(self, textvariable=self.var_original,
+                                         width=int(value_display_config.get("width", 4)),
+                                         anchor=value_display_config.get("anchor", "center"))
+        self.original_display.grid(row=0, column=0)
 
-        # Decrement button with smaller font
-        decrement_text = config.get("button", {}).get("text_decrement", "-")
+        # Decrement button
+        decrement_text = button_config.get("text_decrement", "-")
         self.decrement_button = tk.Button(self, text=decrement_text, width=button_width, font=button_font,
-                                          command=lambda: self.modify_value(-self.step))
-        self.decrement_button.grid(row=0, column=2, padx=2)
+                                          command=lambda: self.modify_delta(-self.step))
+        self.decrement_button.grid(row=0, column=1, padx=2)
 
-        # Delta display label between the decrement and increment buttons
-        delta_display_width = int(config.get("display", {}).get("delta_display", {}).get("width", 10))
-        delta_display_anchor = config.get("display", {}).get("delta_display", {}).get("anchor", "center")
-        self.delta_display = tk.Label(self, text=self.calculate_delta_display(), width=delta_display_width, anchor=delta_display_anchor)
-        self.delta_display.grid(row=0, column=3, padx=2)
+        # Delta display
+        self.var_delta = tk.StringVar(value=self.format_value(self.delta))
+        self.delta_display = tk.Label(self, textvariable=self.var_delta,
+                                      width=int(delta_display_config.get("width", 4)),
+                                      anchor=delta_display_config.get("anchor", "center"))
+        self.delta_display.grid(row=0, column=2, padx=2)
 
-        # Increment button with smaller font
-        increment_text = config.get("button", {}).get("text_increment", "+")
+        # Increment button
+        increment_text = button_config.get("text_increment", "+")
         self.increment_button = tk.Button(self, text=increment_text, width=button_width, font=button_font,
-                                          command=lambda: self.modify_value(self.step))
-        self.increment_button.grid(row=0, column=4, padx=2)
+                                          command=lambda: self.modify_delta(self.step))
+        self.increment_button.grid(row=0, column=3, padx=2)
 
-        # Label for the net (current) value right of delta controls
-        net_display_width = int(config.get("display", {}).get("net_display", {}).get("width", 10))
-        net_display_anchor = config.get("display", {}).get("net_display", {}).get("anchor", "center")
-        self.net_display = tk.Label(self, text=self.calculate_net_display(), width=net_display_width, anchor=net_display_anchor)
-        self.net_display.grid(row=0, column=5, padx=(10, 0))
+        # Net (computed) display
+        self.var_computed = tk.StringVar(value=self.format_value(self.computed_value))
+        self.net_display = tk.Label(self, textvariable=self.var_computed,
+                                    width=int(net_display_config.get("width", 4)),
+                                    anchor=net_display_config.get("anchor", "center"))
+        self.net_display.grid(row=0, column=4)
 
     def get_data_type(self, type_str):
         """Return the correct data type based on a string (int or float)."""
@@ -169,81 +173,15 @@ class DeltaControl(tk.Frame):
         """Format the value according to the data type and precision."""
         return f"{value:.{self.precision}f}" if self.data_type == float else str(int(value))
 
-    def calculate_delta_display(self):
-        """Calculate and format the delta value (current - original)."""
-        delta_value = self.value - self.default_value
-        return f"{self.format_value(delta_value)}"
-
-    def calculate_net_display(self):
-        """Calculate and format the net display (original value + delta)."""
-        return f"{self.format_value(self.value)}"
-
-    def modify_value(self, delta):
-        """Modify the current value by a delta, respecting bounds."""
-        new_value = self.value + delta
-        self.set_value(new_value)
-
-    def set_value(self, new_value):
-        """Set the current value, enforce bounds, and update displays."""
-        new_value = max(self.min_value, min(self.max_value, new_value))
-        self.value = self.data_type(new_value)
-        self.var.set(self.format_value(self.value))
-        self.delta_display.config(text=self.calculate_delta_display())
-        self.net_display.config(text=self.calculate_net_display())
+    def modify_delta(self, delta):
+        """Modify the delta, update the computed value, and refresh displays."""
+        self.delta += delta
+        self.computed_value = max(self.min_value, min(self.max_value, self.initial_value + self.delta))
         
-        # Trigger the callback if provided
-        if self.callback:
-            self.callback(self.value)
+        # Update the delta and computed value displays
+        self.var_delta.set(self.format_value(self.delta))
+        self.var_computed.set(self.format_value(self.computed_value))
 
-    def reset_to_default(self):
-        """Reset the value to the default."""
-        self.set_value(self.default_value)
-
-    def get_value(self):
-        """Get the current value."""
-        return self.value
-
-    def set_callback(self, callback):
-        """Set the callback function."""
-        self.callback = callback
-
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    root.title("Custom Widgets Example")
-
-    def on_zoom_change(index):
-        print(f"Zoom level changed to: {index}")
-
-    def on_grid_toggle(state):
-        print(f"Grid toggled to: {'ON' if state else 'OFF'}")
-
-    def on_delta_change(value):
-        print(f"Delta value changed to: {value}")
-
-    zoom_control = ZoomControl(root, zoom_levels=[50, 75, 100, 125, 150], current_zoom_index=2, on_zoom_change=on_zoom_change)
-    zoom_control.pack(pady=10)
-
-    grid_toggle_button = GridToggleButton(root, on_toggle=on_grid_toggle)
-    grid_toggle_button.pack(pady=10)
-
-    console_display = ConsoleDisplay(root)
-    console_display.pack(pady=10)
-    console_display.append_message("Console initialized.")
-
-    delta_config = {
-        "label": {"text": "Delta Control", "width": 15, "anchor": "w"},
-        "value": {"data_type": "float", "precision": 2, "step": 0.1, "min": 0.0, "max": 10.0, "initial": 5.0, "default": 5.0},
-        "button": {"text_decrement": "-", "text_increment": "+", "width": 3, "font": "Helvetica,8"},
-        "display": {
-            "value_display": {"width": 10, "anchor": "e"},
-            "delta_display": {"width": 10, "anchor": "e"},
-            "net_display": {"width": 10, "anchor": "e"}
-        }
-    }
-    delta_control = DeltaControl(root, config=delta_config)
-    delta_control.set_callback(on_delta_change)
-    delta_control.pack(pady=10)
-
-    root.mainloop()
+    def get_computed_value(self):
+        """Retrieve the current computed value."""
+        return self.computed_value
