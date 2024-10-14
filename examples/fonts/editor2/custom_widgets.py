@@ -185,3 +185,15 @@ class DeltaControl(tk.Frame):
     def get_computed_value(self):
         """Retrieve the current computed value."""
         return self.computed_value
+
+    def set_initial_value(self, value):
+        """Set a new initial value and update the display to reflect this."""
+        self.initial_value = value
+        self.computed_value = value
+        self.var_original.set(self.format_value(self.initial_value))
+        self.var_computed.set(self.format_value(self.computed_value))
+
+    def reset_delta(self):
+        """Reset delta to zero and update the delta display."""
+        self.delta = 0
+        self.var_delta.set(self.format_value(self.delta))

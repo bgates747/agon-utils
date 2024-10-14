@@ -123,7 +123,7 @@ class FontConfigEditor(ttk.Frame):
             modified_config[key] = entry_var.get()  # Current value in the entry
 
         return modified_config
-
+    
     def apply_changes(self):
         """
         Apply modified values to font_config, set these values as the new original values in DeltaControls,
@@ -135,12 +135,8 @@ class FontConfigEditor(ttk.Frame):
         # Update DeltaControls to make the new values the original values and reset deltas
         for key, control in self.delta_controls.items():
             new_value = self.font_config[key]  # Get the updated value from font_config
-            control.original_value = new_value  # Set this as the new original value
-            control.delta = 0  # Reset delta to 0
-
-            # Update displays in DeltaControl to reflect the new original and zeroed delta
-            control.var_original.set(control.format_value(control.original_value))  # Update original value display
-            control.var_delta.set(control.format_value(control.delta))  # Zero delta display
+            control.set_initial_value(new_value)  # Set this as the new original value
+            control.reset_delta()  # Reset delta to 0
 
         # Refresh text entry fields with updated font_config values
         for key, entry_var in self.text_entries.items():
