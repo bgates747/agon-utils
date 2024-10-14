@@ -6,7 +6,8 @@ from config_manager import (
     xml_element_to_dict,
     gather_includes,
     combine_xml_files,
-    flatten_config
+    flatten_config,
+    dict_to_text
 )
 from custom_widgets import DeltaControl
 
@@ -25,6 +26,10 @@ class FontConfigEditor(ttk.Frame):
         # Load configuration settings and prepare the editor
         self.font_config = self.load_configurations(self.font_config_filepath)
         self.delta_control_config = self.load_delta_control_config()
+
+        # Store DeltaControls and text entries
+        self.delta_controls = {}
+        self.text_entries = {}
 
         # Initialize layout without scrolling
         self.create_widgets()
@@ -45,22 +50,23 @@ class FontConfigEditor(ttk.Frame):
                 control_config['value']['initial'] = value
                 control_config['value']['data_type'] = "int" if isinstance(value, int) else "float"
 
-                # Create DeltaControl with the updated config
-                control = DeltaControl(
-                    self,
-                    config=control_config,
-                    callback=lambda v, k=key: self.update_config(k, v)
-                )
+                # Create DeltaControl without callback for deferred updates
+                control = DeltaControl(self, config=control_config)
                 control.grid(row=row, column=1, pady=0, padx=(5, 10), sticky="w")
+                self.delta_controls[key] = control
 
             elif isinstance(value, str):
                 # Configure an entry for string settings
                 entry_var = tk.StringVar(value=value)
                 entry = ttk.Entry(self, textvariable=entry_var, width=25)
                 entry.grid(row=row, column=1, pady=0, padx=(5, 10), sticky="w")
-                entry.bind("<FocusOut>", lambda e, k=key, var=entry_var: self.update_config(k, var.get()))
+                self.text_entries[key] = entry_var
 
             row += 1
+
+        # Add the "Apply Changes" button at the end
+        apply_button = ttk.Button(self, text="Apply Changes", command=self.apply_changes)
+        apply_button.grid(row=row, column=0, columnspan=2, pady=(10, 0))
 
     def load_configurations(self, font_config_filepath):
         """
@@ -91,3 +97,55 @@ class FontConfigEditor(ttk.Frame):
         """
         self.font_config[key] = value
         print(f"Updated {key} to {value}")
+
+    def get_current_config(self):
+        """
+        Retrieve the original (default) configuration values from both text entry and DeltaControl widgets.
+        Returns:
+            dict: A dictionary containing the original configuration values.
+        """
+        return self.font_config
+
+    def get_modified_config(self):
+        """
+        Retrieve the modified (computed) configuration values from both text entry and DeltaControl widgets.
+        Returns:
+            dict: A dictionary containing the modified configuration values.
+        """
+        modified_config = {}
+
+        # Get computed values from DeltaControls
+        for key, control in self.delta_controls.items():
+            modified_config[key] = control.get_computed_value()  # Use the computed (modified) value
+
+        # Get current values from text entry fields
+        for key, entry_var in self.text_entries.items():
+            modified_config[key] = entry_var.get()  # Current value in the entry
+
+        return modified_config
+
+    def apply_changes(self):
+        """
+        Apply modified values to font_config, set these values as the new original values in DeltaControls,
+        reset deltas, and refresh the original value display.
+        """
+        # Retrieve modified configuration and apply to font_config
+        self.font_config = self.get_modified_config().copy()
+
+        # Update DeltaControls to make the new values the original values and reset deltas
+        for key, control in self.delta_controls.items():
+            new_value = self.font_config[key]  # Get the updated value from font_config
+            control.original_value = new_value  # Set this as the new original value
+            control.delta = 0  # Reset delta to 0
+
+            # Update displays in DeltaControl to reflect the new original and zeroed delta
+            control.var_original.set(control.format_value(control.original_value))  # Update original value display
+            control.var_delta.set(control.format_value(control.delta))  # Zero delta display
+
+        # Refresh text entry fields with updated font_config values
+        for key, entry_var in self.text_entries.items():
+            entry_var.set(self.font_config[key])  # Update entry field to show the updated value
+
+        # Print updated font_config for confirmation
+        font_config_text = dict_to_text(self.font_config)
+        print(font_config_text)

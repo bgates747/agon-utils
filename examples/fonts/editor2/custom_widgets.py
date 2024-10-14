@@ -11,7 +11,7 @@ class ZoomControl(tk.Frame):
         self.current_zoom_index = current_zoom_index  # Default zoom level index
 
         # Zoom out button
-        self.zoom_out_button = tk.Button(self, text="–", command=self.zoom_out, width=2)
+        self.zoom_out_button = tk.Button(self, text="-", command=self.zoom_out, width=2)
         self.zoom_out_button.pack(side=tk.LEFT, padx=2)
 
         # Dropdown for selecting zoom levels
@@ -128,16 +128,16 @@ class DeltaControl(tk.Frame):
 
         # Display configurations
         display_config = config.get("display", {})
-        value_display_config = display_config.get("value_display", {})
+        current_display_config = display_config.get("current_display", {})
         delta_display_config = display_config.get("delta_display", {})
-        net_display_config = display_config.get("net_display", {})
+        modified_display_config = display_config.get("modified_display", {})
 
         # Original value display
         self.var_original = tk.StringVar(value=self.format_value(self.initial_value))
-        self.original_display = tk.Label(self, textvariable=self.var_original,
-                                         width=int(value_display_config.get("width", 4)),
-                                         anchor=value_display_config.get("anchor", "center"))
-        self.original_display.grid(row=0, column=0)
+        self.current_display = tk.Label(self, textvariable=self.var_original,
+                                         width=int(current_display_config.get("width", 4)),
+                                         anchor=current_display_config.get("anchor", "center"))
+        self.current_display.grid(row=0, column=0)
 
         # Decrement button
         decrement_text = button_config.get("text_decrement", "-")
@@ -160,10 +160,10 @@ class DeltaControl(tk.Frame):
 
         # Net (computed) display
         self.var_computed = tk.StringVar(value=self.format_value(self.computed_value))
-        self.net_display = tk.Label(self, textvariable=self.var_computed,
-                                    width=int(net_display_config.get("width", 4)),
-                                    anchor=net_display_config.get("anchor", "center"))
-        self.net_display.grid(row=0, column=4)
+        self.modified_display = tk.Label(self, textvariable=self.var_computed,
+                                    width=int(modified_display_config.get("width", 4)),
+                                    anchor=modified_display_config.get("anchor", "center"))
+        self.modified_display.grid(row=0, column=4)
 
     def get_data_type(self, type_str):
         """Return the correct data type based on a string (int or float)."""
