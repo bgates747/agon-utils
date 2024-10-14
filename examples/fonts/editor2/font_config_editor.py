@@ -26,26 +26,8 @@ class FontConfigEditor(ttk.Frame):
         self.font_config = self.load_configurations(self.font_config_filepath)
         self.delta_control_config = self.load_delta_control_config()
 
-        # Set up scrolling canvas and container for dynamic widgets
-        self.canvas = tk.Canvas(self, borderwidth=0, background="#ffffff")
-        self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
-        self.scrollable_frame = ttk.Frame(self.canvas)
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-        )
-
-        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-        self.canvas.configure(yscrollcommand=self.scrollbar.set)
-
-        # Initialize layout
+        # Initialize layout without scrolling
         self.create_widgets()
-
-        # Pack the canvas and scrollbar
-        self.canvas.grid(row=0, column=0, sticky="nsew")
-        self.scrollbar.grid(row=0, column=1, sticky="ns")
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
 
     def create_widgets(self):
         """
@@ -53,30 +35,30 @@ class FontConfigEditor(ttk.Frame):
         """
         row = 0
         for key, value in self.font_config.items():
+            # Create a label for each setting
+            label = ttk.Label(self, text=key.replace('_', ' ').capitalize())
+            label.grid(row=row, column=0, pady=0, padx=(10, 5), sticky="w")
+
             if isinstance(value, (int, float)):
-                # Make a copy of delta_control_config for the current control
+                # Configure the DeltaControl for numeric settings
                 control_config = self.delta_control_config.copy()
-                
-                # Update control_config with specific values for the current DeltaControl
                 control_config['label']['text'] = key.replace('_', ' ').capitalize()
                 control_config['value']['initial'] = value
                 control_config['value']['data_type'] = "int" if isinstance(value, int) else "float"
 
                 # Create DeltaControl with the updated config
                 control = DeltaControl(
-                    self.scrollable_frame,
+                    self,
                     config=control_config,
                     callback=lambda v, k=key: self.update_config(k, v)
                 )
-                control.grid(row=row, column=0, pady=0, padx=10, sticky="w")
+                control.grid(row=row, column=1, pady=0, padx=(5, 10), sticky="w")
 
             elif isinstance(value, str):
-                label = ttk.Label(self.scrollable_frame, text=key.replace('_', ' ').capitalize())
-                label.grid(row=row, column=0, pady=0, padx=10, sticky="w")
-
+                # Configure an entry for string settings
                 entry_var = tk.StringVar(value=value)
-                entry = ttk.Entry(self.scrollable_frame, textvariable=entry_var, width=25)
-                entry.grid(row=row, column=1, pady=0, padx=10, sticky="w")
+                entry = ttk.Entry(self, textvariable=entry_var, width=25)
+                entry.grid(row=row, column=1, pady=0, padx=(5, 10), sticky="w")
                 entry.bind("<FocusOut>", lambda e, k=key, var=entry_var: self.update_config(k, var.get()))
 
             row += 1
@@ -110,6 +92,7 @@ class FontConfigEditor(ttk.Frame):
         """
         self.config[key] = value
         print(f"Updated {key} to {value}")
+
 
 # Main testing block
 if __name__ == "__main__":

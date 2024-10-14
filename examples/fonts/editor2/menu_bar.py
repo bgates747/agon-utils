@@ -22,7 +22,7 @@ class MenuBar:
 
         # File Menu
         self.file_menu = Menu(self.menubar, tearoff=0)
-        self.file_menu.add_command(label="Open", command=self.get_open_filename)
+        self.file_menu.add_command(label="Open", command=self.open_file)
         self.file_menu.add_command(label="Save", command=self.save_file)
         self.file_menu.add_command(label="Import", command=self.import_file)
         self.file_menu.add_command(label="Export", command=self.export_file)
