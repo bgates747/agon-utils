@@ -32,7 +32,7 @@ class FontEditor(ttk.Frame):
         config_frame.pack(side=tk.LEFT, padx=10, pady=10, anchor="n", fill=tk.Y) 
 
         # Create an instance of FontConfigEditor with XML data properties and an app reference
-        font_config_file = os.path.join(os.path.dirname(__file__), "font_config.xml")
+        font_config_file = os.path.join(os.path.dirname(__file__), "font_config_editor.xml")
         self.font_config_editor = FontConfigEditor(self, font_config_file, app_reference=self)
         self.font_config_editor.pack(fill="both", expand=True)
 

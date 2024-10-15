@@ -213,7 +213,7 @@ def load_font_metadata_from_xml(xml_filepath):
         font_config_xml = file.read()
     
     # Load general XML config (data types) as a string
-    general_config_path = os.path.join(os.path.dirname(__file__), "font_config.xml")
+    general_config_path = os.path.join(os.path.dirname(__file__), "font_config_editor.xml")
     with open(general_config_path, 'r') as file:
         general_config_xml = file.read()
     

@@ -2,6 +2,7 @@
 import os
 from tkinter import filedialog
 from config_manager import get_xml_value, set_xml_value, load_font_metadata_from_xml, dict_to_text
+from agon_font import read_font
 
 # ==========================================================================
 # File Menu
@@ -34,15 +35,18 @@ def open_file(app_reference):
         # Define the corresponding XML config path
         font_config_filepath = file_path + '.xml'
         
-        # Load font metadata from XML or derive it if XML doesn't exist
+        # Load font metadata from XML file
         if os.path.exists(font_config_filepath):
             font_config = load_font_metadata_from_xml(font_config_filepath)
-            print(dict_to_text(font_config))
-        # else:
-        #     font_config = app_reference.parse_font_filename(file_path)  # Custom function for fallback parsing
+        else:
+            font_config_filepath = os.path.join(os.path.dirname(__file__), "font_config.xml")
+            font_config = load_font_metadata_from_xml(font_config_filepath)
+            font_config["font_name"] = os.path.splitext(os.path.basename(file_path))[0]
+        print(dict_to_text(font_config)) # DEBUG
 
-        # # Load the font data using the font metadata
-        # font_config, font_image = read_font(file_path, font_config)
+        # Load the font data using the font metadata
+        font_config, font_image = read_font(file_path, font_config)
+        font_image.show()
 
         # # Pass the font configuration to the UI components
         # app_reference.font_config_editor.setup_ui_from_config(font_config)

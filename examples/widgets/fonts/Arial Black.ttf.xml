@@ -1,7 +1,7 @@
 <settings>
     <setting name="font_name" value="Arial Black"/>
     <setting name="font_variant" value="Regular"/>
-    <setting name="point_size" value="8"/>
+    <setting name="point_size" value="16"/>
     <setting name="font_width" value="8"/>
     <setting name="font_height" value="8"/>
     <setting name="offset_left" value="0"/>
@@ -15,5 +15,5 @@
     <setting name="palette" value="Agon64"/>
     <setting name="ascii_start" value="32"/>
     <setting name="ascii_end" value="127"/>
-    <setting name="chars_per_row" value="16"/>
+    <setting name="chars_per_row" value="32"/>
 </settings>

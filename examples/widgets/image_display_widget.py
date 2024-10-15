@@ -156,7 +156,7 @@ class ImageDisplayWidget(tk.Frame):
         char_x, char_y = self.get_character_coordinates(click_x, click_y)
         ascii_code = self.coordinates_to_ascii(char_x, char_y)
         ascii_range = self.app_reference.font_config_editor.get_config()
-        if ascii_range['ascii_range_start'] <= ascii_code <= ascii_range['ascii_range_end']:
+        if ascii_range['ascii_start'] <= ascii_code <= ascii_range['ascii_end']:
             self.current_ascii_code = ascii_code
             self.draw_selection_box(char_x, char_y)
             char_img = self.get_char_img_xy(char_x, char_y)
@@ -198,13 +198,13 @@ class ImageDisplayWidget(tk.Frame):
     # Helper functions
     def ascii_to_coordinates(self, ascii_code):
         font_config = self.app_reference.font_config_editor.get_config()
-        char_x = (ascii_code - font_config['ascii_range_start']) % 16
-        char_y = (ascii_code - font_config['ascii_range_start']) // 16
+        char_x = (ascii_code - font_config['ascii_start']) % 16
+        char_y = (ascii_code - font_config['ascii_start']) // 16
         return char_x, char_y
 
     def coordinates_to_ascii(self, char_x, char_y):
         font_config = self.app_reference.font_config_editor.get_config()
-        return char_y * 16 + char_x + font_config['ascii_range_start']
+        return char_y * 16 + char_x + font_config['ascii_start']
 
     def get_click_coordinates(self, event):
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100

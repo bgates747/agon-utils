@@ -2,7 +2,31 @@ from PIL import Image, ImageDraw, ImageFont
 import math
 import struct
 import os
-from config_manager import ConfigManager
+
+# =============================================================================
+# Master Font Functions
+# =============================================================================
+
+def read_font(file_path, font_config_input):
+    # Determine the font type based on the file extension
+    _, file_extension = os.path.splitext(file_path)
+    file_extension = file_extension.lower()
+    point_size = font_config_input['point_size']
+
+    # Load the appropriate font object
+    if file_extension in ['.ttf', '.otf']:  # TrueType or OpenType font
+        font = ImageFont.truetype(file_path, point_size)
+        font_config, font_image = generate_font_image(font, font_config_input)
+    elif file_extension == '.psf':
+        font_config, font_image = read_psf_font(file_path, font_config_input)
+    elif file_extension == '.png':
+        font_config, font_image = open_png_image(file_path, font_config_input)
+    elif file_extension == '.font':
+        font_config, font_image = open_font_file(file_path, font_config_input)
+    else:
+        raise ValueError(f"Unsupported font file type: {file_extension}")
+
+    return font_config, font_image
 
 # =============================================================================
 # Helper functions
@@ -33,7 +57,7 @@ def read_font_file(font_filepath, font_config):
     """
     char_width = font_config['font_width']
     char_height = font_config['font_height']
-    ascii_range = (font_config['ascii_range_start'], font_config['ascii_range_end'])
+    ascii_range = (font_config['ascii_start'], font_config['ascii_end'])
     
     # Round the true width up to the nearest multiple of 8 (padded width)
     padded_width = pad_to_byte(char_width)
@@ -56,7 +80,7 @@ def read_font_file(font_filepath, font_config):
 
     for i in range(num_chars):
         # Create an image for each character with the padded width
-        char_img = Image.new('L', (padded_width, char_height), color=0)  # 'L' mode for grayscale (1 byte per pixel)
+        char_img = Image.new('RGBA', (padded_width, char_height), color=(0, 0, 0, 0))
         pixels = char_img.load()
         
         # Extract character data from the font data
@@ -84,32 +108,32 @@ def create_blank_font_image(font_config):
     """
     font_width = font_config['font_width']
     font_height = font_config['font_height']
-    ascii_start = font_config.get('ascii_range_start', 32)
-    ascii_end = font_config.get('ascii_range_end', 127)
+    ascii_start = font_config['ascii_start']
+    ascii_end = font_config['ascii_end']
     
-    # Calculate the number of characters and arrange them in a grid with 16 characters per row
+    # Calculate the number of characters and arrange them in a grid
     num_chars = ascii_end - ascii_start + 1
-    chars_per_row = 16
-    num_rows = (num_chars + chars_per_row - 1) // chars_per_row  # Round up to account for partial rows
+    chars_per_row = font_config['chars_per_row']
+    num_rows = (num_chars + chars_per_row - 1) // chars_per_row
 
     # Determine the overall image dimensions
     image_width = chars_per_row * font_width
     image_height = num_rows * font_height
     
-    return Image.new('L', (image_width, image_height), color=0)
+    return Image.new('RGBA', (image_width, image_height), color=(0, 0, 0, 0))
 
 
-def create_font_image(char_images, font_config, chars_per_row=16):
+def create_font_image(char_images, font_config):
     """
     Creates a PNG image from the list of character images and arranges them in a grid.
     
     :param char_images: List of PIL Images representing each character
     :param font_config: Dictionary with font configuration
-    :param chars_per_row: Number of characters per row in the final image
     :return: A PIL Image object with all characters arranged in a grid
     """
     char_width = font_config['font_width']
     char_height = font_config['font_height']
+    chars_per_row = font_config['chars_per_row']
     
     # Create an empty image to hold the font grid
     font_image = create_blank_font_image(font_config)
@@ -147,7 +171,9 @@ def precomputations(font_config, src_img):
     font_height = font_config['font_height']
     offset_width = font_config['offset_width']
     offset_height = font_config['offset_height']
-    ascii_range = (font_config['ascii_range_start'], font_config['ascii_range_end'])
+    ascii_range = (font_config['ascii_start'], font_config['ascii_end'])
+    chars_per_row = font_config['chars_per_row']
+    num_rows = math.ceil(256 / chars_per_row)
     
     font_width_mod = font_width + offset_width
     font_height_mod = font_height + offset_height
@@ -155,11 +181,11 @@ def precomputations(font_config, src_img):
     sample_width = font_width if offset_width >= 0 else font_width_mod
     sample_height = font_height if offset_height >= 0 else font_height
 
-    # Create a new source image the size of a full 256 character grid (16x16 grid of characters)
-    src_img_new = Image.new('L', (font_width * 16, font_height * 16), color=0)
+    # Create a new source image the size of a full 256 character grid
+    src_img_new = Image.new('RGBA', (font_width * chars_per_row, font_height * num_rows), color=0)
 
     # Paste the cropped image into the correct position in the new source image
-    src_img_new.paste(src_img, (0, (ascii_range[0] // 16) * font_height))
+    src_img_new.paste(src_img, (0, (ascii_range[0] // chars_per_row) * font_height))
 
     # Return necessary values
     return font_width_padded, font_height_mod, sample_width, sample_height, src_img_new
@@ -171,7 +197,7 @@ def sample_char_image(ascii_code, font_config, src_img_new):
     sample_height = font_config['font_height']
 
     # Calculate the character's x and y coordinates in the grid
-    chars_per_row = 16
+    chars_per_row = font_config['chars_per_row']
     char_x = (ascii_code % chars_per_row) * font_width
     char_y = (ascii_code // chars_per_row) * font_height
 
@@ -215,10 +241,10 @@ def resample_image(curr_config, mod_config, original_image):
     adjusted_image.paste(original_image, (mod_config['offset_left'], mod_config['offset_top']))
 
     # Step 2: Determine the overlap of ASCII ranges
-    curr_ascii_start = curr_config['ascii_range_start']
-    curr_ascii_end = curr_config['ascii_range_end']
-    mod_ascii_start = mod_config['ascii_range_start']
-    mod_ascii_end = mod_config['ascii_range_end']
+    curr_ascii_start = curr_config['ascii_start']
+    curr_ascii_end = curr_config['ascii_end']
+    mod_ascii_start = mod_config['ascii_start']
+    mod_ascii_end = mod_config['ascii_end']
     overlap_start = max(curr_ascii_start, mod_ascii_start)
     overlap_end = min(curr_ascii_end, mod_ascii_end)
 
@@ -242,20 +268,19 @@ def resample_image(curr_config, mod_config, original_image):
 # =============================================================================
 # FreeTypeFont Functions
 # =============================================================================
-
 def generate_font_image(font, font_config_input):
     char_images, max_width, max_height = render_characters(font, font_config_input)
     
     # Check the raster_type directly
-    raster_type = font_config_input.get('raster_type', 'thresholded')
+    raster_type = font_config_input['raster_type']
     if raster_type == 'thresholded':
-        threshold = font_config_input.get('threshold', 128)
+        threshold = font_config_input['threshold']
         char_images = [apply_threshold(img, threshold) for img in char_images.values()]
     elif raster_type == 'quantized':
         char_images = [quantize_image(img) for img in char_images.values()]
     elif raster_type == 'palette':
-        fg_color = font_config_input.get('fg_color', 255)
-        bg_color = font_config_input.get('bg_color', 0)
+        fg_color = font_config_input['fg_color']
+        bg_color = font_config_input['bg_color']
         # TODO: Implement palette rendering
         char_images = list(char_images.values())
     else:
@@ -279,7 +304,7 @@ def render_characters(font, font_config_input):
     """
     char_images = {}
     max_width, max_height = 0, 0
-    ascii_range = (font_config_input.get('ascii_range_start', 32), font_config_input.get('ascii_range_end', 127))
+    ascii_range = (font_config_input['ascii_start'], font_config_input['ascii_end'])
 
     # First Pass: Render each character and calculate max width and height without altering the original images
     for char_code in range(ascii_range[0], ascii_range[1] + 1):
@@ -348,8 +373,8 @@ def read_psf_font(file_path, font_config_input):
         'font_width': psf_data['width'],
         'font_height': psf_data['height'],
         'num_glyphs': psf_data['num_glyphs'],
-        'ascii_range_start': 0,
-        'ascii_range_end': psf_data['num_glyphs'] - 1
+        'ascii_start': 0,
+        'ascii_end': psf_data['num_glyphs'] - 1
     })
 
     # Generate the master font image from the glyph images
@@ -466,52 +491,3 @@ def open_font_file(file_path, font_config):
     char_images = read_font_file(file_path, font_config)
     font_image = create_font_image(char_images, font_config)
     return font_config, font_image
-
-# =============================================================================
-# Master Font Functions
-# =============================================================================
-
-def read_font(file_path, font_config_input):
-    config_manager = ConfigManager()
-    # Determine the font type based on the file extension
-    _, file_extension = os.path.splitext(file_path)
-    file_extension = file_extension.lower()
-    point_size = font_config_input.get('point_size', 16)
-    default_config_file = f'data/font_{file_extension.replace(".","")}.cfg'
-    font_config_input = config_manager.append_defaults_to_config(font_config_input, default_config_file)
-    # print(f'read_font config input: {font_config_input}')
-
-    # Load the appropriate font object
-    if file_extension in ['.ttf', '.otf']:  # TrueType or OpenType font
-        font = ImageFont.truetype(file_path, point_size)
-        font_config, font_image = generate_font_image(font, font_config_input)
-    elif file_extension == '.ttc':  # TrueType Collection
-        # In case of font collections, use index for specific font face if needed
-        font_index = font_config_input.get('font_index', 0)
-        font = ImageFont.truetype(file_path, point_size, index=font_index)
-        font_config, font_image = generate_font_image(font, font_config_input)
-    elif file_extension == '.psf':
-        font_config, font_image = read_psf_font(file_path, font_config_input)
-    elif file_extension == '.png':
-        font_config, font_image = open_png_image(file_path, font_config_input)
-    elif file_extension == '.font':
-        font_config, font_image = open_font_file(file_path, font_config_input)
-    else:
-        raise ValueError(f"Unsupported font file type: {file_extension}")
-
-    font_config_code = generate_font_config_code(font_config)
-    print(font_config_code)
-    # font_image.show()
-    # Generate font image and configuration metadata
-    return font_config, font_image
-
-def generate_font_config_code(font_config):
-    """Generate Python code to recreate a given font_config dictionary."""
-    lines = ["font_config = {"]
-    for key, value in font_config.items():
-        if isinstance(value, str):
-            lines.append(f"    '{key}': '{value}',")
-        else:
-            lines.append(f"    '{key}': {value},")
-    lines.append("}")
-    return "\n".join(lines)
