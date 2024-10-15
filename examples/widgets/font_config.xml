@@ -1,7 +1,7 @@
 <settings>
     <setting name="font_name">
         <widget_type>ConfigTextBox</widget_type>
-        <label_text>Font Name</label_text>
+        <label_text>Name</label_text>
         <data_type>string</data_type>
         <default_value>Unnamed Font</default_value>
         <min_value></min_value>
@@ -11,7 +11,7 @@
 
     <setting name="font_variant">
         <widget_type>ConfigTextBox</widget_type>
-        <label_text>Font Variant</label_text>
+        <label_text>Variant</label_text>
         <data_type>string</data_type>
         <default_value>Regular</default_value>
         <min_value></min_value>
@@ -19,9 +19,20 @@
         <description>Variant of the font, e.g. Regular, Bold, Italic, Condensed</description>
     </setting>
 
+    <setting name="point_size">
+        <widget_type>DeltaControl</widget_type>
+        <label_text>Point Size</label_text>
+        <data_type>int</data_type>
+        <default_value>8</default_value>
+        <min_value>1</min_value>
+        <max_value>+256</max_value>
+        <step_value>1</step_value>
+        <description>Size of the font in points</description>
+    </setting>
+
     <setting name="font_width">
         <widget_type>DeltaControl</widget_type>
-        <label_text>Font Width</label_text>
+        <label_text>Width</label_text>
         <data_type>int</data_type>
         <default_value>8</default_value>
         <min_value>1</min_value>
@@ -32,7 +43,7 @@
 
     <setting name="font_height">
         <widget_type>DeltaControl</widget_type>
-        <label_text>Font Height</label_text>
+        <label_text>Height</label_text>
         <data_type>int</data_type>
         <default_value>8</default_value>
         <min_value>1</min_value>
@@ -107,6 +118,45 @@
         <description>Additional height offset for specific rendering</description>
     </setting>
 
+    <setting name="raster_type">
+        <widget_type>ConfigComboBox</widget_type>
+        <label_text>Raster Type</label_text>
+        <data_type>string</data_type>
+        <default_value>threshold</default_value>
+        <options>
+            <value>threshold</value>
+            <value>quantized</value>
+            <value>grayscale</value>
+            <value>palette</value>
+        </options>
+        <description>Type of rasterization</description>
+    </setting>
+
+    <setting name="threshold">
+        <widget_type>DeltaControl</widget_type>
+        <label_text>Threshold</label_text>
+        <data_type>int</data_type>
+        <default_value>128</default_value>
+        <min_value>0</min_value>
+        <max_value>255</max_value>
+        <step_value>1</step_value>
+        <description>Threshold value for binary conversion (if thresholded)</description>
+    </setting>
+
+    <setting name="palette">
+        <widget_type>ConfigComboBox</widget_type>
+        <label_text>Palette</label_text>
+        <data_type>string</data_type>
+        <default_value>Agon64</default_value>
+        <options>
+            <value>Agon64</value>
+            <value>Agon16</value>
+            <value>Agon4</value>
+            <value>32-bit RGBA</value>
+        </options>
+        <description>Color Palette</description>
+    </setting>
+
     <setting name="ascii_start">
         <widget_type>DeltaControl</widget_type>
         <label_text>ASCII Start</label_text>
@@ -138,28 +188,6 @@
         <max_value>256</max_value>
         <step_value>1</step_value>
         <description>Number of characters per row in the PNG grid</description>
-    </setting>
-
-    <setting name="threshold">
-        <widget_type>DeltaControl</widget_type>
-        <label_text>Threshold</label_text>
-        <data_type>int</data_type>
-        <default_value>128</default_value>
-        <min_value>0</min_value>
-        <max_value>255</max_value>
-        <step_value>1</step_value>
-        <description>Threshold value for binary conversion (if thresholded)</description>
-    </setting>
-
-    <setting name="point_size">
-        <widget_type>DeltaControl</widget_type>
-        <label_text>Point Size</label_text>
-        <data_type>int</data_type>
-        <default_value>8</default_value>
-        <min_value>1</min_value>
-        <max_value>+256</max_value>
-        <step_value>1</step_value>
-        <description>Size of the font in points</description>
     </setting>
 
 </settings>

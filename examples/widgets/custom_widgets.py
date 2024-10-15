@@ -1,5 +1,6 @@
 
 import tkinter as tk
+from tkinter import ttk
 
 class ConfigTextBox(tk.Frame):
     """A widget for displaying and editing a text-based configuration value."""
@@ -10,7 +11,7 @@ class ConfigTextBox(tk.Frame):
         self.pad_x = 0  # Padding for grid layout
 
         # Main label for the control
-        self.label = tk.Label(self, width=15, text=label_text, font=("Helvetica", 10))
+        self.label = tk.Label(self, width=15, text=label_text, font=("Helvetica", 10), anchor="w")
         self.label.grid(row=0, column=0, padx=self.pad_x)
 
         self.text_var = tk.StringVar(value=default_value)
@@ -29,6 +30,38 @@ class ConfigTextBox(tk.Frame):
         """Clear the text entry."""
         self.text_var.set("")
 
+class ConfigComboBox(tk.Frame):
+    """A widget for displaying and selecting from a dropdown list of configuration values."""
+
+    def __init__(self, parent, label_text, options, default_value, **kwargs):
+        super().__init__(parent, **kwargs)
+
+        self.pad_x = 0  # Padding for grid layout
+
+        # Main label for the control
+        self.label = tk.Label(self, width=15, text=label_text, font=("Helvetica", 10), anchor="w")
+        self.label.grid(row=0, column=0, padx=self.pad_x)
+
+        # Dropdown (combobox) for selecting a value
+        self.selected_var = tk.StringVar(value=default_value)
+        self.combobox = ttk.Combobox(self, textvariable=self.selected_var, values=options, width=20, state="readonly")
+        self.combobox.grid(row=0, column=1, padx=self.pad_x)
+        self.combobox.set(default_value)  # Set default selection
+
+    def get_value(self):
+        """Return the currently selected value in the combobox."""
+        return self.selected_var.get()
+
+    def set_value(self, value):
+        """Set the selected value in the combobox."""
+        if value in self.combobox['values']:
+            self.selected_var.set(value)
+            self.combobox.set(value)
+
+    def clear(self):
+        """Clear the selected value in the combobox."""
+        self.selected_var.set("")
+
 class DeltaControl(tk.Frame):
     """A widget for handling delta_value adjustments with custom increment, bounds, and data-driven properties."""
 
@@ -44,7 +77,7 @@ class DeltaControl(tk.Frame):
         self.pad_x = 0  # Padding for grid layout
 
         # Main label for the control
-        self.label = tk.Label(self, width=15, text=label_text, font=("Helvetica", 10))
+        self.label = tk.Label(self, width=15, text=label_text, font=("Helvetica", 10), anchor="w")
         self.label.grid(row=0, column=0, padx=self.pad_x)
 
         # Current value display
