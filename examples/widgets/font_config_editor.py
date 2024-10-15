@@ -12,11 +12,11 @@ class FontConfigEditor(tk.Frame):
     def __init__(self, parent, config_file, app_reference, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
         self.parent = parent
-        self.app_reference = app_reference  # Store the app reference
+        self.app_reference = app_reference
         self.config_file = config_file
-        self.controls = {}  # Dictionary to store controls by setting_name
+        self.controls = {} 
         self.create_widgets()
-        self.create_buttons()
+        # self.create_buttons()
 
     def create_buttons(self):
         """Add buttons to print current and modified values to the console."""
@@ -83,6 +83,10 @@ class FontConfigEditor(tk.Frame):
             elif isinstance(control, ConfigTextBox) or isinstance(control, ConfigComboBox):
                 modified_values[setting_name] = control.get_value()
         return modified_values
+    
+    def get_config(self):
+        """Return a dictionary of modified values for all controls, with setting_name as the key."""
+        return self.get_modified_values()
 
     def print_current_values(self):
         """Print the current values dictionary to the console."""
@@ -91,3 +95,9 @@ class FontConfigEditor(tk.Frame):
     def print_modified_values(self):
         """Print the modified values dictionary to the console."""
         print("Modified Values:\n", dict_to_text(self.get_modified_values()))
+
+    def setup_ui_from_config(self, font_config):
+        """Set the control values based on the provided font configuration dictionary."""
+        for setting_name, control in self.controls.items():
+            if setting_name in font_config:
+                control.set_value(font_config[setting_name])

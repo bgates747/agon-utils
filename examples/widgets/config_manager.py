@@ -169,6 +169,17 @@ def set_xml_value(file_name, element_name, tag_name, value):
         print(f"Error: File not found - {file_path}")
         return False
 
+# =========================================================================
+# Application Configuration Handling
+# =========================================================================
+
+def get_app_config_value(tag_name):
+    """Retrieve a value from the application configuration XML file."""
+    return get_xml_value("app_config.xml", "settings", tag_name)
+
+def set_app_config_value(tag_name, value):
+    """Set a value in the application configuration XML file."""
+    return set_xml_value("app_config.xml", "settings", tag_name, value)
 
 # =========================================================================
 # Font Configuration and Metadata Handling

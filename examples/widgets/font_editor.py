@@ -1,9 +1,10 @@
-
 import os
 import tkinter as tk
 from tkinter import ttk
 from font_config_editor import FontConfigEditor
 from menu_bar import MenuBar
+from image_display import ImageDisplay
+from custom_widgets import ConsoleDisplay
 
 class FontEditor(ttk.Frame):
     """
@@ -23,18 +24,46 @@ class FontEditor(ttk.Frame):
         # Create and add the menu bar
         self.menubar = MenuBar(master, self)
 
-        # Create a control panel that contains widgets for font editing
-        control_frame = tk.Frame(self)
-        control_frame.pack(fill=tk.BOTH, expand=True)
+        # Create a PanedWindow for dividing the top (main content) and bottom (console)
+        main_vertical_pane = tk.PanedWindow(self, orient=tk.VERTICAL, sashrelief=tk.RAISED)
+        main_vertical_pane.pack(fill=tk.BOTH, expand=True)
 
-        # Create a frame for FontConfigEditor on the left
-        config_frame = tk.Frame(control_frame)
-        config_frame.pack(side=tk.LEFT, padx=10, pady=10, anchor="n", fill=tk.Y) 
+        # Top Pane for main application content (config editor and image display)
+        main_content_frame = tk.Frame(main_vertical_pane)
+        main_vertical_pane.add(main_content_frame, minsize=400)
+
+        # Create a PanedWindow within the top pane for dividing the left and right halves
+        main_pane = tk.PanedWindow(main_content_frame, orient=tk.HORIZONTAL, sashrelief=tk.RAISED)
+        main_pane.pack(fill=tk.BOTH, expand=True)
+
+        # Left frame for FontConfigEditor
+        config_frame = tk.Frame(main_pane)
+        main_pane.add(config_frame, minsize=200)
 
         # Create an instance of FontConfigEditor with XML data properties and an app reference
         font_config_file = os.path.join(os.path.dirname(__file__), "font_config_editor.xml")
-        self.font_config_editor = FontConfigEditor(self, font_config_file, app_reference=self)
+        self.font_config_editor = FontConfigEditor(config_frame, font_config_file, app_reference=self)
         self.font_config_editor.pack(fill="both", expand=True)
+
+        # Right frame for additional controls and ImageDisplay
+        right_frame = tk.Frame(main_pane)
+        main_pane.add(right_frame, minsize=200)
+
+        # Frame for ImageDisplay within the right frame
+        image_frame = tk.Frame(right_frame)
+        image_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Create an instance of ImageDisplay with an app reference
+        self.image_display = ImageDisplay(image_frame, app_reference=self)
+        self.image_display.pack(fill="both", expand=True)
+
+        # Add main_pane to main_content_frame
+        main_content_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Bottom Pane for ConsoleDisplay
+        self.console_display = ConsoleDisplay(main_vertical_pane)
+        main_vertical_pane.add(self.console_display, minsize=100)
+        self.console_display.pack(fill="both", expand=True)
 
 if __name__ == "__main__":
     root = tk.Tk()

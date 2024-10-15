@@ -219,3 +219,7 @@ class DeltaControl(tk.Frame):
         self.modified_var.set(str(self.current_value))  # Reset modified value to match
         self.current_var.set(str(self.current_value))  # Update the current display
         self.delta_var.set("0")  # Reset delta since modified equals current
+
+    def set_value(self, value):
+        """Set the current (original) value, update displays, and reset delta to zero."""
+        self.set_default_value(value)

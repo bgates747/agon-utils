@@ -1,7 +1,7 @@
 
 import os
 from tkinter import filedialog
-from config_manager import get_xml_value, set_xml_value, load_font_metadata_from_xml, dict_to_text
+from config_manager import get_app_config_value, set_app_config_value, load_font_metadata_from_xml, dict_to_text
 from agon_font import read_font
 
 # ==========================================================================
@@ -15,7 +15,7 @@ from tkinter import filedialog
 def open_file(app_reference):
     """Open a font file and load its configuration from XML."""
     # Retrieve the most recent open directory from app configuration XML
-    most_recent_open_directory = get_xml_value("app_config.xml", "settings", "most_recent_open_directory")
+    most_recent_open_directory = get_app_config_value("most_recent_open_directory")
     
     # Open file dialog to select a font file
     file_path = filedialog.askopenfilename(
@@ -46,16 +46,15 @@ def open_file(app_reference):
 
         # Load the font data using the font metadata
         font_config, font_image = read_font(file_path, font_config)
-        font_image.show()
 
-        # # Pass the font configuration to the UI components
-        # app_reference.font_config_editor.setup_ui_from_config(font_config)
-        # app_reference.image_display.load_image(font_image)
+        # Pass the font configuration to the UI components
+        app_reference.font_config_editor.setup_ui_from_config(font_config)
+        app_reference.image_display.load_image(font_image)
         # app_reference.editor_widget.initialize_grid()
         
         # Update the most recent directory and file in the app configuration
-        set_xml_value("app_config.xml", "settings", "most_recent_open_directory", os.path.dirname(file_path))
-        set_xml_value("app_config.xml", "settings", "most_recent_file", file_path)
+        set_app_config_value("most_recent_open_directory", os.path.dirname(file_path))
+        set_app_config_value("most_recent_file", file_path)
 
         # Update the main window title with the file name
         filename = os.path.basename(file_path)

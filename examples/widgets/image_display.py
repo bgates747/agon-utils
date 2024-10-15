@@ -1,23 +1,28 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 from custom_widgets import GridToggleButton, ZoomControl
+from config_manager import get_app_config_value, set_app_config_value
+from agon_font import create_blank_font_image
 
-class ImageDisplayWidget(tk.Frame):
+class ImageDisplay(tk.Frame):
     """A widget to display and zoom an image on a canvas, handle mouse clicks, and extract characters."""
     
-    def __init__(self, parent, app_reference, blank_font_img, **kwargs):
+    def __init__(self, parent, app_reference, **kwargs):
         super().__init__(parent, **kwargs)
         self.app_reference = app_reference
 
         self.current_ascii_code = None
         self.zoom_levels = [25, 50, 100, 200, 300, 400]
-        zoom_level = int(app_reference.config_manager.get_setting('default_zoom_level', '200'))
+        zoom_level = int(get_app_config_value('default_zoom_level'))
         self.current_zoom_index = self.zoom_levels.index(zoom_level)
 
+        # Load the blank font image
+        font_config = self.app_reference.font_config_editor.get_config()
+        blank_font_img = create_blank_font_image(font_config)        
         self.original_image = blank_font_img
         self.working_image = blank_font_img
         self.pre_resample_image = None  # New: Holds the original image before resampling
-        self.grid_shown = True
+        self.grid_shown = False
 
         # Control frame for toggle and zoom controls
         control_frame = tk.Frame(self)
@@ -88,7 +93,6 @@ class ImageDisplayWidget(tk.Frame):
         # Adjust the canvas size if needed
         self.canvas.config(width=new_width, height=new_height)
 
-        # self.image.show() # DEBUG
         self.app_reference.console_display.append_message(f'Image displayed at {new_width}x{new_height} pixels.')
 
     def draw_grid(self):
