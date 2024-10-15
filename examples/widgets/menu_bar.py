@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import Menu
+from file_manager import open_file, save_file, import_file, export_file, revert_changes
 
 class MenuBar:
     """
@@ -61,7 +62,7 @@ class MenuBar:
     # --------------------------------------------------------------------------
     def open_file(self):
         """Handle the 'Open' menu option to open a file."""
-        pass  # Implement file open functionality here
+        open_file(self.app_reference)
 
     # --------------------------------------------------------------------------        
     # Save

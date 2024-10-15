@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 import json
+import os
 
 def get_typed_data(data_type, value):
     if data_type == 'int':
@@ -41,3 +42,190 @@ def dict_to_xml(data_dict, root_tag):
 
     build_xml_element(root, data_dict)
     return root
+
+def xml_to_dict(font_config_xml, general_config_xml):
+    """
+    Convert XML settings from strings to a dictionary with typed data,
+    using a general config XML string to look up data types.
+    
+    Parameters:
+        font_config_xml (str): XML string of the individual font config.
+        general_config_xml (str): XML string of the general config specifying data types.
+    
+    Returns:
+        dict: Dictionary containing settings with appropriate data types.
+    """
+    settings_dict = {}
+    
+    # Parse the XML strings into ElementTree elements
+    font_root = ET.fromstring(font_config_xml)
+    general_root = ET.fromstring(general_config_xml)
+    
+    # Function to find the data type in the general config
+    def find_data_type(setting_name):
+        element = general_root.find(f".//setting[@name='{setting_name}']")
+        return element.find("data_type").text if element is not None else None
+
+    # Process each setting in the font config XML
+    for setting in font_root.findall("setting"):
+        name = setting.get("name")
+        value = setting.get("value")
+
+        # Look up the data type in the general config
+        data_type = find_data_type(name)
+
+        # Convert the value using the found data type, default to string if not found
+        typed_value = get_typed_data(data_type, value) if data_type else value
+        settings_dict[name] = typed_value
+
+    return settings_dict
+
+def get_xml_value(file_name, element_name, tag_name):
+    """
+    Retrieve the value of a specified tag within an element from an XML file.
+    Handles cases where the element_name is the root tag.
+    
+    Parameters:
+        file_name (str): Filename to the XML file relative to application file location.
+        element_name (str): Name of the element to search, or the root tag.
+        tag_name (str): Name of the tag whose value is to be retrieved.
+    
+    Returns:
+        str: The value of the specified tag, or None if not found.
+    """
+    file_path = os.path.join(os.path.dirname(__file__), file_name)
+    
+    try:
+        tree = ET.parse(file_path)
+        root = tree.getroot()
+
+        # Check if the root tag matches the element_name
+        if root.tag == element_name:
+            # Look for tag_name directly within the root
+            tag = root.find(tag_name)
+        else:
+            # Look for element_name as a child of the root, then find tag_name within it
+            element = root.find(element_name)
+            tag = element.find(tag_name) if element is not None else None
+
+        # Return the tag's text if found
+        return tag.text if tag is not None else None
+
+    except ET.ParseError:
+        print(f"Error: Could not parse XML file {file_path}")
+        return None
+    except FileNotFoundError:
+        print(f"Error: File not found - {file_path}")
+        return None
+
+def set_xml_value(file_name, element_name, tag_name, value):
+    """
+    Set the value of a specified tag within an element in an XML file.
+    Handles cases where the element_name is the root tag.
+    
+    Parameters:
+        file_name (str): Filename of the XML file relative to the application file location.
+        element_name (str): Name of the element to search, or the root tag.
+        tag_name (str): Name of the tag whose value is to be set.
+        value (str): The value to set for the specified tag.
+    
+    Returns:
+        bool: True if the operation was successful, False otherwise.
+    """
+    file_path = os.path.join(os.path.dirname(__file__), file_name)
+    
+    try:
+        tree = ET.parse(file_path)
+        root = tree.getroot()
+
+        # Check if the root tag matches the element_name
+        if root.tag == element_name:
+            # Look for tag_name directly within the root
+            tag = root.find(tag_name)
+            if tag is None:
+                # If the tag doesn't exist, create it
+                tag = ET.SubElement(root, tag_name)
+            tag.text = value
+        else:
+            # Look for element_name as a child of the root
+            element = root.find(element_name)
+            if element is None:
+                # If the element doesn't exist, create it
+                element = ET.SubElement(root, element_name)
+            # Find or create the tag within the element
+            tag = element.find(tag_name)
+            if tag is None:
+                tag = ET.SubElement(element, tag_name)
+            tag.text = value
+
+        # Save the updated XML to file
+        tree.write(file_path, encoding="utf-8", xml_declaration=True)
+        return True
+
+    except ET.ParseError:
+        print(f"Error: Could not parse XML file {file_path}")
+        return False
+    except FileNotFoundError:
+        print(f"Error: File not found - {file_path}")
+        return False
+
+
+# =========================================================================
+# Font Configuration and Metadata Handling
+# =========================================================================
+
+def parse_font_filename(file_path):
+    """Parse font configuration from a font filename and return as a dictionary."""
+    file_name = os.path.basename(file_path)
+    base_name, ext = os.path.splitext(file_name)
+    
+    # Check extensions we do parsing for
+    if ext not in {'.png', '.font'}:
+        # Return minimal configuration for unsupported file types
+        return {
+            'font_name': base_name,
+            'font_variant': "",
+        }
+    
+    # Parse details from .png or .font file name
+    parts = base_name.split('_')
+    try:
+        dimensions_part = parts[-1]
+        width, height = map(int, dimensions_part.split('x'))
+    except ValueError:
+        print("Warning: Unable to parse width and height from filename.")
+        width, height = 0, 0
+
+    font_variant = parts[-2] if len(parts) >= 2 else "Regular"
+    font_name = '_'.join(parts[:-2]) if len(parts) > 2 else "unknown_font"
+
+    return {
+        'font_name': font_name,
+        'font_variant': font_variant,
+        'font_width': width,
+        'font_height': height,
+    }
+
+def load_font_metadata_from_xml(xml_filepath):
+    """Load font metadata from an XML file, converting values based on types in the general XML config file."""
+    # Load individual font config XML as a string
+    with open(xml_filepath, 'r') as file:
+        font_config_xml = file.read()
+    
+    # Load general XML config (data types) as a string
+    general_config_path = os.path.join(os.path.dirname(__file__), "font_config.xml")
+    with open(general_config_path, 'r') as file:
+        general_config_xml = file.read()
+    
+    # Parse XML settings to a dictionary using xml_to_dict
+    font_metadata = xml_to_dict(font_config_xml, general_config_xml)
+    
+    return font_metadata
+
+# def save_font_metadata(self, font_config, xml_file_path):
+#     """Save the provided font configuration dictionary to an .xml file."""
+#     config = configparser.ConfigParser()
+#     config['font'] = {key: str(value) for key, value in font_config.items()}
+#     with open(xml_file_path, 'w') as configfile:
+#         config.write(configfile)
+#         print(f"Metadata saved successfully to {xml_file_path}")
