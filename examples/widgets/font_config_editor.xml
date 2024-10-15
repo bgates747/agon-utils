@@ -4,8 +4,6 @@
         <label_text>Name</label_text>
         <data_type>string</data_type>
         <default_value>Unnamed Font</default_value>
-        <min_value></min_value>
-        <max_value></max_value>
         <description>Name of the font</description>
     </setting>
 
@@ -14,8 +12,6 @@
         <label_text>Variant</label_text>
         <data_type>string</data_type>
         <default_value>Regular</default_value>
-        <min_value></min_value>
-        <max_value></max_value>
         <description>Variant of the font, e.g. Regular, Bold, Italic, Condensed</description>
     </setting>
 
@@ -155,6 +151,22 @@
             <value>32-bit RGBA</value>
         </options>
         <description>Color Palette</description>
+    </setting>
+
+    <setting name="fg_color">
+        <widget_type>ConfigTextBox</widget_type>
+        <label_text>FG Color</label_text>
+        <data_type>string</data_type>
+        <default_value>255,255,255,255</default_value>
+        <description>Foreground Color RGBA tuple</description>
+    </setting>
+
+    <setting name="bg_color">
+        <widget_type>ConfigTextBox</widget_type>
+        <label_text>BG Color</label_text>
+        <data_type>string</data_type>
+        <default_value>0,0,0,0</default_value>
+        <description>Background Color RGBA tuple</description>
     </setting>
 
     <setting name="ascii_start">

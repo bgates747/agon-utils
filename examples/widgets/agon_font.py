@@ -43,6 +43,30 @@ def byteify(pixels):
             byte |= (1 << (7 - i))  # Set the corresponding bit for the white pixel
     return byte
 
+def parse_rgba_color(color_string):
+    """
+    Convert an RGBA color string to a tuple suitable for PIL, removing any extra whitespace.
+    
+    Parameters:
+        color_string (str): RGBA color in string format, e.g., "255,255,255,255".
+    
+    Returns:
+        tuple: A tuple of integers (R, G, B, A) representing the color.
+    """
+    try:
+        # Split the string by commas, strip whitespace, and convert each component to an integer
+        rgba = tuple(int(part.strip()) for part in color_string.split(','))
+        
+        # Ensure it has exactly four components (R, G, B, A)
+        if len(rgba) == 4:
+            return rgba
+        else:
+            raise ValueError("RGBA color string must have exactly four components.")
+    except ValueError as e:
+        print(f"Error parsing RGBA color: {e}")
+        # Return a default color (black, fully opaque) if parsing fails
+        return (0, 0, 0, 255)
+
 # =============================================================================
 # Font to png functions
 # =============================================================================
@@ -80,7 +104,7 @@ def read_font_file(font_filepath, font_config):
 
     for i in range(num_chars):
         # Create an image for each character with the padded width
-        char_img = Image.new('RGBA', (padded_width, char_height), color=(0, 0, 0, 0))
+        char_img = Image.new('RGBA', (padded_width, char_height), color=(0,0,0,0))
         pixels = char_img.load()
         
         # Extract character data from the font data
@@ -110,6 +134,7 @@ def create_blank_font_image(font_config):
     font_height = font_config['font_height']
     ascii_start = font_config['ascii_start']
     ascii_end = font_config['ascii_end']
+    bg_color = parse_rgba_color(font_config['bg_color'])
     
     # Calculate the number of characters and arrange them in a grid
     num_chars = ascii_end - ascii_start + 1
@@ -120,7 +145,7 @@ def create_blank_font_image(font_config):
     image_width = chars_per_row * font_width
     image_height = num_rows * font_height
     
-    return Image.new('RGBA', (image_width, image_height), color=(0, 0, 0, 0))
+    return Image.new('RGBA', (image_width, image_height), bg_color)
 
 
 def create_font_image(char_images, font_config):
@@ -173,6 +198,7 @@ def precomputations(font_config, src_img):
     offset_height = font_config['offset_height']
     ascii_range = (font_config['ascii_start'], font_config['ascii_end'])
     chars_per_row = font_config['chars_per_row']
+    bg_color = parse_rgba_color(font_config['bg_color'])
     num_rows = math.ceil(256 / chars_per_row)
     
     font_width_mod = font_width + offset_width
@@ -182,7 +208,7 @@ def precomputations(font_config, src_img):
     sample_height = font_height if offset_height >= 0 else font_height
 
     # Create a new source image the size of a full 256 character grid
-    src_img_new = Image.new('RGBA', (font_width * chars_per_row, font_height * num_rows), color=0)
+    src_img_new = Image.new('RGBA', (font_width * chars_per_row, font_height * num_rows), bg_color)
 
     # Paste the cropped image into the correct position in the new source image
     src_img_new.paste(src_img, (0, (ascii_range[0] // chars_per_row) * font_height))
@@ -210,13 +236,14 @@ def sample_char_image(ascii_code, font_config, src_img_new):
     return char_img
 
 def make_font(font_config, src_image, tgt_font_filepath):
+    bg_color = parse_rgba_color(font_config['bg_color'])
     # Precompute offsets and image
     font_width_padded, font_height_mod, sample_width, sample_height, src_img_new = precomputations(font_config, src_image)
 
     font_data = bytearray()
 
     for ascii_code in range(0, 256):
-        char_img = Image.new('L', (font_width_padded, font_height_mod), color=0)
+        char_img = Image.new('RGBA', (font_width_padded, font_height_mod), bg_color)
         char_img.paste(sample_char_image(ascii_code, font_config, src_img_new), (font_config['offset_left'], font_config['offset_top']))
         font_data.extend(image_to_bitstream(char_img))
 
@@ -237,7 +264,8 @@ def resample_image(curr_config, mod_config, original_image):
     :return: A new PIL image resampled to fit the modified configuration.
     """
     # Step 1: Apply offsets by directly pasting onto `adjusted_image`
-    adjusted_image = Image.new("L", original_image.size, color=0)
+    bg_color = parse_rgba_color(mod_config['bg_color'])
+    adjusted_image = Image.new("RGBA", original_image.size, bg_color)
     adjusted_image.paste(original_image, (mod_config['offset_left'], mod_config['offset_top']))
 
     # Step 2: Determine the overlap of ASCII ranges
@@ -305,15 +333,21 @@ def render_characters(font, font_config_input):
     char_images = {}
     max_width, max_height = 0, 0
     ascii_range = (font_config_input['ascii_start'], font_config_input['ascii_end'])
+    
+    # Parse colors from font_config_input
+    bg_color = parse_rgba_color(font_config_input['bg_color'])
+    fg_color = parse_rgba_color(font_config_input['fg_color'])
 
     # First Pass: Render each character and calculate max width and height without altering the original images
     for char_code in range(ascii_range[0], ascii_range[1] + 1):
         char = chr(char_code)
-        char_img = Image.new("L", (64, 64), color=0)  # Black background
+        char_img = Image.new("RGBA", (64, 64), bg_color)
         draw = ImageDraw.Draw(char_img)
-        draw.text((0, 0), char, font=font, fill=255)  # White character
-        bbox = char_img.getbbox()
+        draw.text((0, 0), char, font=font, fill=fg_color)
 
+        # Get bounding box for fg_color pixels
+        bbox = char_img.getbbox()
+        
         if bbox:
             width, height = bbox[2], bbox[3]
             max_width = max(max_width, width)
@@ -365,6 +399,18 @@ def read_psf_font(file_path, font_config_input):
         else:
             raise ValueError(f"Not a valid PSF1 or PSF2 file: {file_path}")
 
+    # Calculate default ascii range based on PSF data
+    computed_ascii_start = 0
+    computed_ascii_end = psf_data['num_glyphs'] - 1
+
+    # Get ascii_start and ascii_end from input config, defaulting to computed range
+    ascii_start = font_config_input.get('ascii_start', computed_ascii_start)
+    ascii_end = font_config_input.get('ascii_end', computed_ascii_end)
+
+    # Update ascii range to ensure it overlaps with the computed range
+    ascii_start = max(computed_ascii_start, min(ascii_start, computed_ascii_end))
+    ascii_end = min(computed_ascii_end, max(ascii_end, computed_ascii_start))
+
     # Update font configuration based on provided input and PSF data
     font_config = font_config_input.copy()
     font_config.update({
@@ -373,22 +419,27 @@ def read_psf_font(file_path, font_config_input):
         'font_width': psf_data['width'],
         'font_height': psf_data['height'],
         'num_glyphs': psf_data['num_glyphs'],
-        'ascii_start': 0,
-        'ascii_end': psf_data['num_glyphs'] - 1
+        'ascii_start': ascii_start,
+        'ascii_end': ascii_end
     })
 
     # Generate the master font image from the glyph images
-    font_image = generate_psf_font_image(psf_data, chars_per_row=16)
+    font_image = generate_psf_font_image(psf_data, font_config)
     
     return font_config, font_image
 
-def render_psf_glyphs(psf_data):
+def render_psf_glyphs(psf_data, font_config):
     """Renders each glyph from PSF font data as images, returning the images and dimensions."""
     glyph_images = []
     max_width, max_height = psf_data['width'], psf_data['height']
     
+    # Retrieve foreground and background colors directly from font_config
+    fg_color = parse_rgba_color(font_config['fg_color'])  # Expect fg_color to be provided in config
+    bg_color = parse_rgba_color(font_config['bg_color'])  # Expect bg_color to be provided in config
+    
     for glyph_data in psf_data['glyphs']:
-        glyph_img = Image.new('1', (max_width, max_height), color=0)  # Black background
+        # Create a new RGBA image with the specified background color
+        glyph_img = Image.new('RGBA', (max_width, max_height), bg_color)
         bytes_per_row = (max_width + 7) // 8
         
         for y in range(max_height):
@@ -397,18 +448,20 @@ def render_psf_glyphs(psf_data):
                 for bit in range(8):
                     pixel_x = byte_index * 8 + bit
                     if pixel_x < max_width and (byte & (0x80 >> bit)):
-                        glyph_img.putpixel((pixel_x, y), 1)  # White pixel
+                        glyph_img.putpixel((pixel_x, y), fg_color)
         
         glyph_images.append(glyph_img)
     
     return glyph_images, max_width, max_height
 
-def generate_psf_font_image(psf_data, chars_per_row=16):
+def generate_psf_font_image(psf_data, font_config):
     """Generate a master image from PSF glyph images arranged in a grid."""
-    glyph_images, max_width, max_height = render_psf_glyphs(psf_data)
+    glyph_images, max_width, max_height = render_psf_glyphs(psf_data, font_config)
     num_glyphs = len(glyph_images)
+    chars_per_row = font_config['chars_per_row']
+    bg_color = parse_rgba_color(font_config['bg_color'])
     rows = (num_glyphs + chars_per_row - 1) // chars_per_row
-    font_image = Image.new('1', (chars_per_row * max_width, rows * max_height), color=1)  # White background
+    font_image = Image.new('RGBA', (chars_per_row * max_width, rows * max_height), bg_color)
 
     for i, glyph_img in enumerate(glyph_images):
         x = (i % chars_per_row) * max_width

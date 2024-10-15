@@ -222,7 +222,7 @@ class ImageDisplayWidget(tk.Frame):
         return image.crop((0, 0, target_width, target_height)) 
 
     def enlarge_image(self, image, target_width, target_height):
-        new_image = Image.new("L", (target_width, target_height), color=255)
+        new_image = Image.new("RGBA", (target_width, target_height), color=255)
         new_image.paste(image, (0, 0))
         return new_image
     
