@@ -1,15 +1,18 @@
 
+import tkinter as tk
 from tkinter import ttk, Button
 import xml.etree.ElementTree as ET
 from custom_widgets import DeltaControl, ConfigTextBox, ConfigComboBox
 from config_manager import get_typed_data, dict_to_text
 
-class FontConfigEditor(ttk.Frame):
+class FontConfigEditor(tk.Frame):
     """
     A dynamic editor for font configurations, creating controls based on data-driven configuration.
     """
-    def __init__(self, parent, config_file, *args, **kwargs):
+    def __init__(self, parent, config_file, app_reference, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
+        self.parent = parent
+        self.app_reference = app_reference  # Store the app reference
         self.config_file = config_file
         self.controls = {}  # Dictionary to store controls by setting_name
         self.create_widgets()
