@@ -338,14 +338,15 @@ def render_characters(font, font_config_input):
     bg_color = parse_rgba_color(font_config_input['bg_color'])
     fg_color = parse_rgba_color(font_config_input['fg_color'])
 
-    # First Pass: Render each character and calculate max width and height without altering the original images
+    # First Pass: Render each character on a transparent background and calculate max bounding box size
     for char_code in range(ascii_range[0], ascii_range[1] + 1):
         char = chr(char_code)
-        char_img = Image.new("RGBA", (64, 64), bg_color)
+        # Create a transparent image for bounding box calculation
+        char_img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))  # Fully transparent background
         draw = ImageDraw.Draw(char_img)
         draw.text((0, 0), char, font=font, fill=fg_color)
 
-        # Get bounding box for fg_color pixels
+        # Calculate the bounding box for the character
         bbox = char_img.getbbox()
         
         if bbox:
@@ -356,11 +357,18 @@ def render_characters(font, font_config_input):
         # Store the original unaltered image for the second pass
         char_images[char_code] = char_img
 
-    # Second Pass: Crop each image to max width and height determined from the first pass
+    # Second Pass: Crop each image from the top-left corner to the max bounding box dimensions
     cropped_images = {}
     for char_code, char_img in char_images.items():
+        # Crop to max bounding box dimensions from the top-left corner
         cropped_img = char_img.crop((0, 0, max_width, max_height))
-        cropped_images[char_code] = cropped_img
+        
+        # Create a new image with bg_color and the max bounding box dimensions
+        final_img = Image.new("RGBA", (max_width, max_height), bg_color)
+        # Paste the cropped character into the background-colored image
+        final_img.paste(cropped_img, (0, 0), cropped_img)
+        
+        cropped_images[char_code] = final_img
 
     return cropped_images, max_width, max_height
 
