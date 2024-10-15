@@ -14,7 +14,6 @@ def dict_to_text(data_dict):
     """Return a nicely formatted string version of the dictionary, suitable for console printing or pasting into code."""
     return json.dumps(data_dict, indent=4, sort_keys=False)
 
-
 def dict_to_xml(data_dict, root_tag):
     """
     Convert a dictionary to an XML ElementTree structure with a specified root tag.

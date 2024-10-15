@@ -9,7 +9,7 @@ class MainApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Font Config Editor")
-        self.geometry("400x300")
+        self.geometry("400x600")
 
         # Create an instance of FontConfigEditor with XML data properties
         font_config_file = os.path.join(os.path.dirname(__file__), "font_config.xml")

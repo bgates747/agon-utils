@@ -1,7 +1,7 @@
 
 from tkinter import ttk, Button
 import xml.etree.ElementTree as ET
-from custom_widgets import DeltaControl
+from custom_widgets import DeltaControl, ConfigTextBox
 from config_manager import get_typed_data, dict_to_text
 
 class FontConfigEditor(ttk.Frame):
@@ -36,6 +36,7 @@ class FontConfigEditor(ttk.Frame):
             label_text = setting.find("label_text").text
             data_type = setting.find("data_type").text
             default_value = get_typed_data(data_type, setting.find("default_value").text)
+            setting_control = None
 
             if widget_type == "DeltaControl":
                 # Create DeltaControl with XML-defined data properties
@@ -43,11 +44,15 @@ class FontConfigEditor(ttk.Frame):
                 max_value = get_typed_data(data_type, setting.find("max_value").text)
                 step_value = get_typed_data(data_type, setting.find("step_value").text)
                 
-                delta_control = DeltaControl(self, label_text, data_type, default_value, min_value, max_value, step_value)
-                delta_control.grid(row=row, column=0, pady=0, padx=10, sticky="w")
+                setting_control = DeltaControl(self, label_text, data_type, default_value, min_value, max_value, step_value)
 
-                # Store the DeltaControl in the controls dictionary with setting_name as the key
-                self.controls[setting_name] = delta_control
+            elif widget_type == "ConfigTextBox":
+                # Create ConfigTextBox with XML-defined data properties
+                setting_control = ConfigTextBox(self, label_text, default_value)
+                
+                
+            setting_control.grid(row=row, column=0, pady=0, padx=10, sticky="w")
+            self.controls[setting_name] = setting_control
 
             row += 1
 
@@ -55,14 +60,20 @@ class FontConfigEditor(ttk.Frame):
         """Return a dictionary of current values for all controls, with setting_name as the key."""
         current_values = {}
         for setting_name, control in self.controls.items():
-            current_values[setting_name] = control.current_value
+            if isinstance(control, DeltaControl):
+                current_values[setting_name] = control.current_value
+            elif isinstance(control, ConfigTextBox):
+                current_values[setting_name] = control.get_value()
         return current_values
 
     def get_modified_values(self):
         """Return a dictionary of modified values for all controls, with setting_name as the key."""
         modified_values = {}
         for setting_name, control in self.controls.items():
-            modified_values[setting_name] = float(control.modified_var.get()) if control.data_type == 'float' else int(control.modified_var.get())
+            if isinstance(control, DeltaControl):
+                modified_values[setting_name] = float(control.modified_var.get()) if control.data_type == 'float' else int(control.modified_var.get())
+            elif isinstance(control, ConfigTextBox):
+                modified_values[setting_name] = control.get_value()
         return modified_values
 
     def print_current_values(self):

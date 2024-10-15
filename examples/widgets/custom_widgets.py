@@ -1,6 +1,34 @@
 
 import tkinter as tk
 
+class ConfigTextBox(tk.Frame):
+    """A widget for displaying and editing a text-based configuration value."""
+
+    def __init__(self, parent, label_text, default_value, **kwargs):
+        super().__init__(parent, **kwargs)
+
+        self.pad_x = 0  # Padding for grid layout
+
+        # Main label for the control
+        self.label = tk.Label(self, width=15, text=label_text, font=("Helvetica", 10))
+        self.label.grid(row=0, column=0, padx=self.pad_x)
+
+        self.text_var = tk.StringVar(value=default_value)
+        self.text_entry = tk.Entry(self, textvariable=self.text_var, width=22)
+        self.text_entry.grid(row=0, column=1, padx=self.pad_x)
+
+    def get_value(self):
+        """Return the current value of the text entry."""
+        return self.text_var.get()
+
+    def set_value(self, value):
+        """Set the value of the text entry."""
+        self.text_var.set(value)
+
+    def clear(self):
+        """Clear the text entry."""
+        self.text_var.set("")
+
 class DeltaControl(tk.Frame):
     """A widget for handling delta_value adjustments with custom increment, bounds, and data-driven properties."""
 
@@ -13,32 +41,34 @@ class DeltaControl(tk.Frame):
         self.max_value = max_value
         self.step_value = step_value
 
+        self.pad_x = 0  # Padding for grid layout
+
         # Main label for the control
         self.label = tk.Label(self, width=15, text=label_text, font=("Helvetica", 10))
-        self.label.grid(row=0, column=0, padx=5)
+        self.label.grid(row=0, column=0, padx=self.pad_x)
 
         # Current value display
         self.current_var = tk.StringVar(value=str(self.current_value))
         self.current_display = tk.Label(self, textvariable=self.current_var, width=4, anchor="center")
-        self.current_display.grid(row=0, column=1, padx=5)
+        self.current_display.grid(row=0, column=1, padx=self.pad_x)
 
         # Decrement button
         self.decrement_button = tk.Button(self, text="-", width=0, font=("Helvetica",8), command=lambda: self.modify_delta(-self.step_value))
-        self.decrement_button.grid(row=0, column=2, padx=5)
+        self.decrement_button.grid(row=0, column=2, padx=self.pad_x)
 
         # delta_value display
         self.delta_var = tk.StringVar(value="0")
         self.delta_display = tk.Label(self, textvariable=self.delta_var, width=4, anchor="center")
-        self.delta_display.grid(row=0, column=3, padx=5)
+        self.delta_display.grid(row=0, column=3, padx=self.pad_x)
 
         # Increment button
         self.increment_button = tk.Button(self, text="+", width=0, font=("Helvetica",8), command=lambda: self.modify_delta(self.step_value))
-        self.increment_button.grid(row=0, column=4, padx=5)
+        self.increment_button.grid(row=0, column=4, padx=self.pad_x)
 
         # Computed value display
         self.modified_var = tk.StringVar(value=str(self.current_value))
         self.modified_display = tk.Label(self, textvariable=self.modified_var, width=4, anchor="center")
-        self.modified_display.grid(row=0, column=5, padx=5)
+        self.modified_display.grid(row=0, column=5, padx=self.pad_x)
 
     def modify_delta(self, delta_value):
         """Modify the delta, updating the modified value while keeping within constraints and calculating delta from current value."""
