@@ -165,7 +165,7 @@ class ConfigComboBox(tk.Frame):
         """Bind an event to the internal combobox widget."""
         self.combobox.bind(event, callback)
 
-class DeltaControl(tk.Frame):
+class ConfigDeltaControl(tk.Frame):
     """A widget for handling delta_value adjustments with custom increment, bounds, and data-driven properties."""
 
     def __init__(self, parent, label_text, data_type, default_value, min_value, max_value, step_value, **kwargs):
