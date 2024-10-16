@@ -42,7 +42,7 @@ def open_file(app_reference):
             font_config_filepath = os.path.join(os.path.dirname(__file__), "font_config.xml")
             font_config = load_font_metadata_from_xml(font_config_filepath)
             font_config["font_name"] = os.path.splitext(os.path.basename(file_path))[0]
-        print(dict_to_text(font_config)) # DEBUG
+        # print(dict_to_text(font_config)) # DEBUG
 
         # Load the font data using the font metadata
         font_config, font_image = read_font(file_path, font_config)
@@ -50,7 +50,7 @@ def open_file(app_reference):
         # Pass the font configuration to the UI components
         app_reference.font_config_editor.setup_ui_from_config(font_config)
         app_reference.image_display.load_image(font_image)
-        # app_reference.editor_widget.initialize_grid()
+        app_reference.editor_widget.initialize_grid()
         
         # Update the most recent directory and file in the app configuration
         set_app_config_value("most_recent_open_directory", os.path.dirname(file_path))

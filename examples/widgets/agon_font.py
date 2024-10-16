@@ -66,6 +66,15 @@ def parse_rgba_color(color_string):
         print(f"Error parsing RGBA color: {e}")
         # Return a default color (black, fully opaque) if parsing fails
         return (0, 0, 0, 255)
+    
+def rgba_to_hex(rgba):
+    """Convert an RGBA tuple to a Tkinter-compatible hex color string (ignoring the alpha)."""
+    return f"#{rgba[0]:02x}{rgba[1]:02x}{rgba[2]:02x}"
+
+def hex_to_rgba(hex_color):
+    """Convert a Tkinter-compatible hex color string to an RGBA tuple."""
+    hex_color = hex_color.lstrip('#')
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4)) + (255,)
 
 # =============================================================================
 # Font to png functions

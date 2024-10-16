@@ -5,6 +5,7 @@ from font_config_editor import FontConfigEditor
 from menu_bar import MenuBar
 from image_display import ImageDisplay
 from custom_widgets import ConsoleDisplay
+from editor_widget import EditorWidget
 
 class FontEditor(ttk.Frame):
     """
@@ -24,7 +25,7 @@ class FontEditor(ttk.Frame):
         # Create and add the menu bar
         self.menubar = MenuBar(master, self)
 
-        # Main content area divided into left (config) and right (image display) sections
+        # Main content area divided into left (config) and right (image display and editor) sections
         main_content_frame = tk.Frame(self)
         main_content_frame.pack(fill=tk.BOTH, expand=True)
 
@@ -37,13 +38,17 @@ class FontEditor(ttk.Frame):
         self.font_config_editor = FontConfigEditor(config_frame, font_config_file, app_reference=self)
         self.font_config_editor.pack(fill="y", expand=True)  # Fills available vertical space only
 
-        # Right Frame for ImageDisplay and other controls
+        # Right Frame for ImageDisplay and EditorWidget
         image_frame = tk.Frame(main_content_frame)
         image_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)  # Expands fully
 
         # Create an instance of ImageDisplay with an app reference
         self.image_display = ImageDisplay(image_frame, app_reference=self)
         self.image_display.pack(fill="both", expand=True)  # Fully expand to fill right frame
+
+        # Create an instance of EditorWidget below ImageDisplay
+        self.editor_widget = EditorWidget(image_frame, app_reference=self)
+        self.editor_widget.pack(fill="x", expand=True, pady=(5, 0))  # Horizontal fill, aligns below ImageDisplay
 
         # Bottom ConsoleDisplay
         self.console_display = ConsoleDisplay(self)

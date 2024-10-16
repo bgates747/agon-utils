@@ -21,7 +21,7 @@ class ImageDisplay(tk.Frame):
         blank_font_img = create_blank_font_image(font_config)        
         self.original_image = blank_font_img
         self.working_image = blank_font_img
-        self.pre_resample_image = None  # New: Holds the original image before resampling
+        self.pre_resample_image = None
         self.grid_shown = False
 
         # Control frame for toggle and zoom controls
@@ -47,8 +47,8 @@ class ImageDisplay(tk.Frame):
         self.canvas.bind("<Configure>", self.resize_canvas)
         self.canvas.bind("<Button-1>", self.on_click)
 
-        # # Load the blank font image
-        # self.load_image(self.working_image)
+        # Load the blank font image
+        self.load_image(self.working_image)
 
     def redraw(self):
         """Redraw the canvas elements including the image, grid, and selection box."""
@@ -92,8 +92,6 @@ class ImageDisplay(tk.Frame):
 
         # Adjust the canvas size if needed
         self.canvas.config(width=new_width, height=new_height)
-
-        self.app_reference.console_display.append_message(f'Image displayed at {new_width}x{new_height} pixels.')
 
     def draw_grid(self):
         """Draw cyan gridlines based on the font dimensions and current zoom level."""
@@ -139,8 +137,6 @@ class ImageDisplay(tk.Frame):
     def load_image(self, working_image):
         """Load the image into the widget."""
         self.working_image = working_image
-        img_width, img_height = self.working_image.size
-        print(f"Loaded image with size: {img_width}x{img_height}")
         self.redraw()
 
     def trigger_click_on_ascii_code(self, ascii_code):
@@ -187,16 +183,24 @@ class ImageDisplay(tk.Frame):
         char_x, char_y = self.ascii_to_coordinates(ascii_code)
         return self.get_char_img_xy(char_x, char_y)
 
-    def update_pixel(self, x, y, new_value):
-        """ Update the clicked pixel in the character image and paste it back to the working image """
+    def update_pixel(self, x, y, color):
+        """Update the clicked pixel in the character image with the provided RGBA color and refresh the working image."""
         if self.current_ascii_code is None or self.working_image is None:
             print("No character selected or no image loaded.")
             return
 
+        # Retrieve font dimensions from the config editor
         font_config = self.app_reference.font_config_editor.get_config()
+        font_width = font_config['font_width']
+        font_height = font_config['font_height']
+
+        # Calculate position in working image based on character coordinates
         char_x, char_y = self.ascii_to_coordinates(self.current_ascii_code)
-        pixel_color = new_value * 255
-        self.working_image.putpixel((char_x * font_config['font_width'] + x, char_y * font_config['font_height'] + y), pixel_color)
+        pixel_x = char_x * font_width + x
+        pixel_y = char_y * font_height + y
+
+        # Update the pixel color in the working image and refresh display
+        self.working_image.putpixel((pixel_x, pixel_y), color)
         self.redraw()
 
     # Helper functions
