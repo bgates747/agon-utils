@@ -2,6 +2,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import font
+from tkinter import ttk, colorchooser
 
 class ZoomControl(tk.Frame):
     """A compact widget to control zoom levels with buttons and a dropdown."""
@@ -160,6 +161,10 @@ class ConfigComboBox(tk.Frame):
         """Clear the selected value in the combobox."""
         self.selected_var.set("")
 
+    def bind_combobox_event(self, event, callback):
+        """Bind an event to the internal combobox widget."""
+        self.combobox.bind(event, callback)
+
 class DeltaControl(tk.Frame):
     """A widget for handling delta_value adjustments with custom increment, bounds, and data-driven properties."""
 
@@ -223,3 +228,53 @@ class DeltaControl(tk.Frame):
     def set_value(self, value):
         """Set the current (original) value, update displays, and reset delta to zero."""
         self.set_default_value(value)
+
+class ConfigColorPicker(tk.Frame):
+    """A widget for displaying and selecting a color, showing the value as an RGBA tuple."""
+
+    def __init__(self, parent, label_text, default_value, **kwargs):
+        super().__init__(parent, **kwargs)
+
+        self.pad_x = 0  # Padding for grid layout
+
+        # Main label for the control
+        self.label = tk.Label(self, width=15, text=label_text, font=("Helvetica", 10), anchor="w")
+        self.label.grid(row=0, column=0, padx=self.pad_x)
+
+        # Store the color as a tuple of integers (RGBA)
+        self.color_value = self.parse_color(default_value)
+        
+        # Button to display and select color
+        self.color_button = tk.Button(self, text=str(self.color_value), bg=self.rgb_to_hex(self.color_value), command=self.choose_color, width=22)
+        self.color_button.grid(row=0, column=1, padx=self.pad_x)
+
+    def parse_color(self, color_string):
+        """Parse the color string to a tuple of integers (R, G, B, A)."""
+        return tuple(map(int, color_string.split(',')))
+
+    def rgb_to_hex(self, rgba):
+        """Convert an RGBA tuple to a hex color code (ignoring alpha)."""
+        return "#%02x%02x%02x" % (rgba[0], rgba[1], rgba[2])
+
+    def choose_color(self):
+        """Open a color chooser dialog to select a new color."""
+        # Open the color chooser and get the selected color (ignoring alpha for simplicity)
+        rgb_color, hex_color = colorchooser.askcolor(initialcolor=self.rgb_to_hex(self.color_value), parent=self)
+        if rgb_color:
+            # Update the color value (keep the original alpha value)
+            self.color_value = (int(rgb_color[0]), int(rgb_color[1]), int(rgb_color[2]), self.color_value[3])
+            # Update the button's background color and text
+            self.color_button.config(bg=self.rgb_to_hex(self.color_value), text=str(self.color_value))
+
+    def get_value(self):
+        """Return the current color value as a string."""
+        return ','.join(map(str, self.color_value))
+
+    def set_value(self, value):
+        """Set the current color value."""
+        self.color_value = self.parse_color(value)
+        self.color_button.config(bg=self.rgb_to_hex(self.color_value), text=str(self.color_value))
+
+    def clear(self):
+        """Clear the color value (set to transparent black)."""
+        self.set_value("0,0,0,0")

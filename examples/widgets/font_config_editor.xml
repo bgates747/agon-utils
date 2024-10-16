@@ -24,6 +24,11 @@
         <max_value>+256</max_value>
         <step_value>1</step_value>
         <description>Size of the font in points</description>
+        <hidden>
+            <font_type>
+                <list>png, font</list>
+            </font_type>
+        </hidden>
     </setting>
 
     <setting name="font_width">
@@ -126,6 +131,11 @@
             <value>palette</value>
         </options>
         <description>Type of rasterization</description>
+        <event_handlers>
+            <on_change>
+                <handler>default</handler>
+            </on_change>
+        </event_handlers>
     </setting>
 
     <setting name="threshold">
@@ -137,6 +147,16 @@
         <max_value>255</max_value>
         <step_value>1</step_value>
         <description>Threshold value for binary conversion (if thresholded)</description>
+        <visible>
+            <setting name="raster_type">
+                <list>threshold</list>
+            </setting>
+        </visible>
+        <event_handlers>
+            <on_change>
+                <handler>default</handler>
+            </on_change>
+        </event_handlers>
     </setting>
 
     <setting name="palette">
@@ -151,22 +171,42 @@
             <value>32-bit RGBA</value>
         </options>
         <description>Color Palette</description>
+        <visible>
+            <setting name="raster_type">
+                <list>palette</list>
+            </setting>
+        </visible>
+        <event_handlers>
+            <on_change>
+                <handler>default</handler>
+            </on_change>
+        </event_handlers>
     </setting>
 
     <setting name="fg_color">
-        <widget_type>ConfigTextBox</widget_type>
+        <widget_type>ConfigColorPicker</widget_type>
         <label_text>FG Color</label_text>
         <data_type>string</data_type>
         <default_value>255,255,255,255</default_value>
         <description>Foreground Color RGBA tuple</description>
+        <event_handlers>
+            <on_change>
+                <handler>default</handler>
+            </on_change>
+        </event_handlers>
     </setting>
 
     <setting name="bg_color">
-        <widget_type>ConfigTextBox</widget_type>
+        <widget_type>ConfigColorPicker</widget_type>
         <label_text>BG Color</label_text>
         <data_type>string</data_type>
-        <default_value>0,0,0,0</default_value>
+        <default_value>0,0,0,255</default_value>
         <description>Background Color RGBA tuple</description>
+        <event_handlers>
+            <on_change>
+                <handler>default</handler>
+            </on_change>
+        </event_handlers>
     </setting>
 
     <setting name="ascii_start">
