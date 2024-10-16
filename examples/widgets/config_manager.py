@@ -233,6 +233,19 @@ def load_font_metadata_from_xml(xml_filepath):
     
     return font_metadata
 
+# Load XML file and get root element
+def load_xml(xml_filepath):
+    """Load an XML file and return the XML as a string."""
+    try:
+        with open(xml_filepath, 'r') as file:
+            return file.read()
+    except FileNotFoundError:
+        print(f"Error: Could not find XML file {xml_filepath}")
+        return ""
+    except ET.ParseError:
+        print(f"Error: Could not parse XML file {xml_filepath}")
+        return ""
+
 # def save_font_metadata(self, font_config, xml_file_path):
 #     """Save the provided font configuration dictionary to an .xml file."""
 #     config = configparser.ConfigParser()
