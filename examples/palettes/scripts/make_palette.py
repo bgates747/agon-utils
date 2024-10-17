@@ -450,3 +450,13 @@ def generate_gimp_palette_cmyk():
                     red, green, blue = au.cmyk_to_rgb(c_scale, m_scale, y_scale, k_value)
                     rgb_data.append((red, green, blue))
     return rgb_data
+
+if __name__ == "__main__":
+    rgb_data = generate_gimp_palette_rgb222()
+    generate_gimp_palette(rgb_data, 'examples/widgets/colors/RGB222.gpl', 'RGB222', 8)
+    rgb_data = generate_gimp_palette_vrgb1111()
+    generate_gimp_palette(rgb_data, 'examples/widgets/colors/VRGB1111.gpl', 'VRGB1111', 4)
+    rgb_data = generate_gimp_palette_rgb332()
+    generate_gimp_palette(rgb_data, 'examples/widgets/colors/RGB332.gpl', 'RGB332', 16)
+    rgb_data = generate_gimp_palette_rainbow()
+    generate_gimp_palette(rgb_data, 'examples/widgets/colors/Rainbow.gpl', 'Rainbow', 16)

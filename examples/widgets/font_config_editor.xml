@@ -278,7 +278,10 @@
             <item>Agon64</item>
             <item>Agon16</item>
             <item>Agon4</item>
-            <item>32-bit RGBA</item>
+            <item>Agon2</item>
+            <item>RGB222</item>
+            <item>RGB332</item>
+            <item>Rainbow</item>
         </options>
         <description>Color palette to use when rasterizing font.</description>
         <visible>
