@@ -26,7 +26,8 @@
         <description>Size of the font in points</description>
         <hidden>
             <font_type>
-                <list>png, font</list>
+                <item>png</item>
+                <item>font</item>
             </font_type>
         </hidden>
     </setting>
@@ -125,15 +126,15 @@
         <data_type>string</data_type>
         <default_value>threshold</default_value>
         <options>
-            <value>threshold</value>
-            <value>quantized</value>
-            <value>grayscale</value>
-            <value>palette</value>
+            <item>threshold</item>
+            <item>quantized</item>
+            <item>grayscale</item>
+            <item>palette</item>
         </options>
         <description>Type of rasterization</description>
         <event_handlers>
             <on_change>
-                <handler>default</handler>
+                <item>default</item>
             </on_change>
         </event_handlers>
     </setting>
@@ -149,12 +150,12 @@
         <description>Threshold value for binary conversion (if thresholded)</description>
         <visible>
             <setting name="raster_type">
-                <list>threshold</list>
+                <item>threshold</item>
             </setting>
         </visible>
         <event_handlers>
             <on_change>
-                <handler>default</handler>
+                <item>default</item>
             </on_change>
         </event_handlers>
     </setting>
@@ -165,21 +166,34 @@
         <data_type>string</data_type>
         <default_value>Agon64</default_value>
         <options>
-            <value>Agon64</value>
-            <value>Agon16</value>
-            <value>Agon4</value>
-            <value>32-bit RGBA</value>
+            <item>Agon64</item>
+            <item>Agon16</item>
+            <item>Agon4</item>
+            <item>32-bit RGBA</item>
         </options>
         <description>Color Palette</description>
         <visible>
             <setting name="raster_type">
-                <list>palette</list>
+                <item>palette</item>
             </setting>
         </visible>
         <event_handlers>
             <on_change>
-                <handler>default</handler>
+                <item>foo_handler</item>
+                <item>bar_handler</item>
+                <item>baz_handler</item>
+                <item>qux_handler</item>
+                <item>quux_handler</item>
+                <item>kludge_handler</item>
             </on_change>
+            <on_hover>
+                <item>foo_handler</item>
+                <item>bar_handler</item>
+                <item>baz_handler</item>
+                <item>qux_handler</item>
+                <item>quux_handler</item>
+                <item>kludge_handler</item>
+            </on_hover>
         </event_handlers>
     </setting>
 
@@ -191,7 +205,7 @@
         <description>Foreground Color RGBA tuple</description>
         <event_handlers>
             <on_change>
-                <handler>default</handler>
+                <item>default</item>
             </on_change>
         </event_handlers>
     </setting>
@@ -204,7 +218,7 @@
         <description>Background Color RGBA tuple</description>
         <event_handlers>
             <on_change>
-                <handler>default</handler>
+                <item>default</item>
             </on_change>
         </event_handlers>
     </setting>

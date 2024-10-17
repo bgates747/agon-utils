@@ -45,6 +45,9 @@ class FontEditor(ttk.Frame):
         config_setting = "palette"
         combo_box = FontConfigComboBox(config_frame, config_setting, font_config_xml)
         combo_box.pack(pady=10)
+        print(combo_box.event_handlers)
+        print(combo_box.visible)
+        print(combo_box.options_dict)
 
         # End of temporary testing
 
