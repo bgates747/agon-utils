@@ -1,7 +1,8 @@
 import os
 import tkinter as tk
 from tkinter import ttk
-from font_config_editor import FontConfigEditor
+from config_manager import load_xml
+from font_config_editor_test import FontConfigEditor
 from menu_bar import MenuBar
 from image_display import ImageDisplay
 from custom_widgets import ConsoleDisplay
@@ -34,8 +35,8 @@ class FontEditor(ttk.Frame):
         config_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10, anchor="n")  # Only expand vertically
 
         # Create an instance of FontConfigEditor with XML data properties and an app reference
-        font_config_file = os.path.join(os.path.dirname(__file__), "font_config_editor.xml")
-        self.font_config_editor = FontConfigEditor(config_frame, font_config_file, app_reference=self)
+        config_editor_file = os.path.join(os.path.dirname(__file__), "font_config_editor.xml")
+        self.font_config_editor = FontConfigEditor(config_frame, config_editor_file, app_reference=self)
         self.font_config_editor.pack(fill="y", expand=True)  # Fills available vertical space only
 
         # Right Frame for ImageDisplay and EditorWidget
