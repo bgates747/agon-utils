@@ -235,10 +235,11 @@ def load_font_metadata_from_xml(xml_filepath):
 
 # Load XML file and get root element
 def load_xml(xml_filepath):
-    """Load an XML file and return the XML as a string."""
+    """Load an XML file and return the XML."""
     try:
         with open(xml_filepath, 'r') as file:
-            return file.read()
+            xml_string = file.read()
+            return ET.fromstring(xml_string)
     except FileNotFoundError:
         print(f"Error: Could not find XML file {xml_filepath}")
         return ""

@@ -6,11 +6,10 @@ from config_manager import get_typed_data
 class FontConfigWidget(tk.Frame):
     """Base widget class for common font configuration controls."""
 
-    def __init__(self, parent, config_setting, font_config_xml, **kwargs):
+    def __init__(self, parent, config_setting, config_xml, **kwargs):
         super().__init__(parent, **kwargs)
 
         # Parse the XML configuration and filter for the specific setting
-        config_xml = ET.fromstring(font_config_xml)
         self.setting_xml = config_xml.find(f".//setting[@name='{config_setting}']")
         self.id = config_setting
 

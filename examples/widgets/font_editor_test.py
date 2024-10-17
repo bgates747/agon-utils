@@ -37,34 +37,34 @@ class FontEditor(ttk.Frame):
 
         # Create an instance of FontConfigEditor with XML data properties and an app reference
         config_editor_file = os.path.join(os.path.dirname(__file__), "font_config_editor.xml")
-        # self.font_config_editor = FontConfigEditor(config_frame, config_editor_file, app_reference=self)
-        # self.font_config_editor.pack(fill="y", expand=True)  # Fills available vertical space only
+        self.font_config_editor = FontConfigEditor(config_frame, config_editor_file, app_reference=self)
+        self.font_config_editor.pack(fill="y", expand=True)  # Fills available vertical space only
 
-    # Temporary testing
-        def place_config_widget(config_widget):
-            config_widget.pack(pady=10)
-            print(config_widget.event_handlers)
-            print(config_widget.visible)
-            print(config_widget.options_dict)
+    # # Temporary testing
+    #     def place_config_widget(config_widget):
+    #         config_widget.pack(pady=10)
+    #         print(config_widget.event_handlers)
+    #         print(config_widget.visible)
+    #         print(config_widget.options_dict)
 
-        font_config_xml = load_xml(config_editor_file)
+    #     font_config_xml = load_xml(config_editor_file)
 
-        config_setting = "palette"
-        config_widget = FontConfigComboBox(config_frame, config_setting, font_config_xml)
-        place_config_widget(config_widget)
+    #     config_setting = "palette"
+    #     config_widget = FontConfigComboBox(config_frame, config_setting, font_config_xml)
+    #     place_config_widget(config_widget)
 
-        config_setting = "font_name"
-        config_widget = FontConfigTextBox(config_frame, config_setting, font_config_xml)
-        place_config_widget(config_widget)
+    #     config_setting = "font_name"
+    #     config_widget = FontConfigTextBox(config_frame, config_setting, font_config_xml)
+    #     place_config_widget(config_widget)
 
-        config_setting = "point_size"
-        config_widget = FontConfigDeltaControl(config_frame, config_setting, font_config_xml)
-        place_config_widget(config_widget)
+    #     config_setting = "point_size"
+    #     config_widget = FontConfigDeltaControl(config_frame, config_setting, font_config_xml)
+    #     place_config_widget(config_widget)
 
-        config_setting = "fg_color"
-        config_widget = FontConfigColorPicker(config_frame, config_setting, font_config_xml)
-        place_config_widget(config_widget)
-    # End of temporary testing
+    #     config_setting = "fg_color"
+    #     config_widget = FontConfigColorPicker(config_frame, config_setting, font_config_xml)
+    #     place_config_widget(config_widget)
+    # # End of temporary testing
 
 
 
