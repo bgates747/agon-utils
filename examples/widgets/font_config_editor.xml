@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
 <settings>
     <setting name="font_name">
         <widget_type>FontConfigTextBox</widget_type>
@@ -8,18 +9,31 @@
         <event_handlers>
             <on_change>
                 <item>default_on_change_handler</item>
+                <item>font_name_on_change_handler</item>
             </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
         </event_handlers>
     </setting>
-
+    
     <setting name="font_variant">
         <widget_type>FontConfigTextBox</widget_type>
         <label_text>Variant</label_text>
         <data_type>string</data_type>
         <default_value>Regular</default_value>
         <description>Variant of the font, e.g. Regular, Bold, Italic, Condensed</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <item>font_variant_on_change_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
     </setting>
-
+    
     <setting name="point_size">
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Point Size</label_text>
@@ -38,10 +52,14 @@
         <event_handlers>
             <on_change>
                 <item>default_on_change_handler</item>
+                <item>point_size_on_change_handler</item>
             </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
         </event_handlers>
     </setting>
-
+    
     <setting name="font_width">
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Width</label_text>
@@ -51,8 +69,17 @@
         <max_value>256</max_value>
         <step_value>1</step_value>
         <description>Width of each character</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <item>font_width_on_change_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
     </setting>
-
+    
     <setting name="font_height">
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Height</label_text>
@@ -62,8 +89,17 @@
         <max_value>256</max_value>
         <step_value>1</step_value>
         <description>Height of each character</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <item>font_height_on_change_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
     </setting>
-
+    
     <setting name="offset_left">
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Offset Left</label_text>
@@ -73,8 +109,17 @@
         <max_value>+256</max_value>
         <step_value>1</step_value>
         <description>Horizontal offset (e.g., for alignment)</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <item>offset_left_on_change_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
     </setting>
-
+    
     <setting name="offset_top">
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Offset Top</label_text>
@@ -84,8 +129,17 @@
         <max_value>+256</max_value>
         <step_value>1</step_value>
         <description>Vertical offset</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <item>offset_top_on_change_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
     </setting>
-
+    
     <setting name="offset_width">
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Offset Width</label_text>
@@ -95,8 +149,17 @@
         <max_value>+256</max_value>
         <step_value>1</step_value>
         <description>Additional width offset for specific rendering</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <item>offset_width_on_change_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
     </setting>
-
+    
     <setting name="offset_height">
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Offset Height</label_text>
@@ -106,8 +169,17 @@
         <max_value>+256</max_value>
         <step_value>1</step_value>
         <description>Additional height offset for specific rendering</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <item>offset_height_on_change_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
     </setting>
-
+    
     <setting name="scale_width">
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Scale Width</label_text>
@@ -117,8 +189,17 @@
         <max_value>+256</max_value>
         <step_value>1</step_value>
         <description>Additional width offset for specific rendering</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <item>scale_width_on_change_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
     </setting>
-
+    
     <setting name="scale_height">
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Scale Height</label_text>
@@ -128,8 +209,17 @@
         <max_value>+256</max_value>
         <step_value>1</step_value>
         <description>Additional height offset for specific rendering</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <item>scale_height_on_change_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
     </setting>
-
+    
     <setting name="raster_type">
         <widget_type>FontConfigComboBox</widget_type>
         <label_text>Raster Type</label_text>
@@ -145,10 +235,14 @@
         <event_handlers>
             <on_change>
                 <item>default_on_change_handler</item>
+                <item>raster_type_on_change_handler</item>
             </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
         </event_handlers>
     </setting>
-
+    
     <setting name="threshold">
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Threshold</label_text>
@@ -162,14 +256,19 @@
             <setting name="raster_type">
                 <item>threshold</item>
             </setting>
+    
         </visible>
         <event_handlers>
             <on_change>
                 <item>default_on_change_handler</item>
+                <item>threshold_on_change_handler</item>
             </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
         </event_handlers>
     </setting>
-
+    
     <setting name="palette">
         <widget_type>FontConfigComboBox</widget_type>
         <label_text>Palette</label_text>
@@ -186,6 +285,7 @@
             <setting name="raster_type">
                 <item>palette</item>
             </setting>
+    
         </visible>
         <event_handlers>
             <on_change>
@@ -197,9 +297,9 @@
             </on_hover>
         </event_handlers>
     </setting>
-
+    
     <setting name="fg_color">
-        <widget_type>ConfigColorPicker</widget_type>
+        <widget_type>FontConfigColorPicker</widget_type>
         <label_text>FG Color</label_text>
         <data_type>string</data_type>
         <default_value>255,255,255,255</default_value>
@@ -207,12 +307,16 @@
         <event_handlers>
             <on_change>
                 <item>default_on_change_handler</item>
+                <item>fg_color_on_change_handler</item>
             </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
         </event_handlers>
     </setting>
-
+    
     <setting name="bg_color">
-        <widget_type>ConfigColorPicker</widget_type>
+        <widget_type>FontConfigColorPicker</widget_type>
         <label_text>BG Color</label_text>
         <data_type>string</data_type>
         <default_value>0,0,0,255</default_value>
@@ -220,10 +324,14 @@
         <event_handlers>
             <on_change>
                 <item>default_on_change_handler</item>
+                <item>bg_color_on_change_handler</item>
             </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
         </event_handlers>
     </setting>
-
+    
     <setting name="ascii_start">
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>ASCII Start</label_text>
@@ -233,8 +341,17 @@
         <max_value>255</max_value>
         <step_value>16</step_value>
         <description>ASCII start range for the font</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <item>ascii_start_on_change_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
     </setting>
-
+    
     <setting name="ascii_end">
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>ASCII End</label_text>
@@ -244,8 +361,17 @@
         <max_value>255</max_value>
         <step_value>16</step_value>
         <description>ASCII end range for the font</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <item>ascii_end_on_change_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
     </setting>
-
+    
     <setting name="chars_per_row">
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Chars per Row</label_text>
@@ -255,6 +381,15 @@
         <max_value>256</max_value>
         <step_value>1</step_value>
         <description>Number of characters per row in the PNG grid</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <item>chars_per_row_on_change_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
     </setting>
-
+    
 </settings>

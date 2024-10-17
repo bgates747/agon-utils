@@ -138,6 +138,83 @@ class FontConfigWidget(tk.Frame):
             self.tooltip.destroy()
             del self.tooltip
 
+    # Custom on_change handlers
+    def font_name_on_change_handler(self, event):
+        """Custom on_change handler for the font_name setting."""
+        print(f"Font name changed to: {self.get_value()}")
+
+    def font_variant_on_change_handler(self, event):
+        """Custom on_change handler for the font_variant setting."""
+        print(f"Font variant changed to: {self.get_value()}")
+
+    def point_size_on_change_handler(self, event):
+        """Custom on_change handler for the point_size setting."""
+        print(f"Point size changed to: {self.get_value()}")
+
+    def font_width_on_change_handler(self, event):
+        """Custom on_change handler for the font_width setting."""
+        print(f"Font width changed to: {self.get_value()}")
+
+    def font_height_on_change_handler(self, event):
+        """Custom on_change handler for the font_height setting."""
+        print(f"Font height changed to: {self.get_value()}")
+
+    def offset_left_on_change_handler(self, event):
+        """Custom on_change handler for the offset_left setting."""
+        print(f"Offset left changed to: {self.get_value()}")
+
+    def offset_top_on_change_handler(self, event):
+        """Custom on_change handler for the offset_top setting."""
+        print(f"Offset top changed to: {self.get_value()}")
+
+    def offset_width_on_change_handler(self, event):
+        """Custom on_change handler for the offset_width setting."""
+        print(f"Offset width changed to: {self.get_value()}")
+
+    def offset_height_on_change_handler(self, event):
+        """Custom on_change handler for the offset_height setting."""
+        print(f"Offset height changed to: {self.get_value()}")
+
+    def scale_width_on_change_handler(self, event):
+        """Custom on_change handler for the scale_width setting."""
+        print(f"Scale width changed to: {self.get_value()}")
+
+    def scale_height_on_change_handler(self, event):
+        """Custom on_change handler for the scale_height setting."""
+        print(f"Scale height changed to: {self.get_value()}")
+
+    def raster_type_on_change_handler(self, event):
+        """Custom on_change handler for the raster_type setting."""
+        print(f"Raster type changed to: {self.get_value()}")
+
+    def threshold_on_change_handler(self, event):
+        """Custom on_change handler for the threshold setting."""
+        print(f"Threshold changed to: {self.get_value()}")
+
+    def palette_on_change_handler(self, event):
+        """Custom on_change handler for the palette setting."""
+        print(f"Palette changed to: {self.get_value()}")
+
+    def fg_color_on_change_handler(self, event):
+        """Custom on_change handler for the fg_color setting."""
+        print(f"Foreground color changed to: {self.get_value()}")
+
+    def bg_color_on_change_handler(self, event):
+        """Custom on_change handler for the bg_color setting."""
+        print(f"Background color changed to: {self.get_value()}")
+
+    def ascii_start_on_change_handler(self, event):
+        """Custom on_change handler for the ascii_start setting."""
+        print(f"ASCII start changed to: {self.get_value()}")
+
+    def ascii_end_on_change_handler(self, event):
+        """Custom on_change handler for the ascii_end setting."""
+        print(f"ASCII end changed to: {self.get_value()}")
+
+    def chars_per_row_on_change_handler(self, event):
+        """Custom on_change handler for the chars_per_row setting."""
+        print(f"Characters per row changed to: {self.get_value()}")
+
 class FontConfigComboBox(FontConfigWidget):
     """A widget for displaying and selecting from a dropdown list of configuration values."""
 
@@ -162,11 +239,6 @@ class FontConfigComboBox(FontConfigWidget):
 
         # Initialize specific event handlers
         self._initialize_specific_event_handlers()
-
-    # Custom on_change handler for the ComboBox
-    def palette_on_change_handler(self, event):
-        """Custom on_change handler for the palette setting."""
-        print(f"Palette changed to: {self.get_value()}")
 
 class FontConfigTextBox(FontConfigWidget):
     """A widget for displaying and editing a text-based configuration value."""
