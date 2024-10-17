@@ -48,6 +48,17 @@ class FontConfigEditor(tk.Frame):
             else:
                 raise ValueError(f"Unsupported widget type: {widget_type}")
             
+            # Create visibility rules for the control
+            visible_element = setting.find("visible")
+            if visible_element is not None:
+                dependent_setting = visible_element.find("setting").get("name")
+                target_values = [val.text for val in visible_element.find("setting").findall("item")]
+                self.visibility_rules.append({
+                    "setting_name": config_setting,
+                    "dependent_setting": dependent_setting,
+                    "target_values": target_values
+                })
+            
             control.grid(row=row, column=0, sticky="w")
             self.controls[config_setting] = control
             row += 1
@@ -91,3 +102,21 @@ class FontConfigEditor(tk.Frame):
         for config_setting, control in self.controls.items():
             if config_setting in font_config:
                 control.set_value(font_config[config_setting])
+
+    def set_visible(self, setting_name):
+        """Handle changes in controls and adjust visibility of dependent controls."""
+        control = self.controls[setting_name]
+        current_value = control.get_value()
+
+        # Check visibility rules to determine visibility of controls
+        for rule in self.visibility_rules:
+            if rule["dependent_setting"] == setting_name:
+                dependent_control = self.controls[rule["setting_name"]]
+                if current_value in rule["target_values"]:
+                    if dependent_control.hidden:
+                        dependent_control.grid(**dependent_control.grid_info())  # Corrected here
+                        dependent_control.hidden = False
+                else:
+                    if not dependent_control.hidden:
+                        dependent_control.grid_remove()
+                        dependent_control.hidden = True

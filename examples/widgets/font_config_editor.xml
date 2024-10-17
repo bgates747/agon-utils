@@ -285,7 +285,6 @@
             <setting name="raster_type">
                 <item>palette</item>
             </setting>
-    
         </visible>
         <event_handlers>
             <on_change>

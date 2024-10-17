@@ -9,6 +9,9 @@ class FontConfigWidget(tk.Frame):
     def __init__(self, parent, config_setting, config_xml, **kwargs):
         super().__init__(parent, **kwargs)
 
+        self.parent = parent
+        self.hidden = False  # Custom attribute to manage visibility state
+        
         # Parse the XML configuration and filter for the specific setting
         self.setting_xml = config_xml.find(f".//setting[@name='{config_setting}']")
         self.id = config_setting
@@ -135,6 +138,7 @@ class FontConfigWidget(tk.Frame):
     def default_on_change_handler(self, event):
         """Default handler for on_change events."""
         print(f"Default on_change handler called for {self.id} ({self.label_text}) with value: {self.get_value()}")
+        self.parent.set_visible(self.id)
 
     # Default hover handlers
     def default_on_mouse_enter(self, event):
