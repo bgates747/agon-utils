@@ -19,7 +19,7 @@ class FontConfigWidget(tk.Frame):
         self.label_text = self.setting_xml.find('label_text').text
         self.visible = self._extract_nested_dict('visible')
         self.event_handlers = self._extract_nested_dict('event_handlers')
-        self.options_dict = self._extract_nested_dict('options')  # Keep options_dict for compatibility
+        self.options_dict = self._extract_nested_dict('options')
 
         # Create the control based on the specific widget type
         self.pad_x = 0
@@ -28,6 +28,9 @@ class FontConfigWidget(tk.Frame):
 
         # Set the value object for easier access to get/set methods
         self.value_object = None
+
+        # Initialize event handlers
+        self._initialize_event_handlers()
 
     def _extract_nested_dict(self, tag_name):
         """Extract nested dictionary structure from XML for a given tag."""
@@ -72,23 +75,44 @@ class FontConfigWidget(tk.Frame):
         self.set_value(self.default_value)
 
     def _initialize_event_handlers(self):
-        """Initialize event handlers based on XML configuration."""
+        """Initialize event handlers for generic and specific events."""
+        if hasattr(self, 'widget') and self.widget:
+            # Bind a default on_change event handler if no specific handler is defined
+            self._bind_event_handler("on_change", "default_on_change_handler")
+
+    def _bind_event_handler(self, event_name, handler_name):
+        """Bind an event handler dynamically and support multiple handlers for the same event."""
+        handler = getattr(self, handler_name, None)
+        if callable(handler):
+            # Bind specific event types for different controls
+            widget = getattr(self, 'widget', None)
+            if widget:
+                if not hasattr(widget, '_event_handlers'):
+                    widget._event_handlers = {}
+                if event_name not in widget._event_handlers:
+                    widget._event_handlers[event_name] = []
+
+                # Append the handler to the list of handlers for this event
+                widget._event_handlers[event_name].append(handler)
+
+                # Define a function that calls all handlers for this event
+                def combined_handler(event, handlers=widget._event_handlers[event_name]):
+                    for h in handlers:
+                        h(event)
+
+                # Bind the combined handler to the widget event
+                if event_name == 'on_change':
+                    widget.bind("<<ComboboxSelected>>", combined_handler)
+
+    def _initialize_specific_event_handlers(self):
+        """Initialize specific event handlers for events."""
+        # Initialize event handlers after widget setup
         for event_name, handlers in self.event_handlers.items():
             if isinstance(handlers, list):
                 for handler_name in handlers:
                     self._bind_event_handler(event_name, handler_name)
             else:
                 self._bind_event_handler(event_name, handlers)
-
-    def _bind_event_handler(self, event_name, handler_name):
-        """Bind an event handler dynamically."""
-        handler = getattr(self, handler_name, None)
-        if callable(handler):
-            # Bind specific event types for different controls
-            widget = getattr(self, 'widget', None)
-            if event_name == 'on_change' and widget:
-                # Bind to <<ComboboxSelected>> event for ComboBox
-                widget.bind("<<ComboboxSelected>>", handler)
 
     # Default change handler
     def default_on_change_handler(self, event):
@@ -125,8 +149,8 @@ class FontConfigComboBox(FontConfigWidget):
         # Set 'widget' to the combobox for event handler binding
         self.widget = self.combobox
 
-        # Initialize event handlers after widget setup
-        self._initialize_event_handlers()
+        # Initialize specific event handlers
+        self._initialize_specific_event_handlers()
 
     # Custom on_change handler for the ComboBox
     def palette_on_change_handler(self, event):
