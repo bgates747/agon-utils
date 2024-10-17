@@ -1,3 +1,4 @@
+
 import tkinter as tk
 from tkinter import Canvas
 from PIL import Image, ImageTk, ImageDraw
@@ -76,12 +77,22 @@ class AgonColorPicker(tk.Toplevel):
         # Canvas for displaying selected color
         self.canvas_selected_color = Canvas(self, width=self.hue_image_width, height=self.hue_image_height)
         self.canvas_selected_color.pack()
-        self.selected_color_image_tk, self.selected_color_image_pillow = self.load_image(self.selected_color_image_path)
-        self.canvas_selected_color.create_image(0, 0, anchor=tk.NW, image=self.selected_color_image_tk)
+
+        # Frame for OK and Cancel buttons
+        button_frame = tk.Frame(self)
+        button_frame.pack(pady=5)
+
+        # OK button to confirm the color selection
+        self.ok_button = tk.Button(button_frame, text="OK", command=self.on_ok)
+        self.ok_button.pack(side=tk.LEFT, padx=5)
+
+        # Cancel button to cancel the color selection
+        self.cancel_button = tk.Button(button_frame, text="Cancel", command=self.on_cancel)
+        self.cancel_button.pack(side=tk.LEFT, padx=5)
 
         # Info label
-        self.info_label = tk.Label(self, text="Click on a hue to generate color picker", font=("Arial", 14), pady=10)
-        self.info_label.pack(side=tk.BOTTOM)
+        self.info_label = tk.Label(self, text="Click on a hue to generate color picker", font=("Arial", 10), pady=5, height=3, anchor="w", justify="left")
+        self.info_label.pack(side=tk.BOTTOM, fill=tk.X)
 
         # Initialize color selection variables
         self.selected_rgb = None
@@ -91,13 +102,8 @@ class AgonColorPicker(tk.Toplevel):
         self.on_hue_selected(0)  # Set hue to 0 by default
         self.set_color_from_pixel(0, 0)
 
-        # OK button to confirm the color selection
-        self.ok_button = tk.Button(self, text="OK", command=self.on_ok)
-        self.ok_button.pack(side=tk.BOTTOM, pady=10)
-
         # Wait for the dialog to be dismissed
         self.wait_window(self)
-
 
     def on_palette_grid_click(self, event):
         """Handles user click on the palette grid, updates the hue, and refreshes the color picker."""
@@ -399,10 +405,6 @@ class AgonColorPicker(tk.Toplevel):
                 self.draw_selection_rectangle(col, row, cell_width, cell_height)
                 break
 
-    def on_ok(self):
-        """Close the dialog and save the selected color."""
-        self.destroy()
-
     def update_selected_color(self, r, g, b, a):
         """Updates the selected color and displays it."""
         selected_color_image = Image.new("RGBA", (self.hue_image_width, self.hue_image_height), (r, g, b, a))
@@ -411,6 +413,16 @@ class AgonColorPicker(tk.Toplevel):
         self.selected_rgb = (r, g, b, a)
         self.selected_hex = f"#{r:02x}{g:02x}{b:02x}{a:02x}"
         self.info_label.config(text=f"RGB: ({r}, {g}, {b}, {a})\nHex: {self.selected_hex}")
+
+    def on_cancel(self):
+        """Handles the cancel action and closes the dialog."""
+        self.selected_rgb = None
+        self.selected_hex = None
+        self.destroy()
+
+    def on_ok(self):
+        """Handles the OK action and closes the dialog."""
+        self.destroy()
 
     @staticmethod
     def askcolor(color=None, parent=None, palette_name=None, **kwargs):
