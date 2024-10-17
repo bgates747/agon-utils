@@ -45,29 +45,25 @@ def dict_to_xml(data_dict, root_tag):
 
 def xml_to_dict(font_config_xml, general_config_xml):
     """
-    Convert XML settings from strings to a dictionary with typed data,
-    using a general config XML string to look up data types.
+    Convert XML settings from ElementTree Elements to a dictionary with typed data,
+    using a general config XML element to look up data types.
     
     Parameters:
-        font_config_xml (str): XML string of the individual font config.
-        general_config_xml (str): XML string of the general config specifying data types.
+        font_config_xml (ET.Element): Parsed XML element of the individual font config.
+        general_config_xml (ET.Element): Parsed XML element of the general config specifying data types.
     
     Returns:
         dict: Dictionary containing settings with appropriate data types.
     """
     settings_dict = {}
     
-    # Parse the XML strings into ElementTree elements
-    font_root = ET.fromstring(font_config_xml)
-    general_root = ET.fromstring(general_config_xml)
-    
     # Function to find the data type in the general config
     def find_data_type(setting_name):
-        element = general_root.find(f".//setting[@name='{setting_name}']")
+        element = general_config_xml.find(f".//setting[@name='{setting_name}']")
         return element.find("data_type").text if element is not None else None
 
     # Process each setting in the font config XML
-    for setting in font_root.findall("setting"):
+    for setting in font_config_xml.findall("setting"):
         name = setting.get("name")
         value = setting.get("value")
 
@@ -219,14 +215,11 @@ def parse_font_filename(file_path):
 
 def load_font_metadata_from_xml(xml_filepath):
     """Load font metadata from an XML file, converting values based on types in the general XML config file."""
-    # Load individual font config XML as a string
-    with open(xml_filepath, 'r') as file:
-        font_config_xml = file.read()
+    font_config_xml = load_xml(xml_filepath)
     
-    # Load general XML config (data types) as a string
+    # Load general XML config (data types) as parsed XML
     general_config_path = os.path.join(os.path.dirname(__file__), "font_config_editor.xml")
-    with open(general_config_path, 'r') as file:
-        general_config_xml = file.read()
+    general_config_xml = load_xml(general_config_path)
     
     # Parse XML settings to a dictionary using xml_to_dict
     font_metadata = xml_to_dict(font_config_xml, general_config_xml)
@@ -235,22 +228,13 @@ def load_font_metadata_from_xml(xml_filepath):
 
 # Load XML file and get root element
 def load_xml(xml_filepath):
-    """Load an XML file and return the XML."""
+    """Load an XML file and return the root XML element."""
     try:
-        with open(xml_filepath, 'r') as file:
-            xml_string = file.read()
-            return ET.fromstring(xml_string)
+        tree = ET.parse(xml_filepath)
+        return tree.getroot()
     except FileNotFoundError:
         print(f"Error: Could not find XML file {xml_filepath}")
-        return ""
+        return None
     except ET.ParseError:
         print(f"Error: Could not parse XML file {xml_filepath}")
-        return ""
-
-# def save_font_metadata(self, font_config, xml_file_path):
-#     """Save the provided font configuration dictionary to an .xml file."""
-#     config = configparser.ConfigParser()
-#     config['font'] = {key: str(value) for key, value in font_config.items()}
-#     with open(xml_file_path, 'w') as configfile:
-#         config.write(configfile)
-#         print(f"Metadata saved successfully to {xml_file_path}")
+        return None

@@ -68,21 +68,21 @@ class FontEditor(ttk.Frame):
 
 
 
-        # # Right Frame for ImageDisplay and EditorWidget
-        # image_frame = tk.Frame(main_content_frame)
-        # image_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)  # Expands fully
+        # Right Frame for ImageDisplay and EditorWidget
+        image_frame = tk.Frame(main_content_frame)
+        image_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)  # Expands fully
 
-        # # Create an instance of ImageDisplay with an app reference
-        # self.image_display = ImageDisplay(image_frame, app_reference=self)
-        # self.image_display.pack(fill="both", expand=True)  # Fully expand to fill right frame
+        # Create an instance of ImageDisplay with an app reference
+        self.image_display = ImageDisplay(image_frame, app_reference=self)
+        self.image_display.pack(fill="both", expand=True)  # Fully expand to fill right frame
 
-        # # Create an instance of EditorWidget below ImageDisplay
-        # self.editor_widget = EditorWidget(image_frame, app_reference=self)
-        # self.editor_widget.pack(fill="x", expand=True, pady=(5, 0))  # Horizontal fill, aligns below ImageDisplay
+        # Create an instance of EditorWidget below ImageDisplay
+        self.editor_widget = EditorWidget(image_frame, app_reference=self)
+        self.editor_widget.pack(fill="x", expand=True, pady=(5, 0))  # Horizontal fill, aligns below ImageDisplay
 
-        # # Bottom ConsoleDisplay
-        # self.console_display = ConsoleDisplay(self)
-        # self.console_display.pack(fill="x", padx=10, pady=5, anchor="s")  # Fills available horizontal space
+        # Bottom ConsoleDisplay
+        self.console_display = ConsoleDisplay(self)
+        self.console_display.pack(fill="x", padx=10, pady=5, anchor="s")  # Fills available horizontal space
 
 if __name__ == "__main__":
     root = tk.Tk()

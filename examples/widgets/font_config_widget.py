@@ -68,11 +68,11 @@ class FontConfigWidget(tk.Frame):
         return None
 
     def set_value(self, value):
-        """Set the value of the control."""
+        """Set the current value of the control."""
         value = get_typed_data(self.data_type, value)
-        if self.value_object and value in self.value_object['values']:
+        if self.value_object:
             self.value_object.set(value)
-    
+
     def set_default_value(self):
         """Set the default value for the control."""
         self.set_value(self.default_value)
@@ -82,11 +82,11 @@ class FontConfigWidget(tk.Frame):
         if self.original_value_object:
             return get_typed_data(self.data_type, self.original_value_object.get())
         return None
-    
+
     def set_original_value(self, value):
         """Set the original value of the control."""
         value = get_typed_data(self.data_type, value)
-        if self.original_value_object and value in self.original_value_object['values']:
+        if self.original_value_object:
             self.original_value_object.set(value)
 
     def _initialize_event_handlers(self):
@@ -253,6 +253,11 @@ class FontConfigComboBox(FontConfigWidget):
 
         # Initialize specific event handlers
         self._initialize_specific_event_handlers()
+
+    def set_combo_options(self, options):
+        """Set the available options for the ComboBox."""
+        if isinstance(options, (list, dict)):
+            self.combobox['values'] = list(options)
 
 class FontConfigTextBox(FontConfigWidget):
     """A widget for displaying and editing a text-based configuration value."""
