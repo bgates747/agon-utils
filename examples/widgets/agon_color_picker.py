@@ -31,13 +31,13 @@ class AgonColorPicker(tk.Toplevel):
         # Extract all parameters from kwargs
         palette_name = kwargs.get('palette_name')
         self.palette_filepath = f'{base_dir}/{palette_name}.gpl'
-        self.geometry(kwargs.get('app_geometry', '800x600'))
+        self.geometry(kwargs.get('app_geometry', '320x380'))
 
         # Set image dimensions with defaults if not provided
-        self.hue_image_width = kwargs.get('hue_image_width', 640)
-        self.hue_image_height = kwargs.get('hue_image_height', 64)
-        self.color_picker_width = kwargs.get('color_picker_width', 240)
-        self.color_picker_height = kwargs.get('color_picker_height', 240)
+        self.hue_image_width = kwargs.get('hue_image_width', 320)
+        self.hue_image_height = kwargs.get('hue_image_height', 32)
+        self.color_picker_width = kwargs.get('color_picker_width', 160)
+        self.color_picker_height = kwargs.get('color_picker_height', 160)
 
         # Create dummy RGBA images
         self.create_dummy_images()
@@ -125,6 +125,8 @@ class AgonColorPicker(tk.Toplevel):
         hex_value = f"#{r:02x}{g:02x}{b:02x}{a:02x}"
         self.info_label.config(text=f"RGB: ({r}, {g}, {b}, {a})\nHSV: ({h:.2f}, {s:.2f}, {v:.2f})\n"
                                     f"Hex: {hex_value}")
+        
+        self.update_selected_color(r, g, b, a)
 
     def set_color_from_pixel(self, x, y):
         """Set the color based on the pixel at (x, y) in the color picker image."""
@@ -133,6 +135,19 @@ class AgonColorPicker(tk.Toplevel):
         selected_color_image.save(self.selected_color_image_path)
         self.selected_color_image_tk = ImageTk.PhotoImage(selected_color_image)
         self.canvas_selected_color.create_image(0, 0, anchor=tk.NW, image=self.selected_color_image_tk)
+
+        # Update the selection rectangle in the palette grid
+        self.update_selection(r, g, b)
+
+        # Convert to HSV
+        h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+
+        # Display the selected color information in the status label
+        hex_value = f"#{r:02x}{g:02x}{b:02x}{a:02x}"
+        self.info_label.config(text=f"RGB: ({r}, {g}, {b}, {a})\nHSV: ({h:.2f}, {s:.2f}, {v:.2f})\n"
+                                    f"Hex: {hex_value}")
+        
+        self.update_selected_color(r, g, b, a)
 
     def generate_palette_grid_image(self, palette_filepath):
         """Generates an image of the palette colors laid out in a grid."""
@@ -178,6 +193,23 @@ class AgonColorPicker(tk.Toplevel):
 
         # Store image data for later color lookup
         self.image_data = self.image
+
+        # Get the color of the upper-left pixel
+        self.set_color_from_pixel(0, 0)
+        r, g, b, a = self.image.getpixel((0, 0))
+
+        # Update the selection rectangle in the palette grid
+        self.update_selection(r, g, b)
+
+        # Convert to HSV
+        h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+
+        # Display the selected color information in the status label
+        hex_value = f"#{r:02x}{g:02x}{b:02x}{a:02x}"
+        self.info_label.config(text=f"RGB: ({r}, {g}, {b}, {a})\nHSV: ({h:.2f}, {s:.2f}, {v:.2f})\n"
+                                    f"Hex: {hex_value}")
+        
+        self.update_selected_color(r, g, b, a)
 
 
     def create_dummy_images(self):
@@ -245,7 +277,7 @@ class AgonColorPicker(tk.Toplevel):
         x, y = event.x, event.y
 
         # Get the color of the pixel at the clicked position from the Pillow image
-        r, g, b, _ = self.hue_image_pillow.getpixel((x, y))  # Get the RGBA value from the Pillow image
+        r, g, b, a = self.hue_image_pillow.getpixel((x, y))  # Get the RGBA value from the Pillow image
 
         # Convert the RGB color to HSV
         hsv = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
@@ -256,6 +288,19 @@ class AgonColorPicker(tk.Toplevel):
 
         # Generate the color picker image using the C API function with the extracted hue
         self.on_hue_selected(hue)
+
+        # Update the selection rectangle in the palette grid
+        self.update_selection(r, g, b)
+
+        # Convert to HSV
+        h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+
+        # Display the selected color information in the status label
+        hex_value = f"#{r:02x}{g:02x}{b:02x}{a:02x}"
+        self.info_label.config(text=f"RGB: ({r}, {g}, {b}, {a})\nHSV: ({h:.2f}, {s:.2f}, {v:.2f})\n"
+                                    f"Hex: {hex_value}")
+        
+        self.update_selected_color(r, g, b, a)
 
     def on_hue_selected(self, hue):
         """Calls the C API to generate the color picker image based on the selected hue."""
@@ -286,20 +331,18 @@ class AgonColorPicker(tk.Toplevel):
         self.selected_color_tk = ImageTk.PhotoImage(selected_color_image)
         self.canvas_selected_color.create_image(0, 0, anchor=tk.NW, image=self.selected_color_tk)
 
-        # Convert to HSV
-        h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
-
-        # Convert to CMYK (simple method)
-        c, m, y, k = self.rgb_to_cmyk(r, g, b)
-
-        # Display color information
-        hex_value = f"#{r:02x}{g:02x}{b:02x}{a:02x}"
-        self.info_label.config(text=f"RGB: ({r}, {g}, {b}, {a})\nHSV: ({h:.2f}, {s:.2f}, {v:.2f})\n"
-                                    f"CMYK: ({c:.2f}, {m:.2f}, {y:.2f}, {k:.2f})\nHex: {hex_value}")
-
         # Update the selection rectangle in the palette grid
         self.update_selection(r, g, b)
 
+        # Convert to HSV
+        h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+
+        # Display the selected color information in the status label
+        hex_value = f"#{r:02x}{g:02x}{b:02x}{a:02x}"
+        self.info_label.config(text=f"RGB: ({r}, {g}, {b}, {a})\nHSV: ({h:.2f}, {s:.2f}, {v:.2f})\n"
+                                    f"Hex: {hex_value}")
+        
+        self.update_selected_color(r, g, b, a)
 
     def rgb_to_cmyk(self, r, g, b):
         """Convert RGB to CMYK."""
@@ -359,17 +402,6 @@ class AgonColorPicker(tk.Toplevel):
     def on_ok(self):
         """Close the dialog and save the selected color."""
         self.destroy()
-
-    def on_palette_grid_click(self, event):
-        """Handles user click on the palette grid."""
-        x, y = event.x, event.y
-        r, g, b, a = self.palette_grid_image_pillow.getpixel((x, y))
-        self.update_selected_color(r, g, b, a)
-
-    def set_color_from_pixel(self, x, y):
-        """Set color based on pixel from color picker."""
-        r, g, b, a = self.color_picker_image_pillow.getpixel((x, y))
-        self.update_selected_color(r, g, b, a)
 
     def update_selected_color(self, r, g, b, a):
         """Updates the selected color and displays it."""
