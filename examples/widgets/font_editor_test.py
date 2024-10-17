@@ -7,7 +7,7 @@ from menu_bar import MenuBar
 from image_display import ImageDisplay
 from custom_widgets import ConsoleDisplay
 from editor_widget import EditorWidget
-from font_config_widget import FontConfigComboBox
+from font_config_widget import FontConfigComboBox, FontConfigTextBox, FontConfigDeltaControl
 
 class FontEditor(ttk.Frame):
     """
@@ -39,17 +39,28 @@ class FontEditor(ttk.Frame):
         font_config_file = os.path.join(os.path.dirname(__file__), "font_config_editor.xml")
         # self.font_config_editor = FontConfigEditor(config_frame, font_config_file, app_reference=self)
         # self.font_config_editor.pack(fill="y", expand=True)  # Fills available vertical space only
+
+    # Temporary testing
+        def place_config_widget(config_widget):
+            config_widget.pack(pady=10)
+            print(config_widget.event_handlers)
+            print(config_widget.visible)
+            print(config_widget.options_dict)
         
-        # Temporary testing
         font_config_xml = load_xml(font_config_file)
         config_setting = "palette"
-        combo_box = FontConfigComboBox(config_frame, config_setting, font_config_xml)
-        combo_box.pack(pady=10)
-        print(combo_box.event_handlers)
-        print(combo_box.visible)
-        print(combo_box.options_dict)
+        config_widget = FontConfigComboBox(config_frame, config_setting, font_config_xml)
+        place_config_widget(config_widget)
 
-        # End of temporary testing
+        config_setting = "font_name"
+        config_widget = FontConfigTextBox(config_frame, config_setting, font_config_xml)
+        place_config_widget(config_widget)
+
+        config_setting = "point_size"
+        config_widget = FontConfigDeltaControl(config_frame, config_setting, font_config_xml)
+        place_config_widget(config_widget)
+    # End of temporary testing
+
 
 
         # # Right Frame for ImageDisplay and EditorWidget

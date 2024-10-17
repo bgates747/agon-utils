@@ -20,6 +20,7 @@ class FontConfigWidget(tk.Frame):
         self.visible = self._extract_nested_dict('visible')
         self.event_handlers = self._extract_nested_dict('event_handlers')
         self.options_dict = self._extract_nested_dict('options')
+        self.description = self.setting_xml.find('description').text if self.setting_xml.find('description') is not None else ""
 
         # Create the control based on the specific widget type
         self.pad_x = 0
@@ -30,6 +31,8 @@ class FontConfigWidget(tk.Frame):
         self.value_object = None
 
         # Initialize event handlers
+        self.on_change_event = None  # Define on_change_event in the base class
+        self.on_change_widget = None  # Define on_change_widget in the base class
         self._initialize_event_handlers()
 
     def _extract_nested_dict(self, tag_name):
@@ -38,7 +41,6 @@ class FontConfigWidget(tk.Frame):
             nested_dict = {}
             for child in element:
                 if child.tag == 'item':
-                    # If the tag is 'item', add directly to list without an extra key
                     if isinstance(nested_dict, list):
                         nested_dict.append(child.text)
                     else:
@@ -57,7 +59,7 @@ class FontConfigWidget(tk.Frame):
 
         tag_xml = self.setting_xml.find(tag_name) if self.setting_xml is not None else None
         return recurse_element(tag_xml) if tag_xml is not None else {}
-    
+
     def get_value(self):
         """Return the current value of the control."""
         if self.value_object:
@@ -76,33 +78,35 @@ class FontConfigWidget(tk.Frame):
 
     def _initialize_event_handlers(self):
         """Initialize event handlers for generic and specific events."""
-        if hasattr(self, 'widget') and self.widget:
+        if self.on_change_widget:
             # Bind a default on_change event handler if no specific handler is defined
-            self._bind_event_handler("on_change", "default_on_change_handler")
+            if 'on_change' in self.event_handlers and self.on_change_event:
+                self._bind_event_handler("on_change", "default_on_change_handler")
+
+        # Bind the on_hover event handlers if present
+        if 'on_hover' in self.event_handlers:
+            self.label.bind("<Enter>", self.default_on_mouse_enter)
+            self.label.bind("<Leave>", self.default_on_mouse_leave)
 
     def _bind_event_handler(self, event_name, handler_name):
         """Bind an event handler dynamically and support multiple handlers for the same event."""
         handler = getattr(self, handler_name, None)
         if callable(handler):
-            # Bind specific event types for different controls
-            widget = getattr(self, 'widget', None)
+            widget = self.on_change_widget
             if widget:
                 if not hasattr(widget, '_event_handlers'):
                     widget._event_handlers = {}
                 if event_name not in widget._event_handlers:
                     widget._event_handlers[event_name] = []
 
-                # Append the handler to the list of handlers for this event
                 widget._event_handlers[event_name].append(handler)
 
-                # Define a function that calls all handlers for this event
                 def combined_handler(event, handlers=widget._event_handlers[event_name]):
                     for h in handlers:
                         h(event)
 
-                # Bind the combined handler to the widget event
-                if event_name == 'on_change':
-                    widget.bind("<<ComboboxSelected>>", combined_handler)
+                if event_name == 'on_change' and self.on_change_event:
+                    widget.bind(self.on_change_event, combined_handler)
 
     def _initialize_specific_event_handlers(self):
         """Initialize specific event handlers for events."""
@@ -119,14 +123,20 @@ class FontConfigWidget(tk.Frame):
         """Default handler for on_change events."""
         print(f"Default on_change handler called for {self.label_text} with value: {self.get_value()}")
 
-    # Example handlers
-    def foo_handler(self, event):
-        """Example event handler."""
-        print("foo_handler called!")
+    # Default hover handlers
+    def default_on_mouse_enter(self, event):
+        """Display a tooltip with the description on hover."""
+        self.tooltip = tk.Toplevel(self)
+        self.tooltip.wm_overrideredirect(True)
+        self.tooltip.wm_geometry(f"+{event.x_root}+{event.y_root - 30}")
+        label = tk.Label(self.tooltip, text=self.description, background="cyan", relief="solid", borderwidth=1, font=("Helvetica", 8))
+        label.pack()
 
-    def bar_handler(self, event):
-        """Another example event handler."""
-        print("bar_handler called!")
+    def default_on_mouse_leave(self, event):
+        """Destroy the tooltip on mouse leave."""
+        if hasattr(self, 'tooltip'):
+            self.tooltip.destroy()
+            del self.tooltip
 
 class FontConfigComboBox(FontConfigWidget):
     """A widget for displaying and selecting from a dropdown list of configuration values."""
@@ -146,8 +156,9 @@ class FontConfigComboBox(FontConfigWidget):
         # Set the value object for easier access
         self.value_object = self.selected_var
 
-        # Set 'widget' to the combobox for event handler binding
-        self.widget = self.combobox
+        # Set 'on_change_widget' to the combobox for event handler binding
+        self.on_change_widget = self.combobox
+        self.on_change_event = "<<ComboboxSelected>>"
 
         # Initialize specific event handlers
         self._initialize_specific_event_handlers()
@@ -156,3 +167,110 @@ class FontConfigComboBox(FontConfigWidget):
     def palette_on_change_handler(self, event):
         """Custom on_change handler for the palette setting."""
         print(f"Palette changed to: {self.get_value()}")
+
+class FontConfigTextBox(FontConfigWidget):
+    """A widget for displaying and editing a text-based configuration value."""
+
+    def __init__(self, parent, config_setting, font_config_xml, **kwargs):
+        super().__init__(parent, config_setting, font_config_xml, **kwargs)
+        
+        # Additional setup for Text Entry
+        self.text_var = tk.StringVar(value=self.default_value)
+        self.text_entry = tk.Entry(self, textvariable=self.text_var, width=22)
+        self.text_entry.grid(row=0, column=1, padx=self.pad_x)
+        self.value_object = self.text_var
+        self.on_change_widget = self.text_entry
+
+        # Initialize specific event handlers
+        self.on_change_event = "<FocusOut>"  # Set the event type for text entry
+        self._initialize_specific_event_handlers()
+
+        # Bind the Enter key to trigger focus out
+        self.text_entry.bind("<Return>", self.trigger_focus_out)
+
+    def trigger_focus_out(self, event=None):
+        """Trigger a focus out event to activate the on_change event."""
+        self.on_change_widget.event_generate("<FocusOut>")
+
+
+class FontConfigDeltaControl(FontConfigWidget):
+    """A widget for handling delta_value adjustments with custom increment, bounds, and data-driven properties."""
+
+    def __init__(self, parent, config_setting, font_config_xml, **kwargs):
+        super().__init__(parent, config_setting, font_config_xml, **kwargs)
+        
+        # Extract configuration from XML
+        self.data_type = self.setting_xml.find('data_type').text
+        self.default_value = get_typed_data(self.data_type, self.setting_xml.find('default_value').text)
+        self.min_value = get_typed_data(self.data_type, self.setting_xml.find('min_value').text)
+        self.max_value = get_typed_data(self.data_type, self.setting_xml.find('max_value').text)
+        self.step_value = get_typed_data(self.data_type, self.setting_xml.find('step_value').text)
+
+        # Initialize state variables
+        self.current_value = self.default_value
+
+        self.pad_x = 0  # Padding for grid layout
+
+        # Main label for the control
+        self.label = tk.Label(self, width=15, text=self.label_text, font=("Helvetica", 10), anchor="w")
+        self.label.grid(row=0, column=0, padx=self.pad_x)
+
+        # Current value display
+        self.current_var = tk.StringVar(value=str(self.current_value))
+        self.current_display = tk.Label(self, textvariable=self.current_var, width=4, anchor="center")
+        self.current_display.grid(row=0, column=1, padx=self.pad_x)
+
+        # Decrement button
+        self.decrement_button = tk.Button(self, text="-", width=0, font=("Helvetica", 8),
+                                          command=lambda: self.modify_delta(-self.step_value))
+        self.decrement_button.grid(row=0, column=2, padx=self.pad_x)
+
+        # Delta display
+        self.delta_var = tk.StringVar(value="0")
+        self.delta_display = tk.Label(self, textvariable=self.delta_var, width=4, anchor="center")
+        self.delta_display.grid(row=0, column=3, padx=self.pad_x)
+
+        # Increment button
+        self.increment_button = tk.Button(self, text="+", width=0, font=("Helvetica", 8),
+                                          command=lambda: self.modify_delta(self.step_value))
+        self.increment_button.grid(row=0, column=4, padx=self.pad_x)
+
+        # Computed value display
+        self.modified_var = tk.StringVar(value=str(self.current_value))
+        self.modified_display = tk.Label(self, textvariable=self.modified_var, width=4, anchor="center")
+        self.modified_display.grid(row=0, column=5, padx=self.pad_x)
+
+        # Set value object and on_change_widget for tracking changes
+        self.value_object = self.modified_var
+        self.on_change_widget = self.modified_display
+        self.on_change_event = "<<ModifiedValueChanged>>"  # Custom event identifier
+
+        # Initialize specific event handlers
+        self._initialize_specific_event_handlers()
+
+    def modify_delta(self, delta_value):
+        """Modify the delta, updating the modified value within constraints and calculating delta from current value."""
+        # Convert modified_var to a numeric type for calculation
+        current_modified = float(self.modified_var.get()) if self.data_type == 'float' else int(self.modified_var.get())
+        # Calculate new delta by adding delta_value to the current delta
+        new_delta = current_modified - self.current_value + delta_value
+        # Clamp modified value within min and max constraints
+        modified_value = max(self.min_value, min(self.max_value, self.current_value + new_delta))
+        
+        # Update the modified and delta displays
+        self.modified_var.set(str(modified_value))
+        self.delta_var.set(str(modified_value - self.current_value))  # Reflect adjusted delta
+        
+        # Trigger the custom on_change event
+        self.on_change_widget.event_generate(self.on_change_event)
+
+    def set_default_value(self, value):
+        """Set the current (original) value, update displays, and reset delta to zero."""
+        self.current_value = value  # Set the original/current value
+        self.modified_var.set(str(self.current_value))  # Reset modified value to match
+        self.current_var.set(str(self.current_value))  # Update the current display
+        self.delta_var.set("0")  # Reset delta since modified equals current
+
+    def set_value(self, value):
+        """Set the current (original) value, update displays, and reset delta to zero."""
+        self.set_default_value(value)

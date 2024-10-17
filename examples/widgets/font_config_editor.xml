@@ -1,14 +1,19 @@
 <settings>
     <setting name="font_name">
-        <widget_type>ConfigTextBox</widget_type>
+        <widget_type>FontConfigTextBox</widget_type>
         <label_text>Name</label_text>
         <data_type>string</data_type>
         <default_value>Unnamed Font</default_value>
         <description>Name of the font</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+            </on_change>
+        </event_handlers>
     </setting>
 
     <setting name="font_variant">
-        <widget_type>ConfigTextBox</widget_type>
+        <widget_type>FontConfigTextBox</widget_type>
         <label_text>Variant</label_text>
         <data_type>string</data_type>
         <default_value>Regular</default_value>
@@ -16,7 +21,7 @@
     </setting>
 
     <setting name="point_size">
-        <widget_type>ConfigDeltaControl</widget_type>
+        <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Point Size</label_text>
         <data_type>int</data_type>
         <default_value>8</default_value>
@@ -30,10 +35,15 @@
                 <item>font</item>
             </font_type>
         </hidden>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+            </on_change>
+        </event_handlers>
     </setting>
 
     <setting name="font_width">
-        <widget_type>ConfigDeltaControl</widget_type>
+        <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Width</label_text>
         <data_type>int</data_type>
         <default_value>8</default_value>
@@ -44,7 +54,7 @@
     </setting>
 
     <setting name="font_height">
-        <widget_type>ConfigDeltaControl</widget_type>
+        <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Height</label_text>
         <data_type>int</data_type>
         <default_value>8</default_value>
@@ -55,7 +65,7 @@
     </setting>
 
     <setting name="offset_left">
-        <widget_type>ConfigDeltaControl</widget_type>
+        <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Offset Left</label_text>
         <data_type>int</data_type>
         <default_value>0</default_value>
@@ -66,7 +76,7 @@
     </setting>
 
     <setting name="offset_top">
-        <widget_type>ConfigDeltaControl</widget_type>
+        <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Offset Top</label_text>
         <data_type>int</data_type>
         <default_value>0</default_value>
@@ -77,7 +87,7 @@
     </setting>
 
     <setting name="offset_width">
-        <widget_type>ConfigDeltaControl</widget_type>
+        <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Offset Width</label_text>
         <data_type>int</data_type>
         <default_value>0</default_value>
@@ -88,7 +98,7 @@
     </setting>
 
     <setting name="offset_height">
-        <widget_type>ConfigDeltaControl</widget_type>
+        <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Offset Height</label_text>
         <data_type>int</data_type>
         <default_value>0</default_value>
@@ -99,7 +109,7 @@
     </setting>
 
     <setting name="scale_width">
-        <widget_type>ConfigDeltaControl</widget_type>
+        <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Scale Width</label_text>
         <data_type>int</data_type>
         <default_value>0</default_value>
@@ -110,7 +120,7 @@
     </setting>
 
     <setting name="scale_height">
-        <widget_type>ConfigDeltaControl</widget_type>
+        <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Scale Height</label_text>
         <data_type>int</data_type>
         <default_value>0</default_value>
@@ -121,7 +131,7 @@
     </setting>
 
     <setting name="raster_type">
-        <widget_type>ConfigComboBox</widget_type>
+        <widget_type>FontConfigComboBox</widget_type>
         <label_text>Raster Type</label_text>
         <data_type>string</data_type>
         <default_value>threshold</default_value>
@@ -134,13 +144,13 @@
         <description>Type of rasterization</description>
         <event_handlers>
             <on_change>
-                <item>default</item>
+                <item>default_on_change_handler</item>
             </on_change>
         </event_handlers>
     </setting>
 
     <setting name="threshold">
-        <widget_type>ConfigDeltaControl</widget_type>
+        <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Threshold</label_text>
         <data_type>int</data_type>
         <default_value>128</default_value>
@@ -155,13 +165,13 @@
         </visible>
         <event_handlers>
             <on_change>
-                <item>default</item>
+                <item>default_on_change_handler</item>
             </on_change>
         </event_handlers>
     </setting>
 
     <setting name="palette">
-        <widget_type>ConfigComboBox</widget_type>
+        <widget_type>FontConfigComboBox</widget_type>
         <label_text>Palette</label_text>
         <data_type>string</data_type>
         <default_value>Agon64</default_value>
@@ -171,7 +181,7 @@
             <item>Agon4</item>
             <item>32-bit RGBA</item>
         </options>
-        <description>Color Palette</description>
+        <description>Color palette to use when rasterizing font.</description>
         <visible>
             <setting name="raster_type">
                 <item>palette</item>
@@ -182,6 +192,9 @@
                 <item>default_on_change_handler</item>
                 <item>palette_on_change_handler</item>
             </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
         </event_handlers>
     </setting>
 
@@ -193,7 +206,7 @@
         <description>Foreground Color RGBA tuple</description>
         <event_handlers>
             <on_change>
-                <item>default</item>
+                <item>default_on_change_handler</item>
             </on_change>
         </event_handlers>
     </setting>
@@ -206,13 +219,13 @@
         <description>Background Color RGBA tuple</description>
         <event_handlers>
             <on_change>
-                <item>default</item>
+                <item>default_on_change_handler</item>
             </on_change>
         </event_handlers>
     </setting>
 
     <setting name="ascii_start">
-        <widget_type>ConfigDeltaControl</widget_type>
+        <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>ASCII Start</label_text>
         <data_type>int</data_type>
         <default_value>32</default_value>
@@ -223,7 +236,7 @@
     </setting>
 
     <setting name="ascii_end">
-        <widget_type>ConfigDeltaControl</widget_type>
+        <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>ASCII End</label_text>
         <data_type>int</data_type>
         <default_value>127</default_value>
@@ -234,7 +247,7 @@
     </setting>
 
     <setting name="chars_per_row">
-        <widget_type>ConfigDeltaControl</widget_type>
+        <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Chars per Row</label_text>
         <data_type>int</data_type>
         <default_value>16</default_value>
