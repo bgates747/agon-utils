@@ -7,7 +7,7 @@ from menu_bar import MenuBar
 from image_display import ImageDisplay
 from custom_widgets import ConsoleDisplay
 from editor_widget import EditorWidget
-from font_config_widget import FontConfigComboBox, FontConfigTextBox, FontConfigDeltaControl
+from font_config_widget import FontConfigComboBox, FontConfigTextBox, FontConfigDeltaControl, FontConfigColorPicker
 
 class FontEditor(ttk.Frame):
     """
@@ -36,8 +36,8 @@ class FontEditor(ttk.Frame):
         config_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10, anchor="n")  # Only expand vertically
 
         # Create an instance of FontConfigEditor with XML data properties and an app reference
-        font_config_file = os.path.join(os.path.dirname(__file__), "font_config_editor.xml")
-        # self.font_config_editor = FontConfigEditor(config_frame, font_config_file, app_reference=self)
+        config_editor_file = os.path.join(os.path.dirname(__file__), "font_config_editor.xml")
+        # self.font_config_editor = FontConfigEditor(config_frame, config_editor_file, app_reference=self)
         # self.font_config_editor.pack(fill="y", expand=True)  # Fills available vertical space only
 
     # Temporary testing
@@ -46,8 +46,9 @@ class FontEditor(ttk.Frame):
             print(config_widget.event_handlers)
             print(config_widget.visible)
             print(config_widget.options_dict)
-        
-        font_config_xml = load_xml(font_config_file)
+
+        font_config_xml = load_xml(config_editor_file)
+
         config_setting = "palette"
         config_widget = FontConfigComboBox(config_frame, config_setting, font_config_xml)
         place_config_widget(config_widget)
@@ -58,6 +59,10 @@ class FontEditor(ttk.Frame):
 
         config_setting = "point_size"
         config_widget = FontConfigDeltaControl(config_frame, config_setting, font_config_xml)
+        place_config_widget(config_widget)
+
+        config_setting = "fg_color"
+        config_widget = FontConfigColorPicker(config_frame, config_setting, font_config_xml)
         place_config_widget(config_widget)
     # End of temporary testing
 
