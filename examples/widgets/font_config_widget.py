@@ -19,11 +19,15 @@ class FontConfigWidget(tk.Frame):
         self.label_text = self.setting_xml.find('label_text').text
         self.visible = self._extract_nested_dict('visible')
         self.event_handlers = self._extract_nested_dict('event_handlers')
+        self.options_dict = self._extract_nested_dict('options')  # Keep options_dict for compatibility
 
         # Create the control based on the specific widget type
         self.pad_x = 0
         self.label = tk.Label(self, width=15, text=self.label_text, font=("Helvetica", 10), anchor="w")
         self.label.grid(row=0, column=0, padx=self.pad_x)
+
+        # Set the value object for easier access to get/set methods
+        self.value_object = None
 
     def _extract_nested_dict(self, tag_name):
         """Extract nested dictionary structure from XML for a given tag."""
@@ -50,15 +54,61 @@ class FontConfigWidget(tk.Frame):
 
         tag_xml = self.setting_xml.find(tag_name) if self.setting_xml is not None else None
         return recurse_element(tag_xml) if tag_xml is not None else {}
+    
+    def get_value(self):
+        """Return the current value of the control."""
+        if self.value_object:
+            return get_typed_data(self.data_type, self.value_object.get())
+        return None
+
+    def set_value(self, value):
+        """Set the value of the control."""
+        value = get_typed_data(self.data_type, value)
+        if self.value_object and value in self.value_object['values']:
+            self.value_object.set(value)
+    
+    def set_default_value(self):
+        """Set the default value for the control."""
+        self.set_value(self.default_value)
+
+    def _initialize_event_handlers(self):
+        """Initialize event handlers based on XML configuration."""
+        for event_name, handlers in self.event_handlers.items():
+            if isinstance(handlers, list):
+                for handler_name in handlers:
+                    self._bind_event_handler(event_name, handler_name)
+            else:
+                self._bind_event_handler(event_name, handlers)
+
+    def _bind_event_handler(self, event_name, handler_name):
+        """Bind an event handler dynamically."""
+        handler = getattr(self, handler_name, None)
+        if callable(handler):
+            # Bind specific event types for different controls
+            widget = getattr(self, 'widget', None)
+            if event_name == 'on_change' and widget:
+                # Bind to <<ComboboxSelected>> event for ComboBox
+                widget.bind("<<ComboboxSelected>>", handler)
+
+    # Default change handler
+    def default_on_change_handler(self, event):
+        """Default handler for on_change events."""
+        print(f"Default on_change handler called for {self.label_text} with value: {self.get_value()}")
+
+    # Example handlers
+    def foo_handler(self, event):
+        """Example event handler."""
+        print("foo_handler called!")
+
+    def bar_handler(self, event):
+        """Another example event handler."""
+        print("bar_handler called!")
 
 class FontConfigComboBox(FontConfigWidget):
     """A widget for displaying and selecting from a dropdown list of configuration values."""
 
     def __init__(self, parent, config_setting, font_config_xml, **kwargs):
         super().__init__(parent, config_setting, font_config_xml, **kwargs)
-
-        # Test code
-        self.options_dict = self._extract_nested_dict('options')
 
         # Extract options and default value from the XML
         options = [get_typed_data(self.data_type, option.text) for option in self.setting_xml.findall("options/item")] if self.setting_xml is not None else []
@@ -67,15 +117,18 @@ class FontConfigComboBox(FontConfigWidget):
         self.selected_var = tk.StringVar(value=self.default_value)
         self.combobox = ttk.Combobox(self, textvariable=self.selected_var, values=options, width=20, state="readonly")
         self.combobox.grid(row=0, column=1, padx=self.pad_x)
-        self.combobox.set(self.default_value) 
+        self.combobox.set(self.default_value)
 
-    def get_value(self):
-        """Return the currently selected value in the combobox."""
-        return get_typed_data(self.data_type, self.selected_var.get())
+        # Set the value object for easier access
+        self.value_object = self.selected_var
 
-    def set_value(self, value):
-        """Set the selected value in the combobox."""
-        value = get_typed_data(self.data_type, value)
-        if value in self.combobox['values']:
-            self.selected_var.set(value)
-            self.combobox.set(value)
+        # Set 'widget' to the combobox for event handler binding
+        self.widget = self.combobox
+
+        # Initialize event handlers after widget setup
+        self._initialize_event_handlers()
+
+    # Custom on_change handler for the ComboBox
+    def palette_on_change_handler(self, event):
+        """Custom on_change handler for the palette setting."""
+        print(f"Palette changed to: {self.get_value()}")
