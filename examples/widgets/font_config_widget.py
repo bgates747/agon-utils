@@ -1,7 +1,8 @@
 import tkinter as tk
-from tkinter import ttk, colorchooser
+from tkinter import ttk
 import xml.etree.ElementTree as ET
 from config_manager import get_typed_data
+from agon_color_picker import AgonColorPicker
 
 class FontConfigWidget(tk.Frame):
     """Base widget class for common font configuration controls."""
@@ -403,25 +404,6 @@ class FontConfigColorPicker(FontConfigWidget):
         """Convert an RGBA tuple to a hex color code (ignoring alpha)."""
         return "#%02x%02x%02x" % (rgba[0], rgba[1], rgba[2])
 
-    def choose_color(self):
-        """Open a color chooser dialog to select a new color."""
-        # Save the initial color to compare after the dialog closes
-        initial_color = self.color_value
-
-        # Open the color chooser and get the selected color (ignoring alpha for simplicity)
-        rgb_color, hex_color = colorchooser.askcolor(initialcolor=self.rgb_to_hex(self.color_value), parent=self)
-        
-        # If a color was selected (None means the dialog was canceled), update the color
-        if rgb_color:
-            # Update the color value (keep the original alpha value)
-            self.color_value = (int(rgb_color[0]), int(rgb_color[1]), int(rgb_color[2]), self.color_value[3])
-            # Update the button's background color and text
-            self.color_button.config(bg=self.rgb_to_hex(self.color_value), text=str(self.color_value))
-
-            # Trigger the on_change event only if the color has changed
-            if self.color_value != initial_color:
-                self.on_change_widget.event_generate(self.on_change_event)
-
     def get_value(self):
         """Return the current color value as a string."""
         return ','.join(map(str, self.color_value))
@@ -430,3 +412,19 @@ class FontConfigColorPicker(FontConfigWidget):
         """Set the current color value."""
         self.color_value = self.parse_color(value)
         self.color_button.config(bg=self.rgb_to_hex(self.color_value), text=str(self.color_value))
+
+    def choose_color(self):
+        """Open a color chooser dialog to select a new color."""
+        initial_color = self.color_value
+        palette_control = self.parent.controls.get("palette")
+        palette_name = palette_control.get_value() if palette_control else None
+
+        # Open the color chooser
+        rgb_color, hex_color = AgonColorPicker.askcolor(color=self.rgb_to_hex(self.color_value), parent=self, palette_name=palette_name)
+        
+        if rgb_color:
+            self.color_value = (int(rgb_color[0]), int(rgb_color[1]), int(rgb_color[2]), self.color_value[3])
+            self.color_button.config(bg=self.rgb_to_hex(self.color_value), text=str(self.color_value))
+
+            if self.color_value != initial_color:
+                self.on_change_widget.event_generate(self.on_change_event)

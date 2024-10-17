@@ -1,8 +1,8 @@
 import tkinter as tk
-from tkinter import ttk, Button
+from tkinter import Button
 import xml.etree.ElementTree as ET
 from font_config_widget import FontConfigDeltaControl, FontConfigTextBox, FontConfigComboBox, FontConfigColorPicker
-from config_manager import get_typed_data, dict_to_text, load_xml
+from config_manager import dict_to_text, load_xml
 
 class FontConfigEditor(tk.Frame):
     """
