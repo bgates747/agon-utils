@@ -2,7 +2,7 @@ import numpy as np
 import csv
 import agonutils as au
 
-def generate_normalized_quanta(val0, val1, quanta):
+def generate_normalized_quanta(val0, val1, num_quanta):
     """
     Generates a normalized list of values between val0 and val1 with the specified number of quanta.
     If val0 > val1, the function will step through the range in descending order.
@@ -15,12 +15,25 @@ def generate_normalized_quanta(val0, val1, quanta):
     Returns:
         List[float]: A list of normalized values between val0 and val1.
     """
-    if quanta < 2:
+    if num_quanta < 2:
         raise ValueError("Number of quanta must be at least 2 to generate a range.")
     
-    step = (val1 - val0) / (quanta - 1)  # Calculate step size
+    step = (val1 - val0) / (num_quanta - 1)  # Calculate step size
 
-    return [(val0 + i * step) for i in range(quanta)]
+    return [(val0 + i * step) for i in range(num_quanta)]
+
+def quantize_value(value, quanta):
+    """
+    Quantizes a value to the nearest quanta value.
+
+    Args:
+        value (float): The value to quantize.
+        quanta (List[float]): A list of quantized values.
+
+    Returns:
+        float: The quantized value from the quanta list.
+    """
+    return min(quanta, key=lambda x: abs(x - value))
 
 # Define index values for sorting keys
 R, G, B, H, S, V, C, M, Y, K = range(10)
