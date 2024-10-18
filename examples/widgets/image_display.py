@@ -18,9 +18,8 @@ class ImageDisplay(tk.Frame):
 
         # Load the blank font image
         font_config = self.app_reference.font_config_editor.get_config()
-        blank_font_img = create_blank_font_image(font_config)        
-        self.original_image = blank_font_img
-        self.working_image = blank_font_img
+        self.original_image = create_blank_font_image(font_config)        
+        self.working_image = self.original_image
         self.pre_resample_image = None
         self.grid_shown = False
 

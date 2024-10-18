@@ -32,11 +32,13 @@ def open_file(app_reference):
     )
 
     if file_path:
+        app_reference.current_font_file = file_path
         # Define the corresponding XML config path
         font_config_filepath = file_path + '.xml'
         
         # Load font metadata from XML file
         if os.path.exists(font_config_filepath):
+            app_reference.current_font_ini_file = font_config_filepath
             font_config = load_font_metadata_from_xml(font_config_filepath)
         else:
             font_config_filepath = os.path.join(os.path.dirname(__file__), "font_config.xml")

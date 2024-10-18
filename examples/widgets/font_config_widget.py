@@ -156,6 +156,17 @@ class FontConfigWidget(tk.Frame):
             self.tooltip.destroy()
             del self.tooltip
 
+    # Default redraw font handler
+    def default_redraw_font_handler(self, event):
+        """Default handler for redrawing the font image."""
+        print(f"Redrawing font image for {self.id} ({self.label_text})")
+        self.parent.redraw_font()
+
+    def default_resample_font_handler(self, event):
+        """Default handler for resampling the font image."""
+        print(f"Resampling font image for {self.id} ({self.label_text})")
+        self.parent.resample_font()
+
     # Custom on_change handlers
     def font_name_on_change_handler(self, event):
         """Custom on_change handler for the font_name setting."""

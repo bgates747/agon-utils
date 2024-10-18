@@ -316,9 +316,6 @@ def generate_font_image(font, font_config_input):
     elif raster_type == 'quantized':
         char_images = [quantize_image(img) for img in char_images.values()]
     elif raster_type == 'palette':
-        fg_color = font_config_input['fg_color']
-        bg_color = font_config_input['bg_color']
-        # TODO: Implement palette rendering
         char_images = list(char_images.values())
     else:
         char_images = list(char_images.values())

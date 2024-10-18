@@ -3,6 +3,7 @@ from tkinter import Button
 import xml.etree.ElementTree as ET
 from font_config_widget import FontConfigDeltaControl, FontConfigTextBox, FontConfigComboBox, FontConfigColorPicker
 from config_manager import dict_to_text, load_xml
+from agon_font import resample_image, read_font
 
 class FontConfigEditor(tk.Frame):
     """
@@ -120,3 +121,62 @@ class FontConfigEditor(tk.Frame):
                     if not dependent_control.hidden:
                         dependent_control.grid_remove()
                         dependent_control.hidden = True
+
+    # =========================================================================
+    # Parameter Modification Methods
+    # =========================================================================
+
+    def changes_exist(self):
+        """Check if any changes have been made to the configuration."""
+        original_values = self.get_original_values()
+        current_values = self.get_current_values()
+        return original_values != current_values
+
+    def resample_font(self):
+        """Adjust the modified value based on the delta and update displays."""
+        # Check if Apply Changes should be enabled
+        changes_exist = self.changes_exist()
+
+        # Helper for setting up or destroying pre_resample_image based on changes
+        if changes_exist:
+            # If pre_resample_image doesn't exist, create a backup from working_image
+            if self.app_reference.image_display.pre_resample_image is None:
+                self.app_reference.image_display.pre_resample_image = self.app_reference.image_display.working_image.copy()
+
+            # Resample the working image with current config and modified values
+            self.resample_working_image()
+
+        else:
+            # If no changes and pre_resample_image exists, revert to pre_resample_image and clear it
+            if self.app_reference.image_display.pre_resample_image is not None:
+                self.app_reference.image_display.working_image = self.app_reference.image_display.pre_resample_image.copy()
+                self.app_reference.image_display.pre_resample_image = None
+
+        # Update the modified and delta displays consistently
+        self.app_reference.image_display.redraw()
+        self.app_reference.editor_widget.initialize_grid()
+        self.app_reference.image_display.trigger_click_on_ascii_code(self.app_reference.current_ascii_code)
+
+    def resample_working_image(self):
+        """Helper function to resample working image based on modified config."""
+        curr_config = self.get_original_values()  # Using current image config as a base
+        mod_config = self.get_modified_values()
+        pre_resample_image = self.app_reference.image_display.pre_resample_image
+
+        # Call resample_image to adjust the working image
+        resampled_image = resample_image(curr_config, mod_config, pre_resample_image)
+        
+        # Update the working image and refresh display
+        self.app_reference.image_display.working_image = resampled_image
+
+    def redraw_font(self):
+        """Redraw the font image based on the current configuration."""
+        # Load the font data using the font metadata
+        file_path = self.app_reference.current_font_file
+        font_config = self.get_current_values()
+        font_config, font_image = read_font(file_path, font_config)
+
+        # Pass the font configuration to the UI components
+        self.setup_ui_from_config(font_config)
+        self.app_reference.image_display.load_image(font_image)
+        self.app_reference.editor_widget.initialize_grid()
