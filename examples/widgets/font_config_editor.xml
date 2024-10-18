@@ -294,6 +294,7 @@
             <item>RGB222</item>
             <item>RGB332</item>
             <item>Rainbow</item>
+            <item>VRGB2222</item>
         </options>
         <description>Color palette to use when rasterizing font.</description>
         <visible>

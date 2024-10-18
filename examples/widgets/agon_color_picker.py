@@ -256,7 +256,7 @@ class AgonColorPicker(tk.Toplevel):
 
         # Convert the hue picker image to match the palette using the C API
         tgt_file = filepath  # Overwrite the same file
-        method = "HSV"  # Use HSV-based conversion
+        method = "RGB"  # Use HSV-based conversion
         transparent_rgb = (0, 0, 0, 255)  # No transparency used
 
         # Call the C API to process the image with the palette
@@ -265,7 +265,7 @@ class AgonColorPicker(tk.Toplevel):
     def convert_hue_picker_to_palette(self, src_file, palette_file):
         """Converts the hue picker image to match the palette."""
         tgt_file = src_file  # Overwrite the same file
-        method = "HSV"  # Find nearest color in the palette based on HSV values
+        method = "RGB"  # Find nearest color in the palette based on HSV values
         transparent_rgb = (0, 0, 0, 255)  # Alpha > 0 means no transparency used (RGB channels don't matter)
 
         # Call the C API function to convert the image to the palette

@@ -287,42 +287,6 @@ def generate_gimp_palette_rainbow():
 
     return rgb_data
 
-def generate_vrgb2222_palette():
-    """
-    Generate a VRGB GIMP palette with intensity multipliers.
-    
-    Args:
-        filename: Filepath where the palette will be saved.
-        palette_name: Name of the palette to use in the GIMP file.
-        num_columns: Number of columns to specify in the GIMP palette.
-    """
-    # Define VRGB quanta and multipliers
-    min_quantum = 8
-    max_quantum = 64 + min_quantum
-    num_quanta = 4
-    rgb_quanta = generate_normalized_quanta(min_quantum, max_quantum, num_quanta)
-    print(rgb_quanta)
-    v_multipliers = [1, 2, 3, 4]
-    
-    # Create an empty list for RGB color data
-    rgb_data = []
-
-    # Iterate over V multipliers (00 to 11)
-    for v_mult in v_multipliers:
-        # Iterate over all combinations of R, G, B quantum values
-        for r in rgb_quanta:
-            for g in rgb_quanta:
-                for b in rgb_quanta:
-                    # Scale RGB values by the V multiplier
-                    r_scaled = min(round(r * v_mult)-min_quantum, 255)
-                    g_scaled = min(round(g * v_mult)-min_quantum, 255)
-                    b_scaled = min(round(b * v_mult)-min_quantum, 255)
-
-                    # Append the scaled RGB color to the list
-                    rgb_data.append((r_scaled, g_scaled, b_scaled))
-
-    return rgb_data
-
 def generate_gimp_palette_hsv():
     h_values = generate_normalized_quanta(0.0, 1.0, 2**4)
     s_values = generate_normalized_quanta(0.125, 0.875, 2**2)
@@ -402,6 +366,42 @@ def generate_gimp_palette_vrgb1111():
 
     return rgb_data
 
+def generate_gimp_palette_vrgb2222():
+    """
+    Generate a VRGB GIMP palette with intensity multipliers.
+    
+    Args:
+        filename: Filepath where the palette will be saved.
+        palette_name: Name of the palette to use in the GIMP file.
+        num_columns: Number of columns to specify in the GIMP palette.
+    """
+    # Define VRGB quanta and multipliers
+    min_quantum = 8
+    max_quantum = 64 + min_quantum
+    num_quanta = 4
+    rgb_quanta = generate_normalized_quanta(min_quantum, max_quantum, num_quanta)
+    print(rgb_quanta)
+    v_multipliers = [1, 2, 3, 4]
+    
+    # Create an empty list for RGB color data
+    rgb_data = []
+
+    # Iterate over V multipliers (00 to 11)
+    for v_mult in v_multipliers:
+        # Iterate over all combinations of R, G, B quantum values
+        for r in rgb_quanta:
+            for g in rgb_quanta:
+                for b in rgb_quanta:
+                    # Scale RGB values by the V multiplier
+                    r_scaled = min(round(r * v_mult)-min_quantum, 255)
+                    g_scaled = min(round(g * v_mult)-min_quantum, 255)
+                    b_scaled = min(round(b * v_mult)-min_quantum, 255)
+
+                    # Append the scaled RGB color to the list
+                    rgb_data.append((r_scaled, g_scaled, b_scaled))
+
+    return rgb_data
+
 def generate_gimp_palette_rgb222():
     r_values = generate_normalized_quanta(0.0, 255.0, 2**2)
     g_values = generate_normalized_quanta(0.0, 255.0, 2**2)
@@ -473,3 +473,5 @@ if __name__ == "__main__":
     generate_gimp_palette(rgb_data, 'examples/widgets/colors/RGB332.gpl', 'RGB332', 16)
     rgb_data = generate_gimp_palette_rainbow()
     generate_gimp_palette(rgb_data, 'examples/widgets/colors/Rainbow.gpl', 'Rainbow', 16)
+    rgb_data = generate_gimp_palette_vrgb2222()
+    generate_gimp_palette(rgb_data, 'examples/widgets/colors/VRGB2222.gpl', 'VRGB2222', 16)

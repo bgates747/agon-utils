@@ -1,4 +1,4 @@
-from make_palette import read_gimp_palette, sort_colors_by, generate_normalized_quanta, quantize_value
+from make_palette import read_gimp_palette, sort_colors_by, generate_normalized_quanta
 import agonutils as au
 from PIL import Image, ImageDraw
 
@@ -27,36 +27,49 @@ def create_image_from_colors(colors_by_hue, cell_size=16):
 
     return image
 
+def find_color_in_palette(r, g, b, palette):
+    """
+    Helper function to find an exact match for a given RGB color in the palette.
+    
+    Args:
+        r, g, b: RGB values to match.
+        palette: The palette to search in.
+    
+    Returns:
+        True if the color is found, False otherwise.
+    """
+    for color in palette:
+        if color[R] == r and color[G] == g and color[B] == b:
+            return True
+    return False
+
 if __name__ == "__main__":
-    palette_file = 'examples/widgets/colors/Agon64.gpl'
+    palette_file = 'examples/widgets/colors/VRGB2222.gpl'
     palette = read_gimp_palette(palette_file)
     palette = sort_colors_by(palette, [H, V, S, R, G, B])
-    values = generate_normalized_quanta(0, 255, 4)
 
     hues = []
     colors_by_hue = {}
     colors_by_hue[1] = []  # This will store grayscale colors
     
-    # First pass: Add only hues with quantized full-saturation color found
+    # First pass: Add only hues with full-saturation color found in palette
     for color in palette:
         h = color[H]
         if h not in hues:
             # Convert HSV to RGB for full saturation and value
             r, g, b = au.hsv_to_rgb(h, 1, 1)
-            r0 = int(quantize_value(r, values))
-            g0 = int(quantize_value(g, values))
-            b0 = int(quantize_value(b, values))
 
-            # If the quantized color matches the original, add to hues and dictionary
-            if (r, g, b) == (r0, g0, b0):
+            # Check if the color exists in the palette
+            if find_color_in_palette(r, g, b, palette):
                 hues.append(h)
-                colors_by_hue[h] = [(r0, g0, b0)]  # First entry for each hue
+                colors_by_hue[h] = [(r, g, b)]  # First entry for each hue
     
     # Second pass: Quantize hues and add colors to appropriate buckets
     for color in palette:
         if color[S] > 0:
-            h = quantize_value(color[H], hues)
-            colors_by_hue[h].append((color[R], color[G], color[B]))  # Store RGB tuple for colors with saturation > 0
+            h = color[H]
+            if h in hues:
+                colors_by_hue[h].append((color[R], color[G], color[B]))  # Store RGB tuple for colors with saturation > 0
         else:
             colors_by_hue[1].append((color[R], color[G], color[B]))  # Store grayscale colors under hue key 1
 
