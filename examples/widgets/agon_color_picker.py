@@ -39,17 +39,26 @@ class AgonColorPicker(tk.Toplevel):
         # self.hues = [0.000, 0.125, 0.250, 0.375, 0.500, 0.625, 0.750, 0.875]
 
         # # Initialize num_hues and store hue dictionaries
-        # self.num_hues = 12
-        # self.hues = mp.generate_normalized_quanta(0, 1-(1/self.num_hues), self.num_hues)
-        # print(f"Hues: {self.hues}")
+        self.num_hues = 360
+        self.hues = mp.generate_normalized_quanta(0, 1-(1/self.num_hues), self.num_hues)
+        print(f"Hues: {self.hues}")
 
-        self.hues = []
+        self.huesp = []
         for color in self.palette:
             h = round(color[H],2)
-            if h not in self.hues:
-                self.hues.append(h)
-        self.hues.sort()
-        print(f"Hues: {self.hues}")
+            if h not in self.huesp:
+                self.huesp.append(h)
+        self.huesp.sort()
+        print(f"Hues: {self.huesp}")
+
+        self.huesm = []
+        for hue in self.hues:
+            hueq = mp.quantize_value(hue, self.huesp)
+            if hueq not in self.huesm:
+                self.huesm.append(hueq)
+
+        self.huesm.sort()
+        self.hues = self.huesm
 
         # Process the palette and get the hue-based dictionaries
         self.master_hue_colors, self.colors_by_hue = mp.process_palette(self.palette, self.hues)

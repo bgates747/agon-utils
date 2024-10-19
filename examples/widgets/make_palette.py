@@ -269,6 +269,13 @@ def process_palette(palette, hues):
         r, g, b = au.hsv_to_rgb(h, 1, 1)
         master_hue_colors[h] = (r, g, b, h, 1, 1, 0, 0, 0, 0)  # Full color tuple
 
+    # Step 4: Add grayscale colors to all hue buckets
+    for color in palette:
+        if color[S] == 0:  # Grayscale colors
+            for h in colors_by_hue:
+                if color not in colors_by_hue[h]:
+                    colors_by_hue[h].append(color)  # Add full color tuple
+
     return master_hue_colors, colors_by_hue
 
 def get_nearest_color_hsv(target_color, palette):

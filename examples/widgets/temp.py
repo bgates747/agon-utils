@@ -10,13 +10,13 @@ if __name__ == "__main__":
     # hues = generate_normalized_quanta(0, 1-(1/num_hues), num_hues)
     # hues = [0.000, 0.083, 0.167, 0.333, 0.500, 0.667, 0.764, 0.833]
 
-    palette_file = 'examples/widgets/colors/Agon64.gpl'
+    palette_file = 'examples/widgets/colors/Rainbow.gpl'
     palette = read_gimp_palette(palette_file)
     palette = sort_colors_by(palette, [H, R, G, B])
 
     hues = []
     for color in palette:
-        h = round(color[H],2)
+        h = round(color[H],6)
         if h not in hues:
             hues.append(h)
     hues.sort()
