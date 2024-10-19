@@ -1,6 +1,8 @@
-import numpy as np
+
 import csv
 import agonutils as au
+import colorsys
+import math
 
 def generate_normalized_quanta(val0, val1, num_quanta):
     """
@@ -245,6 +247,74 @@ def read_text_hex(file_path):
                 rgb_list.append((r, g, b))
     
     return rgb_list
+def process_palette(palette, hues):
+    max_saturation_colors = {h: None for h in hues}
+    colors_by_hue = {h: [] for h in hues}
+
+    # First pass: Add colors to their corresponding hue buckets
+    for color in palette:
+        h = quantize_value(color[H], hues)
+        rgb_tuple = (color[R], color[G], color[B])
+
+        # Add the color to the hue bucket
+        if rgb_tuple not in colors_by_hue[h]:
+            colors_by_hue[h].append((color[R], color[G], color[B], color[S], color[V]))  # Keep saturation and value for sorting
+
+    # Sort colors by saturation and value in descending order and select the top one for max_saturation_colors
+    for h, color_list in colors_by_hue.items():
+        # Sort the colors in the hue bucket by saturation and value, both descending
+        sorted_colors = sorted(color_list, key=lambda c: (c[3], c[4]), reverse=True)  # c[3] = S, c[4] = V
+
+        # Set the max saturation color to the top color in the sorted list
+        if sorted_colors:
+            max_saturation_colors[h] = (sorted_colors[0][0], sorted_colors[0][1], sorted_colors[0][2])  # RGB tuple
+
+    # Second pass: Add grayscale colors (Saturation == 0) to all hue buckets without duplicates
+    for color in palette:
+        if color[S] == 0:  # Grayscale colors
+            grayscale_color = (color[R], color[G], color[B])
+            for h in hues:
+                if grayscale_color not in [c[:3] for c in colors_by_hue[h]]:  # Compare only RGB part
+                    colors_by_hue[h].append(grayscale_color)
+
+    # Remove any entries in max_saturation_colors and colors_by_hue that don't have actual colors
+    max_saturation_colors = {h: color for h, color in max_saturation_colors.items() if color is not None}
+    colors_by_hue = {h: colors for h, colors in colors_by_hue.items() if colors}
+
+    # Convert color lists in colors_by_hue to just RGB tuples for consistency
+    for h in colors_by_hue:
+        colors_by_hue[h] = [c[:3] for c in colors_by_hue[h]]  # Strip out S and V after sorting
+
+    return max_saturation_colors, colors_by_hue
+
+def get_nearest_color_hsv(target_hsv, colors):
+    """Finds the nearest color in HSV space."""
+    target_h, target_s, target_v = target_hsv
+    nearest_color = None
+    min_distance = float('inf')
+
+    for r, g, b in colors:
+        h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+        distance = math.sqrt((h - target_h)**2 + (s - target_s)**2 + (v - target_v)**2)
+        if distance < min_distance:
+            nearest_color = (r, g, b)
+            min_distance = distance
+
+    return nearest_color
+
+def rgb_to_cmyk(r, g, b):
+    """Convert RGB to CMYK."""
+    if (r == 0) and (g == 0) and (b == 0):
+        return 0, 0, 0, 1
+    # Normalize RGB values to [0, 1]
+    r = r / 255.0
+    g = g / 255.0
+    b = b / 255.0
+    k = 1 - max(r, g, b)
+    c = (1 - r - k) / (1 - k) if 1 - k != 0 else 0
+    m = (1 - g - k) / (1 - k) if 1 - k != 0 else 0
+    y = (1 - b - k) / (1 - k) if 1 - k != 0 else 0
+    return c, m, y, k
 
 def generate_gimp_palette_rainbow():
     """
@@ -303,10 +373,27 @@ def generate_gimp_palette_hsv():
 
     return rgb_data
 
+# def generate_gimp_palette_rgb332():
+#     r_values = generate_normalized_quanta(0.0, 255.0, 2**3)
+#     g_values = generate_normalized_quanta(0.0, 255.0, 2**3)
+#     b_values = generate_normalized_quanta(0.0, 255.0, 2**2)
+
+#     rgb_data = []
+
+#     for r in r_values:
+#         for g in g_values:
+#             for b in b_values:
+#                 rgb_data.append((round(r), round(g), round(b)))
+#                 # print(f"RGB: {round(r)}, {round(g)}, {round(b)}")
+
+#     return rgb_data
+
 def generate_gimp_palette_rgb332():
-    r_values = generate_normalized_quanta(0.0, 255.0, 2**3)
-    g_values = generate_normalized_quanta(0.0, 255.0, 2**3)
-    b_values = generate_normalized_quanta(0.0, 255.0, 2**2)
+    r_values = [0, 36, 72, 109, 145, 182, 218, 255]
+    g_values = r_values
+    # b_values = [0,     72,      145,           255]
+    b_values = [0,         109,      182,      255]
+    # b_values = [0,     72,           182,      255]
 
     rgb_data = []
 
