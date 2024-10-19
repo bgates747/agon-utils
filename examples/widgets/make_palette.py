@@ -249,47 +249,27 @@ def read_text_hex(file_path):
     return rgb_list
 
 def process_palette(palette, hues):
-    hue_master_color = {}
-    colors_by_hue = {}
+    master_hue_colors = {}
+    colors_by_hue = {h: [] for h in hues}
 
-    # First pass: Find the nearest color to each hue quantum and set the max saturation color
+    # Step 1: Pre-quantize hues and filter out fully unsaturated colors
+    quantized_palette = [
+        (*color, quantize_value(color[H], hues)) 
+        for color in palette if color[S] > 0
+    ]
+
+    # Step 2: Assemble colors into their respective hue buckets
+    for color in quantized_palette:
+        quantized_h = color[-1]  # The quantized hue
+        colors_by_hue[quantized_h].append(color)
+
+    # Step 3: Set the master hue color for each hue bucket
     for h in hues:
-        target_color = (h, 1, 1)  # Full saturation and value color in HSV
-        nearest_color = get_nearest_color_hsv(target_color, palette)
+        # The master color is the fully saturated and valued color for the hue
+        r, g, b = au.hsv_to_rgb(h, 1, 1)
+        master_hue_colors[h] = (r, g, b, h, 1, 1, 0, 0, 0, 0)  # Full color tuple
 
-        # Check if the nearest color is found
-        if nearest_color:
-            nearest_h = nearest_color[H]
-            
-            # Skip if this hue is already present (to avoid duplicates)
-            if nearest_h in hue_master_color:
-                continue
-
-            # Add to max saturation colors and create a new hue bucket
-            hue_master_color[nearest_h] = nearest_color  # Keep full color tuple
-            colors_by_hue[nearest_h] = [nearest_color]  # Start hue bucket with full color tuple
-
-    # Second pass: Add remaining colors to their corresponding hue buckets
-    for color in palette:
-        if color[S] > 0:  # Ignore grayscale colors for now
-            h = quantize_value(color[H], list(hue_master_color.keys()))
-
-            # Add to the appropriate hue bucket if it's not already there
-            if color not in colors_by_hue[h]:
-                colors_by_hue[h].append(color)  # Add full color tuple
-
-    # Sort the colors in each hue bucket by RGB values
-    for h in colors_by_hue:
-        colors_by_hue[h] = sorted(colors_by_hue[h], key=lambda c: (c[R], c[G], c[B]))
-
-    # Add grayscale colors to all remaining hue buckets
-    for color in palette:
-        if color[S] == 0:  # Grayscale colors
-            for h in colors_by_hue:
-                if color not in colors_by_hue[h]:
-                    colors_by_hue[h].append(color)  # Add full color tuple
-
-    return hue_master_color, colors_by_hue
+    return master_hue_colors, colors_by_hue
 
 def get_nearest_color_hsv(target_color, palette):
     """Finds the nearest color in HSV space."""

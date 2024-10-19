@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     hues = []
     for color in palette:
-        h = color[H]
+        h = round(color[H],2)
         if h not in hues:
             hues.append(h)
     hues.sort()

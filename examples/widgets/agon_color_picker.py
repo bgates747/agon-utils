@@ -45,17 +45,17 @@ class AgonColorPicker(tk.Toplevel):
 
         self.hues = []
         for color in self.palette:
-            h = color[H]
+            h = round(color[H],2)
             if h not in self.hues:
                 self.hues.append(h)
         self.hues.sort()
         print(f"Hues: {self.hues}")
 
         # Process the palette and get the hue-based dictionaries
-        self.hue_color, self.colors_by_hue = mp.process_palette(self.palette, self.hues)
+        self.master_hue_colors, self.colors_by_hue = mp.process_palette(self.palette, self.hues)
 
         # Repopulate self.hues with the keys from max_saturation_colors
-        self.hues = list(self.hue_color.keys())
+        self.hues = list(self.master_hue_colors.keys())
         self.num_hues = len(self.hues)  # Update num_hues to reflect the new length of self.hues
 
         print(f"Hues: {self.hues}")
@@ -133,10 +133,10 @@ class AgonColorPicker(tk.Toplevel):
         draw = ImageDraw.Draw(image)
 
         # Divide the width of the image by the number of hues and draw rectangles
-        hue_segment_width = self.hue_image_width // self.num_hues
+        hue_segment_width = self.hue_image_width / self.num_hues
 
-        for i, hue in enumerate(self.hue_color):
-            r, g, b = [self.hue_color[hue][i] for i in (R, G, B)] 
+        for i, hue in enumerate(self.master_hue_colors):
+            r, g, b = [self.master_hue_colors[hue][i] for i in (R, G, B)] 
             x0 = i * hue_segment_width
             x1 = (i + 1) * hue_segment_width
             draw.rectangle([x0, 0, x1, self.hue_image_height], fill=(r, g, b, 255))
