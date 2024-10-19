@@ -247,43 +247,37 @@ def read_text_hex(file_path):
                 rgb_list.append((r, g, b))
     
     return rgb_list
+
 def process_palette(palette, hues):
-    max_saturation_colors = {h: None for h in hues}
+    max_saturation_colors = {}
     colors_by_hue = {h: [] for h in hues}
 
-    # First pass: Add colors to their corresponding hue buckets
+    # Add colors to their corresponding hue buckets
     for color in palette:
         h = quantize_value(color[H], hues)
         rgb_tuple = (color[R], color[G], color[B])
 
-        # Add the color to the hue bucket
         if rgb_tuple not in colors_by_hue[h]:
-            colors_by_hue[h].append((color[R], color[G], color[B], color[S], color[V]))  # Keep saturation and value for sorting
+            colors_by_hue[h].append(rgb_tuple)
 
-    # Sort colors by saturation and value in descending order and select the top one for max_saturation_colors
-    for h, color_list in colors_by_hue.items():
-        # Sort the colors in the hue bucket by saturation and value, both descending
-        sorted_colors = sorted(color_list, key=lambda c: (c[3], c[4]), reverse=True)  # c[3] = S, c[4] = V
+    # Calculate max saturation and value color for each hue
+    for h in hues:
+        r, g, b = au.hsv_to_rgb(h, 1, 1)  # Full saturation and value color
+        max_saturation_colors[h] = (r, g, b)
 
-        # Set the max saturation color to the top color in the sorted list
-        if sorted_colors:
-            max_saturation_colors[h] = (sorted_colors[0][0], sorted_colors[0][1], sorted_colors[0][2])  # RGB tuple
+    # Remove empty buckets from colors_by_hue
+    colors_by_hue = {h: colors for h, colors in colors_by_hue.items() if colors}
 
-    # Second pass: Add grayscale colors (Saturation == 0) to all hue buckets without duplicates
+    # Remove max_saturation_colors entries without corresponding colors in colors_by_hue
+    max_saturation_colors = {h: color for h, color in max_saturation_colors.items() if h in colors_by_hue}
+
+    # Add grayscale colors to remaining hue buckets
     for color in palette:
         if color[S] == 0:  # Grayscale colors
             grayscale_color = (color[R], color[G], color[B])
-            for h in hues:
-                if grayscale_color not in [c[:3] for c in colors_by_hue[h]]:  # Compare only RGB part
+            for h in colors_by_hue:
+                if grayscale_color not in colors_by_hue[h]:
                     colors_by_hue[h].append(grayscale_color)
-
-    # Remove any entries in max_saturation_colors and colors_by_hue that don't have actual colors
-    max_saturation_colors = {h: color for h, color in max_saturation_colors.items() if color is not None}
-    colors_by_hue = {h: colors for h, colors in colors_by_hue.items() if colors}
-
-    # Convert color lists in colors_by_hue to just RGB tuples for consistency
-    for h in colors_by_hue:
-        colors_by_hue[h] = [c[:3] for c in colors_by_hue[h]]  # Strip out S and V after sorting
 
     return max_saturation_colors, colors_by_hue
 
