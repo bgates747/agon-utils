@@ -1,8 +1,8 @@
 
 import csv
 import agonutils as au
-import colorsys
 import math
+from PIL import Image, ImageDraw
 
 def generate_normalized_quanta(val0, val1, num_quanta):
     """
@@ -249,52 +249,86 @@ def read_text_hex(file_path):
     return rgb_list
 
 def process_palette(palette, hues):
-    max_saturation_colors = {}
-    colors_by_hue = {h: [] for h in hues}
+    hue_master_color = {}
+    colors_by_hue = {}
 
-    # Add colors to their corresponding hue buckets
-    for color in palette:
-        h = quantize_value(color[H], hues)
-        rgb_tuple = (color[R], color[G], color[B])
-
-        if rgb_tuple not in colors_by_hue[h]:
-            colors_by_hue[h].append(rgb_tuple)
-
-    # Calculate max saturation and value color for each hue
+    # First pass: Find the nearest color to each hue quantum and set the max saturation color
     for h in hues:
-        r, g, b = au.hsv_to_rgb(h, 1, 1)  # Full saturation and value color
-        max_saturation_colors[h] = (r, g, b)
+        target_color = (h, 1, 1)  # Full saturation and value color in HSV
+        nearest_color = get_nearest_color_hsv(target_color, palette)
 
-    # Remove empty buckets from colors_by_hue
-    colors_by_hue = {h: colors for h, colors in colors_by_hue.items() if colors}
+        # Check if the nearest color is found
+        if nearest_color:
+            nearest_h = nearest_color[H]
+            
+            # Skip if this hue is already present (to avoid duplicates)
+            if nearest_h in hue_master_color:
+                continue
 
-    # Remove max_saturation_colors entries without corresponding colors in colors_by_hue
-    max_saturation_colors = {h: color for h, color in max_saturation_colors.items() if h in colors_by_hue}
+            # Add to max saturation colors and create a new hue bucket
+            hue_master_color[nearest_h] = nearest_color  # Keep full color tuple
+            colors_by_hue[nearest_h] = [nearest_color]  # Start hue bucket with full color tuple
 
-    # Add grayscale colors to remaining hue buckets
+    # Second pass: Add remaining colors to their corresponding hue buckets
+    for color in palette:
+        if color[S] > 0:  # Ignore grayscale colors for now
+            h = quantize_value(color[H], list(hue_master_color.keys()))
+
+            # Add to the appropriate hue bucket if it's not already there
+            if color not in colors_by_hue[h]:
+                colors_by_hue[h].append(color)  # Add full color tuple
+
+    # Sort the colors in each hue bucket by RGB values
+    for h in colors_by_hue:
+        colors_by_hue[h] = sorted(colors_by_hue[h], key=lambda c: (c[R], c[G], c[B]))
+
+    # Add grayscale colors to all remaining hue buckets
     for color in palette:
         if color[S] == 0:  # Grayscale colors
-            grayscale_color = (color[R], color[G], color[B])
             for h in colors_by_hue:
-                if grayscale_color not in colors_by_hue[h]:
-                    colors_by_hue[h].append(grayscale_color)
+                if color not in colors_by_hue[h]:
+                    colors_by_hue[h].append(color)  # Add full color tuple
 
-    return max_saturation_colors, colors_by_hue
+    return hue_master_color, colors_by_hue
 
-def get_nearest_color_hsv(target_hsv, colors):
+def get_nearest_color_hsv(target_color, palette):
     """Finds the nearest color in HSV space."""
-    target_h, target_s, target_v = target_hsv
     nearest_color = None
     min_distance = float('inf')
 
-    for r, g, b in colors:
-        h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
-        distance = math.sqrt((h - target_h)**2 + (s - target_s)**2 + (v - target_v)**2)
+    for color in palette:
+        distance = math.sqrt((color[H] - target_color[0])**2 +
+                             (color[S] - target_color[1])**2 +
+                             (color[V] - target_color[2])**2)
         if distance < min_distance:
-            nearest_color = (r, g, b)
+            nearest_color = color
             min_distance = distance
 
     return nearest_color
+
+def create_image_from_colors(colors_by_hue, cell_size=16):
+    # Find the maximum number of colors in any hue category
+    max_colors_in_hue = max(len(colors) for colors in colors_by_hue.values())
+    num_hues = len(colors_by_hue)
+    
+    # Create a new image with additional row for saturation = 0
+    img_width = max_colors_in_hue * cell_size
+    img_height = num_hues * cell_size  # Rows are automatically adjusted based on num_hues
+    image = Image.new('RGB', (img_width, img_height), 'black')
+    draw = ImageDraw.Draw(image)
+
+    # Draw the rectangles
+    for row, (hue, colors) in enumerate(colors_by_hue.items()):
+        for col, color in enumerate(colors):
+            r, g, b = color[R], color[G], color[B]  # Extract R, G, B values
+            x1 = col * cell_size
+            y1 = row * cell_size
+            x2 = x1 + cell_size - 1
+            y2 = y1 + cell_size - 1
+            draw.rectangle([x1, y1, x2, y2], fill=(r, g, b))
+
+    return image
+
 
 def rgb_to_cmyk(r, g, b):
     """Convert RGB to CMYK."""

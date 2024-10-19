@@ -35,18 +35,31 @@ class AgonColorPicker(tk.Toplevel):
         self.palette_filepath = f'{base_dir}/{palette_name}.gpl'
         self.palette = mp.read_gimp_palette(self.palette_filepath)
 
-        # Initialize num_hues and store hue dictionaries
-        self.num_hues = 12
-        self.hues = mp.generate_normalized_quanta(0, 1-(1/self.num_hues), self.num_hues)
-        print(f"Hues: {self.hues}")
-
         # self.hues = [0.000, 0.083, 0.167, 0.333, 0.500, 0.667, 0.764, 0.833]
         # self.hues = [0.000, 0.125, 0.250, 0.375, 0.500, 0.625, 0.750, 0.875]
 
-        self.max_saturation_colors, self.colors_by_hue = mp.process_palette(self.palette, self.hues)
-        # Filter self.hues to include only those with corresponding keys in max_saturation_colors
-        self.hues = [h for h in self.hues if h in self.max_saturation_colors]
+        # # Initialize num_hues and store hue dictionaries
+        # self.num_hues = 12
+        # self.hues = mp.generate_normalized_quanta(0, 1-(1/self.num_hues), self.num_hues)
+        # print(f"Hues: {self.hues}")
+
+        self.hues = []
+        for color in self.palette:
+            h = color[H]
+            if h not in self.hues:
+                self.hues.append(h)
+        self.hues.sort()
+        print(f"Hues: {self.hues}")
+
+        # Process the palette and get the hue-based dictionaries
+        self.hue_color, self.colors_by_hue = mp.process_palette(self.palette, self.hues)
+
+        # Repopulate self.hues with the keys from max_saturation_colors
+        self.hues = list(self.hue_color.keys())
         self.num_hues = len(self.hues)  # Update num_hues to reflect the new length of self.hues
+
+        print(f"Hues: {self.hues}")
+
 
 
         # Set image dimensions
@@ -122,8 +135,8 @@ class AgonColorPicker(tk.Toplevel):
         # Divide the width of the image by the number of hues and draw rectangles
         hue_segment_width = self.hue_image_width // self.num_hues
 
-        for i, hue in enumerate(self.max_saturation_colors):
-            r, g, b = self.max_saturation_colors[hue]  # Get max saturation color for each hue
+        for i, hue in enumerate(self.hue_color):
+            r, g, b = [self.hue_color[hue][i] for i in (R, G, B)] 
             x0 = i * hue_segment_width
             x1 = (i + 1) * hue_segment_width
             draw.rectangle([x0, 0, x1, self.hue_image_height], fill=(r, g, b, 255))
@@ -146,18 +159,19 @@ class AgonColorPicker(tk.Toplevel):
         # Create a temporary Gimp palette containing only colors in the selected hue dictionary
         rgb_data = []
         hue_lookup = mp.quantize_value(hue, self.hues)
-        for r, g, b in self.colors_by_hue[hue_lookup]:
-            rgb_data.append((r, g, b))
+        for color in self.colors_by_hue[hue_lookup]:
+            rgb_data.append([color[i] for i in (R, G, B)])
 
         # Write the temporary palette to a file
         temp_palette_path = os.path.join(os.path.dirname(__file__), "colors", "temp_palette.gpl")
         mp.generate_gimp_palette(rgb_data, temp_palette_path, palette_name='temp_palette', num_columns=16, named_colors_csv=None)
 
         # Call the API function to generate the color picker image based on the hue
-        image_data = au.process_image_with_palette(temp_palette_path, hue, self.color_picker_width, self.color_picker_height)
+        image_data = au.process_image_with_palette(temp_palette_path, hue_lookup, self.color_picker_width, self.color_picker_height)
 
         # Convert the raw image data (RGBA) to a Pillow Image
         self.image = Image.frombytes('RGBA', (self.color_picker_width, self.color_picker_height), image_data)
+        self.image.save(self.color_picker_image_path)
 
         # Update the canvas with the new image
         self.tk_image = ImageTk.PhotoImage(self.image)
@@ -185,9 +199,6 @@ class AgonColorPicker(tk.Toplevel):
         hsv = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
         hue = hsv[0]  # Extract the hue value
         # hue = mp.quantize_value(hue, self.hues)
-
-        # Display the selected hue value
-        self.info_label.config(text=f"Selected hue: {hue:.2f}")
 
         # Generate the color picker image using the C API function with the extracted hue
         self.on_hue_selected(hue)
@@ -258,7 +269,10 @@ class AgonColorPicker(tk.Toplevel):
         # Display the selected color information in the status label
         hex_value = f"#{r:02x}{g:02x}{b:02x}{a:02x}"
         h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
-        self.info_label.config(text=f"RGB: ({r}, {g}, {b}, {a})\nHSV: ({h:.2f}, {s:.2f}, {v:.2f})\nHex: {hex_value}")
+        h *= 360  # Convert hue to degrees
+        s *= 100  # Convert saturation to percentage
+        v *= 100  # Convert value to percentage
+        self.info_label.config(text=f"RGB: ({r}, {g}, {b}, {a})\nHSV: ({h:.0f}, {s:.0f}, {v:.0f})\nHex: {hex_value}")
 
     def on_cancel(self):
         """Handles the cancel action and closes the dialog."""
