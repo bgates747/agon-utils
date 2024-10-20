@@ -1,7 +1,8 @@
 import os
 import tkinter as tk
 from tkinter import ttk
-from config_manager import load_xml
+from config_manager import get_app_config_value
+from file_manager import open_file
 from font_config_editor_test import FontConfigEditor
 from menu_bar import MenuBar
 from image_display import ImageDisplay
@@ -20,7 +21,7 @@ class FontEditor(ttk.Frame):
 
         # Initialize application state variables for the currently loaded font files
         self.current_font_file = None  # Path to the currently open font file
-        self.current_font_ini_file = None    # Path to the currently open .ini file
+        self.current_font_xml_file = None    # Path to the currently open .ini file
         self.current_ascii_code = ord('A')   # Default to ASCII code for 'A'
 
         # Create and add the menu bar
@@ -54,6 +55,12 @@ class FontEditor(ttk.Frame):
         # Bottom ConsoleDisplay
         self.console_display = ConsoleDisplay(self)
         self.console_display.pack(fill="x", padx=10, pady=5, anchor="s")  # Fills available horizontal space
+
+        # Load the last opened font file
+        file_path = get_app_config_value("most_recent_file")
+        if file_path:
+            open_file(self, file_path)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
