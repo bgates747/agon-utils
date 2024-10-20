@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import Button
 import xml.etree.ElementTree as ET
-from font_config_widget import FontConfigDeltaControl, FontConfigTextBox, FontConfigComboBox, FontConfigColorPicker
+from font_config_widget import FontConfigDeltaControl, FontConfigDeltaDisplay, FontConfigTextBox, FontConfigComboBox, FontConfigColorPicker
 from config_manager import dict_to_text, load_xml
 from agon_font import resample_image, read_font
 
@@ -40,6 +40,8 @@ class FontConfigEditor(tk.Frame):
             widget_type = setting.find("widget_type").text
             if widget_type == "FontConfigDeltaControl":
                 control = FontConfigDeltaControl(self, config_setting, self.font_config_xml)
+            elif widget_type == "FontConfigDeltaDisplay":
+                control = FontConfigDeltaDisplay(self, config_setting, self.font_config_xml)
             elif widget_type == "FontConfigTextBox":
                 control = FontConfigTextBox(self, config_setting, self.font_config_xml)
             elif widget_type == "FontConfigComboBox":
@@ -98,22 +100,28 @@ class FontConfigEditor(tk.Frame):
         """Print the original values dictionary to the console."""
         print("Original Values:\n", dict_to_text(self.get_original_values()))
 
-    def setup_ui_from_config(self, font_config):
+    def set_controls_from_config(self, font_config):
         """Set the control values based on the provided font configuration dictionary."""
         for config_setting, control in self.controls.items():
             if config_setting in font_config:
                 control.set_value(font_config[config_setting])
 
+    def set_controls_original_from_config(self, font_config):
+        """Set the control values based on the provided font configuration dictionary."""
+        for config_setting, control in self.controls.items():
+            if config_setting in font_config:
+                control.set_original_value(font_config[config_setting])
+
     def set_visible(self, setting_name):
         """Handle changes in controls and adjust visibility of dependent controls."""
         control = self.controls[setting_name]
-        current_value = control.get_value()
+        original_value = control.get_value()
 
         # Check visibility rules to determine visibility of controls
         for rule in self.visibility_rules:
             if rule["dependent_setting"] == setting_name:
                 dependent_control = self.controls[rule["setting_name"]]
-                if current_value in rule["target_values"]:
+                if original_value in rule["target_values"]:
                     if dependent_control.hidden:
                         dependent_control.grid(**dependent_control.grid_info())  # Corrected here
                         dependent_control.hidden = False
@@ -171,12 +179,14 @@ class FontConfigEditor(tk.Frame):
 
     def redraw_font(self):
         """Redraw the font image based on the current configuration."""
-        # Load the font data using the font metadata
+        self.app_reference.image_display.pre_resample_image = None
+        
         file_path = self.app_reference.current_font_file
         font_config = self.get_current_values()
         font_config, font_image = read_font(file_path, font_config)
 
-        # Pass the font configuration to the UI components
-        self.setup_ui_from_config(font_config)
+        self.set_controls_original_from_config(font_config)
         self.app_reference.image_display.load_image(font_image)
+        self.resample_working_image()
         self.app_reference.editor_widget.initialize_grid()
+        self.app_reference.image_display.trigger_click_on_ascii_code(self.app_reference.current_ascii_code)

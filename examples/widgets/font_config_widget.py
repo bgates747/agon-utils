@@ -321,16 +321,16 @@ class FontConfigDeltaControl(FontConfigWidget):
         self.button_width = 4  # Define a fixed width for the buttons
 
         # Initialize state variables
-        self.current_value = self.default_value
+        self.original_value = self.default_value
 
         # Main label for the control
         self.label = tk.Label(self, width=15, text=self.label_text, font=("Helvetica", 10), anchor="w")
         self.label.grid(row=0, column=0, padx=self.pad_x)
 
         # Current value display
-        self.current_var = tk.StringVar(value=str(self.current_value))
-        self.current_display = tk.Label(self, textvariable=self.current_var, width=4, anchor="center")
-        self.current_display.grid(row=0, column=1, padx=self.pad_x)
+        self.original_var = tk.StringVar(value=str(self.original_value))
+        self.original_display = tk.Label(self, textvariable=self.original_var, width=4, anchor="center")
+        self.original_display.grid(row=0, column=1, padx=self.pad_x)
 
         # Decrement button
         self.decrement_button = tk.Button(self, text="-", width=self.button_width, font=("Helvetica", 6), command=lambda: self.modify_delta(-self.step_value))
@@ -346,13 +346,13 @@ class FontConfigDeltaControl(FontConfigWidget):
         self.increment_button.grid(row=0, column=4, padx=self.pad_x)
 
         # Computed value display
-        self.modified_var = tk.StringVar(value=str(self.current_value))
+        self.modified_var = tk.StringVar(value=str(self.original_value))
         self.modified_display = tk.Label(self, textvariable=self.modified_var, width=4, anchor="center")
         self.modified_display.grid(row=0, column=5, padx=self.pad_x)
 
         # Set value object and on_change_widget for tracking changes
         self.value_object = self.modified_var
-        self.original_value_object = self.current_var
+        self.original_value_object = self.original_var
         self.on_change_widget = self.modified_display
         self.on_change_event = "<<ModifiedValueChanged>>"  # Custom event identifier
 
@@ -364,26 +364,26 @@ class FontConfigDeltaControl(FontConfigWidget):
         # Convert modified_var to a numeric type for calculation
         current_modified = float(self.modified_var.get()) if self.data_type == 'float' else int(self.modified_var.get())
         # Calculate new delta by adding delta_value to the current delta
-        new_delta = current_modified - self.current_value + delta_value
+        new_delta = current_modified - self.original_value + delta_value
         # Clamp modified value within min and max constraints
-        modified_value = max(self.min_value, min(self.max_value, self.current_value + new_delta))
+        modified_value = max(self.min_value, min(self.max_value, self.original_value + new_delta))
         
         # Update the modified and delta displays
         self.modified_var.set(str(modified_value))
-        self.delta_var.set(str(modified_value - self.current_value))  # Reflect adjusted delta
+        self.delta_var.set(str(modified_value - self.original_value))  # Reflect adjusted delta
         
         # Trigger the custom on_change event
         self.on_change_widget.event_generate(self.on_change_event)
 
     def set_default_value(self, value):
-        """Set the current (original) value, update displays, and reset delta to zero."""
-        self.current_value = value  # Set the original/current value
-        self.modified_var.set(str(self.current_value))  # Reset modified value to match
-        self.current_var.set(str(self.current_value))  # Update the current display
+        """Set the original value, update displays, and reset delta to zero."""
+        self.original_value = value  # Set the original/current value
+        self.modified_var.set(str(self.original_value))  # Reset modified value to match
+        self.original_var.set(str(self.original_value))  # Update the current display
         self.delta_var.set("0")  # Reset delta since modified equals current
 
     def set_value(self, value):
-        """Set the current (original) value, update displays, and reset delta to zero."""
+        """Set the original value, update displays, and reset delta to zero."""
         self.set_default_value(value)
 
 class FontConfigDeltaDisplay(FontConfigWidget):
@@ -400,16 +400,16 @@ class FontConfigDeltaDisplay(FontConfigWidget):
         self.spacer_width = 5 # Width of the spacer columns
 
         # Initialize state variables
-        self.current_value = self.default_value
+        self.original_value = self.default_value
 
         # Main label for the display
         self.label = tk.Label(self, width=15, text=self.label_text, font=("Helvetica", 10), anchor="w")
         self.label.grid(row=0, column=0, padx=self.pad_x)
 
         # Current value display
-        self.current_var = tk.StringVar(value=str(self.current_value))
-        self.current_display = tk.Label(self, textvariable=self.current_var, width=4, anchor="center")
-        self.current_display.grid(row=0, column=1, padx=self.pad_x)
+        self.original_var = tk.StringVar(value=str(self.original_value))
+        self.original_display = tk.Label(self, textvariable=self.original_var, width=4, anchor="center")
+        self.original_display.grid(row=0, column=1, padx=self.pad_x)
 
         # Placeholder for the decrement button (to maintain alignment)
         self.decrement_placeholder = tk.Label(self, width=self.spacer_width)
@@ -425,13 +425,13 @@ class FontConfigDeltaDisplay(FontConfigWidget):
         self.increment_placeholder.grid(row=0, column=4, padx=self.pad_x)
 
         # Computed value display
-        self.modified_var = tk.StringVar(value=str(self.current_value))
+        self.modified_var = tk.StringVar(value=str(self.original_value))
         self.modified_display = tk.Label(self, textvariable=self.modified_var, width=4, anchor="center")
         self.modified_display.grid(row=0, column=5, padx=self.pad_x)
 
         # Set value object and on_change_widget for tracking changes
         self.value_object = self.modified_var
-        self.original_value_object = self.current_var
+        self.original_value_object = self.original_var
         self.on_change_widget = self.modified_display
         self.on_change_event = "<<ModifiedValueChanged>>"  # Custom event identifier
 
@@ -439,16 +439,16 @@ class FontConfigDeltaDisplay(FontConfigWidget):
         self._initialize_specific_event_handlers()
 
     def set_default_value(self, value):
-        """Set the current (original) value, update displays, and reset delta to zero."""
-        self.current_value = value  # Set the original/current value
-        self.modified_var.set(str(int(self.current_value)))  # Reset modified value to match (no decimals)
-        self.current_var.set(str(int(self.current_value)))  # Update the current display (no decimals)
+        """Set the original value, update displays, and reset delta to zero."""
+        self.original_value = value  # Set the original/current value
+        self.modified_var.set(str(int(self.original_value)))  # Reset modified value to match (no decimals)
+        self.original_var.set(str(int(self.original_value)))  # Update the current display (no decimals)
         self.delta_var.set("0")  # Reset delta since modified equals current
 
     def set_value(self, value):
         """Set the modified value, update displays, and recalculate the delta."""
         modified_value = int(value) if self.data_type == 'int' else round(float(value))
-        delta_value = modified_value - int(self.current_value)
+        delta_value = modified_value - int(self.original_value)
 
         self.modified_var.set(str(modified_value))  # Set the modified value (no decimals)
         self.delta_var.set(str(delta_value))  # Calculate and display the delta (no decimals)

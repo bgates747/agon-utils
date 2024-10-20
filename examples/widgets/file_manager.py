@@ -53,7 +53,7 @@ def open_file(app_reference, file_path):
         font_config, font_image = read_font(file_path, font_config)
 
         # Pass the font configuration to the UI components
-        app_reference.font_config_editor.setup_ui_from_config(font_config)
+        app_reference.font_config_editor.set_controls_from_config(font_config)
         app_reference.image_display.load_image(font_image)
         app_reference.editor_widget.initialize_grid()
         
