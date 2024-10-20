@@ -32,7 +32,7 @@ class FontConfigWidget(tk.Frame):
         self.label.grid(row=0, column=0, padx=self.pad_x)
 
         # Set the value objects for easier access to get/set methods
-        self.value_object = None
+        self.modified_value_object = None
         self.original_value_object = None
 
         # Initialize event handlers
@@ -67,15 +67,15 @@ class FontConfigWidget(tk.Frame):
 
     def get_value(self):
         """Return the current value of the control."""
-        if self.value_object:
-            return get_typed_data(self.data_type, self.value_object.get())
+        if self.modified_value_object:
+            return get_typed_data(self.data_type, self.modified_value_object.get())
         return None
 
     def set_value(self, value):
         """Set the current value of the control."""
         value = get_typed_data(self.data_type, value)
-        if self.value_object:
-            self.value_object.set(value)
+        if self.modified_value_object:
+            self.modified_value_object.set(value)
 
     def set_default_value(self):
         """Set the default value for the control."""
@@ -260,7 +260,7 @@ class FontConfigComboBox(FontConfigWidget):
         self.combobox.set(self.default_value)
 
         # Set the value objects for easier access
-        self.value_object = self.selected_var
+        self.modified_value_object = self.selected_var
         self.original_value_object = self.selected_var
 
         # Set 'on_change_widget' to the combobox for event handler binding
@@ -287,7 +287,7 @@ class FontConfigTextBox(FontConfigWidget):
         self.text_entry.grid(row=0, column=1, padx=self.pad_x)
 
         # Set the value objects for easier access
-        self.value_object = self.text_var
+        self.modified_value_object = self.text_var
         self.original_value_object = self.text_var
 
         # Set 'on_change_widget' to the text entry for event handler binding
@@ -351,7 +351,7 @@ class FontConfigDeltaControl(FontConfigWidget):
         self.modified_display.grid(row=0, column=5, padx=self.pad_x)
 
         # Set value object and on_change_widget for tracking changes
-        self.value_object = self.modified_var
+        self.modified_value_object = self.modified_var
         self.original_value_object = self.original_var
         self.on_change_widget = self.modified_display
         self.on_change_event = "<<ModifiedValueChanged>>"  # Custom event identifier
@@ -430,7 +430,7 @@ class FontConfigDeltaDisplay(FontConfigWidget):
         self.modified_display.grid(row=0, column=5, padx=self.pad_x)
 
         # Set value object and on_change_widget for tracking changes
-        self.value_object = self.modified_var
+        self.modified_value_object = self.modified_var
         self.original_value_object = self.original_var
         self.on_change_widget = self.modified_display
         self.on_change_event = "<<ModifiedValueChanged>>"  # Custom event identifier
@@ -471,7 +471,7 @@ class FontConfigColorPicker(FontConfigWidget):
         self.color_button.grid(row=0, column=1, padx=self.pad_x)
 
         # Set the value object for easier access
-        self.value_object = self.color_button
+        self.modified_value_object = self.color_button
 
         # Set 'on_change_widget' to the color button for event handler binding
         self.on_change_widget = self.color_button
