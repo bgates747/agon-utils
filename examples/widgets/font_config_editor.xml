@@ -8,7 +8,7 @@
         <description>Name of the font</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>font_name_on_change_handler</item>
             </on_change>
             <on_hover>
@@ -25,9 +25,35 @@
         <description>Variant of the font, e.g. Regular, Bold, Italic, Condensed</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>font_variant_on_change_handler</item>
             </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="font_width">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text>Width</label_text>
+        <data_type>int</data_type>
+        <default_value>8</default_value>
+        <description>Width of each character</description>
+        <event_handlers>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+    
+    <setting name="font_height">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text>Height</label_text>
+        <data_type>int</data_type>
+        <default_value>8</default_value>
+        <description>Height of each character</description>
+        <event_handlers>
             <on_hover>
                 <item>default_on_mouse_enter</item>
             </on_hover>
@@ -51,52 +77,10 @@
         </hidden>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>point_size_on_change_handler</item>
                 <item>default_redraw_font_handler</item>
-                <item>default_resample_font_handler</item>
-            </on_change>
-            <on_hover>
-                <item>default_on_mouse_enter</item>
-            </on_hover>
-        </event_handlers>
-    </setting>
-    
-    <setting name="font_width">
-        <widget_type>FontConfigDeltaControl</widget_type>
-        <label_text>Width</label_text>
-        <data_type>int</data_type>
-        <default_value>8</default_value>
-        <min_value>1</min_value>
-        <max_value>256</max_value>
-        <step_value>1</step_value>
-        <description>Width of each character</description>
-        <event_handlers>
-            <on_change>
-                <item>default_on_change_handler</item>
-                <item>font_width_on_change_handler</item>
-                <item>default_resample_font_handler</item>
-            </on_change>
-            <on_hover>
-                <item>default_on_mouse_enter</item>
-            </on_hover>
-        </event_handlers>
-    </setting>
-    
-    <setting name="font_height">
-        <widget_type>FontConfigDeltaControl</widget_type>
-        <label_text>Height</label_text>
-        <data_type>int</data_type>
-        <default_value>8</default_value>
-        <min_value>1</min_value>
-        <max_value>256</max_value>
-        <step_value>1</step_value>
-        <description>Height of each character</description>
-        <event_handlers>
-            <on_change>
-                <item>default_on_change_handler</item>
-                <item>font_height_on_change_handler</item>
-                <item>default_resample_font_handler</item>
+                <!-- <item>default_resample_font_handler</item> -->
             </on_change>
             <on_hover>
                 <item>default_on_mouse_enter</item>
@@ -115,7 +99,7 @@
         <description>Horizontal offset (e.g., for alignment)</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>offset_left_on_change_handler</item>
                 <item>default_resample_font_handler</item>
             </on_change>
@@ -136,7 +120,7 @@
         <description>Vertical offset</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>offset_top_on_change_handler</item>
                 <item>default_resample_font_handler</item>
             </on_change>
@@ -157,7 +141,7 @@
         <description>Additional width offset for specific rendering</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>offset_width_on_change_handler</item>
                 <item>default_resample_font_handler</item>
             </on_change>
@@ -178,7 +162,7 @@
         <description>Additional height offset for specific rendering</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>offset_height_on_change_handler</item>
                 <item>default_resample_font_handler</item>
             </on_change>
@@ -199,7 +183,7 @@
         <description>Additional width offset for specific rendering</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>scale_width_on_change_handler</item>
             </on_change>
             <on_hover>
@@ -219,7 +203,7 @@
         <description>Additional height offset for specific rendering</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>scale_height_on_change_handler</item>
             </on_change>
             <on_hover>
@@ -242,7 +226,7 @@
         <description>Type of rasterization</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>raster_type_on_change_handler</item>
                 <item>default_redraw_font_handler</item>
                 <item>default_resample_font_handler</item>
@@ -270,7 +254,7 @@
         </visible>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>threshold_on_change_handler</item>
                 <item>default_redraw_font_handler</item>
                 <item>default_resample_font_handler</item>
@@ -304,7 +288,7 @@
         </visible>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>palette_on_change_handler</item>
                 <item>default_redraw_font_handler</item>
                 <item>default_resample_font_handler</item>
@@ -323,7 +307,7 @@
         <description>Foreground Color RGBA tuple</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>fg_color_on_change_handler</item>
                 <item>default_redraw_font_handler</item>
                 <item>default_resample_font_handler</item>
@@ -342,7 +326,7 @@
         <description>Background Color RGBA tuple</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>bg_color_on_change_handler</item>
                 <item>default_redraw_font_handler</item>
                 <item>default_resample_font_handler</item>
@@ -364,7 +348,7 @@
         <description>ASCII start range for the font</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>ascii_start_on_change_handler</item>
                 <item>default_redraw_font_handler</item>
                 <item>default_resample_font_handler</item>
@@ -386,7 +370,7 @@
         <description>ASCII end range for the font</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>ascii_end_on_change_handler</item>
                 <item>default_redraw_font_handler</item>
                 <item>default_resample_font_handler</item>
@@ -408,7 +392,7 @@
         <description>Number of characters per row in the PNG grid</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <item>chars_per_row_on_change_handler</item>
                 <item>default_redraw_font_handler</item>
                 <item>default_resample_font_handler</item>
