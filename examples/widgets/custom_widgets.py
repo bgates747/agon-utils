@@ -138,7 +138,7 @@ class ConfigColorPicker(tk.Frame):
             # Update the button's background color and text
             self.color_button.config(bg=self.rgb_to_hex(self.color_value), text=str(self.color_value))
 
-    def get_value(self):
+    def get_modified_value(self):
         """Return the current color value as a string."""
         return ','.join(map(str, self.color_value))
 

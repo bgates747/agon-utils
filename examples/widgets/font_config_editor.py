@@ -77,7 +77,7 @@ class FontConfigEditor(tk.Frame):
         """Return a dictionary of modified values for all controls, with config_setting as the key."""
         modified_values = {}
         for config_setting, control in self.controls.items():
-            modified_values[config_setting] = control.get_value()
+            modified_values[config_setting] = control.get_modified_value()
         return modified_values
 
     def print_modified_values(self):
@@ -107,7 +107,7 @@ class FontConfigEditor(tk.Frame):
     def set_visible(self, setting_name):
         """Handle changes in controls and adjust visibility of dependent controls."""
         control = self.controls[setting_name]
-        original_value = control.get_value()
+        original_value = control.get_modified_value()
 
         # Check visibility rules to determine visibility of controls
         for rule in self.visibility_rules:
