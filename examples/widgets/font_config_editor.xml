@@ -35,7 +35,7 @@
     </setting>
 
     <setting name="font_width">
-        <widget_type>FontConfigTextBox</widget_type>
+        <widget_type>FontConfigDeltaDisplay</widget_type>
         <label_text>Width</label_text>
         <data_type>int</data_type>
         <default_value>8</default_value>
@@ -48,7 +48,7 @@
     </setting>
     
     <setting name="font_height">
-        <widget_type>FontConfigTextBox</widget_type>
+        <widget_type>FontConfigDeltaDisplay</widget_type>
         <label_text>Height</label_text>
         <data_type>int</data_type>
         <default_value>8</default_value>

@@ -317,6 +317,9 @@ class FontConfigDeltaControl(FontConfigWidget):
         self.max_value = get_typed_data(self.data_type, self.setting_xml.find('max_value').text)
         self.step_value = get_typed_data(self.data_type, self.setting_xml.find('step_value').text)
 
+        # Set button width property
+        self.button_width = 4  # Define a fixed width for the buttons
+
         # Initialize state variables
         self.current_value = self.default_value
 
@@ -330,7 +333,7 @@ class FontConfigDeltaControl(FontConfigWidget):
         self.current_display.grid(row=0, column=1, padx=self.pad_x)
 
         # Decrement button
-        self.decrement_button = tk.Button(self, text="-", width=0, font=("Helvetica", 8), command=lambda: self.modify_delta(-self.step_value))
+        self.decrement_button = tk.Button(self, text="-", width=self.button_width, font=("Helvetica", 6), command=lambda: self.modify_delta(-self.step_value))
         self.decrement_button.grid(row=0, column=2, padx=self.pad_x)
 
         # Delta display
@@ -339,7 +342,7 @@ class FontConfigDeltaControl(FontConfigWidget):
         self.delta_display.grid(row=0, column=3, padx=self.pad_x)
 
         # Increment button
-        self.increment_button = tk.Button(self, text="+", width=0, font=("Helvetica", 8), command=lambda: self.modify_delta(self.step_value))
+        self.increment_button = tk.Button(self, text="+", width=self.button_width, font=("Helvetica", 6), command=lambda: self.modify_delta(self.step_value))
         self.increment_button.grid(row=0, column=4, padx=self.pad_x)
 
         # Computed value display
@@ -382,6 +385,76 @@ class FontConfigDeltaControl(FontConfigWidget):
     def set_value(self, value):
         """Set the current (original) value, update displays, and reset delta to zero."""
         self.set_default_value(value)
+
+class FontConfigDeltaDisplay(FontConfigWidget):
+    """A widget for displaying original, modified, and delta values without user-modifiable controls, 
+    maintaining layout alignment with FontConfigDeltaControl."""
+
+    def __init__(self, parent, config_setting, font_config_xml, **kwargs):
+        super().__init__(parent, config_setting, font_config_xml, **kwargs)
+
+        # Extract configuration from XML
+        self.data_type = self.setting_xml.find('data_type').text
+        self.default_value = get_typed_data(self.data_type, self.setting_xml.find('default_value').text)
+
+        self.spacer_width = 5 # Width of the spacer columns
+
+        # Initialize state variables
+        self.current_value = self.default_value
+
+        # Main label for the display
+        self.label = tk.Label(self, width=15, text=self.label_text, font=("Helvetica", 10), anchor="w")
+        self.label.grid(row=0, column=0, padx=self.pad_x)
+
+        # Current value display
+        self.current_var = tk.StringVar(value=str(self.current_value))
+        self.current_display = tk.Label(self, textvariable=self.current_var, width=4, anchor="center")
+        self.current_display.grid(row=0, column=1, padx=self.pad_x)
+
+        # Placeholder for the decrement button (to maintain alignment)
+        self.decrement_placeholder = tk.Label(self, width=self.spacer_width)
+        self.decrement_placeholder.grid(row=0, column=2, padx=self.pad_x)
+
+        # Delta display
+        self.delta_var = tk.StringVar(value="0")
+        self.delta_display = tk.Label(self, textvariable=self.delta_var, width=4, anchor="center")
+        self.delta_display.grid(row=0, column=3, padx=self.pad_x)
+
+        # Placeholder for the increment button (to maintain alignment)
+        self.increment_placeholder = tk.Label(self, width=self.spacer_width)
+        self.increment_placeholder.grid(row=0, column=4, padx=self.pad_x)
+
+        # Computed value display
+        self.modified_var = tk.StringVar(value=str(self.current_value))
+        self.modified_display = tk.Label(self, textvariable=self.modified_var, width=4, anchor="center")
+        self.modified_display.grid(row=0, column=5, padx=self.pad_x)
+
+        # Set value object and on_change_widget for tracking changes
+        self.value_object = self.modified_var
+        self.original_value_object = self.current_var
+        self.on_change_widget = self.modified_display
+        self.on_change_event = "<<ModifiedValueChanged>>"  # Custom event identifier
+
+        # Initialize specific event handlers
+        self._initialize_specific_event_handlers()
+
+    def set_default_value(self, value):
+        """Set the current (original) value, update displays, and reset delta to zero."""
+        self.current_value = value  # Set the original/current value
+        self.modified_var.set(str(int(self.current_value)))  # Reset modified value to match (no decimals)
+        self.current_var.set(str(int(self.current_value)))  # Update the current display (no decimals)
+        self.delta_var.set("0")  # Reset delta since modified equals current
+
+    def set_value(self, value):
+        """Set the modified value, update displays, and recalculate the delta."""
+        modified_value = int(value) if self.data_type == 'int' else round(float(value))
+        delta_value = modified_value - int(self.current_value)
+
+        self.modified_var.set(str(modified_value))  # Set the modified value (no decimals)
+        self.delta_var.set(str(delta_value))  # Calculate and display the delta (no decimals)
+
+        # Trigger the custom on_change event
+        self.on_change_widget.event_generate(self.on_change_event)
 
 class FontConfigColorPicker(FontConfigWidget):
     """A widget for displaying and selecting a color, showing the value as an RGBA tuple."""
