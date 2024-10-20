@@ -263,11 +263,11 @@ def make_font(font_config, src_image, tgt_font_filepath):
 # Modify font config functions
 # =============================================================================
 
-def resample_image(curr_config, mod_config, original_image):
+def resample_image(orig_config, mod_config, original_image):
     """
     Resample the original image to fit the modified configuration, handling offsets, padding, and ASCII range overlap.
     
-    :param curr_config: Dictionary with the current font configuration.
+    :param orig_config: Dictionary with the original font configuration.
     :param mod_config: Dictionary with the modified font configuration.
     :param original_image: The original PIL image to be resampled.
     :return: A new PIL image resampled to fit the modified configuration.
@@ -278,8 +278,8 @@ def resample_image(curr_config, mod_config, original_image):
     adjusted_image.paste(original_image, (mod_config['offset_left'], mod_config['offset_top']))
 
     # Step 2: Determine the overlap of ASCII ranges
-    curr_ascii_start = curr_config['ascii_start']
-    curr_ascii_end = curr_config['ascii_end']
+    curr_ascii_start = orig_config['ascii_start']
+    curr_ascii_end = orig_config['ascii_end']
     mod_ascii_start = mod_config['ascii_start']
     mod_ascii_end = mod_config['ascii_end']
     overlap_start = max(curr_ascii_start, mod_ascii_start)
@@ -293,9 +293,9 @@ def resample_image(curr_config, mod_config, original_image):
     char_images = []
     for ascii_code in range(overlap_start, overlap_end + 1):
         # Determine character's position in `adjusted_image`
-        char_x = (ascii_code - curr_ascii_start) % 16 * curr_config['font_width']
-        char_y = (ascii_code - curr_ascii_start) // 16 * curr_config['font_height']
-        char_crop_box = (char_x, char_y, char_x + curr_config['font_width'], char_y + curr_config['font_height'])
+        char_x = (ascii_code - curr_ascii_start) % 16 * orig_config['font_width']
+        char_y = (ascii_code - curr_ascii_start) // 16 * orig_config['font_height']
+        char_crop_box = (char_x, char_y, char_x + orig_config['font_width'], char_y + orig_config['font_height'])
         char_img = adjusted_image.crop(char_crop_box)
         char_images.append(char_img)
 
