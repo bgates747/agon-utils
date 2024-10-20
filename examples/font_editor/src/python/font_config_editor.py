@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import Button
 import xml.etree.ElementTree as ET
-from font_config_widget import FontConfigDeltaControl, FontConfigDeltaDisplay, FontConfigTextBox, FontConfigComboBox, FontConfigColorPicker
+from font_config_widget import FontConfigDeltaControl, FontConfigDeltaDisplayControl, FontConfigTextBox, FontConfigComboBox, FontConfigColorPicker
 from config_manager import dict_to_text, load_xml
 from agon_font import resample_image, read_font
 
@@ -40,8 +40,8 @@ class FontConfigEditor(tk.Frame):
             widget_type = setting.find("widget_type").text
             if widget_type == "FontConfigDeltaControl":
                 control = FontConfigDeltaControl(self, config_setting, self.font_config_xml)
-            elif widget_type == "FontConfigDeltaDisplay":
-                control = FontConfigDeltaDisplay(self, config_setting, self.font_config_xml)
+            elif widget_type == "FontConfigDeltaDisplayControl":
+                control = FontConfigDeltaDisplayControl(self, config_setting, self.font_config_xml)
             elif widget_type == "FontConfigTextBox":
                 control = FontConfigTextBox(self, config_setting, self.font_config_xml)
             elif widget_type == "FontConfigComboBox":

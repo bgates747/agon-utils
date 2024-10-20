@@ -205,83 +205,6 @@ class FontConfigWidget(tk.Frame):
         print(f"Resampling font image for {self.id} ({self.label_text})")
         self.parent.resample_font()
 
-    # Custom on_change handlers
-    def font_name_on_change_handler(self, event):
-        """Custom on_change handler for the font_name setting."""
-        print(f"Font name ({self.id}) changed to: {self.get_modified_value()}")
-
-    def font_variant_on_change_handler(self, event):
-        """Custom on_change handler for the font_variant setting."""
-        print(f"Font variant ({self.id}) changed to: {self.get_modified_value()}")
-
-    def point_size_on_change_handler(self, event):
-        """Custom on_change handler for the point_size setting."""
-        print(f"Point size ({self.id}) changed to: {self.get_modified_value()}")
-
-    def font_width_on_change_handler(self, event):
-        """Custom on_change handler for the font_width setting."""
-        print(f"Font width ({self.id}) changed to: {self.get_modified_value()}")
-
-    def font_height_on_change_handler(self, event):
-        """Custom on_change handler for the font_height setting."""
-        print(f"Font height ({self.id}) changed to: {self.get_modified_value()}")
-
-    def offset_left_on_change_handler(self, event):
-        """Custom on_change handler for the offset_left setting."""
-        print(f"Offset left ({self.id}) changed to: {self.get_modified_value()}")
-
-    def offset_top_on_change_handler(self, event):
-        """Custom on_change handler for the offset_top setting."""
-        print(f"Offset top ({self.id}) changed to: {self.get_modified_value()}")
-
-    def offset_width_on_change_handler(self, event):
-        """Custom on_change handler for the offset_width setting."""
-        print(f"Offset width ({self.id}) changed to: {self.get_modified_value()}")
-
-    def offset_height_on_change_handler(self, event):
-        """Custom on_change handler for the offset_height setting."""
-        print(f"Offset height ({self.id}) changed to: {self.get_modified_value()}")
-
-    def scale_width_on_change_handler(self, event):
-        """Custom on_change handler for the scale_width setting."""
-        print(f"Scale width ({self.id}) changed to: {self.get_modified_value()}")
-
-    def scale_height_on_change_handler(self, event):
-        """Custom on_change handler for the scale_height setting."""
-        print(f"Scale height ({self.id}) changed to: {self.get_modified_value()}")
-
-    def raster_type_on_change_handler(self, event):
-        """Custom on_change handler for the raster_type setting."""
-        print(f"Raster type ({self.id}) changed to: {self.get_modified_value()}")
-
-    def threshold_on_change_handler(self, event):
-        """Custom on_change handler for the threshold setting."""
-        print(f"Threshold ({self.id}) changed to: {self.get_modified_value()}")
-
-    def palette_on_change_handler(self, event):
-        """Custom on_change handler for the palette setting."""
-        print(f"Palette ({self.id}) changed to: {self.get_modified_value()}")
-
-    def fg_color_on_change_handler(self, event):
-        """Custom on_change handler for the fg_color setting."""
-        print(f"Foreground color ({self.id}) changed to: {self.get_modified_value()}")
-
-    def bg_color_on_change_handler(self, event):
-        """Custom on_change handler for the bg_color setting."""
-        print(f"Background color ({self.id}) changed to: {self.get_modified_value()}")
-
-    def ascii_start_on_change_handler(self, event):
-        """Custom on_change handler for the ascii_start setting."""
-        print(f"ASCII start ({self.id}) changed to: {self.get_modified_value()}")
-
-    def ascii_end_on_change_handler(self, event):
-        """Custom on_change handler for the ascii_end setting."""
-        print(f"ASCII end ({self.id}) changed to: {self.get_modified_value()}")
-
-    def chars_per_row_on_change_handler(self, event):
-        """Custom on_change handler for the chars_per_row setting."""
-        print(f"Characters per row ({self.id}) changed to: {self.get_modified_value()}")
-
 class FontConfigComboBox(FontConfigWidget):
     """A widget for displaying and selecting from a dropdown list of configuration values."""
 
@@ -423,77 +346,6 @@ class FontConfigDeltaControl(FontConfigWidget):
         """Set the original value, update displays, and reset delta to zero."""
         self.set_default_value(value)
 
-class FontConfigDeltaDisplay(FontConfigWidget):
-    """A widget for displaying original, modified, and delta values without user-modifiable controls, 
-    maintaining layout alignment with FontConfigDeltaControl."""
-
-    def __init__(self, parent, config_setting, font_config_xml, **kwargs):
-        super().__init__(parent, config_setting, font_config_xml, **kwargs)
-
-        # Extract configuration from XML
-        self.data_type = self.setting_xml.find('data_type').text
-        self.default_value = get_typed_data(self.data_type, self.setting_xml.find('default_value').text)
-
-        self.spacer_width = 5 # Width of the spacer columns
-
-        # Initialize state variables
-        self.original_value = self.default_value
-
-        # Main label for the display
-        self.label = tk.Label(self, width=15, text=self.label_text, font=("Helvetica", 10), anchor="w")
-        self.label.grid(row=0, column=0, padx=self.pad_x)
-
-        # Current value display
-        self.original_var = tk.StringVar(value=str(self.original_value))
-        self.original_display = tk.Label(self, textvariable=self.original_var, width=4, anchor="center")
-        self.original_display.grid(row=0, column=1, padx=self.pad_x)
-
-        # Placeholder for the decrement button (to maintain alignment)
-        self.decrement_placeholder = tk.Label(self, width=self.spacer_width)
-        self.decrement_placeholder.grid(row=0, column=2, padx=self.pad_x)
-
-        # Delta display
-        self.delta_var = tk.StringVar(value="0")
-        self.delta_display = tk.Label(self, textvariable=self.delta_var, width=4, anchor="center")
-        self.delta_display.grid(row=0, column=3, padx=self.pad_x)
-
-        # Placeholder for the increment button (to maintain alignment)
-        self.increment_placeholder = tk.Label(self, width=self.spacer_width)
-        self.increment_placeholder.grid(row=0, column=4, padx=self.pad_x)
-
-        # Computed value display
-        self.modified_var = tk.StringVar(value=str(self.original_value))
-        self.modified_display = tk.Label(self, textvariable=self.modified_var, width=4, anchor="center")
-        self.modified_display.grid(row=0, column=5, padx=self.pad_x)
-
-        # Set value object and on_change_widget for tracking changes
-        self.modified_value_object = self.modified_var
-        self.original_value_object = self.original_var
-        self.delta_value_object = self.delta_var
-        self.on_change_widget = self.modified_display
-        self.on_change_event = "<<ModifiedValueChanged>>"  # Custom event identifier
-
-        # Initialize specific event handlers
-        self._initialize_specific_event_handlers()
-
-    def set_default_value(self, value):
-        """Set the original value, update displays, and reset delta to zero."""
-        self.original_value = value  # Set the original/current value
-        self.modified_var.set(str(int(self.original_value)))  # Reset modified value to match (no decimals)
-        self.original_var.set(str(int(self.original_value)))  # Update the current display (no decimals)
-        self.delta_var.set("0")  # Reset delta since modified equals current
-
-    def set_modified_value(self, value):
-        """Set the modified value, update displays, and recalculate the delta."""
-        modified_value = int(value) if self.data_type == 'int' else round(float(value))
-        delta_value = modified_value - int(self.original_value)
-
-        self.modified_var.set(str(modified_value))  # Set the modified value (no decimals)
-        self.delta_var.set(str(delta_value))  # Calculate and display the delta (no decimals)
-
-        # Trigger the custom on_change event
-        self.on_change_widget.event_generate(self.on_change_event)
-
 class FontConfigColorPicker(FontConfigWidget):
     """A widget for displaying and selecting a color, showing the value as an RGBA tuple."""
 
@@ -507,10 +359,7 @@ class FontConfigColorPicker(FontConfigWidget):
         self.color_var = tk.StringVar(value=self.get_modified_value())
 
         # Button to display and select color
-        self.color_button = tk.Button(self, text=self.color_var.get(), 
-                                      bg=self.rgb_to_hex(self.color_value), 
-                                      command=self.choose_color, 
-                                      width=22)
+        self.color_button = tk.Button(self, text=self.color_var.get(), bg=self.rgb_to_hex(self.color_value), command=self.choose_color, width=22)
         self.color_button.grid(row=0, column=1, padx=self.pad_x)
 
         # Set the value object for easier access
