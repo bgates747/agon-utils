@@ -23,7 +23,7 @@ class FontConfigEditor(tk.Frame):
 
     def create_buttons(self):
         """Add buttons to print current and modified values to the console."""
-        self.print_current_button = Button(self, text="Print Current Values", command=self.print_current_values)
+        self.print_current_button = Button(self, text="Print Current Values", command=self.print_modified_values)
         self.print_current_button.grid(row=100, column=0, pady=10, sticky="w")
 
         self.print_modified_button = Button(self, text="Print Modified Values", command=self.print_modified_values)
@@ -66,39 +66,31 @@ class FontConfigEditor(tk.Frame):
             self.controls[config_setting] = control
             row += 1
 
-    def get_original_values(self):
+    def get_original_config(self):
         """Return a dictionary of original values for all controls, with config_setting as the key."""
         original_values = {}
         for config_setting, control in self.controls.items():
             original_values[config_setting] = control.get_original_value()
         return original_values
             
-    def get_current_values(self):
-        """Return a dictionary of current values for all controls, with config_setting as the key."""
-        current_values = {}
+    def get_modified_config(self):
+        """Return a dictionary of modified values for all controls, with config_setting as the key."""
+        modified_values = {}
         for config_setting, control in self.controls.items():
-            current_values[config_setting] = control.get_value()
-        return current_values
+            modified_values[config_setting] = control.get_value()
+        return modified_values
 
-    def get_modified_values(self):
-        """Return a dictionary of modified values for all controls, with config_setting as the key."""
-        return self.get_current_values()
-
-    def get_config(self):
-        """Return a dictionary of modified values for all controls, with config_setting as the key."""
-        return self.get_modified_values()
-
-    def print_current_values(self):
+    def print_modified_values(self):
         """Print the current values dictionary to the console."""
-        print("Current Values:\n", dict_to_text(self.get_current_values()))
+        print("Current Values:\n", dict_to_text(self.get_modified_config()))
 
     def print_modified_values(self):
         """Print the modified values dictionary to the console."""
-        print("Modified Values:\n", dict_to_text(self.get_modified_values()))
+        print("Modified Values:\n", dict_to_text(self.get_modified_config()))
 
     def print_original_values(self):
         """Print the original values dictionary to the console."""
-        print("Original Values:\n", dict_to_text(self.get_original_values()))
+        print("Original Values:\n", dict_to_text(self.get_original_config()))
 
     def set_controls_from_config(self, font_config):
         """Set the control values based on the provided font configuration dictionary."""
@@ -136,9 +128,9 @@ class FontConfigEditor(tk.Frame):
 
     def changes_exist(self):
         """Check if any changes have been made to the configuration."""
-        original_values = self.get_original_values()
-        current_values = self.get_current_values()
-        return original_values != current_values
+        original_values = self.get_original_config()
+        modified_values = self.get_modified_config()
+        return original_values != modified_values
 
     def resample_font(self):
         """Adjust the modified value based on the delta and update displays."""
@@ -167,8 +159,8 @@ class FontConfigEditor(tk.Frame):
 
     def resample_working_image(self):
         """Helper function to resample working image based on modified config."""
-        curr_config = self.get_original_values()  # Using current image config as a base
-        mod_config = self.get_modified_values()
+        curr_config = self.get_original_config()  # Using current image config as a base
+        mod_config = self.get_modified_config()
         pre_resample_image = self.app_reference.image_display.pre_resample_image
 
         # Call resample_image to adjust the working image
@@ -182,7 +174,7 @@ class FontConfigEditor(tk.Frame):
         self.app_reference.image_display.pre_resample_image = None
         
         file_path = self.app_reference.current_font_file
-        font_config = self.get_current_values()
+        font_config = self.get_modified_config()
         font_config, font_image = read_font(file_path, font_config)
 
         self.set_controls_original_from_config(font_config)

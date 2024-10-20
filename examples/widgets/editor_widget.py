@@ -29,7 +29,7 @@ class EditorWidget(tk.Frame):
         """Initialize the character grid, set colors, and configure canvas size."""
         
         # Retrieve colors from font configuration
-        font_config = self.app_reference.font_config_editor.get_config()
+        font_config = self.app_reference.font_config_editor.get_modified_config()
         self.fg_color = parse_rgba_color(font_config['fg_color'])
         self.bg_color = parse_rgba_color(font_config['bg_color'])
         self.fg_color_hex = rgba_to_hex(self.fg_color)

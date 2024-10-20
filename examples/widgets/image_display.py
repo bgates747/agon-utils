@@ -17,7 +17,7 @@ class ImageDisplay(tk.Frame):
         self.current_zoom_index = self.zoom_levels.index(zoom_level)
 
         # Load the blank font image
-        font_config = self.app_reference.font_config_editor.get_config()
+        font_config = self.app_reference.font_config_editor.get_modified_config()
         self.original_image = create_blank_font_image(font_config)        
         self.working_image = self.original_image
         self.pre_resample_image = None
@@ -96,7 +96,7 @@ class ImageDisplay(tk.Frame):
         """Draw cyan gridlines based on the font dimensions and current zoom level."""
         self.clear_grid()
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
-        font_config = self.app_reference.font_config_editor.get_config()
+        font_config = self.app_reference.font_config_editor.get_modified_config()
         grid_width = int(font_config['font_width'] * zoom_factor)
         grid_height = int(font_config['font_height'] * zoom_factor)
         img_width = int(self.working_image.width * zoom_factor)
@@ -111,7 +111,7 @@ class ImageDisplay(tk.Frame):
         """Draw a green selection box around the selected character without obscuring edge pixels."""
         self.clear_selection_box()
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
-        font_config = self.app_reference.font_config_editor.get_config()
+        font_config = self.app_reference.font_config_editor.get_modified_config()
         box_width = int(font_config['font_width'] * zoom_factor)
         box_height = int(font_config['font_height'] * zoom_factor)
         x1 = char_x * box_width - 1
@@ -154,7 +154,7 @@ class ImageDisplay(tk.Frame):
         click_x, click_y = self.get_click_coordinates(event)
         char_x, char_y = self.get_character_coordinates(click_x, click_y)
         ascii_code = self.coordinates_to_ascii(char_x, char_y)
-        ascii_range = self.app_reference.font_config_editor.get_config()
+        ascii_range = self.app_reference.font_config_editor.get_modified_config()
         if ascii_range['ascii_start'] <= ascii_code <= ascii_range['ascii_end']:
             self.current_ascii_code = ascii_code
             self.draw_selection_box(char_x, char_y)
@@ -169,7 +169,7 @@ class ImageDisplay(tk.Frame):
         if not self.working_image:
             return
 
-        font_config = self.app_reference.font_config_editor.get_config()
+        font_config = self.app_reference.font_config_editor.get_modified_config()
         x1 = char_x * font_config['font_width']
         y1 = char_y * font_config['font_height']
         x2 = x1 + font_config['font_width']
@@ -189,7 +189,7 @@ class ImageDisplay(tk.Frame):
             return
 
         # Retrieve font dimensions from the config editor
-        font_config = self.app_reference.font_config_editor.get_config()
+        font_config = self.app_reference.font_config_editor.get_modified_config()
         font_width = font_config['font_width']
         font_height = font_config['font_height']
 
@@ -204,13 +204,13 @@ class ImageDisplay(tk.Frame):
 
     # Helper functions
     def ascii_to_coordinates(self, ascii_code):
-        font_config = self.app_reference.font_config_editor.get_config()
+        font_config = self.app_reference.font_config_editor.get_modified_config()
         char_x = (ascii_code - font_config['ascii_start']) % 16
         char_y = (ascii_code - font_config['ascii_start']) // 16
         return char_x, char_y
 
     def coordinates_to_ascii(self, char_x, char_y):
-        font_config = self.app_reference.font_config_editor.get_config()
+        font_config = self.app_reference.font_config_editor.get_modified_config()
         return char_y * 16 + char_x + font_config['ascii_start']
 
     def get_click_coordinates(self, event):
@@ -220,7 +220,7 @@ class ImageDisplay(tk.Frame):
         return click_x, click_y
 
     def get_character_coordinates(self, click_x, click_y):
-        font_config = self.app_reference.font_config_editor.get_config()
+        font_config = self.app_reference.font_config_editor.get_modified_config()
         char_x = click_x // font_config['font_width']
         char_y = click_y // font_config['font_height']
         return char_x, char_y
