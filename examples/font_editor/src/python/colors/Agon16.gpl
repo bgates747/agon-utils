@@ -1,0 +1,20 @@
+GIMP Palette
+Name: Agon16
+Columns: 4
+#
+  0   0   0	Black
+170   0   0	Dark red
+  0 170   0	Dark green
+170 170   0	Olive
+  0   0 170	Dark blue
+170   0 170	Dark magenta
+  0 170 170	Teal
+170 170 170	Light gray
+ 85  85  85	Gray
+255   0   0	Red
+  0 255   0	Lime
+255 255   0	Yellow
+  0   0 255	Blue
+255   0 255	Magenta
+  0 255 255	Aqua
+255 255 255	White

@@ -1,0 +1,21 @@
+<settings>
+    <setting name="font_name" value="Unnamed Font"/>
+    <setting name="font_variant" value="Regular"/>
+    <setting name="point_size" value="8"/>
+    <setting name="font_width" value="8"/>
+    <setting name="font_height" value="8"/>
+    <setting name="offset_left" value="0"/>
+    <setting name="offset_top" value="0"/>
+    <setting name="offset_width" value="0"/>
+    <setting name="offset_height" value="0"/>
+    <setting name="scale_width" value="0"/>
+    <setting name="scale_height" value="0"/>
+    <setting name="raster_type" value="threshold"/>
+    <setting name="threshold" value="128"/>
+    <setting name="palette" value="Agon64"/>
+    <setting name="fg_color" value="255,255,255,255"/>
+    <setting name="bg_color" value="0,0,0,0"/>
+    <setting name="ascii_start" value="32"/>
+    <setting name="ascii_end" value="127"/>
+    <setting name="chars_per_row" value="16"/>
+</settings>

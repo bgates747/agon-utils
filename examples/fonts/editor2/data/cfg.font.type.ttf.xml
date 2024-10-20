@@ -1,6 +1,0 @@
-<FontConfig>
-    <IncludeFileConfig filename="data/cfg.font.type.all.xml" name="all"/>
-    
-    <!-- TTF-specific settings -->
-    <Setting name="point_size" type="int" default="16" min="1" max="+Inf" description="Point size"/>
-</FontConfig>

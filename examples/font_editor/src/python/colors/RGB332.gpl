@@ -1,0 +1,260 @@
+GIMP Palette
+Name: RGB332
+Columns: 16
+#
+  0   0   0 Color 0
+  0   0 109 Color 1
+  0   0 182 Color 2
+  0   0 255 Color 3
+  0  36   0 Color 4
+  0  36 109 Color 5
+  0  36 182 Color 6
+  0  36 255 Color 7
+  0  72   0 Color 8
+  0  72 109 Color 9
+  0  72 182 Color 10
+  0  72 255 Color 11
+  0 109   0 Color 12
+  0 109 109 Color 13
+  0 109 182 Color 14
+  0 109 255 Color 15
+  0 145   0 Color 16
+  0 145 109 Color 17
+  0 145 182 Color 18
+  0 145 255 Color 19
+  0 182   0 Color 20
+  0 182 109 Color 21
+  0 182 182 Color 22
+  0 182 255 Color 23
+  0 218   0 Color 24
+  0 218 109 Color 25
+  0 218 182 Color 26
+  0 218 255 Color 27
+  0 255   0 Color 28
+  0 255 109 Color 29
+  0 255 182 Color 30
+  0 255 255 Color 31
+ 36   0   0 Color 32
+ 36   0 109 Color 33
+ 36   0 182 Color 34
+ 36   0 255 Color 35
+ 36  36   0 Color 36
+ 36  36 109 Color 37
+ 36  36 182 Color 38
+ 36  36 255 Color 39
+ 36  72   0 Color 40
+ 36  72 109 Color 41
+ 36  72 182 Color 42
+ 36  72 255 Color 43
+ 36 109   0 Color 44
+ 36 109 109 Color 45
+ 36 109 182 Color 46
+ 36 109 255 Color 47
+ 36 145   0 Color 48
+ 36 145 109 Color 49
+ 36 145 182 Color 50
+ 36 145 255 Color 51
+ 36 182   0 Color 52
+ 36 182 109 Color 53
+ 36 182 182 Color 54
+ 36 182 255 Color 55
+ 36 218   0 Color 56
+ 36 218 109 Color 57
+ 36 218 182 Color 58
+ 36 218 255 Color 59
+ 36 255   0 Color 60
+ 36 255 109 Color 61
+ 36 255 182 Color 62
+ 36 255 255 Color 63
+ 72   0   0 Color 64
+ 72   0 109 Color 65
+ 72   0 182 Color 66
+ 72   0 255 Color 67
+ 72  36   0 Color 68
+ 72  36 109 Color 69
+ 72  36 182 Color 70
+ 72  36 255 Color 71
+ 72  72   0 Color 72
+ 72  72 109 Color 73
+ 72  72 182 Color 74
+ 72  72 255 Color 75
+ 72 109   0 Color 76
+ 72 109 109 Color 77
+ 72 109 182 Color 78
+ 72 109 255 Color 79
+ 72 145   0 Color 80
+ 72 145 109 Color 81
+ 72 145 182 Color 82
+ 72 145 255 Color 83
+ 72 182   0 Color 84
+ 72 182 109 Color 85
+ 72 182 182 Color 86
+ 72 182 255 Color 87
+ 72 218   0 Color 88
+ 72 218 109 Color 89
+ 72 218 182 Color 90
+ 72 218 255 Color 91
+ 72 255   0 Color 92
+ 72 255 109 Color 93
+ 72 255 182 Color 94
+ 72 255 255 Color 95
+109   0   0 Color 96
+109   0 109 Color 97
+109   0 182 Color 98
+109   0 255 Color 99
+109  36   0 Color 100
+109  36 109 Color 101
+109  36 182 Color 102
+109  36 255 Color 103
+109  72   0 Color 104
+109  72 109 Color 105
+109  72 182 Color 106
+109  72 255 Color 107
+109 109   0 Color 108
+109 109 109 Color 109
+109 109 182 Color 110
+109 109 255 Color 111
+109 145   0 Color 112
+109 145 109 Color 113
+109 145 182 Color 114
+109 145 255 Color 115
+109 182   0 Color 116
+109 182 109 Color 117
+109 182 182 Color 118
+109 182 255 Color 119
+109 218   0 Color 120
+109 218 109 Color 121
+109 218 182 Color 122
+109 218 255 Color 123
+109 255   0 Color 124
+109 255 109 Color 125
+109 255 182 Color 126
+109 255 255 Color 127
+145   0   0 Color 128
+145   0 109 Color 129
+145   0 182 Color 130
+145   0 255 Color 131
+145  36   0 Color 132
+145  36 109 Color 133
+145  36 182 Color 134
+145  36 255 Color 135
+145  72   0 Color 136
+145  72 109 Color 137
+145  72 182 Color 138
+145  72 255 Color 139
+145 109   0 Color 140
+145 109 109 Color 141
+145 109 182 Color 142
+145 109 255 Color 143
+145 145   0 Color 144
+145 145 109 Color 145
+145 145 182 Color 146
+145 145 255 Color 147
+145 182   0 Color 148
+145 182 109 Color 149
+145 182 182 Color 150
+145 182 255 Color 151
+145 218   0 Color 152
+145 218 109 Color 153
+145 218 182 Color 154
+145 218 255 Color 155
+145 255   0 Color 156
+145 255 109 Color 157
+145 255 182 Color 158
+145 255 255 Color 159
+182   0   0 Color 160
+182   0 109 Color 161
+182   0 182 Color 162
+182   0 255 Color 163
+182  36   0 Color 164
+182  36 109 Color 165
+182  36 182 Color 166
+182  36 255 Color 167
+182  72   0 Color 168
+182  72 109 Color 169
+182  72 182 Color 170
+182  72 255 Color 171
+182 109   0 Color 172
+182 109 109 Color 173
+182 109 182 Color 174
+182 109 255 Color 175
+182 145   0 Color 176
+182 145 109 Color 177
+182 145 182 Color 178
+182 145 255 Color 179
+182 182   0 Color 180
+182 182 109 Color 181
+182 182 182 Color 182
+182 182 255 Color 183
+182 218   0 Color 184
+182 218 109 Color 185
+182 218 182 Color 186
+182 218 255 Color 187
+182 255   0 Color 188
+182 255 109 Color 189
+182 255 182 Color 190
+182 255 255 Color 191
+218   0   0 Color 192
+218   0 109 Color 193
+218   0 182 Color 194
+218   0 255 Color 195
+218  36   0 Color 196
+218  36 109 Color 197
+218  36 182 Color 198
+218  36 255 Color 199
+218  72   0 Color 200
+218  72 109 Color 201
+218  72 182 Color 202
+218  72 255 Color 203
+218 109   0 Color 204
+218 109 109 Color 205
+218 109 182 Color 206
+218 109 255 Color 207
+218 145   0 Color 208
+218 145 109 Color 209
+218 145 182 Color 210
+218 145 255 Color 211
+218 182   0 Color 212
+218 182 109 Color 213
+218 182 182 Color 214
+218 182 255 Color 215
+218 218   0 Color 216
+218 218 109 Color 217
+218 218 182 Color 218
+218 218 255 Color 219
+218 255   0 Color 220
+218 255 109 Color 221
+218 255 182 Color 222
+218 255 255 Color 223
+255   0   0 Color 224
+255   0 109 Color 225
+255   0 182 Color 226
+255   0 255 Color 227
+255  36   0 Color 228
+255  36 109 Color 229
+255  36 182 Color 230
+255  36 255 Color 231
+255  72   0 Color 232
+255  72 109 Color 233
+255  72 182 Color 234
+255  72 255 Color 235
+255 109   0 Color 236
+255 109 109 Color 237
+255 109 182 Color 238
+255 109 255 Color 239
+255 145   0 Color 240
+255 145 109 Color 241
+255 145 182 Color 242
+255 145 255 Color 243
+255 182   0 Color 244
+255 182 109 Color 245
+255 182 182 Color 246
+255 182 255 Color 247
+255 218   0 Color 248
+255 218 109 Color 249
+255 218 182 Color 250
+255 218 255 Color 251
+255 255   0 Color 252
+255 255 109 Color 253
+255 255 182 Color 254
+255 255 255 Color 255
