@@ -9,7 +9,7 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>font_name_on_change_handler</item>
+                <!-- <item>font_name_on_change_handler</item> -->
             </on_change>
             <on_hover>
                 <item>default_on_mouse_enter</item>
@@ -26,7 +26,7 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>font_variant_on_change_handler</item>
+                <!-- <item>font_variant_on_change_handler</item> -->
             </on_change>
             <on_hover>
                 <item>default_on_mouse_enter</item>
@@ -78,7 +78,7 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>point_size_on_change_handler</item>
+                <!-- <item>point_size_on_change_handler</item> -->
                 <item>default_redraw_font_handler</item>
                 <!-- <item>default_resample_font_handler</item> -->
             </on_change>
@@ -100,7 +100,7 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>offset_left_on_change_handler</item>
+                <!-- <item>offset_left_on_change_handler</item> -->
                 <item>default_resample_font_handler</item>
             </on_change>
             <on_hover>
@@ -121,7 +121,7 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>offset_top_on_change_handler</item>
+                <!-- <item>offset_top_on_change_handler</item> -->
                 <item>default_resample_font_handler</item>
             </on_change>
             <on_hover>
@@ -142,7 +142,7 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>offset_width_on_change_handler</item>
+                <!-- <item>offset_width_on_change_handler</item> -->
                 <item>default_resample_font_handler</item>
             </on_change>
             <on_hover>
@@ -163,7 +163,7 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>offset_height_on_change_handler</item>
+                <!-- <item>offset_height_on_change_handler</item> -->
                 <item>default_resample_font_handler</item>
             </on_change>
             <on_hover>
@@ -184,7 +184,8 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>scale_width_on_change_handler</item>
+                <!-- <item>scale_width_on_change_handler</item> -->
+                <item>default_redraw_font_handler</item>
             </on_change>
             <on_hover>
                 <item>default_on_mouse_enter</item>
@@ -204,7 +205,8 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>scale_height_on_change_handler</item>
+                <!-- <item>scale_height_on_change_handler</item> -->
+                <item>default_redraw_font_handler</item>
             </on_change>
             <on_hover>
                 <item>default_on_mouse_enter</item>
@@ -227,9 +229,8 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>raster_type_on_change_handler</item>
+                <!-- <item>raster_type_on_change_handler</item> -->
                 <item>default_redraw_font_handler</item>
-                <item>default_resample_font_handler</item>
             </on_change>
             <on_hover>
                 <item>default_on_mouse_enter</item>
@@ -255,9 +256,8 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>threshold_on_change_handler</item>
+                <!-- <item>threshold_on_change_handler</item> -->
                 <item>default_redraw_font_handler</item>
-                <item>default_resample_font_handler</item>
             </on_change>
             <on_hover>
                 <item>default_on_mouse_enter</item>
@@ -289,9 +289,8 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>palette_on_change_handler</item>
+                <!-- <item>palette_on_change_handler</item> -->
                 <item>default_redraw_font_handler</item>
-                <item>default_resample_font_handler</item>
             </on_change>
             <on_hover>
                 <item>default_on_mouse_enter</item>
@@ -308,9 +307,8 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>fg_color_on_change_handler</item>
+                <!-- <item>fg_color_on_change_handler</item> -->
                 <item>default_redraw_font_handler</item>
-                <item>default_resample_font_handler</item>
             </on_change>
             <on_hover>
                 <item>default_on_mouse_enter</item>
@@ -327,9 +325,8 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>bg_color_on_change_handler</item>
+                <!-- <item>bg_color_on_change_handler</item> -->
                 <item>default_redraw_font_handler</item>
-                <item>default_resample_font_handler</item>
             </on_change>
             <on_hover>
                 <item>default_on_mouse_enter</item>
@@ -349,9 +346,8 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>ascii_start_on_change_handler</item>
+                <!-- <item>ascii_start_on_change_handler</item> -->
                 <item>default_redraw_font_handler</item>
-                <item>default_resample_font_handler</item>
             </on_change>
             <on_hover>
                 <item>default_on_mouse_enter</item>
@@ -371,9 +367,8 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>ascii_end_on_change_handler</item>
+                <!-- <item>ascii_end_on_change_handler</item> -->
                 <item>default_redraw_font_handler</item>
-                <item>default_resample_font_handler</item>
             </on_change>
             <on_hover>
                 <item>default_on_mouse_enter</item>
@@ -393,9 +388,8 @@
         <event_handlers>
             <on_change>
                 <!-- <item>default_on_change_handler</item> -->
-                <item>chars_per_row_on_change_handler</item>
+                <!-- <item>chars_per_row_on_change_handler</item> -->
                 <item>default_redraw_font_handler</item>
-                <item>default_resample_font_handler</item>
             </on_change>
             <on_hover>
                 <item>default_on_mouse_enter</item>

@@ -363,12 +363,22 @@ def render_characters(font, font_config_input):
         # Store the original unaltered image for the second pass
         char_images[char_code] = char_img
 
-    # Second Pass: Crop each image from the top-left corner to the max bounding box dimensions
+    # Second Pass: Crop each and scale image from the top-left corner to the max bounding box dimensions
     cropped_images = {}
+
+    scale_width = font_config_input['scale_width']
+    scale_height = font_config_input['scale_height']
+    do_scaling = scale_width != 0 or scale_height != 0
+    if scale_width != 0 or scale_height != 0:
+        scaled_width = max_width + scale_width
+        scaled_height = max_height + scale_height
+
     for char_code, char_img in char_images.items():
         # Crop to max bounding box dimensions from the top-left corner
         cropped_img = char_img.crop((0, 0, max_width, max_height))
-        
+        # Apply scaling
+        if do_scaling:
+            cropped_img = cropped_img.resize((scaled_width, scaled_height), Image.BICUBIC)
         # Create a new image with bg_color and the max bounding box dimensions
         final_img = Image.new("RGBA", (max_width, max_height), bg_color)
         # Paste the cropped character into the background-colored image
@@ -376,7 +386,7 @@ def render_characters(font, font_config_input):
         
         cropped_images[char_code] = final_img
 
-    return cropped_images, max_width, max_height
+    return cropped_images, max_width + scale_width, max_height + scale_height
 
 def apply_threshold(image, threshold=128):
     """Apply a threshold to a grayscale image to convert it to binary (black and white)."""
