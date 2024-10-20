@@ -265,9 +265,8 @@ def process_palette(palette, hues):
 
     # Step 3: Set the master hue color for each hue bucket
     for h in hues:
-        # The master color is the fully saturated and valued color for the hue
-        r, g, b = au.hsv_to_rgb(h, 1, 1)
-        master_hue_colors[h] = (r, g, b, h, 1, 1, 0, 0, 0, 0)  # Full color tuple
+        # master_hue_colors[h] = force_master_hue_color(h)
+        master_hue_colors[h] = get_master_hue_color(colors_by_hue[h]) 
 
     # Step 4: Add grayscale colors to all hue buckets
     for color in palette:
@@ -277,6 +276,33 @@ def process_palette(palette, hues):
                     colors_by_hue[h].append(color)  # Add full color tuple
 
     return master_hue_colors, colors_by_hue
+
+def force_master_hue_color(hue):
+        # The master color is the fully saturated and valued color for the hue
+        r, g, b = au.hsv_to_rgb(hue, 1, 1)
+        return (r, g, b, hue, 1, 1, 0, 0, 0, 0)
+
+def get_master_hue_color(colors_by_hue):
+    if not colors_by_hue:
+        return None
+
+    # Step 1: Find colors with the maximum value (V)
+    max_value = max(color[V] for color in colors_by_hue)
+    high_value_colors = [color for color in colors_by_hue if color[V] == max_value]
+
+    # Step 2: Filter further by maximum saturation (S) among high value colors
+    max_saturation = max(color[S] for color in high_value_colors)
+    high_saturation_colors = [color for color in high_value_colors if color[S] == max_saturation]
+
+    # Step 3: Break ties by selecting the color with the closest quantized hue to the real hue
+    # Assumes that the quantized hue is the last element in the color tuple
+    real_hue = high_saturation_colors[0][-1]  # Use the quantized hue of the first color
+    closest_color = min(
+        high_saturation_colors, 
+        key=lambda color: abs(color[H] - real_hue)
+    )
+
+    return closest_color
 
 def get_nearest_color_hsv(target_color, palette):
     """Finds the nearest color in HSV space."""
