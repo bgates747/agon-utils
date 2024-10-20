@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from config_manager import get_app_config_value
 from file_manager import open_file
-from font_config_editor_test import FontConfigEditor
+from font_config_editor import FontConfigEditor
 from menu_bar import MenuBar
 from image_display import ImageDisplay
 from custom_widgets import ConsoleDisplay
