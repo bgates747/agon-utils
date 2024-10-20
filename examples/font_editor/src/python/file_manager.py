@@ -36,6 +36,9 @@ def get_open_filename(app_reference):
 
 def open_file(app_reference, file_path):
         app_reference.current_font_file = file_path
+        if not os.path.exists(file_path):
+            return
+        
         # Define the corresponding XML config path
         font_config_filepath = file_path + '.xml'
         
