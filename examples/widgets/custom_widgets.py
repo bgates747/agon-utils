@@ -142,11 +142,11 @@ class ConfigColorPicker(tk.Frame):
         """Return the current color value as a string."""
         return ','.join(map(str, self.color_value))
 
-    def set_value(self, value):
+    def set_modified_value(self, value):
         """Set the current color value."""
         self.color_value = self.parse_color(value)
         self.color_button.config(bg=self.rgb_to_hex(self.color_value), text=str(self.color_value))
 
     def clear(self):
         """Clear the color value (set to transparent black)."""
-        self.set_value("0,0,0,0")
+        self.set_modified_value("0,0,0,0")

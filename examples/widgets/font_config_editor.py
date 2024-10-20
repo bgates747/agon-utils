@@ -92,11 +92,11 @@ class FontConfigEditor(tk.Frame):
         """Print the original values dictionary to the console."""
         print("Original Values:\n", dict_to_text(self.get_original_config()))
 
-    def set_controls_from_config(self, font_config):
+    def set_controls_modified_from_config(self, font_config):
         """Set the control values based on the provided font configuration dictionary."""
         for config_setting, control in self.controls.items():
             if config_setting in font_config:
-                control.set_value(font_config[config_setting])
+                control.set_modified_value(font_config[config_setting])
 
     def set_controls_original_from_config(self, font_config):
         """Set the control values based on the provided font configuration dictionary."""

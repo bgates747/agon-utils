@@ -71,7 +71,7 @@ class FontConfigWidget(tk.Frame):
             return get_typed_data(self.data_type, self.modified_value_object.get())
         return None
 
-    def set_value(self, value):
+    def set_modified_value(self, value):
         """Set the current value of the control."""
         value = get_typed_data(self.data_type, value)
         if self.modified_value_object:
@@ -79,7 +79,7 @@ class FontConfigWidget(tk.Frame):
 
     def set_default_value(self):
         """Set the default value for the control."""
-        self.set_value(self.default_value)
+        self.set_modified_value(self.default_value)
 
     def get_original_value(self):
         """Return the original value of the control."""
@@ -382,7 +382,7 @@ class FontConfigDeltaControl(FontConfigWidget):
         self.original_var.set(str(self.original_value))  # Update the current display
         self.delta_var.set("0")  # Reset delta since modified equals current
 
-    def set_value(self, value):
+    def set_modified_value(self, value):
         """Set the original value, update displays, and reset delta to zero."""
         self.set_default_value(value)
 
@@ -445,7 +445,7 @@ class FontConfigDeltaDisplay(FontConfigWidget):
         self.original_var.set(str(int(self.original_value)))  # Update the current display (no decimals)
         self.delta_var.set("0")  # Reset delta since modified equals current
 
-    def set_value(self, value):
+    def set_modified_value(self, value):
         """Set the modified value, update displays, and recalculate the delta."""
         modified_value = int(value) if self.data_type == 'int' else round(float(value))
         delta_value = modified_value - int(self.original_value)
@@ -492,7 +492,7 @@ class FontConfigColorPicker(FontConfigWidget):
         """Return the current color value as a string."""
         return ','.join(map(str, self.color_value))
 
-    def set_value(self, value):
+    def set_modified_value(self, value):
         """Set the current color value."""
         self.color_value = self.parse_color(value)
         self.color_button.config(bg=self.rgb_to_hex(self.color_value), text=str(self.color_value))
