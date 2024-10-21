@@ -222,15 +222,33 @@ class FontConfigTextBox(FontConfigWidget):
         self.text_entry.grid(row=0, column=1, padx=self.pad_x)
         self.value_display_object = self.text_var
 
+        # Bind the variable to trigger value update when it changes
+        self.text_var.trace_add("write", self._on_text_change)
+
     def bind_on_change_event(self):
         """Bind value change events to the specific widget."""
         if self.on_change_widget and self.on_change_event:
             self.on_change_widget.bind(self.on_change_event, self.default_on_change_handler)
 
+    def _on_text_change(self, *args):
+        """Callback when the text variable changes."""
+        new_value = self.text_var.get()
+        self.value = new_value  # Update the value property
+
     def trigger_focus_out(self, event=None):
         """Trigger a focus out event to activate the on_change event."""
         self.on_change_widget.event_generate("<FocusOut>")
 
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        # Update the internal value and the display object
+        self._value = get_typed_data(self.data_type, new_value)
+        if self.value_display_object:
+            self.value_display_object.set(self._value)
 
 
 class FontConfigDeltaControl(FontConfigWidget):
