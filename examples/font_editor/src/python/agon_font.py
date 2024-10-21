@@ -2,6 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 import math
 import struct
 import os
+from config_manager import load_font_metadata_from_xml
 
 # =============================================================================
 # Master Font Functions
@@ -23,6 +24,10 @@ def read_font(file_path, font_config_input):
         font_config, font_image = open_png_image(file_path, font_config_input)
     elif file_extension == '.font':
         font_config, font_image = open_font_file(file_path, font_config_input)
+    elif file_extension == '.xml':
+        font_config = load_font_metadata_from_xml(file_path)
+        file_path = font_config.get('original_font_path', '')
+        font_config, font_image = read_font(file_path, font_config)
     else:
         raise ValueError(f"Unsupported font file type: {file_extension}")
 

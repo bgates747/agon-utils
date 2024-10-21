@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+from xml.dom import minidom
 import json
 import os
 
@@ -225,6 +226,22 @@ def load_font_metadata_from_xml(xml_filepath):
     font_metadata = xml_to_dict(font_config_xml, general_config_xml)
     
     return font_metadata
+
+def save_font_metadata_to_xml(font_config, xml_filepath):
+    """Save font metadata to an XML file based on the provided dictionary with pretty formatting."""
+    root = ET.Element("settings")
+    
+    for key, value in font_config.items():
+        setting = ET.SubElement(root, "setting", name=key, value=str(value))
+    
+    # Convert to a string and pretty-print using minidom
+    rough_string = ET.tostring(root, encoding="utf-8")
+    reparsed = minidom.parseString(rough_string)
+    pretty_xml = reparsed.toprettyxml(indent="  ")
+
+    # Write the pretty-printed XML to the file
+    with open(xml_filepath, "w", encoding="utf-8") as f:
+        f.write(pretty_xml)
 
 # Load XML file and get root element
 def load_xml(xml_filepath):

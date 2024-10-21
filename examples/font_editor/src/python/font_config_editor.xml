@@ -1,5 +1,22 @@
 <?xml version='1.0' encoding='utf-8'?>
 <settings>
+    <setting name="original_font_path">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text>Oringal Font File</label_text>
+        <data_type>string</data_type>
+        <default_value></default_value>
+        <description>Filepath of the original font.</description>
+        <event_handlers>
+            <on_change>
+                <!-- <item>default_on_change_handler</item> -->
+                <!-- <item>font_name_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
     <setting name="font_name">
         <widget_type>FontConfigTextBox</widget_type>
         <label_text>Name</label_text>

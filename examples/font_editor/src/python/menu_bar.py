@@ -69,7 +69,7 @@ class MenuBar:
     # --------------------------------------------------------------------------
     def save_file(self):
         """Handle the 'Save' menu option to save the current file."""
-        pass  # Implement file save functionality here
+        save_file(self.app_reference)
 
     # --------------------------------------------------------------------------        
     # Import
