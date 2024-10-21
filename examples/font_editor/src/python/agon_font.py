@@ -265,29 +265,58 @@ def make_font(font_config, src_image, tgt_font_filepath):
 
 def resample_image(font_config, original_image):
     """
-    Resample the original image to fit the modified configuration, handling position and size offsets.        
+    Resample the original image to fit the modified configuration, handling position and size offsets.
+    Then arrange the characters in a grid based on the modified font dimensions.
+    
     :param font_config: Dictionary with the modified font configuration.
     :param original_image: The original PIL image to be resampled.
-    :return: A new PIL image resampled to fit the modified configuration.
+    :return: A new PIL image with all characters arranged in a grid.
     """
-    # Step 1: Apply offsets by directly pasting onto `adjusted_image`
+    # Extract relevant font configuration parameters
+    orig_width = font_config['font_width']
+    orig_height = font_config['font_height']
+    mod_width = font_config['font_width_mod']
+    mod_height = font_config['font_height_mod']
+    offset_left = font_config['offset_left']
+    offset_top = font_config['offset_top']
+    chars_per_row = font_config['chars_per_row']
+    ascii_start = font_config['ascii_start']
+    ascii_end = font_config['ascii_end']
+    
+    # Step 1: Create a new image the same size as the original image
     bg_color = parse_rgba_color(font_config['bg_color'])
     adjusted_image = Image.new("RGBA", original_image.size, bg_color)
-    adjusted_image.paste(original_image, (font_config['offset_left'], font_config['offset_top']))
-
-    # Step 3: Collect character images from `adjusted_image` within the overlapping ASCII range
-    char_images = []
-    ascii_start, ascii_end = font_config['ascii_start'], font_config['ascii_end']
+    
+    # Step 2: Paste the original image into the adjusted image with position offsets
+    adjusted_image.paste(original_image, (offset_left, offset_top))
+    
+    # Step 3: Calculate the dimensions of the return image based on modified dimensions
+    total_chars = ascii_end - ascii_start + 1
+    rows = (total_chars + chars_per_row - 1) // chars_per_row  # Round up for rows
+    new_image_width = chars_per_row * mod_width
+    new_image_height = rows * mod_height
+    
+    # Create the final image to hold the characters in a grid
+    font_image = Image.new("RGBA", (new_image_width, new_image_height), bg_color)
+    
+    # Step 4: Collect and paste characters into the return image based on original dimensions
     for ascii_code in range(ascii_start, ascii_end + 1):
-        # Determine character's position in `adjusted_image`
-        char_x = (ascii_code - ascii_start) % 16 * font_config['font_width']
-        char_y = (ascii_code - ascii_start) // 16 * font_config['font_height']
-        char_crop_box = (char_x, char_y, char_x + font_config['font_width'], char_y + font_config['font_height'])
+        char_index = ascii_code - ascii_start
+        char_x = (char_index % chars_per_row) * mod_width
+        char_y = (char_index // chars_per_row) * mod_height
+        
+        # Calculate character's position in the adjusted image
+        src_x = (char_index % chars_per_row) * orig_width
+        src_y = (char_index // chars_per_row) * orig_height
+        char_crop_box = (src_x, src_y, src_x + orig_width, src_y + orig_height)
+        
+        # Crop the character image from adjusted_image
         char_img = adjusted_image.crop(char_crop_box)
-        char_images.append(char_img)
-
-    # Step 4: Use `create_font_image` to arrange the characters in a grid with modified configuration
-    return create_font_image(char_images, font_config)
+        
+        # Paste the character image into the final font image
+        font_image.paste(char_img, (char_x, char_y))
+    
+    return font_image
 
 # =============================================================================
 # FreeTypeFont Functions

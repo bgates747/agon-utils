@@ -22,7 +22,6 @@ class FontEditor(ttk.Frame):
         # Initialize application state variables for the currently loaded font files
         self.current_font_file = None  # Path to the currently open font file
         self.current_font_xml_file = None    # Path to the currently open .ini file
-        self.current_ascii_code = ord('A')   # Default to ASCII code for 'A'
 
         # Create and add the menu bar
         self.menubar = MenuBar(master, self)

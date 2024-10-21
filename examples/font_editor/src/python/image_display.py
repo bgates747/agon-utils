@@ -11,7 +11,7 @@ class ImageDisplay(tk.Frame):
         super().__init__(parent, **kwargs)
         self.app_reference = app_reference
 
-        self.current_ascii_code = None
+        self.current_ascii_code = ord('A')   # Default to ASCII code for 'A'
         self.zoom_levels = [25, 50, 100, 200, 300, 400]
         zoom_level = int(get_app_config_value('default_zoom_level'))
         self.current_zoom_index = self.zoom_levels.index(zoom_level)
@@ -20,7 +20,6 @@ class ImageDisplay(tk.Frame):
         font_config = self.app_reference.font_config_editor.get_config()
         self.original_image = create_blank_font_image(font_config)        
         self.working_image = self.original_image
-        self.pre_resample_image = None
         self.grid_shown = False
 
         # Control frame for toggle and zoom controls
@@ -97,8 +96,8 @@ class ImageDisplay(tk.Frame):
         self.clear_grid()
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
         font_config = self.app_reference.font_config_editor.get_config()
-        grid_width = int(font_config['font_width'] * zoom_factor)
-        grid_height = int(font_config['font_height'] * zoom_factor)
+        grid_width = int(font_config['font_width_mod'] * zoom_factor)
+        grid_height = int(font_config['font_height_mod'] * zoom_factor)
         img_width = int(self.working_image.width * zoom_factor)
         img_height = int(self.working_image.height * zoom_factor)
 
@@ -112,8 +111,8 @@ class ImageDisplay(tk.Frame):
         self.clear_selection_box()
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
         font_config = self.app_reference.font_config_editor.get_config()
-        box_width = int(font_config['font_width'] * zoom_factor)
-        box_height = int(font_config['font_height'] * zoom_factor)
+        box_width = int(font_config['font_width_mod'] * zoom_factor)
+        box_height = int(font_config['font_height_mod'] * zoom_factor)
         x1 = char_x * box_width - 1
         y1 = char_y * box_height - 1
         x2 = x1 + box_width + 1
@@ -170,10 +169,10 @@ class ImageDisplay(tk.Frame):
             return
 
         font_config = self.app_reference.font_config_editor.get_config()
-        x1 = char_x * font_config['font_width']
-        y1 = char_y * font_config['font_height']
-        x2 = x1 + font_config['font_width']
-        y2 = y1 + font_config['font_height']
+        x1 = char_x * font_config['font_width_mod']
+        y1 = char_y * font_config['font_height_mod']
+        x2 = x1 + font_config['font_width_mod']
+        y2 = y1 + font_config['font_height_mod']
 
         return self.working_image.crop((x1, y1, x2, y2))
     
@@ -190,8 +189,8 @@ class ImageDisplay(tk.Frame):
 
         # Retrieve font dimensions from the config editor
         font_config = self.app_reference.font_config_editor.get_config()
-        font_width = font_config['font_width']
-        font_height = font_config['font_height']
+        font_width = font_config['font_width_mod']
+        font_height = font_config['font_height_mod']
 
         # Calculate position in working image based on character coordinates
         char_x, char_y = self.ascii_to_coordinates(self.current_ascii_code)
@@ -221,8 +220,8 @@ class ImageDisplay(tk.Frame):
 
     def get_character_coordinates(self, click_x, click_y):
         font_config = self.app_reference.font_config_editor.get_config()
-        char_x = click_x // font_config['font_width']
-        char_y = click_y // font_config['font_height']
+        char_x = click_x // font_config['font_width_mod']
+        char_y = click_y // font_config['font_height_mod']
         return char_x, char_y
 
     def crop_image(self, image, target_width, target_height):

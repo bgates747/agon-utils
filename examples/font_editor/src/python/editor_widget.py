@@ -36,8 +36,8 @@ class EditorWidget(tk.Frame):
         self.bg_color_hex = rgba_to_hex(self.bg_color)
 
         # Retrieve font dimensions for grid size
-        char_width = font_config['font_width']
-        char_height = font_config['font_height']
+        char_width = font_config['font_width_mod']
+        char_height = font_config['font_height_mod']
 
         # Calculate the canvas size based on pixel size and character dimensions
         canvas_width = char_width * self.pixel_size + 1

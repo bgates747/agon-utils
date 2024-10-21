@@ -59,6 +59,32 @@
             </on_hover>
         </event_handlers>
     </setting>
+
+    <setting name="font_width_mod">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text>Width Mod</label_text>
+        <data_type>int</data_type>
+        <default_value>8</default_value>
+        <description>Width of each character</description>
+        <event_handlers>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+    
+    <setting name="font_height_mod">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text>Height Mod</label_text>
+        <data_type>int</data_type>
+        <default_value>8</default_value>
+        <description>Height of each character</description>
+        <event_handlers>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
     
     <setting name="point_size">
         <widget_type>FontConfigDeltaControl</widget_type>
