@@ -427,7 +427,6 @@ PSF1_MODE512 = 1
 
 def read_psf_font(file_path, font_config_input):
     """Detects PSF version, reads the PSF font file, and returns standardized font config and font image."""
-    # Extract the base filename to use as the font name
     font_name = os.path.splitext(os.path.basename(file_path))[0]
     
     # Read the magic number to determine PSF version
@@ -444,7 +443,7 @@ def read_psf_font(file_path, font_config_input):
         else:
             raise ValueError(f"Not a valid PSF1 or PSF2 file: {file_path}")
 
-    # Calculate default ascii range based on PSF data
+    # Calculate default ASCII range based on PSF data
     computed_ascii_start = 0
     computed_ascii_end = psf_data['num_glyphs'] - 1
 
@@ -452,7 +451,7 @@ def read_psf_font(file_path, font_config_input):
     ascii_start = font_config_input.get('ascii_start', computed_ascii_start)
     ascii_end = font_config_input.get('ascii_end', computed_ascii_end)
 
-    # Update ascii range to ensure it overlaps with the computed range
+    # Update ASCII range to ensure it overlaps with the computed range
     ascii_start = max(computed_ascii_start, min(ascii_start, computed_ascii_end))
     ascii_end = min(computed_ascii_end, max(ascii_end, computed_ascii_start))
 
@@ -481,8 +480,13 @@ def render_psf_glyphs(psf_data, font_config):
     # Retrieve foreground and background colors directly from font_config
     fg_color = parse_rgba_color(font_config['fg_color'])  # Expect fg_color to be provided in config
     bg_color = parse_rgba_color(font_config['bg_color'])  # Expect bg_color to be provided in config
-    
-    for glyph_data in psf_data['glyphs']:
+
+    ascii_start = font_config['ascii_start']
+    ascii_end = font_config['ascii_end']
+
+    for char_index in range(ascii_start, ascii_end + 1):
+        glyph_data = psf_data['glyphs'][char_index]
+
         # Create a new RGBA image with the specified background color
         glyph_img = Image.new('RGBA', (max_width, max_height), bg_color)
         bytes_per_row = (max_width + 7) // 8
