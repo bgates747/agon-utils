@@ -286,7 +286,6 @@ class FontConfigDeltaControl(FontConfigWidget):
         self.value += step_value 
         self.on_change_widget.event_generate(self.on_change_event)
 
-
 class FontConfigColorPicker(FontConfigWidget):
     """A widget for displaying and selecting a color, showing the value as an RGBA tuple."""
 
@@ -344,10 +343,18 @@ class FontConfigColorPicker(FontConfigWidget):
     def choose_color(self):
         """Open a color chooser dialog to select a new color."""
         initial_color = self.color_value
-        rgb_color, hex_color = AgonColorPicker.askcolor(color=self.rgb_to_hex(self.color_value), parent=self)
+        palette_control = self.parent.controls.get("palette")
+        palette_name = palette_control.value if palette_control else None
 
+        # Open the color chooser
+        rgb_color, hex_color = AgonColorPicker.askcolor(color=self.rgb_to_hex(self.color_value), parent=self, palette_name=palette_name)
+        
         if rgb_color:
             self.color_value = (int(rgb_color[0]), int(rgb_color[1]), int(rgb_color[2]), self.color_value[3])
             self.color_var.set(self.value)  # Update the StringVar
             self.color_button.config(bg=self.rgb_to_hex(self.color_value), text=self.color_var.get())
-            self.value = self.value
+            self.value = self.value  # Explicitly trigger the setter to ensure all UI elements are updated
+
+            # Trigger on_change event if color has changed
+            if self.color_value != initial_color:
+                self.on_change_widget.event_generate(self.on_change_event)
