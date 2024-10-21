@@ -1,45 +1,74 @@
+
 import tkinter as tk
 from tkinter import ttk
 import xml.etree.ElementTree as ET
 from config_manager import get_typed_data
+from abc import ABC, abstractmethod
 from agon_color_picker import AgonColorPicker
 
-class FontConfigWidget(tk.Frame):
+class FontConfigWidget(tk.Frame, ABC):
     """Base widget class for common font configuration controls."""
 
     def __init__(self, parent, config_setting, config_xml, **kwargs):
         super().__init__(parent, **kwargs)
 
+        self.id = config_setting
         self.parent = parent
         self.hidden = False  # Custom attribute to manage visibility state
-        
+
         # Parse the XML configuration and filter for the specific setting
         self.setting_xml = config_xml.find(f".//setting[@name='{config_setting}']")
-        self.id = config_setting
 
         # Extract common properties from the XML
         self.data_type = self.setting_xml.find('data_type').text
-        self.default_value = get_typed_data(self.data_type, self.setting_xml.find('default_value').text)
         self.label_text = self.setting_xml.find('label_text').text
         self.visible = self._extract_nested_dict('visible')
         self.event_handlers = self._extract_nested_dict('event_handlers')
         self.options_dict = self._extract_nested_dict('options')
         self.description = self.setting_xml.find('description').text if self.setting_xml.find('description') is not None else ""
+        self._default_value = get_typed_data(self.data_type, self.setting_xml.find('default_value').text)
 
-        # Create the control based on the specific widget type
+        # Value properties
+        self._value = self._default_value
+        self.value_display_object = None
+
+        # Create the common label for the setting type
         self.pad_x = 0
-        self.label = tk.Label(self, width=15, text=self.label_text, font=("Helvetica", 10), anchor="w")
-        self.label.grid(row=0, column=0, padx=self.pad_x)
-
-        # Set the value objects for easier access to get/set methods
-        self.modified_value_object = None
-        self.original_value_object = None
-        self.delta_value_object = None
+        self.config_label = tk.Label(self, width=15, text=self.label_text, font=("Helvetica", 10), anchor="w")
+        self.config_label.grid(row=0, column=0, padx=self.pad_x)
 
         # Initialize event handlers
         self.on_change_event = None  # Define on_change_event in the base class
         self.on_change_widget = None  # Define on_change_widget in the base class
         self._initialize_event_handlers()
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        self._value = get_typed_data(self.data_type, new_value)
+        if self.value_display_object:
+            self.value_display_object.set(self._value)
+
+    @property
+    def default_value(self):
+        return self._default_value
+
+    @default_value.setter
+    def default_value(self, value):
+        self._default_value = get_typed_data(self.data_type, value)
+
+    @abstractmethod
+    def create_value_display_object(self):
+        """Abstract method to create and assign the value display widget."""
+        pass
+
+    @abstractmethod
+    def bind_on_change_event(self):
+        """Abstract method to bind value change events to the specific widget."""
+        pass
 
     def _extract_nested_dict(self, tag_name):
         """Extract nested dictionary structure from XML for a given tag."""
@@ -65,83 +94,6 @@ class FontConfigWidget(tk.Frame):
 
         tag_xml = self.setting_xml.find(tag_name) if self.setting_xml is not None else None
         return recurse_element(tag_xml) if tag_xml is not None else {}
-    
-    def get_modified_value(self):
-        """Return the current value of the control."""
-        if self.modified_value_object:
-            return get_typed_data(self.data_type, self.modified_value_object.get())
-        return None
-
-    def set_modified_value(self, value):
-        """Set the current value of the control."""
-        value = get_typed_data(self.data_type, value)
-        if self.modified_value_object:
-            self.modified_value_object.set(value)
-
-    def set_default_value(self):
-        """Set the default value for the control."""
-        self.set_modified_value(self.default_value)
-
-    def get_original_value(self):
-        """Return the original value of the control."""
-        if self.original_value_object:
-            return get_typed_data(self.data_type, self.original_value_object.get())
-        return None
-
-    def set_original_value(self, value):
-        """Set the original value of the control."""
-        value = get_typed_data(self.data_type, value)
-        if self.original_value_object:
-            self.original_value_object.set(value)
-
-    def get_delta_value(self):
-        """Return the delta value of the control."""
-        if self.delta_value_object:
-            return get_typed_data(self.data_type, self.delta_value_object.get())
-        return None
-    
-    def set_delta_value(self, value):
-        """Set the delta value of the control."""
-        value = get_typed_data(self.data_type, value)
-        if self.delta_value_object:
-            self.delta_value_object.set(value)
-
-    def set_modified_from_delta(self):
-        """Set the modified value based on the delta value."""
-        if not self.delta_value_object:
-            return
-        
-        modified_value = self.get_modified_value()
-        modified_value += self.get_delta_value()
-
-        # Clamp modified value within min and max constraints
-        if self.min_value is not None:
-            modified_value = max(self.min_value, modified_value)
-        if self.max_value is not None:
-            modified_value = min(self.max_value, modified_value)
-
-        self.set_modified_value(modified_value)
-        self.set_delta_from_modified()
-
-    def set_delta_from_modified(self):
-        """Set the delta value based on the modified value."""
-        if not self.delta_value_object:
-            return
-
-        delta_value = self.get_modified_value() - self.get_original_value()
-        self.set_delta_value(delta_value)
-
-    def _initialize_event_handlers(self):
-        """Initialize event handlers for generic and specific events."""
-        if self.on_change_widget:
-            # Bind a default on_change event handler if no specific handler is defined
-            if 'on_change' in self.event_handlers and self.on_change_event:
-                self._bind_event_handler("on_change", "default_on_change_handler")
-
-        # Bind the on_hover event handlers if present
-        if 'on_hover' in self.event_handlers:
-            self.label.bind("<Enter>", self.default_on_mouse_enter)
-            self.label.bind("<Leave>", self.default_on_mouse_leave)
 
     def _bind_event_handler(self, event_name, handler_name):
         """Bind an event handler dynamically and support multiple handlers for the same event."""
@@ -163,7 +115,7 @@ class FontConfigWidget(tk.Frame):
                 if event_name == 'on_change' and self.on_change_event:
                     widget.bind(self.on_change_event, combined_handler)
 
-    def _initialize_specific_event_handlers(self):
+    def _initialize_event_handlers(self):
         """Initialize specific event handlers for events."""
         # Initialize event handlers after widget setup
         for event_name, handlers in self.event_handlers.items():
@@ -176,7 +128,7 @@ class FontConfigWidget(tk.Frame):
     # Default change handler
     def default_on_change_handler(self, event):
         """Default handler for on_change events."""
-        print(f"Default on_change handler called for {self.id} ({self.label_text}) with value: {self.get_modified_value()}")
+        print(f"Default on_change handler called for {self.id} ({self.label_text}) with value: {self.value}")
         self.parent.set_visible(self.id)
 
     # Default hover handlers
@@ -214,22 +166,29 @@ class FontConfigComboBox(FontConfigWidget):
         # Extract options and default value from the XML
         options = [get_typed_data(self.data_type, option.text) for option in self.setting_xml.findall("options/item")] if self.setting_xml is not None else []
 
-        # Dropdown (combobox) for selecting a value
-        self.selected_var = tk.StringVar(value=self.default_value)
-        self.combobox = ttk.Combobox(self, textvariable=self.selected_var, values=options, width=20, state="readonly")
-        self.combobox.grid(row=0, column=1, padx=self.pad_x)
-        self.combobox.set(self.default_value)
-
-        # Set the value objects for easier access
-        self.modified_value_object = self.selected_var
-        self.original_value_object = self.selected_var
+        # Create and assign the value display object
+        self.create_value_display_object(options)
 
         # Set 'on_change_widget' to the combobox for event handler binding
         self.on_change_widget = self.combobox
         self.on_change_event = "<<ComboboxSelected>>"
 
         # Initialize specific event handlers
-        self._initialize_specific_event_handlers()
+        self.bind_on_change_event()
+        self._initialize_event_handlers()
+
+    def create_value_display_object(self, options):
+        """Create and assign the value display widget."""
+        self.selected_var = tk.StringVar(value=self.default_value)
+        self.combobox = ttk.Combobox(self, textvariable=self.selected_var, values=options, width=20, state="readonly")
+        self.combobox.grid(row=0, column=1, padx=self.pad_x)
+        self.combobox.set(self.default_value)
+        self.value_display_object = self.selected_var
+
+    def bind_on_change_event(self):
+        """Bind value change events to the specific widget."""
+        if self.on_change_widget and self.on_change_event:
+            self.on_change_widget.bind(self.on_change_event, self.default_on_change_handler)
 
     def set_combo_options(self, options):
         """Set the available options for the ComboBox."""
@@ -241,57 +200,67 @@ class FontConfigTextBox(FontConfigWidget):
 
     def __init__(self, parent, config_setting, font_config_xml, **kwargs):
         super().__init__(parent, config_setting, font_config_xml, **kwargs)
-        
-        # Additional setup for Text Entry
-        self.text_var = tk.StringVar(value=self.default_value)
-        self.text_entry = tk.Entry(self, textvariable=self.text_var, width=22)
-        self.text_entry.grid(row=0, column=1, padx=self.pad_x)
 
-        # Set the value objects for easier access
-        self.modified_value_object = self.text_var
-        self.original_value_object = self.text_var
+        # Create and assign the value display object
+        self.create_value_display_object()
 
         # Set 'on_change_widget' to the text entry for event handler binding
         self.on_change_widget = self.text_entry
         self.on_change_event = "<FocusOut>"  # Set the event type for text entry
 
         # Initialize specific event handlers
-        self._initialize_specific_event_handlers()
+        self.bind_on_change_event()
+        self._initialize_event_handlers()
 
         # Bind the Enter key to trigger focus out
         self.text_entry.bind("<Return>", self.trigger_focus_out)
 
+    def create_value_display_object(self):
+        """Create and assign the value display widget."""
+        self.text_var = tk.StringVar(value=self.default_value)
+        self.text_entry = tk.Entry(self, textvariable=self.text_var, width=22)
+        self.text_entry.grid(row=0, column=1, padx=self.pad_x)
+        self.value_display_object = self.text_var
+
+    def bind_on_change_event(self):
+        """Bind value change events to the specific widget."""
+        if self.on_change_widget and self.on_change_event:
+            self.on_change_widget.bind(self.on_change_event, self.default_on_change_handler)
+
     def trigger_focus_out(self, event=None):
         """Trigger a focus out event to activate the on_change event."""
         self.on_change_widget.event_generate("<FocusOut>")
+
+
 
 class FontConfigDeltaControl(FontConfigWidget):
     """A widget for handling delta_value adjustments with custom increment, bounds, and data-driven properties."""
 
     def __init__(self, parent, config_setting, font_config_xml, **kwargs):
         super().__init__(parent, config_setting, font_config_xml, **kwargs)
-        
+
         # Extract configuration from XML
-        self.data_type = self.setting_xml.find('data_type').text
-        self.default_value = get_typed_data(self.data_type, self.setting_xml.find('default_value').text)
-        self.min_value = get_typed_data(self.data_type, self.setting_xml.find('min_value').text)
-        self.max_value = get_typed_data(self.data_type, self.setting_xml.find('max_value').text)
         self.step_value = get_typed_data(self.data_type, self.setting_xml.find('step_value').text)
 
+        # Create and assign the value display object
+        self.create_value_display_object()
+
+        # Set 'on_change_widget' to the delta display for event handler binding
+        self.on_change_widget = self.delta_display
+        self.on_change_event = "<<ValueChanged>>"  # Custom event identifier
+
+        # Initialize specific event handlers
+        self.bind_on_change_event()
+        self._initialize_event_handlers()
+
+    def create_value_display_object(self):
+        """Create and assign the value display widget."""
         # Set button width property
         self.button_width = 4  # Define a fixed width for the buttons
 
-        # Initialize state variables
-        self.original_value = self.default_value
-
         # Main label for the control
-        self.label = tk.Label(self, width=15, text=self.label_text, font=("Helvetica", 10), anchor="w")
-        self.label.grid(row=0, column=0, padx=self.pad_x)
-
-        # Current value display
-        self.original_var = tk.StringVar(value=str(self.original_value))
-        self.original_display = tk.Label(self, textvariable=self.original_var, width=4, anchor="center")
-        self.original_display.grid(row=0, column=1, padx=self.pad_x)
+        self.config_label = tk.Label(self, width=15, text=self.label_text, font=("Helvetica", 10), anchor="w")
+        self.config_label.grid(row=0, column=0, padx=self.pad_x)
 
         # Decrement button
         self.decrement_button = tk.Button(self, text="-", width=self.button_width, font=("Helvetica", 6), command=lambda: self.step_delta(-self.step_value))
@@ -301,50 +270,22 @@ class FontConfigDeltaControl(FontConfigWidget):
         self.delta_var = tk.StringVar(value="0")
         self.delta_display = tk.Label(self, textvariable=self.delta_var, width=4, anchor="center")
         self.delta_display.grid(row=0, column=3, padx=self.pad_x)
+        self.value_display_object = self.delta_var
 
         # Increment button
         self.increment_button = tk.Button(self, text="+", width=self.button_width, font=("Helvetica", 6), command=lambda: self.step_delta(self.step_value))
         self.increment_button.grid(row=0, column=4, padx=self.pad_x)
 
-        # Computed value display
-        self.modified_var = tk.StringVar(value=str(self.original_value))
-        self.modified_display = tk.Label(self, textvariable=self.modified_var, width=4, anchor="center")
-        self.modified_display.grid(row=0, column=5, padx=self.pad_x)
-
-        # Set value object and on_change_widget for tracking changes
-        self.modified_value_object = self.modified_var
-        self.original_value_object = self.original_var
-        self.delta_value_object = self.delta_var
-        self.on_change_widget = self.modified_display
-        self.on_change_event = "<<ModifiedValueChanged>>"  # Custom event identifier
-
-        # Initialize specific event handlers
-        self._initialize_specific_event_handlers()
+    def bind_on_change_event(self):
+        """Bind value change events to the specific widget."""
+        if self.on_change_widget and self.on_change_event:
+            self.on_change_widget.bind(self.on_change_event, self.default_on_change_handler)
 
     def step_delta(self, step_value):
         """Modify the delta, updating the modified value within constraints and calculating delta from current value."""
-
-        delta_value = get_typed_data(self.data_type, step_value) + self.get_delta_value()
-        self.set_delta_value(delta_value)
-        self.set_modified_from_delta()
-
-        # Update the modified and delta displays
-        self.modified_var.set(str(self.get_modified_value()))  # Reflect adjusted modified value
-        self.delta_var.set(str(self.get_delta_value()))  # Reflect adjusted delta
-        
-        # Trigger the custom on_change event
+        self.value += step_value 
         self.on_change_widget.event_generate(self.on_change_event)
 
-    def set_default_value(self, value):
-        """Set the original value, update displays, and reset delta to zero."""
-        self.original_value = value  # Set the original/current value
-        self.modified_var.set(str(self.original_value))  # Reset modified value to match
-        self.original_var.set(str(self.original_value))  # Update the current display
-        self.delta_var.set("0")  # Reset delta since modified equals current
-
-    def set_modified_value(self, value):
-        """Set the original value, update displays, and reset delta to zero."""
-        self.set_default_value(value)
 
 class FontConfigColorPicker(FontConfigWidget):
     """A widget for displaying and selecting a color, showing the value as an RGBA tuple."""
@@ -352,26 +293,45 @@ class FontConfigColorPicker(FontConfigWidget):
     def __init__(self, parent, config_setting, font_config_xml, **kwargs):
         super().__init__(parent, config_setting, font_config_xml, **kwargs)
 
-        # Parse the color value from the XML
-        self.color_value = self.parse_color(self.default_value)
-
-        # StringVar to hold the current color value
-        self.color_var = tk.StringVar(value=self.get_modified_value())
-
-        # Button to display and select color
-        self.color_button = tk.Button(self, text=self.color_var.get(), bg=self.rgb_to_hex(self.color_value), command=self.choose_color, width=22)
-        self.color_button.grid(row=0, column=1, padx=self.pad_x)
-
-        # Set the value object for easier access
-        self.original_value_object = self.color_var
-        self.modified_value_object = self.color_var
+        # Create and assign the value display object
+        self.create_value_display_object()
 
         # Set 'on_change_widget' to the color button for event handler binding
         self.on_change_widget = self.color_button
-        self.on_change_event = "<<ColorChanged>>"
+        self.on_change_event = "<<ColorChanged>>"  # Custom event identifier
 
         # Initialize specific event handlers
-        self._initialize_specific_event_handlers()
+        self.bind_on_change_event()
+        self._initialize_event_handlers()
+
+    def create_value_display_object(self):
+        """Create and assign the value display widget."""
+        # Parse the color value from XML
+        self.color_value = self.parse_color(self.default_value)
+
+        # StringVar to hold the current color value
+        self.color_var = tk.StringVar(value=self.value)
+
+        # Button to display and select color
+        self.color_button = tk.Button(self, text=self.color_var.get(), bg=self.rgb_to_hex(self.color_value), command=self.choose_color, width=22)
+        self.color_button.grid(row=0, column=1, padx=0)
+        self.value_display_object = self.color_var
+
+    def bind_on_change_event(self):
+        """Bind value change events to the specific widget."""
+        if self.on_change_widget and self.on_change_event:
+            self.on_change_widget.bind(self.on_change_event, self.default_on_change_handler)
+
+    @property
+    def value(self):
+        return ','.join(map(str, self.color_value))
+
+    @value.setter
+    def value(self, new_value):
+        self.color_value = self.parse_color(new_value)
+        if self.value_display_object:
+            self.value_display_object.set(self.value)
+        self.color_button.config(bg=self.rgb_to_hex(self.color_value), text=self.color_var.get())
 
     def parse_color(self, color_string):
         """Parse the color string to a tuple of integers (R, G, B, A)."""
@@ -381,29 +341,13 @@ class FontConfigColorPicker(FontConfigWidget):
         """Convert an RGBA tuple to a hex color code (ignoring alpha)."""
         return "#%02x%02x%02x" % (rgba[0], rgba[1], rgba[2])
 
-    def get_modified_value(self):
-        """Return the current color value as a string."""
-        return ','.join(map(str, self.color_value))
-
-    def set_modified_value(self, value):
-        """Set the current color value."""
-        self.color_value = self.parse_color(value)
-        self.color_var.set(self.get_modified_value())  # Update the StringVar
-        self.color_button.config(bg=self.rgb_to_hex(self.color_value), text=self.color_var.get())
-
     def choose_color(self):
         """Open a color chooser dialog to select a new color."""
         initial_color = self.color_value
-        palette_control = self.parent.controls.get("palette")
-        palette_name = palette_control.get_modified_value() if palette_control else None
+        rgb_color, hex_color = AgonColorPicker.askcolor(color=self.rgb_to_hex(self.color_value), parent=self)
 
-        # Open the color chooser
-        rgb_color, hex_color = AgonColorPicker.askcolor(color=self.rgb_to_hex(self.color_value), parent=self, palette_name=palette_name)
-        
         if rgb_color:
             self.color_value = (int(rgb_color[0]), int(rgb_color[1]), int(rgb_color[2]), self.color_value[3])
-            self.color_var.set(self.get_modified_value())  # Update the StringVar
+            self.color_var.set(self.value)  # Update the StringVar
             self.color_button.config(bg=self.rgb_to_hex(self.color_value), text=self.color_var.get())
-
-            if self.color_value != initial_color:
-                self.on_change_widget.event_generate(self.on_change_event)
+            self.value = self.value

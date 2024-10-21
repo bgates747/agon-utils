@@ -14,7 +14,7 @@
     <setting name="threshold" value="128"/>
     <setting name="palette" value="Agon64"/>
     <setting name="fg_color" value="255,255,255,255"/>
-    <setting name="bg_color" value="0,0,0,0"/>
+    <setting name="bg_color" value="0,0,0,255"/>
     <setting name="ascii_start" value="32"/>
     <setting name="ascii_end" value="127"/>
     <setting name="chars_per_row" value="16"/>

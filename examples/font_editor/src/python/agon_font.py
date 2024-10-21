@@ -263,44 +263,31 @@ def make_font(font_config, src_image, tgt_font_filepath):
 # Modify font config functions
 # =============================================================================
 
-def resample_image(orig_config, mod_config, original_image):
+def resample_image(font_config, original_image):
     """
-    Resample the original image to fit the modified configuration, handling offsets, padding, and ASCII range overlap.
-    
-    :param orig_config: Dictionary with the original font configuration.
-    :param mod_config: Dictionary with the modified font configuration.
+    Resample the original image to fit the modified configuration, handling position and size offsets.        
+    :param font_config: Dictionary with the modified font configuration.
     :param original_image: The original PIL image to be resampled.
     :return: A new PIL image resampled to fit the modified configuration.
     """
     # Step 1: Apply offsets by directly pasting onto `adjusted_image`
-    bg_color = parse_rgba_color(mod_config['bg_color'])
+    bg_color = parse_rgba_color(font_config['bg_color'])
     adjusted_image = Image.new("RGBA", original_image.size, bg_color)
-    adjusted_image.paste(original_image, (mod_config['offset_left'], mod_config['offset_top']))
-
-    # Step 2: Determine the overlap of ASCII ranges
-    curr_ascii_start = orig_config['ascii_start']
-    curr_ascii_end = orig_config['ascii_end']
-    mod_ascii_start = mod_config['ascii_start']
-    mod_ascii_end = mod_config['ascii_end']
-    overlap_start = max(curr_ascii_start, mod_ascii_start)
-    overlap_end = min(curr_ascii_end, mod_ascii_end)
-
-    # If no overlap exists, return a blank modified image
-    if overlap_start > overlap_end:
-        return create_blank_font_image(mod_config)
+    adjusted_image.paste(original_image, (font_config['offset_left'], font_config['offset_top']))
 
     # Step 3: Collect character images from `adjusted_image` within the overlapping ASCII range
     char_images = []
-    for ascii_code in range(overlap_start, overlap_end + 1):
+    ascii_start, ascii_end = font_config['ascii_start'], font_config['ascii_end']
+    for ascii_code in range(ascii_start, ascii_end + 1):
         # Determine character's position in `adjusted_image`
-        char_x = (ascii_code - curr_ascii_start) % 16 * orig_config['font_width']
-        char_y = (ascii_code - curr_ascii_start) // 16 * orig_config['font_height']
-        char_crop_box = (char_x, char_y, char_x + orig_config['font_width'], char_y + orig_config['font_height'])
+        char_x = (ascii_code - ascii_start) % 16 * font_config['font_width']
+        char_y = (ascii_code - ascii_start) // 16 * font_config['font_height']
+        char_crop_box = (char_x, char_y, char_x + font_config['font_width'], char_y + font_config['font_height'])
         char_img = adjusted_image.crop(char_crop_box)
         char_images.append(char_img)
 
     # Step 4: Use `create_font_image` to arrange the characters in a grid with modified configuration
-    return create_font_image(char_images, mod_config)
+    return create_font_image(char_images, font_config)
 
 # =============================================================================
 # FreeTypeFont Functions
