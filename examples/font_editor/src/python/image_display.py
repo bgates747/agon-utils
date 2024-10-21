@@ -133,9 +133,9 @@ class ImageDisplay(tk.Frame):
         """Remove all gridlines from the canvas."""
         self.canvas.delete("gridline")
 
-    def load_image(self, working_image):
+    def load_image(self, image):
         """Load the image into the widget."""
-        self.working_image = working_image
+        self.working_image = image
         self.redraw()
 
     def trigger_click_on_ascii_code(self, ascii_code):

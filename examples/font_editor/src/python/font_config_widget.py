@@ -150,7 +150,7 @@ class FontConfigWidget(tk.Frame, ABC):
     def default_redraw_font_handler(self, event):
         """Default handler for redrawing the font image."""
         print(f"Redrawing font image for {self.id} ({self.label_text})")
-        self.parent.redraw_font()
+        self.parent.render_font()
 
     def default_resample_font_handler(self, event):
         """Default handler for resampling the font image."""
