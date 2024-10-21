@@ -426,7 +426,7 @@
         <default_value>16</default_value>
         <min_value>1</min_value>
         <max_value>256</max_value>
-        <step_value>1</step_value>
+        <step_value>8</step_value>
         <description>Number of characters per row in the PNG grid</description>
         <event_handlers>
             <on_change>

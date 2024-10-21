@@ -25,7 +25,8 @@ def get_open_filename(app_reference):
             ("OpenType Font Files", "*.otf"),
             ("PSF Font Files", "*.psf"),
             ("Agon Font Files", "*.font"),
-            ("PNG Images", "*.png")
+            ("PNG Images", "*.png"),
+            ("XML Font Config", "*.xml")
         ),
         initialdir=most_recent_open_directory
     )
@@ -34,29 +35,37 @@ def get_open_filename(app_reference):
         open_file(app_reference, file_path)
 
 def open_file(app_reference, file_path):
-        app_reference.current_font_file = file_path
         if not os.path.exists(file_path):
             return
         
-        # Define the corresponding XML config path
-        font_config_filepath = file_path + '.xml'
-        
-        # Load font metadata from XML file
-        if os.path.exists(font_config_filepath):
-            app_reference.current_font_xml_file = font_config_filepath
-            font_config = load_font_metadata_from_xml(font_config_filepath)
+        font_type = os.path.splitext(file_path)[1].lower()
+
+        if font_type == ".xml":
+            font_config = load_font_metadata_from_xml(file_path)
+            font_config_filepath = file_path
+            file_path = font_config.get('original_font_path', '')
+            # Update the most recent directory and file in the app configuration
+            set_app_config_value("most_recent_open_directory", os.path.dirname(file_path))
+            set_app_config_value("most_recent_file", file_path)
         else:
-            font_config_filepath = os.path.join(os.path.dirname(__file__), "font_config.xml")
-            font_config = load_font_metadata_from_xml(font_config_filepath)
-            font_config["font_name"] = os.path.splitext(os.path.basename(file_path))[0]
-            font_config["original_font_path"] = file_path
+            font_config_filepath = file_path + '.xml'
+            if os.path.exists(font_config_filepath):
+                app_reference.current_font_xml_file = font_config_filepath
+                font_config = load_font_metadata_from_xml(font_config_filepath)
+            else:
+                font_config_filepath = os.path.join(os.path.dirname(__file__), "font_config.xml")
+                font_config = load_font_metadata_from_xml(font_config_filepath)
+                font_config["font_name"] = os.path.splitext(os.path.basename(file_path))[0]
+                font_config["original_font_path"] = file_path
+            # Update the most recent directory and file in the app configuration
+            set_app_config_value("most_recent_open_directory", os.path.dirname(file_path))
+            set_app_config_value("most_recent_file", file_path)
+
+        # Update the app current font file path
+        app_reference.current_font_file = file_path
 
         # Save the font metadata to the "standard" font metadata file
         save_font_metadata_to_xml(font_config, font_config_filepath)
-        
-        # Update the most recent directory and file in the app configuration
-        set_app_config_value("most_recent_open_directory", os.path.dirname(file_path))
-        set_app_config_value("most_recent_file", file_path)
 
         # Update the main window title with the file name
         filename = os.path.basename(file_path)
