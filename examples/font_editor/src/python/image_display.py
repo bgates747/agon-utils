@@ -157,7 +157,8 @@ class ImageDisplay(tk.Frame):
             self.current_ascii_code = ascii_code
             self.draw_selection_box(char_x, char_y)
             char_img = self.get_char_img_xy(char_x, char_y)
-            self.app_reference.editor_widget.populate_from_image(char_img)
+            if self.app_reference.editor_widget:
+                self.app_reference.editor_widget.populate_from_image(char_img)
         else:
             self.clear_selection_box()
             print("Clicked outside the ASCII range.")

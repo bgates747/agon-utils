@@ -44,16 +44,25 @@ class FontEditor(ttk.Frame):
         image_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)  # Expands fully
 
         # Create an instance of ImageDisplay with an app reference
-        self.image_display = ImageDisplay(image_frame, app_reference=self)
-        self.image_display.pack(fill="both", expand=True)  # Fully expand to fill right frame
+        if True:
+            self.image_display = ImageDisplay(image_frame, app_reference=self)
+            self.image_display.pack(fill="both", expand=True)  # Fully expand to fill right frame
+        else:
+            self.image_display = None
 
         # Create an instance of EditorWidget below ImageDisplay
-        self.editor_widget = EditorWidget(image_frame, app_reference=self)
-        self.editor_widget.pack(fill="x", expand=True, pady=(5, 0))  # Horizontal fill, aligns below ImageDisplay
+        if False:
+            self.editor_widget = EditorWidget(image_frame, app_reference=self)
+            self.editor_widget.pack(fill="x", expand=True, pady=(5, 0))  # Horizontal fill, aligns below ImageDisplay
+        else:
+            self.editor_widget = None
 
         # Bottom ConsoleDisplay
-        self.console_display = ConsoleDisplay(self)
-        self.console_display.pack(fill="x", padx=10, pady=5, anchor="s")  # Fills available horizontal space
+        if False:
+            self.console_display = ConsoleDisplay(self)
+            self.console_display.pack(fill="x", padx=10, pady=5, anchor="s")  # Fills available horizontal space
+        else:
+            self.console_display = None
 
         # Load the last opened font file
         file_path = get_app_config_value("most_recent_file")

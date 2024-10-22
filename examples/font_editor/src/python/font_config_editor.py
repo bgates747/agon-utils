@@ -104,5 +104,6 @@ class FontConfigEditor(tk.Frame):
         font_config['font_height_mod'] = font_config['font_height'] + font_config['offset_height'] + font_config['scale_height']
         self.set_controls_from_config(font_config)
         self.app_reference.image_display.load_image(font_image)
-        self.app_reference.editor_widget.initialize_grid()
-        self.app_reference.image_display.trigger_click_on_ascii_code(self.app_reference.image_display.current_ascii_code)
+        if self.app_reference.editor_widget:
+            self.app_reference.editor_widget.initialize_grid()
+            self.app_reference.image_display.trigger_click_on_ascii_code(self.app_reference.image_display.current_ascii_code)
