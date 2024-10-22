@@ -8,7 +8,7 @@
         <description>Filepath of the original font.</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item>
+                <!-- <item>default_on_change_handler</item> -->
                 <!-- <item>font_name_on_change_handler</item> -->
             </on_change>
             <on_hover>
@@ -120,9 +120,9 @@
         </hidden>
         <event_handlers>
             <on_change>
-                <!-- <item>default_on_change_handler</item> -->
+                <item>default_on_change_handler</item>
                 <!-- <item>point_size_on_change_handler</item> -->
-                <!-- <item>default_redraw_font_handler</item> -->
+                <item>default_redraw_font_handler</item>
             </on_change>
             <on_hover>
                 <item>default_on_mouse_enter</item>
@@ -270,9 +270,9 @@
         <description>Type of rasterization</description>
         <event_handlers>
             <on_change>
-                <item>default_on_change_handler</item> <!-- superclass event handler -->
-                <item>raster_type_on_change_handler</item> <!-- subclass and setting specific event handler -->
-                <item>default_redraw_font_handler</item> <!-- superclass event handler -->
+                <item>default_on_change_handler</item> 
+                <!-- <item>raster_type_on_change_handler</item>  -->
+                <item>default_redraw_font_handler</item> 
             </on_change>
             <on_hover>
                 <item>default_on_mouse_enter</item>
@@ -293,7 +293,6 @@
             <setting name="raster_type">
                 <item>threshold</item>
             </setting>
-    
         </visible>
         <event_handlers>
             <on_change>
