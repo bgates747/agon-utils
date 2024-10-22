@@ -1,22 +1,17 @@
 import tkinter as tk
 from tkinter import ttk
 import xml.etree.ElementTree as ET
-
-def get_typed_data(data_type, value):
-    """Convert value to specified data type."""
-    if data_type == 'int':
-        return int(value)
-    elif data_type == 'float':
-        return float(value)
-    elif data_type == 'bool':
-        return value.lower() in ('true', '1', 'yes')
-    else:  # Default to string
-        return str(value)
+from config_manager import get_typed_data, load_xml
 
 class FontConfigWidget(tk.Frame):
     def __init__(self, parent, setting_name, setting_xml, **kwargs):
         super().__init__(parent, **kwargs)
+
+        self.id = setting_name
         self.setting_name = setting_name
+        self.parent = parent
+        self.hidden = False
+
         self.setting_xml = setting_xml
         self.value_object = None  # Widget to get/set the value
         self.on_change_object = None  # Widget to trigger change events
@@ -25,6 +20,13 @@ class FontConfigWidget(tk.Frame):
         self.data_type = self.setting_dict.get('data_type', 'string')
         self._value = get_typed_data(self.data_type, self.setting_dict.get('default_value', ''))
         self.event_handlers = self._extract_event_handlers(self.setting_dict)
+        self.description = self.setting_dict.get('description', '')
+        self.label_text = self.setting_dict.get('label_text', '')
+
+        # Create the label for the control
+        self.pad_x = 0
+        self.label = tk.Label(self, width=15, text=self.label_text, font=("Helvetica", 10), anchor="w")
+        self.label.grid(row=0, column=0, padx=self.pad_x)
 
     @property
     def value(self):
@@ -111,45 +113,17 @@ class FontConfigWidget(tk.Frame):
 class FontConfigComboBox(FontConfigWidget):
     def __init__(self, parent, setting_name, setting_xml, **kwargs):
         super().__init__(parent, setting_name, setting_xml, **kwargs)
-
-        # Get value options from the setting dictionary
         self.options = self.setting_dict.get('options', [])
-
-        # Set the label for the combobox
-        label_text = self.setting_dict.get('label_text', 'Setting')
-        self.label = tk.Label(self, text=label_text)
-        self.label.pack(padx=5, pady=5, anchor='w')
-
-        # Combobox for selecting options
-        self.combobox = ttk.Combobox(self, values=self.options)
+        self.combobox = ttk.Combobox(self, values=self.options, width=20)
+        self.combobox.grid(row=0, column=1, padx=self.pad_x)
         self.combobox.set(self._value)
-        self.combobox.pack(padx=5, pady=5, anchor='w')
-
-        # Set value_object to the combobox
         self.value_object = self.combobox
-
-        # Set on_change_object to the combobox
         self.on_change_object = self.combobox
-
-        # Bind the generic change handler to the combobox
         self.on_change_object.bind("<<ComboboxSelected>>", self._handle_value_change)
 
     def raster_type_on_change_handler(self):
         new_value = self.value
         print(f"{self.setting_name}: raster_type_on_change_handler fired - New Value: {new_value}")
-
-
-def load_xml(xml_filepath):
-    """Load an XML file and return the root XML element."""
-    try:
-        tree = ET.parse(xml_filepath)
-        return tree.getroot()
-    except FileNotFoundError:
-        print(f"Error: Could not find XML file {xml_filepath}")
-        return None
-    except ET.ParseError:
-        print(f"Error: Could not parse XML file {xml_filepath}")
-        return None
 
 
 if __name__ == "__main__":
