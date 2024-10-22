@@ -30,15 +30,18 @@ class FontConfigWidget(tk.Frame):
 
     @property
     def value(self):
-        """Return the current value of the control."""
+        """Get the current value of the control."""
         return self._value
 
     @value.setter
     def value(self, new_value):
-        """Set the current value of the control, converting to the specified data type."""
-        self._value = get_typed_data(self.data_type, new_value)
-        if self.value_object and hasattr(self.value_object, 'set'):
-            self.value_object.set(self._value)
+        """Set the current value and update the display."""
+        self._value = new_value
+        self.set_display_value(new_value)
+
+    def set_display_value(self, new_value):
+        """Set the display value of the control. This should be overridden in subclasses."""
+        pass
 
     def _handle_value_change(self, event=None):
         """Generic handler for value change events."""
@@ -118,31 +121,50 @@ class FontConfigComboBox(FontConfigWidget):
     """A widget for displaying and selecting from a dropdown list of configuration values."""
     def __init__(self, parent, config_setting, font_config_xml, **kwargs):
         super().__init__(parent, config_setting, font_config_xml, **kwargs)
+
+        # Get options from the setting dictionary
         self.options = self.setting_dict.get('options', [])
+
+        # Create the Combobox widget
         self.combobox = ttk.Combobox(self, values=self.options, width=20)
         self.combobox.grid(row=0, column=1, padx=self.pad_x)
-        self.value_object = self.combobox
-        self.value_object.set(self._value)
+
+        # Set the on_change_object to the combobox
         self.on_change_object = self.combobox
+
+        # Set the initial value
+        self.value = self._value
+
+        # Bind the generic change handler to the Combobox selection event
         self.on_change_object.bind("<<ComboboxSelected>>", self._handle_value_change)
+
+    def set_display_value(self, new_value):
+        """Set the display value of the Combobox."""
+        self.combobox.set(new_value)
 
 class FontConfigTextBox(FontConfigWidget):
     """A widget for displaying and editing a text-based configuration value."""
     def __init__(self, parent, config_setting, font_config_xml, **kwargs):
         super().__init__(parent, config_setting, font_config_xml, **kwargs)
+        
+        # Create the Entry widget
         self.text_entry = tk.Entry(self, width=22)
         self.text_entry.grid(row=0, column=1, padx=self.pad_x)
 
-        # Set value_object and on_change_object to the entry widget
-        self.value_object = self.text_entry
+        # Set the on_change_object to the entry widget
         self.on_change_object = self.text_entry
 
-        # Set initial value
-        self.value_object.insert(0, self._value)
+        # Set the initial value
+        self.value = self._value
 
         # Bind the generic change handler to focus out and return key events
         self.on_change_object.bind("<FocusOut>", self._handle_value_change)
         self.on_change_object.bind("<Return>", self._handle_value_change)
+
+    def set_display_value(self, new_value):
+        """Set the display value of the TextBox."""
+        self.text_entry.delete(0, tk.END)
+        self.text_entry.insert(0, new_value)
 
 class FontConfigDeltaControl(FontConfigWidget):
     """A widget for handling delta_value adjustments with custom increment, bounds, and data-driven properties."""
@@ -168,8 +190,8 @@ class FontConfigDeltaControl(FontConfigWidget):
         self.delta_display = tk.Label(self, text=self._value, width=6, anchor="center")
         self.delta_display.grid(row=0, column=2, padx=self.pad_x)
 
-        # Set value_object to the delta display
-        self.value_object = self.delta_display
+        # Set the initial display value
+        self.set_display_value(self._value)
 
         # Increment button
         self.increment_button = tk.Button(
@@ -188,6 +210,10 @@ class FontConfigDeltaControl(FontConfigWidget):
         self.delta = -self.step_value
         self.trigger_event_handlers('on_change')
 
+    def set_display_value(self, new_value):
+        """Update the display for the delta control."""
+        self.delta_display.config(text=str(new_value))
+
     def default_on_change_handler(self):
         """Override to handle delta adjustment and bounds checking."""
         new_value = self.value + self.delta
@@ -195,7 +221,6 @@ class FontConfigDeltaControl(FontConfigWidget):
         # Check if the new value is within bounds
         if self.min_value <= new_value <= self.max_value:
             self.value = new_value  # Update the value if within bounds
-            self.delta_display.config(text=str(self.value))  # Update the display
         else:
             print(f"{self.config_setting}: Value out of bounds ({self.min_value} to {self.max_value})")
         
@@ -217,25 +242,23 @@ class FontConfigColorPicker(FontConfigWidget):
         )
         self.color_button.grid(row=0, column=1, padx=0)
 
-        # Set 'on_change_widget' to the color button for event handler binding
+        # Set the display_object to the color button
+        self.display_object = self.color_button
+
+        # Set 'on_change_widget' to the color button
         self.on_change_widget = self.color_button
         self.on_change_event = "<<ColorChanged>>"  # Custom event identifier
 
-        # Initialize specific event handlers
+        # Bind the specific event handlers
         if self.on_change_widget and self.on_change_event:
             self.on_change_widget.bind(self.on_change_event, self._handle_value_change)
 
-    @property
-    def value(self):
-        """Get the current color value as an RGBA string."""
-        return ','.join(map(str, self.color_value))
+        # Set the initial display value
+        self.set_display_value(self._value)
 
-    @value.setter
-    def value(self, new_value):
-        """Set the current color value and update the display."""
+    def set_display_value(self, new_value):
+        """Update the display for the color picker."""
         self.color_value = self.parse_color(new_value)
-
-        # Update the button color and text
         self.color_button.config(
             bg=self.rgb_to_hex(self.color_value), 
             text=self.value
@@ -269,39 +292,9 @@ class FontConfigColorPicker(FontConfigWidget):
             new_color_value = (int(rgb_color[0]), int(rgb_color[1]), int(rgb_color[2]), self.color_value[3])
 
             if new_color_value != initial_color:
-                # Update the color value and explicitly set the control value
+                # Update the color value and display
                 self.color_value = new_color_value
-                self.value = self.value  # Trigger setter to update UI elements
+                self.set_display_value(self.value)  # Trigger display update
 
                 # Trigger on_change event if color has changed
                 self.on_change_widget.event_generate(self.on_change_event)
-
-if __name__ == "__main__":
-    # Load the XML file
-    xml_filepath = 'examples/font_editor/src/python/font_config_editor.xml'
-    root_element = load_xml(xml_filepath)
-
-    if root_element is not None:
-        # Create the Tkinter app
-        root = tk.Tk()
-        root.title("Font Config Editor")
-
-        # Define setting name
-        config_setting = "raster_type"
-        font_config_combobox = FontConfigComboBox(root, config_setting, root_element)
-        font_config_combobox.pack(padx=10, pady=0)
-
-        config_setting = "font_name"
-        font_config_textbox = FontConfigTextBox(root, config_setting, root_element)
-        font_config_textbox.pack(padx=10, pady=0)
-
-        config_setting = "point_size"
-        font_config_delta = FontConfigDeltaControl(root, config_setting, root_element)
-        font_config_delta.pack(padx=10, pady=0)
-
-        config_setting = "fg_color"
-        font_config_color = FontConfigColorPicker(root, config_setting, root_element)
-        font_config_color.pack(padx=10, pady=0)
-
-        # Start the Tkinter event loop
-        root.mainloop()
