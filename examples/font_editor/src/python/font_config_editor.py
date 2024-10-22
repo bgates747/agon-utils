@@ -96,10 +96,12 @@ class FontConfigEditor(tk.Frame):
     def render_font(self):
         """Redraw the font image based on the current configuration."""        
         file_path = self.app_reference.current_font_file
+        print(f"Rendering font image from {file_path}")
+
         font_config = self.get_config()
         font_config, font_image = read_font(file_path, font_config)
-        font_config['font_width_mod'] = font_config['font_width'] + font_config['offset_width']
-        font_config['font_height_mod'] = font_config['font_height'] + font_config['offset_height']
+        font_config['font_width_mod'] = font_config['font_width'] + font_config['offset_width'] + font_config['scale_width']
+        font_config['font_height_mod'] = font_config['font_height'] + font_config['offset_height'] + font_config['scale_height']
         self.set_controls_from_config(font_config)
         self.app_reference.image_display.load_image(font_image)
         self.app_reference.editor_widget.initialize_grid()

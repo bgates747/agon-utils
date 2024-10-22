@@ -168,7 +168,7 @@ def make_filename_from_config(font_config):
     """Generate a filename based on the font configuration."""
     font_name = font_config['font_name']
     font_variant = font_config['font_variant']
-    font_width = font_config['font_width']
-    font_height = font_config['font_height']
+    font_width = font_config['font_width_mod']
+    font_height = font_config['font_height_mod']
     
     return f"{font_name}_{font_variant}_{font_width}x{font_height}"

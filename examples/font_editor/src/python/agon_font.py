@@ -35,6 +35,7 @@ def read_font(file_path, font_config_input):
     else:
         raise ValueError(f"Unsupported font file type: {file_extension}")
 
+    font_config, font_image = resample_and_scale_image(font_config, font_image)
     return font_config, font_image
 
 # =============================================================================
@@ -93,7 +94,7 @@ def resample_and_scale_image(font_config, original_image):
         # Paste the resampled character image into the final font image
         font_image.paste(char_img, (tgt_x, tgt_y))
 
-    return font_image
+    return font_config, font_image
 
 def pad_to_byte(value):
     """Rounds up the given value to the nearest multiple of 8."""
@@ -129,62 +130,6 @@ def hex_to_rgba(hex_color):
     """Convert a Tkinter-compatible hex color string to an RGBA tuple."""
     hex_color = hex_color.lstrip('#')
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4)) + (255,)
-
-# =============================================================================
-# Font to png functions
-# =============================================================================
-def read_font_file(font_filepath, font_config):
-    """
-    Reads a .font file and returns a list of character images.
-    Each byte in the file represents 8 horizontal pixels.
-    
-    :param font_filepath: Path to the .font file
-    :param font_config: Dictionary with font configuration
-    :return: A list of PIL images representing each character
-    """
-    char_width = font_config['font_width']
-    char_height = font_config['font_height']
-    ascii_range = (font_config['ascii_start'], font_config['ascii_end'])
-    
-    # Round the true width up to the nearest multiple of 8 (padded width)
-    padded_width = pad_to_byte(char_width)
-    bytes_per_row = padded_width // 8  # Number of bytes per row of the character
-    bytes_per_character = bytes_per_row * char_height
-
-    # Calculate the start and end character indices in the file
-    start_char = ascii_range[0]
-    num_chars = ascii_range[1] - start_char + 1  # Number of characters to read
-
-    # Calculate the starting byte offset for the specified ASCII range
-    start_offset = start_char * bytes_per_character
-
-    char_images = []
-
-    # Read the font data starting from the calculated offset
-    with open(font_filepath, 'rb') as f:
-        f.seek(start_offset)  # Move to the starting position in the file
-        font_data = f.read(num_chars * bytes_per_character)
-
-    for i in range(num_chars):
-        # Create an image for each character with the padded width
-        char_img = Image.new('RGBA', (padded_width, char_height), color=(0,0,0,0))
-        pixels = char_img.load()
-        
-        # Extract character data from the font data
-        for y in range(char_height):
-            row_start = i * bytes_per_character + y * bytes_per_row
-            row_data = font_data[row_start:row_start + bytes_per_row]
-            
-            for byte_idx, byte in enumerate(row_data):
-                for bit in range(8):
-                    x = byte_idx * 8 + bit
-                    if x < padded_width:  # Render the padded width (including the padded bits)
-                        if byte & (1 << (7 - bit)):
-                            pixels[x, y] = 255  # Set pixel to white (255) if the bit is set
-
-        char_images.append(char_img)
-
-    return char_images
 
 def create_blank_font_image(font_config):
     """
@@ -599,3 +544,56 @@ def open_font_file(file_path, font_config):
     char_images = read_font_file(file_path, font_config)
     font_image = create_font_image(char_images, font_config)
     return font_config, font_image
+
+def read_font_file(font_filepath, font_config):
+    """
+    Reads a .font file and returns a list of character images.
+    Each byte in the file represents 8 horizontal pixels.
+    
+    :param font_filepath: Path to the .font file
+    :param font_config: Dictionary with font configuration
+    :return: A list of PIL images representing each character
+    """
+    char_width = font_config['font_width']
+    char_height = font_config['font_height']
+    ascii_range = (font_config['ascii_start'], font_config['ascii_end'])
+    
+    # Round the true width up to the nearest multiple of 8 (padded width)
+    padded_width = pad_to_byte(char_width)
+    bytes_per_row = padded_width // 8  # Number of bytes per row of the character
+    bytes_per_character = bytes_per_row * char_height
+
+    # Calculate the start and end character indices in the file
+    start_char = ascii_range[0]
+    num_chars = ascii_range[1] - start_char + 1  # Number of characters to read
+
+    # Calculate the starting byte offset for the specified ASCII range
+    start_offset = start_char * bytes_per_character
+
+    char_images = []
+
+    # Read the font data starting from the calculated offset
+    with open(font_filepath, 'rb') as f:
+        f.seek(start_offset)  # Move to the starting position in the file
+        font_data = f.read(num_chars * bytes_per_character)
+
+    for i in range(num_chars):
+        # Create an image for each character with the padded width
+        char_img = Image.new('RGBA', (padded_width, char_height), color=(0,0,0,0))
+        pixels = char_img.load()
+        
+        # Extract character data from the font data
+        for y in range(char_height):
+            row_start = i * bytes_per_character + y * bytes_per_row
+            row_data = font_data[row_start:row_start + bytes_per_row]
+            
+            for byte_idx, byte in enumerate(row_data):
+                for bit in range(8):
+                    x = byte_idx * 8 + bit
+                    if x < padded_width:  # Render the padded width (including the padded bits)
+                        if byte & (1 << (7 - bit)):
+                            pixels[x, y] = 255  # Set pixel to white (255) if the bit is set
+
+        char_images.append(char_img)
+
+    return char_images
