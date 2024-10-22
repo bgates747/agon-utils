@@ -16,7 +16,6 @@ def get_typed_data(data_type, value):
 class FontConfigWidget(tk.Frame):
     def __init__(self, parent, setting_name, setting_xml, **kwargs):
         super().__init__(parent, **kwargs)
-        
         self.setting_name = setting_name
         self.setting_xml = setting_xml
         self.value_object = None  
