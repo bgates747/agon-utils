@@ -94,6 +94,14 @@ def resample_and_scale_image(font_config, original_image):
         # Paste the resampled character image into the final font image
         font_image.paste(char_img, (tgt_x, tgt_y))
 
+    print(f"Resampled to {new_image_width}x{new_image_height} raster type '{font_config['raster_type']}'")
+    if font_config['raster_type'] == 'threshold':
+        threshold = font_config['threshold']
+        print(f"Applying threshold of {threshold} to the font image.")
+        font_image = font_image.convert("L")
+        font_image = apply_threshold(font_image, threshold)
+        font_image = font_image.convert("RGBA")
+
     return font_config, font_image
 
 def pad_to_byte(value):
@@ -332,7 +340,7 @@ def render_characters(font, font_config_input):
 
     return cropped_images, max_width, max_height
 
-def apply_threshold(image, threshold=128):
+def apply_threshold(image, threshold):
     """Apply a threshold to a grayscale image to convert it to binary (black and white)."""
     return image.point(lambda p: 255 if p > threshold else 0, mode="1")
 

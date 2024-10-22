@@ -3,10 +3,9 @@ import tkinter as tk
 from tkinter import ttk
 import xml.etree.ElementTree as ET
 from config_manager import get_typed_data
-from abc import ABC, abstractmethod
 from agon_color_picker import AgonColorPicker
 
-class FontConfigWidget(tk.Frame, ABC):
+class FontConfigWidget(tk.Frame):
     """Base widget class for common font configuration controls."""
 
     def __init__(self, parent, config_setting, config_xml, **kwargs):
@@ -21,54 +20,53 @@ class FontConfigWidget(tk.Frame, ABC):
 
         # Extract common properties from the XML
         self.data_type = self.setting_xml.find('data_type').text
+        self._default_value = get_typed_data(self.data_type, self.setting_xml.find('default_value').text)
         self.label_text = self.setting_xml.find('label_text').text
         self.visible = self._extract_nested_dict('visible')
         self.event_handlers = self._extract_nested_dict('event_handlers')
         self.options_dict = self._extract_nested_dict('options')
         self.description = self.setting_xml.find('description').text if self.setting_xml.find('description') is not None else ""
-        self._default_value = get_typed_data(self.data_type, self.setting_xml.find('default_value').text)
 
-        # Value properties
-        self._value = self._default_value
-        self.value_display_object = None
-
-        # Create the common label for the setting type
+        # Create the label for the control
         self.pad_x = 0
-        self.config_label = tk.Label(self, width=15, text=self.label_text, font=("Helvetica", 10), anchor="w")
-        self.config_label.grid(row=0, column=0, padx=self.pad_x)
+        self.label = tk.Label(self, width=15, text=self.label_text, font=("Helvetica", 10), anchor="w")
+        self.label.grid(row=0, column=0, padx=self.pad_x)
+
+        # Set placeholders for specific widgets to be defined in subclasses
+        self.value_object = None  # Widget holding the control's value
+        self.on_change_object = None  # Widget bound to the on_change handler
+        self.on_change_event = None  # Event that triggers the on_change handler
+
+        # Initialize value and set to default
+        self._value = self._default_value
 
         # Initialize event handlers
-        self.on_change_event = None  # Define on_change_event in the base class
-        self.on_change_widget = None  # Define on_change_widget in the base class
         self._initialize_event_handlers()
 
     @property
     def value(self):
+        """Return or set the current value of the control."""
         return self._value
 
     @value.setter
     def value(self, new_value):
+        """Set the current value of the control."""
         self._value = get_typed_data(self.data_type, new_value)
-        if self.value_display_object:
-            self.value_display_object.set(self._value)
+        if self.value_object and hasattr(self.value_object, 'set'):
+            self.value_object.set(self._value)
 
     @property
     def default_value(self):
+        """Return or set the default value of the control."""
         return self._default_value
 
     @default_value.setter
     def default_value(self, value):
         self._default_value = get_typed_data(self.data_type, value)
 
-    @abstractmethod
-    def create_value_display_object(self):
-        """Abstract method to create and assign the value display widget."""
-        pass
-
-    @abstractmethod
-    def bind_on_change_event(self):
-        """Abstract method to bind value change events to the specific widget."""
-        pass
+    def set_default_value(self):
+        """Set the control's value to its default."""
+        self.value = self.default_value
 
     def _extract_nested_dict(self, tag_name):
         """Extract nested dictionary structure from XML for a given tag."""
@@ -95,14 +93,27 @@ class FontConfigWidget(tk.Frame, ABC):
         tag_xml = self.setting_xml.find(tag_name) if self.setting_xml is not None else None
         return recurse_element(tag_xml) if tag_xml is not None else {}
 
+    def _initialize_event_handlers(self):
+        """Initialize event handlers for the control."""
+        if self.on_change_object and self.on_change_event:
+            self._bind_event_handler("on_change", "default_on_change_handler")
+
+        # Bind hover events if defined
+        if 'on_hover' in self.event_handlers:
+            self.label.bind("<Enter>", self.default_on_mouse_enter)
+            self.label.bind("<Leave>", self.default_on_mouse_leave)
+
     def _bind_event_handler(self, event_name, handler_name):
         """Bind an event handler dynamically and support multiple handlers for the same event."""
         handler = getattr(self, handler_name, None)
         if callable(handler):
-            widget = self.on_change_widget
+            widget = self.on_change_object
             if widget:
+                # Initialize the event handler list if not already present
                 if not hasattr(widget, '_event_handlers'):
                     widget._event_handlers = {}
+
+                # Add the handler to the event handler list for the event
                 if event_name not in widget._event_handlers:
                     widget._event_handlers[event_name] = []
 
@@ -112,23 +123,14 @@ class FontConfigWidget(tk.Frame, ABC):
                     for h in handlers:
                         h(event)
 
-                if event_name == 'on_change' and self.on_change_event:
-                    widget.bind(self.on_change_event, combined_handler)
+                # Bind the combined handler to the event
+                widget.unbind(self.on_change_event)
+                widget.bind(self.on_change_event, combined_handler)
 
-    def _initialize_event_handlers(self):
-        """Initialize specific event handlers for events."""
-        # Initialize event handlers after widget setup
-        for event_name, handlers in self.event_handlers.items():
-            if isinstance(handlers, list):
-                for handler_name in handlers:
-                    self._bind_event_handler(event_name, handler_name)
-            else:
-                self._bind_event_handler(event_name, handlers)
-
-    # Default change handler
     def default_on_change_handler(self, event):
         """Default handler for on_change events."""
-        print(f"Default on_change handler called for {self.id} ({self.label_text}) with value: {self.value}")
+        self._value = get_typed_data(self.data_type, self.value_object.get())
+        print(f"Default on_change handler called for {self.label_text} with value: {self._value}")
         self.parent.set_visible(self.id)
 
     # Default hover handlers
@@ -146,49 +148,25 @@ class FontConfigWidget(tk.Frame, ABC):
             self.tooltip.destroy()
             del self.tooltip
 
-    # Default redraw font handler
-    def default_redraw_font_handler(self, event):
-        """Default handler for redrawing the font image."""
-        print(f"Redrawing font image for {self.id} ({self.label_text})")
-        self.parent.render_font()
-
 class FontConfigComboBox(FontConfigWidget):
     """A widget for displaying and selecting from a dropdown list of configuration values."""
 
     def __init__(self, parent, config_setting, font_config_xml, **kwargs):
         super().__init__(parent, config_setting, font_config_xml, **kwargs)
 
-        # Extract options and default value from the XML
-        options = [get_typed_data(self.data_type, option.text) for option in self.setting_xml.findall("options/item")] if self.setting_xml is not None else []
+        # Extract options from the XML
+        options = [get_typed_data(self.data_type, option.text) 
+                   for option in self.setting_xml.findall("options/item")] if self.setting_xml is not None else []
 
-        # Create and assign the value display object
-        self.create_value_display_object(options)
-
-        # Set 'on_change_widget' to the combobox for event handler binding
-        self.on_change_widget = self.combobox
-        self.on_change_event = "<<ComboboxSelected>>"
-
-        # Initialize specific event handlers
-        self.bind_on_change_event()
-        self._initialize_event_handlers()
-
-    def create_value_display_object(self, options):
-        """Create and assign the value display widget."""
+        # Initialize the combobox and bind it to a StringVar
         self.selected_var = tk.StringVar(value=self.default_value)
         self.combobox = ttk.Combobox(self, textvariable=self.selected_var, values=options, width=20, state="readonly")
         self.combobox.grid(row=0, column=1, padx=self.pad_x)
-        self.combobox.set(self.default_value)
-        self.value_display_object = self.selected_var
 
-    def bind_on_change_event(self):
-        """Bind value change events to the specific widget."""
-        if self.on_change_widget and self.on_change_event:
-            self.on_change_widget.bind(self.on_change_event, self.default_on_change_handler)
-
-    def set_combo_options(self, options):
-        """Set the available options for the ComboBox."""
-        if isinstance(options, (list, dict)):
-            self.combobox['values'] = list(options)
+        # Assign specific parts to superclass properties
+        self.value_object = self.selected_var
+        self.on_change_object = self.combobox
+        self.on_change_event = "<<ComboboxSelected>>"
 
 class FontConfigTextBox(FontConfigWidget):
     """A widget for displaying and editing a text-based configuration value."""
