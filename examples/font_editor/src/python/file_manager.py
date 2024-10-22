@@ -43,10 +43,10 @@ def open_file(app_reference, file_path):
         if font_type == ".xml":
             font_config = load_font_metadata_from_xml(file_path)
             font_config_filepath = file_path
-            file_path = font_config.get('original_font_path', '')
             # Update the most recent directory and file in the app configuration
             set_app_config_value("most_recent_open_directory", os.path.dirname(file_path))
             set_app_config_value("most_recent_file", file_path)
+            file_path = font_config.get('original_font_path', '')
         else:
             font_config_filepath = file_path + '.xml'
             if os.path.exists(font_config_filepath):
