@@ -18,7 +18,9 @@ class FontConfigWidget(tk.Frame):
         super().__init__(parent, **kwargs)
         self.setting_name = setting_name
         self.setting_xml = setting_xml
-        self.value_object = None  
+        self.value_object = None  # Widget to get/set the value
+        self.on_change_object = None  # Widget to trigger change events
+
         self.setting_dict = self._extract_setting_dict(setting_name)
         self.data_type = self.setting_dict.get('data_type', 'string')
         self._value = get_typed_data(self.data_type, self.setting_dict.get('default_value', ''))
@@ -36,14 +38,18 @@ class FontConfigWidget(tk.Frame):
         if self.value_object and hasattr(self.value_object, 'set'):
             self.value_object.set(self._value)
 
+    def _handle_value_change(self, event=None):
+        """Generic handler for value change events."""
+        if self.on_change_object:
+            self.value = self.on_change_object.get()  # Update value from the bound widget
+        self.trigger_event_handlers('on_change')
+
     def _extract_event_handlers(self, setting_dict):
         """Dynamically extract all event handlers from the XML setting."""
         event_handlers = {}
         xml_event_handlers = setting_dict.get('event_handlers', {})
 
-        # Loop through each event type in the event handlers
         for event_type, handlers in xml_event_handlers.items():
-            # Ensure handlers are extracted as a list of strings
             if isinstance(handlers, dict):
                 handlers_list = [handlers['item']] if 'item' in handlers else []
             elif isinstance(handlers, list):
@@ -122,17 +128,16 @@ class FontConfigComboBox(FontConfigWidget):
         # Set value_object to the combobox
         self.value_object = self.combobox
 
-        # Bind the combobox-specific event handler
-        self.combobox.bind("<<ComboboxSelected>>", self._handle_combobox_change)
+        # Set on_change_object to the combobox
+        self.on_change_object = self.combobox
 
-    def _handle_combobox_change(self, event):
-        """Handle the Combobox selection change and call event handlers dynamically."""
-        self.value = self.combobox.get()
-        self.trigger_event_handlers('on_change')
+        # Bind the generic change handler to the combobox
+        self.on_change_object.bind("<<ComboboxSelected>>", self._handle_value_change)
 
     def raster_type_on_change_handler(self):
         new_value = self.value
         print(f"{self.setting_name}: raster_type_on_change_handler fired - New Value: {new_value}")
+
 
 def load_xml(xml_filepath):
     """Load an XML file and return the root XML element."""
