@@ -18,8 +18,7 @@ class ImageDisplay(tk.Frame):
 
         # Load the blank font image
         font_config = self.app_reference.font_config_editor.get_config()
-        self.original_image = create_blank_font_image(font_config)        
-        self.working_image = self.original_image
+        self.working_image = create_blank_font_image(font_config)        
         self.grid_shown = False
 
         # Control frame for toggle and zoom controls

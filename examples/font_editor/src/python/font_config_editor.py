@@ -3,7 +3,7 @@ from tkinter import Button
 import xml.etree.ElementTree as ET
 from font_config_widget import FontConfigDeltaControl, FontConfigTextBox, FontConfigComboBox, FontConfigColorPicker
 from config_manager import dict_to_text, load_xml
-from agon_font import resample_image, read_font
+from agon_font import resample_and_scale_image, read_font
 
 class FontConfigEditor(tk.Frame):
     """
@@ -93,40 +93,14 @@ class FontConfigEditor(tk.Frame):
                         dependent_control.grid_remove()
                         dependent_control.hidden = True
 
-    # =========================================================================
-    # Parameter Modification Methods
-    # =========================================================================
-
     def render_font(self):
         """Redraw the font image based on the current configuration."""        
         file_path = self.app_reference.current_font_file
         font_config = self.get_config()
         font_config, font_image = read_font(file_path, font_config)
-        self.compute_font_size_from_offsets(font_config)
+        font_config['font_width_mod'] = font_config['font_width'] + font_config['offset_width']
+        font_config['font_height_mod'] = font_config['font_height'] + font_config['offset_height']
         self.set_controls_from_config(font_config)
-        self.app_reference.image_display.original_image = font_image
-        self.app_reference.image_display.working_image = font_image
-
-        if font_config['offset_left'] != 0 or font_config['offset_top'] != 0 or font_config['offset_width'] != 0 or font_config['offset_height'] != 0:
-            self.resample_font()
-        else:
-            self.update_font_image(font_image)
-
-    def resample_font(self):
-        font_config = self.get_config()
-        font_config = self.compute_font_size_from_offsets(font_config)
-        self.set_controls_from_config(font_config)
-        font_image = resample_image(font_config, self.app_reference.image_display.original_image)
-        self.update_font_image(font_image)
-    
-    def update_font_image(self, font_image):
-        self.app_reference.image_display.working_image = font_image
         self.app_reference.image_display.load_image(font_image)
         self.app_reference.editor_widget.initialize_grid()
         self.app_reference.image_display.trigger_click_on_ascii_code(self.app_reference.image_display.current_ascii_code)
-
-    def compute_font_size_from_offsets(self, font_config):
-        """Compute the font size based on offsets and update the font configuration."""
-        font_config['font_width_mod'] = font_config['font_width'] + font_config['offset_width']
-        font_config['font_height_mod'] = font_config['font_height'] + font_config['offset_height']
-        return font_config

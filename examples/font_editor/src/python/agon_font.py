@@ -9,14 +9,18 @@ from config_manager import load_font_metadata_from_xml
 # =============================================================================
 
 def read_font(file_path, font_config_input):
+    """
+    Entry point for reading and rendering fonts based on file type. Supports
+    different formats like TTF, OTF, PSF, PNG, and custom font files.
+    Applies position and size offsets, as well as scaling, to the final output.
+    """
     # Determine the font type based on the file extension
     _, file_extension = os.path.splitext(file_path)
     file_extension = file_extension.lower()
-    point_size = font_config_input['point_size']
 
     # Load the appropriate font object
     if file_extension in ['.ttf', '.otf']:  # TrueType or OpenType font
-        font = ImageFont.truetype(file_path, point_size)
+        font = ImageFont.truetype(file_path, font_config_input['point_size'])
         font_config, font_image = generate_font_image(font, font_config_input)
     elif file_extension == '.psf':
         font_config, font_image = read_psf_font(file_path, font_config_input)
@@ -36,6 +40,61 @@ def read_font(file_path, font_config_input):
 # =============================================================================
 # Helper functions
 # =============================================================================
+def resample_and_scale_image(font_config, original_image):
+    """
+    Resample the original image to fit the modified configuration, handling
+    position offsets once at the beginning, and applying scaling to each character individually.
+    """
+    # Extract relevant font configuration parameters
+    orig_width = font_config['font_width']
+    orig_height = font_config['font_height']
+    offset_width = font_config['offset_width']
+    offset_height = font_config['offset_height']
+    scale_width = font_config['scale_width']
+    scale_height = font_config['scale_height']
+    chars_per_row = font_config['chars_per_row']
+    ascii_start = font_config['ascii_start']
+    ascii_end = font_config['ascii_end']
+
+    # Calculate modified width and height, including offsets and scaling
+    mod_width = orig_width + offset_width + scale_width
+    mod_height = orig_height + offset_height + scale_height
+
+    # Calculate the dimensions for the final image
+    total_chars = ascii_end - ascii_start + 1
+    rows = (total_chars + chars_per_row - 1) // chars_per_row  # Round up for rows
+    new_image_width = chars_per_row * mod_width
+    new_image_height = rows * mod_height
+
+    # Create an adjusted image with position offsets applied
+    bg_color = parse_rgba_color(font_config['bg_color'])
+    src_image = Image.new("RGBA", original_image.size, bg_color)
+    src_image.paste(original_image, (font_config['offset_left'], font_config['offset_top']))
+
+    # Create a final image to hold the characters in a grid with modified dimensions
+    font_image = Image.new("RGBA", (new_image_width, new_image_height), bg_color)
+
+    # Collect, resample, and paste each character into the final image
+    for ascii_code in range(ascii_start, ascii_end + 1):
+        char_index = ascii_code - ascii_start
+        tgt_x = (char_index % chars_per_row) * mod_width
+        tgt_y = (char_index // chars_per_row) * mod_height
+        
+        # Crop the character image from the original image
+        src_x = (char_index % chars_per_row) * orig_width
+        src_y = (char_index // chars_per_row) * orig_height
+        char_crop_box = (src_x, src_y, src_x + orig_width, src_y + orig_height)
+        char_img = src_image.crop(char_crop_box)
+
+        # Apply scaling to the character image
+        if scale_width or scale_height:
+            char_img = char_img.resize((orig_width + scale_width, orig_height + scale_height), Image.BICUBIC)
+
+        # Paste the resampled character image into the final font image
+        font_image.paste(char_img, (tgt_x, tgt_y))
+
+    return font_image
+
 def pad_to_byte(value):
     """Rounds up the given value to the nearest multiple of 8."""
     return (value + 7) // 8 * 8
@@ -50,27 +109,17 @@ def byteify(pixels):
 
 def parse_rgba_color(color_string):
     """
-    Convert an RGBA color string to a tuple suitable for PIL, removing any extra whitespace.
-    
-    Parameters:
-        color_string (str): RGBA color in string format, e.g., "255,255,255,255".
-    
-    Returns:
-        tuple: A tuple of integers (R, G, B, A) representing the color.
+    Converts an RGBA color string to a tuple suitable for PIL, removing any extra whitespace.
     """
     try:
-        # Split the string by commas, strip whitespace, and convert each component to an integer
         rgba = tuple(int(part.strip()) for part in color_string.split(','))
-        
-        # Ensure it has exactly four components (R, G, B, A)
         if len(rgba) == 4:
             return rgba
         else:
             raise ValueError("RGBA color string must have exactly four components.")
     except ValueError as e:
         print(f"Error parsing RGBA color: {e}")
-        # Return a default color (black, fully opaque) if parsing fails
-        return (0, 0, 0, 255)
+        return (0, 0, 0, 255)  # Default to black, fully opaque
     
 def rgba_to_hex(rgba):
     """Convert an RGBA tuple to a Tkinter-compatible hex color string (ignoring the alpha)."""
@@ -238,11 +287,11 @@ def sample_char_image(ascii_code, font_config, src_img_new):
 
     # Calculate the character's x and y coordinates in the grid
     chars_per_row = font_config['chars_per_row']
-    char_x = (ascii_code % chars_per_row) * font_width
-    char_y = (ascii_code // chars_per_row) * font_height
+    tgt_x = (ascii_code % chars_per_row) * font_width
+    tgt_y = (ascii_code // chars_per_row) * font_height
 
     # Calculate the cropping box for the character
-    crop_box = (char_x, char_y, char_x + sample_width, char_y + sample_height)
+    crop_box = (tgt_x, tgt_y, tgt_x + sample_width, tgt_y + sample_height)
 
     # Crop and return the character image
     char_img = src_img_new.crop(crop_box)
@@ -263,65 +312,6 @@ def make_font(font_config, src_image, tgt_font_filepath):
 
     with open(tgt_font_filepath, 'wb') as f:
         f.write(font_data)
-
-# =============================================================================
-# Modify font config functions
-# =============================================================================
-
-def resample_image(font_config, original_image):
-    """
-    Resample the original image to fit the modified configuration, handling position and size offsets.
-    Then arrange the characters in a grid based on the modified font dimensions.
-    
-    :param font_config: Dictionary with the modified font configuration.
-    :param original_image: The original PIL image to be resampled.
-    :return: A new PIL image with all characters arranged in a grid.
-    """
-    # Extract relevant font configuration parameters
-    orig_width = font_config['font_width']
-    orig_height = font_config['font_height']
-    mod_width = font_config['font_width_mod']
-    mod_height = font_config['font_height_mod']
-    offset_left = font_config['offset_left']
-    offset_top = font_config['offset_top']
-    chars_per_row = font_config['chars_per_row']
-    ascii_start = font_config['ascii_start']
-    ascii_end = font_config['ascii_end']
-    
-    # Step 1: Create a new image the same size as the original image
-    bg_color = parse_rgba_color(font_config['bg_color'])
-    adjusted_image = Image.new("RGBA", original_image.size, bg_color)
-    
-    # Step 2: Paste the original image into the adjusted image with position offsets
-    adjusted_image.paste(original_image, (offset_left, offset_top))
-    
-    # Step 3: Calculate the dimensions of the return image based on modified dimensions
-    total_chars = ascii_end - ascii_start + 1
-    rows = (total_chars + chars_per_row - 1) // chars_per_row  # Round up for rows
-    new_image_width = chars_per_row * mod_width
-    new_image_height = rows * mod_height
-    
-    # Create the final image to hold the characters in a grid
-    font_image = Image.new("RGBA", (new_image_width, new_image_height), bg_color)
-    
-    # Step 4: Collect and paste characters into the return image based on original dimensions
-    for ascii_code in range(ascii_start, ascii_end + 1):
-        char_index = ascii_code - ascii_start
-        char_x = (char_index % chars_per_row) * mod_width
-        char_y = (char_index // chars_per_row) * mod_height
-        
-        # Calculate character's position in the adjusted image
-        src_x = (char_index % chars_per_row) * orig_width
-        src_y = (char_index // chars_per_row) * orig_height
-        char_crop_box = (src_x, src_y, src_x + orig_width, src_y + orig_height)
-        
-        # Crop the character image from adjusted_image
-        char_img = adjusted_image.crop(char_crop_box)
-        
-        # Paste the character image into the final font image
-        font_image.paste(char_img, (char_x, char_y))
-    
-    return font_image
 
 # =============================================================================
 # FreeTypeFont Functions
@@ -386,28 +376,16 @@ def render_characters(font, font_config_input):
 
     # Second Pass: Crop each and scale image from the top-left corner to the max bounding box dimensions
     cropped_images = {}
-
-    scale_width = font_config_input['scale_width']
-    scale_height = font_config_input['scale_height']
-    do_scaling = scale_width != 0 or scale_height != 0
-    if scale_width != 0 or scale_height != 0:
-        scaled_width = max_width + scale_width
-        scaled_height = max_height + scale_height
-
     for char_code, char_img in char_images.items():
         # Crop to max bounding box dimensions from the top-left corner
         cropped_img = char_img.crop((0, 0, max_width, max_height))
-        # Apply scaling
-        if do_scaling:
-            cropped_img = cropped_img.resize((scaled_width, scaled_height), Image.BICUBIC)
         # Create a new image with bg_color and the max bounding box dimensions
         final_img = Image.new("RGBA", (max_width, max_height), bg_color)
         # Paste the cropped character into the background-colored image
         final_img.paste(cropped_img, (0, 0), cropped_img)
-        
         cropped_images[char_code] = final_img
 
-    return cropped_images, max_width + scale_width, max_height + scale_height
+    return cropped_images, max_width, max_height
 
 def apply_threshold(image, threshold=128):
     """Apply a threshold to a grayscale image to convert it to binary (black and white)."""
@@ -420,46 +398,34 @@ def quantize_image(image):
 # =============================================================================
 # PSF Font Functions
 # =============================================================================
-
+# Constants for PSF1 and PSF2 Magic Numbers
 PSF1_MAGIC = b'\x36\x04'
 PSF2_MAGIC = b'\x72\xb5\x4a\x86'
 PSF1_MODE512 = 1
 
 def read_psf_font(file_path, font_config_input):
-    """Detects PSF version, reads the PSF font file, and returns standardized font config and font image."""
+    """
+    Detects the PSF version, reads the PSF font file, and returns standardized font config and font image.
+    """
+    psf_data = detect_and_read_psf(file_path)
     font_name = os.path.splitext(os.path.basename(file_path))[0]
-    
-    # Read the magic number to determine PSF version
-    with open(file_path, 'rb') as f:
-        magic = f.read(4)
-        
-        # Determine the appropriate PSF file type and read glyph data
-        if magic[:2] == PSF1_MAGIC:
-            psf_data = read_psf1(file_path)
-            font_variant = 'PSF1'
-        elif magic == PSF2_MAGIC:
-            psf_data = read_psf2(file_path)
-            font_variant = 'PSF2'
-        else:
-            raise ValueError(f"Not a valid PSF1 or PSF2 file: {file_path}")
 
-    # Calculate default ASCII range based on PSF data
+    # Determine ASCII range from PSF data
     computed_ascii_start = 0
     computed_ascii_end = psf_data['num_glyphs'] - 1
 
-    # Get ascii_start and ascii_end from input config, defaulting to computed range
     ascii_start = font_config_input.get('ascii_start', computed_ascii_start)
     ascii_end = font_config_input.get('ascii_end', computed_ascii_end)
 
-    # Update ASCII range to ensure it overlaps with the computed range
+    # Adjust ASCII range to ensure overlap with the computed range
     ascii_start = max(computed_ascii_start, min(ascii_start, computed_ascii_end))
     ascii_end = min(computed_ascii_end, max(ascii_end, computed_ascii_start))
 
-    # Update font configuration based on provided input and PSF data
+    # Update font configuration
     font_config = font_config_input.copy()
     font_config.update({
         'font_name': font_name,
-        'font_variant': font_variant,
+        'font_variant': psf_data['variant'],
         'font_width': psf_data['width'],
         'font_height': psf_data['height'],
         'num_glyphs': psf_data['num_glyphs'],
@@ -469,17 +435,121 @@ def read_psf_font(file_path, font_config_input):
 
     # Generate the master font image from the glyph images
     font_image = generate_psf_font_image(psf_data, font_config)
-    
+
     return font_config, font_image
 
+def detect_and_read_psf(file_path):
+    """
+    Helper function to detect the PSF version and read the corresponding PSF font data.
+    """
+    with open(file_path, 'rb') as f:
+        magic = f.read(4)
+
+    if magic[:2] == PSF1_MAGIC:
+        return read_psf1(file_path)
+    elif magic == PSF2_MAGIC:
+        return read_psf2(file_path)
+    else:
+        raise ValueError(f"Not a valid PSF file: {file_path}")
+
+def read_psf1(file_path):
+    """
+    Reads a PSF1 font file and returns glyph bitmaps and standardized metadata.
+    """
+    with open(file_path, 'rb') as f:
+        magic, mode, charsize = struct.unpack('2sBB', f.read(4))
+
+        if magic != PSF1_MAGIC:
+            raise ValueError(f"Not a valid PSF1 file: {file_path}")
+
+        num_glyphs = 512 if mode & PSF1_MODE512 else 256
+        glyphs = [f.read(charsize) for _ in range(num_glyphs)]
+
+        return {
+            'glyphs': glyphs,
+            'num_glyphs': num_glyphs,
+            'height': charsize,
+            'width': 8,  # PSF1 glyphs have a fixed width of 8 pixels
+            'variant': 'PSF1'
+        }
+
+def read_psf2(file_path):
+    """
+    Reads a PSF2 font file and returns glyph bitmaps and standardized metadata.
+    """
+    with open(file_path, 'rb') as f:
+        header = f.read(32)
+        magic, version, header_size, flags, num_glyphs, glyph_size, height, width = struct.unpack('Iiiiiiii', header[:32])
+
+        if magic != 0x864ab572:
+            raise ValueError(f"Not a valid PSF2 file: {file_path}")
+
+        glyphs = [f.read(glyph_size) for _ in range(num_glyphs)]
+        unicode_table = extract_unicode_table(f) if flags & 0x01 else {}
+
+        return {
+            'glyphs': glyphs,
+            'num_glyphs': num_glyphs,
+            'glyph_size': glyph_size,
+            'height': height,
+            'width': width,
+            'unicode_table': unicode_table,
+            'variant': 'PSF2'
+        }
+
+def extract_unicode_table(file_obj):
+    """
+    Extracts the Unicode table from a PSF2 file if present.
+    """
+    unicode_table = {}
+    while True:
+        byte = file_obj.read(1)
+        if not byte or byte == b'\xFF':
+            break
+        glyph_index = struct.unpack('B', byte)[0]
+        unicodes = []
+
+        while True:
+            codepoint_data = file_obj.read(2)
+            if len(codepoint_data) < 2:
+                break
+            codepoint = struct.unpack('H', codepoint_data)[0]
+            if codepoint == 0xFFFF:
+                break
+            unicodes.append(codepoint)
+
+        unicode_table[glyph_index] = unicodes
+
+    return unicode_table
+
+def generate_psf_font_image(psf_data, font_config):
+    """
+    Generates a master image from PSF glyph images arranged in a grid.
+    """
+    glyph_images, max_width, max_height = render_psf_glyphs(psf_data, font_config)
+    num_glyphs = len(glyph_images)
+    chars_per_row = font_config['chars_per_row']
+    bg_color = parse_rgba_color(font_config['bg_color'])
+    rows = (num_glyphs + chars_per_row - 1) // chars_per_row
+
+    font_image = Image.new('RGBA', (chars_per_row * max_width, rows * max_height), bg_color)
+
+    for i, glyph_img in enumerate(glyph_images):
+        x = (i % chars_per_row) * max_width
+        y = (i // chars_per_row) * max_height
+        font_image.paste(glyph_img, (x, y))
+
+    return font_image
+
 def render_psf_glyphs(psf_data, font_config):
-    """Renders each glyph from PSF font data as images, returning the images and dimensions."""
+    """
+    Renders each glyph from PSF font data as images, returning the images and dimensions.
+    """
     glyph_images = []
     max_width, max_height = psf_data['width'], psf_data['height']
     
-    # Retrieve foreground and background colors directly from font_config
-    fg_color = parse_rgba_color(font_config['fg_color'])  # Expect fg_color to be provided in config
-    bg_color = parse_rgba_color(font_config['bg_color'])  # Expect bg_color to be provided in config
+    fg_color = parse_rgba_color(font_config['fg_color'])
+    bg_color = parse_rgba_color(font_config['bg_color'])
 
     ascii_start = font_config['ascii_start']
     ascii_end = font_config['ascii_end']
@@ -500,89 +570,25 @@ def render_psf_glyphs(psf_data, font_config):
                         glyph_img.putpixel((pixel_x, y), fg_color)
         
         glyph_images.append(glyph_img)
-    
+
     return glyph_images, max_width, max_height
 
-def generate_psf_font_image(psf_data, font_config):
-    """Generate a master image from PSF glyph images arranged in a grid."""
-    glyph_images, max_width, max_height = render_psf_glyphs(psf_data, font_config)
-    num_glyphs = len(glyph_images)
-    chars_per_row = font_config['chars_per_row']
-    bg_color = parse_rgba_color(font_config['bg_color'])
-    rows = (num_glyphs + chars_per_row - 1) // chars_per_row
-    font_image = Image.new('RGBA', (chars_per_row * max_width, rows * max_height), bg_color)
-
-    for i, glyph_img in enumerate(glyph_images):
-        x = (i % chars_per_row) * max_width
-        y = (i // chars_per_row) * max_height
-        font_image.paste(glyph_img, (x, y))
-    
-    return font_image
-
-def read_psf1(file_path):
-    """Reads a PSF1 font file and returns glyph bitmaps and standardized metadata."""
-    with open(file_path, 'rb') as f:
-        magic, mode, charsize = struct.unpack('2sBB', f.read(4))
-        if magic != PSF1_MAGIC:
-            raise ValueError(f"Not a valid PSF1 file: {file_path}")
-        
-        num_glyphs = 512 if mode & PSF1_MODE512 else 256
-        glyphs = [f.read(charsize) for _ in range(num_glyphs)]
-        
-        return {
-            'glyphs': glyphs,
-            'num_glyphs': num_glyphs,
-            'height': charsize,
-            'width': 8
-        }
-
-def read_psf2(file_path):
-    """Reads a PSF2 font file and returns glyph bitmaps and standardized metadata."""
-    with open(file_path, 'rb') as f:
-        header = f.read(32)
-        magic, version, header_size, flags, num_glyphs, glyph_size, height, width = struct.unpack('Iiiiiiii', header[:32])
-        
-        if magic != 0x864ab572:
-            raise ValueError(f"Not a valid PSF2 file: {file_path}")
-        
-        glyphs = [f.read(glyph_size) for _ in range(num_glyphs)]
-        unicode_table = extract_unicode_table(f) if flags & 0x01 else {}
-
-        return {
-            'glyphs': glyphs,
-            'num_glyphs': num_glyphs,
-            'glyph_size': glyph_size,
-            'height': height,
-            'width': width,
-            'unicode_table': unicode_table
-        }
-
-def extract_unicode_table(file_obj):
-    """Extracts the Unicode table from a PSF2 file if present."""
-    unicode_table = {}
-    while True:
-        byte = file_obj.read(1)
-        if not byte or byte == b'\xFF':
-            break
-        glyph_index = struct.unpack('B', byte)[0]
-        unicodes = []
-        while True:
-            codepoint_data = file_obj.read(2)
-            if len(codepoint_data) < 2:
-                break
-            codepoint = struct.unpack('H', codepoint_data)[0]
-            if codepoint == 0xFFFF:
-                break
-            unicodes.append(codepoint)
-        unicode_table[glyph_index] = unicodes
-    return unicode_table
-
 # =============================================================================
-# PNG Font Functions
+# Open PNG Font
 # =============================================================================
 
 def open_png_image(file_path, font_config):
+    """
+    Opens a PNG image as a font and returns the rendered image.
+    """
     font_image = Image.open(file_path)
+
+    # Update font configuration based on the PNG image size
+    font_config['font_width'] = font_image.width // font_config['chars_per_row']
+    font_config['font_height'] = font_image.height // (
+        (font_config['ascii_end'] - font_config['ascii_start'] + 1) // font_config['chars_per_row']
+    )
+
     return font_config, font_image
 
 # =============================================================================

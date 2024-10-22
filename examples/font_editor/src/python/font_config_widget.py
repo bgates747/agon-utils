@@ -152,11 +152,6 @@ class FontConfigWidget(tk.Frame, ABC):
         print(f"Redrawing font image for {self.id} ({self.label_text})")
         self.parent.render_font()
 
-    def default_resample_font_handler(self, event):
-        """Default handler for resampling the font image."""
-        print(f"Resampling font image for {self.id} ({self.label_text})")
-        self.parent.resample_font()
-
 class FontConfigComboBox(FontConfigWidget):
     """A widget for displaying and selecting from a dropdown list of configuration values."""
 
