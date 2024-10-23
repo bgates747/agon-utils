@@ -247,7 +247,7 @@ class FontConfigColorPicker(FontConfigWidget):
 
         # Set 'on_change_widget' to the color button
         self.on_change_widget = self.color_button
-        self.on_change_event = "<<ColorChanged>>"  # Custom event identifier
+        self.on_change_event = "<<ColorChanged>>"
 
         # Bind the specific event handlers
         if self.on_change_widget and self.on_change_event:
@@ -287,14 +287,17 @@ class FontConfigColorPicker(FontConfigWidget):
             parent=self, 
             palette_name=palette_name
         )
-        
+        print(f"Selected color: {rgb_color}, {hex_color}")
+
         if rgb_color:
             new_color_value = (int(rgb_color[0]), int(rgb_color[1]), int(rgb_color[2]), self.color_value[3])
+            print(f"New color value: {new_color_value}")
 
             if new_color_value != initial_color:
-                # Update the color value and display
+                # Update the internal value and display with the new color
+                self._value = ','.join(map(str, new_color_value))  # Set internal value as string
                 self.color_value = new_color_value
-                self.set_display_value(self.value)  # Trigger display update
+                self.set_display_value(self._value)  # Update the display
 
                 # Trigger on_change event if color has changed
                 self.on_change_widget.event_generate(self.on_change_event)

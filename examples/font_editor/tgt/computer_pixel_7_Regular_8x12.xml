@@ -15,7 +15,7 @@
   <setting name="scale_width" value="0"/>
   <setting name="scale_height" value="0"/>
   <setting name="raster_type" value="threshold"/>
-  <setting name="threshold" value="128"/>
+  <setting name="threshold" value="127"/>
   <setting name="palette" value="Agon64"/>
   <setting name="fg_color" value="255,255,255,255"/>
   <setting name="bg_color" value="0,0,0,255"/>

@@ -2,7 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 import math
 import struct
 import os
-from config_manager import load_font_metadata_from_xml
+from config_manager import load_font_metadata_from_xml, dict_to_text
 
 # =============================================================================
 # Master Font Functions
@@ -20,14 +20,13 @@ def read_font(file_path, font_config_input):
 
     # Load the appropriate font object
     if file_extension in ['.ttf', '.otf']:  # TrueType or OpenType font
-        font = ImageFont.truetype(file_path, font_config_input['point_size'])
-        font_config, font_image = generate_font_image(font, font_config_input)
+        font_config, font_image = read_ttf_font(file_path, font_config_input)
     elif file_extension == '.psf':
         font_config, font_image = read_psf_font(file_path, font_config_input)
     elif file_extension == '.png':
-        font_config, font_image = open_png_image(file_path, font_config_input)
+        font_config, font_image = read_png_font(file_path, font_config_input)
     elif file_extension == '.font':
-        font_config, font_image = open_font_file(file_path, font_config_input)
+        font_config, font_image = read_agon_font(file_path, font_config_input)
     elif file_extension == '.xml':
         font_config = load_font_metadata_from_xml(file_path)
         file_path = font_config.get('original_font_path', '')
@@ -175,7 +174,7 @@ def create_font_image(char_images, font_config):
     char_width = font_config['font_width']
     char_height = font_config['font_height']
     chars_per_row = font_config['chars_per_row']
-    
+
     # Create an empty image to hold the font grid
     font_image = create_blank_font_image(font_config)
     
@@ -269,20 +268,10 @@ def make_font(font_config, src_image, tgt_font_filepath):
 # =============================================================================
 # FreeTypeFont Functions
 # =============================================================================
-def generate_font_image(font, font_config_input):
-    char_images, max_width, max_height = render_characters(font, font_config_input)
-    
-    # Check the raster_type directly
-    raster_type = font_config_input['raster_type']
-    if raster_type == 'thresholded':
-        threshold = font_config_input['threshold']
-        char_images = [apply_threshold(img, threshold) for img in char_images.values()]
-    elif raster_type == 'quantized':
-        char_images = [quantize_image(img) for img in char_images.values()]
-    elif raster_type == 'palette':
-        char_images = list(char_images.values())
-    else:
-        char_images = list(char_images.values())
+def read_ttf_font(file_path, font_config_input):
+    font = ImageFont.truetype(file_path, font_config_input['point_size'])
+    char_images, max_width, max_height = render_ttf_chars(font, font_config_input)
+    char_images = list(char_images.values())
 
     # Update the font configuration
     font_config = font_config_input.copy()
@@ -296,7 +285,7 @@ def generate_font_image(font, font_config_input):
     
     return font_config, font_image
 
-def render_characters(font, font_config_input):
+def render_ttf_chars(font, font_config_input):
     """
     Render each character within the specified ASCII range and return images cropped to max dimensions.
     """
@@ -378,7 +367,7 @@ def read_psf_font(file_path, font_config_input):
     font_config = font_config_input.copy()
     font_config.update({
         'font_name': font_name,
-        'font_variant': psf_data['variant'],
+        # 'font_variant': psf_data['variant'],
         'font_width': psf_data['width'],
         'font_height': psf_data['height'],
         'num_glyphs': psf_data['num_glyphs'],
@@ -386,8 +375,21 @@ def read_psf_font(file_path, font_config_input):
         'ascii_end': ascii_end
     })
 
-    # Generate the master font image from the glyph images
-    font_image = generate_psf_font_image(psf_data, font_config)
+    char_images, max_width, max_height = render_psf_glyphs(psf_data, font_config)
+    num_glyphs = len(char_images)
+    chars_per_row = font_config['chars_per_row']
+    bg_color = parse_rgba_color(font_config['bg_color'])
+    rows = (num_glyphs + chars_per_row - 1) // chars_per_row
+
+    font_image = Image.new('RGBA', (chars_per_row * max_width, rows * max_height), bg_color)
+
+    for i, glyph_img in enumerate(char_images):
+        x = (i % chars_per_row) * max_width
+        y = (i // chars_per_row) * max_height
+        font_image.paste(glyph_img, (x, y))
+
+    # Generate the master image
+    font_image = create_font_image(char_images, font_config)
 
     return font_config, font_image
 
@@ -475,32 +477,14 @@ def extract_unicode_table(file_obj):
 
     return unicode_table
 
-def generate_psf_font_image(psf_data, font_config):
-    """
-    Generates a master image from PSF glyph images arranged in a grid.
-    """
-    glyph_images, max_width, max_height = render_psf_glyphs(psf_data, font_config)
-    num_glyphs = len(glyph_images)
-    chars_per_row = font_config['chars_per_row']
-    bg_color = parse_rgba_color(font_config['bg_color'])
-    rows = (num_glyphs + chars_per_row - 1) // chars_per_row
-
-    font_image = Image.new('RGBA', (chars_per_row * max_width, rows * max_height), bg_color)
-
-    for i, glyph_img in enumerate(glyph_images):
-        x = (i % chars_per_row) * max_width
-        y = (i // chars_per_row) * max_height
-        font_image.paste(glyph_img, (x, y))
-
-    return font_image
-
 def render_psf_glyphs(psf_data, font_config):
     """
-    Renders each glyph from PSF font data as images, returning the images and dimensions.
+    Renders each glyph from PSF font data as RGBA images, using specified foreground and background colors.
     """
-    glyph_images = []
+    char_images = []
     max_width, max_height = psf_data['width'], psf_data['height']
     
+    # Get foreground and background colors from the config
     fg_color = parse_rgba_color(font_config['fg_color'])
     bg_color = parse_rgba_color(font_config['bg_color'])
 
@@ -513,7 +497,7 @@ def render_psf_glyphs(psf_data, font_config):
         # Create a new RGBA image with the specified background color
         glyph_img = Image.new('RGBA', (max_width, max_height), bg_color)
         bytes_per_row = (max_width + 7) // 8
-        
+
         for y in range(max_height):
             row_data = glyph_data[y * bytes_per_row:(y + 1) * bytes_per_row]
             for byte_index, byte in enumerate(row_data):
@@ -521,16 +505,16 @@ def render_psf_glyphs(psf_data, font_config):
                     pixel_x = byte_index * 8 + bit
                     if pixel_x < max_width and (byte & (0x80 >> bit)):
                         glyph_img.putpixel((pixel_x, y), fg_color)
-        
-        glyph_images.append(glyph_img)
 
-    return glyph_images, max_width, max_height
+        char_images.append(glyph_img)
+
+    return char_images, max_width, max_height
 
 # =============================================================================
 # Open PNG Font
 # =============================================================================
 
-def open_png_image(file_path, font_config):
+def read_png_font(file_path, font_config):
     """
     Opens a PNG image as a font and returns the rendered image.
     """
@@ -548,7 +532,7 @@ def open_png_image(file_path, font_config):
 # Agon .font File Functions
 # =============================================================================
 
-def open_font_file(file_path, font_config):
+def read_agon_font(file_path, font_config):
     char_images = read_font_file(file_path, font_config)
     font_image = create_font_image(char_images, font_config)
     return font_config, font_image
