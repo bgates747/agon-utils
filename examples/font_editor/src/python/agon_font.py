@@ -2,7 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import struct
 import os
-from config_manager import load_font_metadata_from_xml, dict_to_text
+from config_manager import load_font_metadata_from_xml, save_font_metadata_to_xml, dict_to_text
 
 # =============================================================================
 # Master Font Functions
@@ -26,6 +26,9 @@ def read_font(file_path, font_config_input):
     elif file_extension == '.png':
         font_config, font_image = read_png_font(file_path, font_config_input)
     elif file_extension == '.font':
+        font_config_filepath = file_path + '.xml'
+        if os.path.exists(font_config_filepath):
+            font_config_input = load_font_metadata_from_xml(font_config_filepath)
         font_config, font_image = read_agon_font(file_path, font_config_input)
     elif file_extension == '.xml':
         font_config = load_font_metadata_from_xml(file_path)
@@ -688,8 +691,23 @@ if __name__ == '__main__':
     font_image = create_font_image(char_images, font_config)
     font_config, font_image = resample_and_scale_image(font_config, font_image)
 
-    # Write the .font file
+    # Update font_config with the modified dimensions
+    font_config.update({
+        'font_width': font_config['font_width_mod'],
+        'font_height': font_config['font_height_mod'],
+        'offset_left': 0,
+        'offset_top': 0,
+        'offset_width': 0,
+        'offset_height': 0,
+        'scale_width': 0,
+        'scale_height': 0,
+        'raster_type': 'threshold',
+        'fg_color': '255, 255, 255, 255',
+        'bg_color': '0, 0, 0, 255',
+    })
+    # Write the .font file and the corresponding XML metadata file
     write_agon_font(font_config, font_image, tgt_font_filepath)
+    save_font_metadata_to_xml(font_config, tgt_font_config_filepath)
 
     # Read the .font file back to verify
     font_config, font_image = read_agon_font(tgt_font_filepath, font_config)
@@ -698,5 +716,5 @@ if __name__ == '__main__':
     font_config_text = dict_to_text(font_config)
     print(font_config_text)
 
-    # Generate a hex dump of the written .font file
-    bin_to_text(tgt_font_filepath, hexdump=True)
+    # # Generate a hex dump of the written .font file
+    # bin_to_text(tgt_font_filepath, hexdump=True)

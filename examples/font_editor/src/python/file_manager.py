@@ -2,6 +2,7 @@
 import os
 from tkinter import filedialog
 from config_manager import get_app_config_value, set_app_config_value, load_font_metadata_from_xml, save_font_metadata_to_xml
+from agon_font import write_agon_font
 
 # ==========================================================================
 # File Menu
@@ -85,13 +86,41 @@ def save_file(app_reference):
     if not file_path:
         return
     if filetype == "xml":
-        save_font_xml(app_reference, font_config, file_path, filetype)
+        save_font_xml(font_config, file_path)
+    elif filetype == "font":
+        save_agon_font(app_reference, font_config, file_path)
+    else:
+        raise NotImplementedError(f"Saving {filetype} files is not supported.")
 
-def save_font_xml(app_reference, font_config, file_path, filetype):
-    """Save the font configuration to an XML file."""
-    save_font_metadata_to_xml(font_config, file_path)
     set_app_config_value("most_recent_save_directory", os.path.dirname(file_path))
     set_app_config_value("most_recent_file", file_path)
+
+def save_font_xml(font_config, file_path):
+    """Save the font configuration to an XML file."""
+    save_font_metadata_to_xml(font_config, file_path)
+
+def save_agon_font(app_reference, font_config, file_path):
+    """Save the font configuration to an Agon font file."""
+    font_image = app_reference.image_display.working_image
+    config_filepath = f'{file_path}.xml'
+    # Update font_config with the modified dimensions
+    font_config.update({
+        'original_font_path': file_path,
+        'font_width': font_config['font_width_mod'],
+        'font_height': font_config['font_height_mod'],
+        'offset_left': 0,
+        'offset_top': 0,
+        'offset_width': 0,
+        'offset_height': 0,
+        'scale_width': 0,
+        'scale_height': 0,
+        'raster_type': 'threshold',
+        'fg_color': '255, 255, 255, 255',
+        'bg_color': '0, 0, 0, 255',
+    })
+    # Write the .font file and the corresponding XML metadata file
+    write_agon_font(font_config, font_image, file_path)
+    save_font_metadata_to_xml(font_config, config_filepath)
 
 def get_save_filename(app_reference):
     """Open a save file dialog with a default filename and automatically append the correct extension."""
