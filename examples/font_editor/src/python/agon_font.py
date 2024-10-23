@@ -1,5 +1,5 @@
 from PIL import Image, ImageDraw, ImageFont
-import math
+import numpy as np
 import struct
 import os
 from config_manager import load_font_metadata_from_xml, dict_to_text
@@ -93,27 +93,36 @@ def resample_and_scale_image(font_config, original_image):
         # Paste the resampled character image into the final font image
         font_image.paste(char_img, (tgt_x, tgt_y))
 
-    print(f"Resampled to {new_image_width}x{new_image_height} raster type '{font_config['raster_type']}'")
     if font_config['raster_type'] == 'threshold':
         threshold = font_config['threshold']
-        print(f"Applying threshold of {threshold} to the font image.")
         font_image = font_image.convert("L")
         font_image = apply_threshold(font_image, threshold)
         font_image = font_image.convert("RGBA")
 
     return font_config, font_image
 
-def pad_to_byte(value):
-    """Rounds up the given value to the nearest multiple of 8."""
-    return (value + 7) // 8 * 8
+def get_chars_from_image(font_config, font_image):
+    """
+    Extracts individual character images from a font image based on the font configuration.
+    """
+    # Extract relevant font configuration parameters
+    font_width_mod = font_config['font_width_mod']
+    font_height_mod = font_config['font_height_mod']
+    chars_per_row = font_config['chars_per_row']
+    ascii_start = font_config['ascii_start']
+    ascii_end = font_config['ascii_end']
 
-def byteify(pixels):
-    """ Converts a list of 8 pixels (0 or 255) to a single byte. """
-    byte = 0
-    for i in range(len(pixels)):
-        if pixels[i] == 255:  # White pixel
-            byte |= (1 << (7 - i))  # Set the corresponding bit for the white pixel
-    return byte
+    # Crop the character images from the original image
+    char_images = {}
+    for ascii_code in range(ascii_start, ascii_end + 1):
+        char_index = ascii_code - ascii_start
+        src_x = (char_index % chars_per_row) * font_width_mod
+        src_y = (char_index // chars_per_row) * font_height_mod
+        char_crop_box = (src_x, src_y, src_x + font_width_mod, src_y + font_height_mod)
+        char_image = font_image.crop(char_crop_box)
+        char_images[ascii_code] = char_image
+
+    return char_images
 
 def parse_rgba_color(color_string):
     """
@@ -162,116 +171,50 @@ def create_blank_font_image(font_config):
     
     return Image.new('RGBA', (image_width, image_height), bg_color)
 
-
 def create_font_image(char_images, font_config):
     """
-    Creates a PNG image from the list of character images and arranges them in a grid.
+    Creates a PNG image from the dictionary of character images and arranges them in a grid.
     
-    :param char_images: List of PIL Images representing each character
+    :param char_images: Dictionary of PIL Images representing each character, with ASCII codes as keys
     :param font_config: Dictionary with font configuration
     :return: A PIL Image object with all characters arranged in a grid
     """
     char_width = font_config['font_width']
     char_height = font_config['font_height']
     chars_per_row = font_config['chars_per_row']
+    ascii_start = font_config['ascii_start']
+    ascii_end = font_config['ascii_end']
 
     # Create an empty image to hold the font grid
     font_image = create_blank_font_image(font_config)
     
     # Paste each character into the final image
-    for i, char_img in enumerate(char_images):
-        x = (i % chars_per_row) * char_width
-        y = (i // chars_per_row) * char_height
-        font_image.paste(char_img, (x, y))
+    for ascii_code in range(ascii_start, ascii_end + 1):
+        if ascii_code in char_images:
+            char_img = char_images[ascii_code]
+            index = ascii_code - ascii_start
+            x = (index % chars_per_row) * char_width
+            y = (index // chars_per_row) * char_height
+            font_image.paste(char_img, (x, y))
     
     return font_image
 
 # =============================================================================
-# png to font functions
-# =============================================================================
-
-def image_to_bitstream(padded_img):
-    """ Converts the cropped and padded image into a bitstream (bytearray). """
-    bitstream = bytearray()
-    width, height = padded_img.size
-    
-    # Convert image row by row into the bitstream
-    for row in range(height):
-        row_pixels = [padded_img.getpixel((col, row)) for col in range(width)]
-        
-        # Convert pixels to bytes (8 pixels per byte)
-        for i in range(0, len(row_pixels), 8):
-            byte = byteify(row_pixels[i:i+8])
-            bitstream.append(byte)
-    
-    return bitstream
-
-def precomputations(font_config, src_img):
-    font_width = font_config['font_width']
-    font_height = font_config['font_height']
-    offset_width = font_config['offset_width']
-    offset_height = font_config['offset_height']
-    ascii_range = (font_config['ascii_start'], font_config['ascii_end'])
-    chars_per_row = font_config['chars_per_row']
-    bg_color = parse_rgba_color(font_config['bg_color'])
-    num_rows = math.ceil(256 / chars_per_row)
-    
-    font_width_mod = font_width + offset_width
-    font_height_mod = font_height + offset_height
-    font_width_padded = math.ceil(font_width_mod / 8) * 8
-    sample_width = font_width if offset_width >= 0 else font_width_mod
-    sample_height = font_height if offset_height >= 0 else font_height
-
-    # Create a new source image the size of a full 256 character grid
-    src_img_new = Image.new('RGBA', (font_width * chars_per_row, font_height * num_rows), bg_color)
-
-    # Paste the cropped image into the correct position in the new source image
-    src_img_new.paste(src_img, (0, (ascii_range[0] // chars_per_row) * font_height))
-
-    # Return necessary values
-    return font_width_padded, font_height_mod, sample_width, sample_height, src_img_new
-
-def sample_char_image(ascii_code, font_config, src_img_new):
-    font_width = font_config['font_width']
-    font_height = font_config['font_height']
-    sample_width = font_config['font_width']
-    sample_height = font_config['font_height']
-
-    # Calculate the character's x and y coordinates in the grid
-    chars_per_row = font_config['chars_per_row']
-    tgt_x = (ascii_code % chars_per_row) * font_width
-    tgt_y = (ascii_code // chars_per_row) * font_height
-
-    # Calculate the cropping box for the character
-    crop_box = (tgt_x, tgt_y, tgt_x + sample_width, tgt_y + sample_height)
-
-    # Crop and return the character image
-    char_img = src_img_new.crop(crop_box)
-
-    return char_img
-
-def make_font(font_config, src_image, tgt_font_filepath):
-    bg_color = parse_rgba_color(font_config['bg_color'])
-    # Precompute offsets and image
-    font_width_padded, font_height_mod, sample_width, sample_height, src_img_new = precomputations(font_config, src_image)
-
-    font_data = bytearray()
-
-    for ascii_code in range(0, 256):
-        char_img = Image.new('RGBA', (font_width_padded, font_height_mod), bg_color)
-        char_img.paste(sample_char_image(ascii_code, font_config, src_img_new), (font_config['offset_left'], font_config['offset_top']))
-        font_data.extend(image_to_bitstream(char_img))
-
-    with open(tgt_font_filepath, 'wb') as f:
-        f.write(font_data)
-
-# =============================================================================
 # FreeTypeFont Functions
 # =============================================================================
+
 def read_ttf_font(file_path, font_config_input):
+    """
+    Reads a TTF font and generates a dictionary of character images along with the font image.
+    
+    :param file_path: Path to the TTF font file
+    :param font_config_input: Dictionary with initial font configuration
+    :return: Updated font configuration and a PIL image representing the combined character set
+    """
     font = ImageFont.truetype(file_path, font_config_input['point_size'])
+
+    # Render TTF characters and get char_images as a dictionary
     char_images, max_width, max_height = render_ttf_chars(font, font_config_input)
-    char_images = list(char_images.values())
 
     # Update the font configuration
     font_config = font_config_input.copy()
@@ -280,7 +223,7 @@ def read_ttf_font(file_path, font_config_input):
         'font_height': max_height,
     })
 
-    # Generate the master image
+    # Generate the master image from the dictionary of character images
     font_image = create_font_image(char_images, font_config)
     
     return font_config, font_image
@@ -348,6 +291,10 @@ PSF1_MODE512 = 1
 def read_psf_font(file_path, font_config_input):
     """
     Detects the PSF version, reads the PSF font file, and returns standardized font config and font image.
+    
+    :param file_path: Path to the PSF font file
+    :param font_config_input: Dictionary with initial font configuration
+    :return: Updated font configuration and a PIL image representing the combined character set
     """
     psf_data = detect_and_read_psf(file_path)
     font_name = os.path.splitext(os.path.basename(file_path))[0]
@@ -367,7 +314,6 @@ def read_psf_font(file_path, font_config_input):
     font_config = font_config_input.copy()
     font_config.update({
         'font_name': font_name,
-        # 'font_variant': psf_data['variant'],
         'font_width': psf_data['width'],
         'font_height': psf_data['height'],
         'num_glyphs': psf_data['num_glyphs'],
@@ -375,23 +321,52 @@ def read_psf_font(file_path, font_config_input):
         'ascii_end': ascii_end
     })
 
+    # Render PSF glyphs as a dictionary of character images
     char_images, max_width, max_height = render_psf_glyphs(psf_data, font_config)
-    num_glyphs = len(char_images)
-    chars_per_row = font_config['chars_per_row']
-    bg_color = parse_rgba_color(font_config['bg_color'])
-    rows = (num_glyphs + chars_per_row - 1) // chars_per_row
 
-    font_image = Image.new('RGBA', (chars_per_row * max_width, rows * max_height), bg_color)
-
-    for i, glyph_img in enumerate(char_images):
-        x = (i % chars_per_row) * max_width
-        y = (i // chars_per_row) * max_height
-        font_image.paste(glyph_img, (x, y))
-
-    # Generate the master image
+    # Generate the master image from the dictionary of character images
     font_image = create_font_image(char_images, font_config)
 
     return font_config, font_image
+
+def render_psf_glyphs(psf_data, font_config):
+    """
+    Renders each glyph from PSF font data as RGBA images, using specified foreground and background colors.
+    Returns a dictionary of character images with ASCII codes as keys.
+    
+    :param psf_data: Dictionary containing PSF font data
+    :param font_config: Dictionary with font configuration
+    :return: Dictionary of character images, max width, and max height
+    """
+    char_images = {}
+    max_width, max_height = psf_data['width'], psf_data['height']
+    
+    # Get foreground and background colors from the config
+    fg_color = parse_rgba_color(font_config['fg_color'])
+    bg_color = parse_rgba_color(font_config['bg_color'])
+
+    ascii_start = font_config['ascii_start']
+    ascii_end = font_config['ascii_end']
+
+    for char_index in range(ascii_start, ascii_end + 1):
+        glyph_data = psf_data['glyphs'][char_index]
+
+        # Create a new RGBA image with the specified background color
+        glyph_img = Image.new('RGBA', (max_width, max_height), bg_color)
+        bytes_per_row = (max_width + 7) // 8
+
+        for y in range(max_height):
+            row_data = glyph_data[y * bytes_per_row:(y + 1) * bytes_per_row]
+            for byte_index, byte in enumerate(row_data):
+                for bit in range(8):
+                    pixel_x = byte_index * 8 + bit
+                    if pixel_x < max_width and (byte & (0x80 >> bit)):
+                        glyph_img.putpixel((pixel_x, y), fg_color)
+
+        # Store the image in the dictionary with the ASCII code as the key
+        char_images[char_index] = glyph_img
+
+    return char_images, max_width, max_height
 
 def detect_and_read_psf(file_path):
     """
@@ -477,39 +452,6 @@ def extract_unicode_table(file_obj):
 
     return unicode_table
 
-def render_psf_glyphs(psf_data, font_config):
-    """
-    Renders each glyph from PSF font data as RGBA images, using specified foreground and background colors.
-    """
-    char_images = []
-    max_width, max_height = psf_data['width'], psf_data['height']
-    
-    # Get foreground and background colors from the config
-    fg_color = parse_rgba_color(font_config['fg_color'])
-    bg_color = parse_rgba_color(font_config['bg_color'])
-
-    ascii_start = font_config['ascii_start']
-    ascii_end = font_config['ascii_end']
-
-    for char_index in range(ascii_start, ascii_end + 1):
-        glyph_data = psf_data['glyphs'][char_index]
-
-        # Create a new RGBA image with the specified background color
-        glyph_img = Image.new('RGBA', (max_width, max_height), bg_color)
-        bytes_per_row = (max_width + 7) // 8
-
-        for y in range(max_height):
-            row_data = glyph_data[y * bytes_per_row:(y + 1) * bytes_per_row]
-            for byte_index, byte in enumerate(row_data):
-                for bit in range(8):
-                    pixel_x = byte_index * 8 + bit
-                    if pixel_x < max_width and (byte & (0x80 >> bit)):
-                        glyph_img.putpixel((pixel_x, y), fg_color)
-
-        char_images.append(glyph_img)
-
-    return char_images, max_width, max_height
-
 # =============================================================================
 # Open PNG Font
 # =============================================================================
@@ -530,48 +472,45 @@ def read_png_font(file_path, font_config):
 
 # =============================================================================
 # Agon .font File Functions
-# =============================================================================
-
-def read_agon_font(file_path, font_config):
-    char_images = read_font_file(file_path, font_config)
-    font_image = create_font_image(char_images, font_config)
-    return font_config, font_image
-
-def read_font_file(font_filepath, font_config):
+# -----------------------------------------------------------------------------
+# Read .font File Functions
+# -----------------------------------------------------------------------------
+def read_agon_font(font_filepath, font_config):
     """
-    Reads a .font file and returns a list of character images.
+    Reads a .font file and returns a dictionary of character images.
     Each byte in the file represents 8 horizontal pixels.
     
     :param font_filepath: Path to the .font file
     :param font_config: Dictionary with font configuration
-    :return: A list of PIL images representing each character
+    :return: Updated font_config and a PIL image representing the combined character set
     """
-    char_width = font_config['font_width']
-    char_height = font_config['font_height']
-    ascii_range = (font_config['ascii_start'], font_config['ascii_end'])
+    char_width = font_config['font_width_mod']
+    char_height = font_config['font_height_mod']
+    ascii_start = font_config['ascii_start']
+    ascii_end = font_config['ascii_end']
+    num_chars = ascii_end - ascii_start + 1
     
     # Round the true width up to the nearest multiple of 8 (padded width)
     padded_width = pad_to_byte(char_width)
     bytes_per_row = padded_width // 8  # Number of bytes per row of the character
     bytes_per_character = bytes_per_row * char_height
 
-    # Calculate the start and end character indices in the file
-    start_char = ascii_range[0]
-    num_chars = ascii_range[1] - start_char + 1  # Number of characters to read
-
     # Calculate the starting byte offset for the specified ASCII range
-    start_offset = start_char * bytes_per_character
+    start_offset = ascii_start * bytes_per_character
 
-    char_images = []
+    char_images = {}
 
     # Read the font data starting from the calculated offset
     with open(font_filepath, 'rb') as f:
         f.seek(start_offset)  # Move to the starting position in the file
         font_data = f.read(num_chars * bytes_per_character)
 
-    for i in range(num_chars):
+    # Iterate over the specified ASCII range
+    for ascii_code in range(ascii_start, ascii_end + 1):
+        i = ascii_code - ascii_start  # Adjust index based on ASCII start
+        
         # Create an image for each character with the padded width
-        char_img = Image.new('RGBA', (padded_width, char_height), color=(0,0,0,0))
+        char_img = Image.new('L', (padded_width, char_height), color=0)
         pixels = char_img.load()
         
         # Extract character data from the font data
@@ -586,6 +525,178 @@ def read_font_file(font_filepath, font_config):
                         if byte & (1 << (7 - bit)):
                             pixels[x, y] = 255  # Set pixel to white (255) if the bit is set
 
-        char_images.append(char_img)
+        # Store the character image in the dictionary with ASCII code as the key
+        char_images[ascii_code] = char_img
 
-    return char_images
+    # char_images[ord('A')].show()
+
+    font_config_temp = font_config.copy()
+    font_config_temp.update({
+        'font_width': char_width,
+        'font_height': char_height,
+    })
+    font_image = create_font_image(char_images, font_config_temp)
+    return font_config, font_image
+
+# -----------------------------------------------------------------------------
+# Write .font File Functions
+# -----------------------------------------------------------------------------
+
+def write_agon_font(font_config, font_image, tgt_font_filepath):
+    font_image.show()
+    """
+    Writes a .font file based on the provided font image and configuration.
+    
+    :param font_config: Dictionary with font configuration
+    :param font_image: PIL image containing all character images
+    :param tgt_font_filepath: Target path for the output .font file
+    """
+    # Extract font dimensions and padding
+    font_width_mod = font_config['font_width_mod']
+    font_height_mod = font_config['font_height_mod']
+    font_width_padded = pad_to_byte(font_width_mod)
+    ascii_start = font_config['ascii_start']
+    ascii_end = font_config['ascii_end']
+
+    # Extract individual character images from the font image
+    char_images = get_chars_from_image(font_config, font_image)
+
+    # Apply threshold to each character image within the ASCII range
+    threshold = font_config['threshold']
+
+    for ascii_code in range(ascii_start, ascii_end + 1):
+        char_image = char_images.get(ascii_code)
+        if char_image:
+            # Convert the image to grayscale
+            gray_image = char_image.convert('L')
+            
+            # Apply thresholding to the grayscale image
+            thresholded_image = gray_image.point(lambda p: 255 if p > threshold else 0)
+            
+            # Create a new PIL image with the padded width
+            padded_image = Image.new('L', (font_width_padded, font_height_mod), 0)
+
+            # Paste the thresholded image into the padded image
+            padded_image.paste(thresholded_image, (0, 0))
+
+            # Update the processed image in the dictionary
+            char_images[ascii_code] = padded_image
+
+    # Prepare blank data for characters outside the ASCII range
+    blank_image = Image.new('L', (font_width_padded, font_height_mod), 0)
+    blank_data = image_to_bitstream(blank_image)
+
+    # Write the processed font data to a new .font file
+    font_data = bytearray()
+
+    for ascii_code in range(256):
+        if ascii_code < ascii_start or ascii_code > ascii_end:
+            # Use pre-generated blank data for characters outside the range
+            font_data.extend(blank_data)
+        else:
+            char_data = image_to_bitstream(char_images[ascii_code])
+            font_data.extend(char_data)
+
+    with open(tgt_font_filepath, 'wb') as f:
+        f.write(font_data)
+
+def image_to_bitstream(padded_img):
+    """ Converts the cropped and padded image into a bitstream (bytearray). """
+    bitstream = bytearray()
+    width, height = padded_img.size
+
+    # Convert image row by row into the bitstream
+    for row in range(height):
+        row_pixels = [padded_img.getpixel((col, row)) for col in range(width)]
+
+        # Convert pixels to bytes (8 pixels per byte)
+        for i in range(0, len(row_pixels), 8):
+            byte = byteify(row_pixels[i:i+8])
+            bitstream.append(byte)
+
+    return bitstream
+
+def byteify(pixels):
+    """ Converts a list of 8 pixels (0 or 255) to a single byte. """
+    byte = 0
+    for i, pixel in enumerate(pixels):
+        if pixel == 255:  # White pixel
+            byte |= (1 << (7 - i))  # Set the corresponding bit for the white pixel
+    return byte
+
+def pad_to_byte(value):
+    """Rounds up the given value to the nearest multiple of 8."""
+    return (value + 7) // 8 * 8
+
+def bin_to_text(filepath, hexdump=False):
+    """
+    Converts the binary data of a file to a .txt file.
+    Each row in the text file will contain 16 bytes in hex format, separated by spaces.
+    If hexdump is True, ASCII representation of the binary data is also added to the right side.
+
+    :param filepath: Path to the binary file
+    :param hexdump: Boolean indicating whether to include ASCII representation (default: False)
+    """
+    # Append .txt to the original filename to create the output filepath
+    txt_filepath = f"{filepath}.txt"
+    
+    with open(filepath, 'rb') as f:
+        binary_data = f.read()
+    
+    with open(txt_filepath, 'w') as f:
+        for i in range(0, len(binary_data), 16):
+            # Get 16 bytes from the data
+            row_data = binary_data[i:i + 16]
+            # Convert each byte to 2-digit hex format with leading zeroes
+            hex_row = ' '.join(f'{byte:02X}' for byte in row_data)
+
+            if hexdump:
+                # Create ASCII representation (printable characters or dot)
+                ascii_row = ''.join(chr(byte) if 32 <= byte <= 126 else '.' for byte in row_data)
+                # Add ASCII representation to the right side
+                output_row = f"{hex_row:<48}  |{ascii_row}|"
+            else:
+                output_row = hex_row
+
+            # Write the row to the text file
+            f.write(output_row + '\n')
+
+if __name__ == '__main__':
+    font_source_dir = 'examples/font_editor/tgt'
+    font_filename = 'Arial Black_Regular_12x12.xml'
+    font_filepath = os.path.join(font_source_dir, font_filename)
+    
+    # Load the font configuration from XML
+    font_config = load_font_metadata_from_xml(font_filepath)
+    file_path = font_config.get('original_font_path', '')
+    file_name = os.path.basename(file_path)
+    target_font_file_name = font_filename.replace('.xml', '.font')
+    tgt_font_filepath = os.path.join(font_source_dir, target_font_file_name)
+    tgt_font_config_filepath = f'{tgt_font_filepath}.xml'
+
+    # Read the TTF font and generate char_images as a dictionary
+    font = ImageFont.truetype(file_path, font_config['point_size'])
+    char_images, max_width, max_height = render_ttf_chars(font, font_config)
+
+    # Update the font configuration
+    font_config.update({
+        'font_width': max_width,
+        'font_height': max_height,
+    })
+
+    # Generate the master image from the dictionary of character images
+    font_image = create_font_image(char_images, font_config)
+    font_config, font_image = resample_and_scale_image(font_config, font_image)
+
+    # Write the .font file
+    write_agon_font(font_config, font_image, tgt_font_filepath)
+
+    # Read the .font file back to verify
+    font_config, font_image = read_agon_font(tgt_font_filepath, font_config)
+
+    # Convert the font data to text for inspection
+    font_config_text = dict_to_text(font_config)
+    print(font_config_text)
+
+    # Generate a hex dump of the written .font file
+    bin_to_text(tgt_font_filepath, hexdump=True)

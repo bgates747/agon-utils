@@ -1,25 +1,23 @@
-import os
+def convert_font_to_txt(font_filepath):
+    """
+    Converts the binary data of a .font file to a .txt file.
+    Each row in the text file will contain 16 bytes in hex format, separated by spaces.
 
-# Directory to scan
-base_directory = 'examples/font_editor/src/fonts/net/ttf'
+    :param font_filepath: Path to the .font file
+    """
+    txt_filepath = font_filepath.replace('.font', '.txt')
+    
+    with open(font_filepath, 'rb') as f:
+        font_data = f.read()
+    
+    with open(txt_filepath, 'w') as f:
+        for i in range(0, len(font_data), 16):
+            # Get 16 bytes from the data
+            row_data = font_data[i:i + 16]
+            # Convert each byte to 2-digit hex format with leading zeroes
+            hex_row = ' '.join(f'{byte:02X}' for byte in row_data)
+            # Write the row to the text file
+            f.write(hex_row + '\n')
 
-def remove_metadata_files(base_directory):
-    # Loop through all directories in the base directory
-    for dir_name in os.listdir(base_directory):
-        dir_path = os.path.join(base_directory, dir_name)
-        
-        if os.path.isdir(dir_path):
-            # Loop through files in the directory
-            for file_name in os.listdir(dir_path):
-                # Check if the file ends with '_metadata.txt'
-                if file_name.endswith('_metadata.txt'):
-                    file_path = os.path.join(dir_path, file_name)
-                    
-                    try:
-                        os.remove(file_path)
-                        print(f"Deleted: {file_path}")
-                    except Exception as e:
-                        print(f"Failed to delete {file_path}: {e}")
-
-# Run the function
-remove_metadata_files(base_directory)
+# Example usage
+convert_font_to_txt('examples/font_editor/tgt/Arial Black_Regular_12x12.font')
