@@ -107,7 +107,7 @@
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Point Size</label_text>
         <data_type>int</data_type>
-        <default_value>8</default_value>
+        <default_value>16</default_value>
         <min_value>1</min_value>
         <max_value>+256</max_value>
         <step_value>1</step_value>
@@ -381,7 +381,7 @@
         <data_type>int</data_type>
         <default_value>32</default_value>
         <min_value>0</min_value>
-        <max_value>255</max_value>
+        <max_value>65536</max_value>
         <step_value>16</step_value>
         <description>ASCII start range for the font</description>
         <event_handlers>
@@ -402,7 +402,7 @@
         <data_type>int</data_type>
         <default_value>127</default_value>
         <min_value>0</min_value>
-        <max_value>255</max_value>
+        <max_value>65536</max_value>
         <step_value>16</step_value>
         <description>ASCII end range for the font</description>
         <event_handlers>
