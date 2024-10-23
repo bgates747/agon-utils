@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <settings>
-  <setting name="original_font_path" value="/home/smith/Agon/mystuff/agon-utils/examples/font_editor/tgt/Lat2-Fixed18.psf"/>
+  <setting name="original_font_path" value="/home/smith/Agon/mystuff/agon-utils/examples/font_editor/src/fonts/pi/cfonts/Lat2-Fixed18.psf"/>
   <setting name="font_name" value="Lat2-Fixed18"/>
   <setting name="font_variant" value="PSF1"/>
   <setting name="font_width" value="8"/>

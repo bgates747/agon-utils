@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <settings>
-  <setting name="original_font_path" value="/home/smith/Agon/mystuff/agon-utils/examples/font_editor/tgt/Arial Black.ttf"/>
+  <setting name="original_font_path" value="/home/smith/Agon/mystuff/agon-utils/examples/font_editor/src/fonts/mac/ttf/Arial Black.ttf"/>
   <setting name="font_name" value="Arial Black"/>
   <setting name="font_variant" value="Narrow White Blue"/>
   <setting name="font_width" value="16"/>

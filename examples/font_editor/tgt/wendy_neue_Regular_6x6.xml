@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <settings>
-  <setting name="original_font_path" value="/home/smith/Agon/mystuff/agon-utils/examples/font_editor/tgt/wendy_neue.ttf"/>
+  <setting name="original_font_path" value="/home/smith/Agon/mystuff/agon-utils/examples/font_editor/src/fonts/mac/ttf/wendy_neue/wendy_neue.ttf"/>
   <setting name="font_name" value="wendy_neue"/>
   <setting name="font_variant" value="Regular"/>
   <setting name="font_width" value="6"/>
