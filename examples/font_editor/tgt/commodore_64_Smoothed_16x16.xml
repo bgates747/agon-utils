@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <settings>
-  <setting name="original_font_path" value="/home/smith/Agon/mystuff/agon-utils/examples/font_editor/src/fonts/mac/ttf/commodore/commodore_64.ttf"/>
+  <setting name="original_font_path" value="/home/smith/Agon/mystuff/agon-utils/examples/font_editor/src/fonts/net/ttf/commodore_64/commodore_64.ttf"/>
   <setting name="font_name" value="commodore_64"/>
   <setting name="font_variant" value="Smoothed"/>
   <setting name="font_width" value="8"/>
