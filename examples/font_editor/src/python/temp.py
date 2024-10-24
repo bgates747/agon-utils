@@ -24,7 +24,7 @@ if __name__ == "__main__":
     xml_filepath = 'examples/font_editor/src/python/asm_config.xml'
     save_font_metadata_to_xml(settings, xml_filepath)
 
-    xml_filepath = 'examples/font_editor/src/python/font_settings.xml'
+    xml_filepath = 'examples/font_editor/src/python/asm_config_editor.xml'
     with open(xml_filepath, 'w') as f:
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
         f.write('<settings>\n')

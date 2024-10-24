@@ -3,7 +3,7 @@
 
     <setting name="font_filename">
         <widget_type>FontConfigTextBox</widget_type>
-        <label_text></label_text>
+        <label_text>Font Filename</label_text>
         <data_type>string</data_type>
         <default_value>Apple Chancery_Narrow_16x32.font</default_value>
         <description></description>
@@ -20,7 +20,7 @@
 
     <setting name="screen_mode">
         <widget_type>FontConfigTextBox</widget_type>
-        <label_text></label_text>
+        <label_text>Screen Mode</label_text>
         <data_type>int</data_type>
         <default_value>19</default_value>
         <description></description>
@@ -37,7 +37,7 @@
 
     <setting name="asm_dir">
         <widget_type>FontConfigTextBox</widget_type>
-        <label_text></label_text>
+        <label_text>Asm Src Dir</label_text>
         <data_type>string</data_type>
         <default_value>examples/font_editor/src/asm</default_value>
         <description></description>
@@ -54,7 +54,7 @@
 
     <setting name="asm_file">
         <widget_type>FontConfigTextBox</widget_type>
-        <label_text></label_text>
+        <label_text>Asm App File</label_text>
         <data_type>string</data_type>
         <default_value>app.asm</default_value>
         <description></description>
@@ -71,7 +71,7 @@
 
     <setting name="tgt_bin_dir">
         <widget_type>FontConfigTextBox</widget_type>
-        <label_text></label_text>
+        <label_text>Tgt App Dir</label_text>
         <data_type>string</data_type>
         <default_value>examples/font_editor/tgt</default_value>
         <description></description>
@@ -88,7 +88,7 @@
 
     <setting name="tgt_bin_file">
         <widget_type>FontConfigTextBox</widget_type>
-        <label_text></label_text>
+        <label_text>Tgt .bin File</label_text>
         <data_type>string</data_type>
         <default_value>font.bin</default_value>
         <description></description>
@@ -105,7 +105,7 @@
 
     <setting name="emulator_dir">
         <widget_type>FontConfigTextBox</widget_type>
-        <label_text></label_text>
+        <label_text>Emulator Dir</label_text>
         <data_type>string</data_type>
         <default_value>/home/smith/Agon/.emulator</default_value>
         <description></description>
@@ -122,7 +122,7 @@
 
     <setting name="emulator_tgt_dir">
         <widget_type>FontConfigTextBox</widget_type>
-        <label_text></label_text>
+        <label_text>Emulator Tgt Dir</label_text>
         <data_type>string</data_type>
         <default_value>/mystuff/agon-utils/examples/font_editor/tgt</default_value>
         <description></description>
@@ -139,7 +139,7 @@
 
     <setting name="sdcard_tgt_dir">
         <widget_type>FontConfigTextBox</widget_type>
-        <label_text></label_text>
+        <label_text>SD Card Tgt Dir</label_text>
         <data_type>string</data_type>
         <default_value>/media/smith/AGON/mystuff/fonts/tgt</default_value>
         <description></description>
@@ -156,7 +156,7 @@
 
     <setting name="emulator_exec">
         <widget_type>FontConfigTextBox</widget_type>
-        <label_text></label_text>
+        <label_text>Emulator Exec</label_text>
         <data_type>string</data_type>
         <default_value>./fab-agon-emulator</default_value>
         <description></description>
@@ -173,7 +173,7 @@
 
     <setting name="build_fonts">
         <widget_type>FontConfigCheckBox</widget_type>
-        <label_text></label_text>
+        <label_text>Build Fonts</label_text>
         <data_type>bool</data_type>
         <default_value>True</default_value>
         <description></description>
@@ -190,7 +190,7 @@
 
     <setting name="assemble">
         <widget_type>FontConfigCheckBox</widget_type>
-        <label_text></label_text>
+        <label_text>Assemble App</label_text>
         <data_type>bool</data_type>
         <default_value>True</default_value>
         <description></description>
@@ -207,7 +207,7 @@
 
     <setting name="copy_emulator">
         <widget_type>FontConfigCheckBox</widget_type>
-        <label_text></label_text>
+        <label_text>Copy to Emulator</label_text>
         <data_type>bool</data_type>
         <default_value>False</default_value>
         <description></description>
@@ -224,7 +224,7 @@
 
     <setting name="copy_sdcard">
         <widget_type>FontConfigCheckBox</widget_type>
-        <label_text></label_text>
+        <label_text>Copy to SD Card</label_text>
         <data_type>bool</data_type>
         <default_value>False</default_value>
         <description></description>
@@ -241,7 +241,7 @@
 
     <setting name="run_emulator">
         <widget_type>FontConfigCheckBox</widget_type>
-        <label_text></label_text>
+        <label_text>Run Emulator</label_text>
         <data_type>bool</data_type>
         <default_value>True</default_value>
         <description></description>
