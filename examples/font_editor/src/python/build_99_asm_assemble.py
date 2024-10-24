@@ -145,9 +145,11 @@ def build_and_deploy_fonts(
     if assemble:
         run_ez80asm()
     if copy_emulator:
-        copy_to_directory(emulator_dir, emulator_tgt_dir)
+        print("Copying emulator files disabled.")
+        # copy_to_directory(emulator_dir, emulator_tgt_dir)
     if copy_sdcard:
-        copy_to_directory(emulator_dir, sdcard_tgt_dir)
+        print("Copying SD card files disabled.")
+        # copy_to_directory(emulator_dir, sdcard_tgt_dir)
     if run_emulator:
         run_fab_emulator()
 

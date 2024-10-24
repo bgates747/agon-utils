@@ -110,7 +110,7 @@ class FontConfigWidget(tk.Frame):
         print(f"{self.config_setting}: default_on_change_handler fired - New Value: {new_value}")
     
     def default_redraw_font_handler(self):
-        self.parent.render_font()
+        self.parent.app_reference.image_display.render_font()
         print(f"{self.config_setting}: default_redraw_font_handler fired")
 
     def raster_type_on_change_handler(self):

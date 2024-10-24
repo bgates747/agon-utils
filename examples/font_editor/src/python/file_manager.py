@@ -88,12 +88,13 @@ def save_file(app_reference):
     if filetype == "xml":
         save_font_xml(font_config, file_path)
     elif filetype == "font":
-        save_agon_font(app_reference, font_config, file_path)
+        font_config = save_agon_font(app_reference, font_config, file_path)
     else:
         raise NotImplementedError(f"Saving {filetype} files is not supported.")
 
     set_app_config_value("most_recent_save_directory", os.path.dirname(file_path))
     set_app_config_value("most_recent_file", file_path)
+    app_reference.font_config_editor.set_controls_from_config(font_config)
 
 def save_font_xml(font_config, file_path):
     """Save the font configuration to an XML file."""
@@ -121,6 +122,7 @@ def save_agon_font(app_reference, font_config, file_path):
     # Write the .font file and the corresponding XML metadata file
     write_agon_font(font_config, font_image, file_path)
     save_font_metadata_to_xml(font_config, config_filepath)
+    return font_config
 
 def get_save_filename(app_reference):
     """Open a save file dialog with a default filename and automatically append the correct extension."""
