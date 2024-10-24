@@ -1,2 +1,2 @@
-screen_mode: equ 18
-font_name: equ AmericanTypewriter6_Bold_16x21
+screen_mode: equ 19
+font_name: equ Apple_Chancery_Narrow_16x32
