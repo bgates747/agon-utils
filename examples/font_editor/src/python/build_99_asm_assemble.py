@@ -2,6 +2,7 @@ import subprocess
 import sys
 import os
 import shutil
+import re
 from build_91c_asm_font import build_fonts_asm, make_cfg
 
 def write_autoexec(file_path, tgt_dir, bin_file):
@@ -102,11 +103,31 @@ def build_and_deploy_fonts(
             shutil.move(local_output_file, tgt_full_path)
             print(f'Successfully assembled and moved to {tgt_full_path}')
 
-    def copy_to_directory(src_dir, tgt_dir):
+    def copy_to_directory(src_dir, tgt_dir, include_pattern=None):
+        """
+        Copies files from src_dir to tgt_dir, optionally filtering by a regex pattern.
+
+        :param src_dir: Source directory to copy from
+        :param tgt_dir: Target directory to copy to
+        :param include_pattern: Optional regex pattern to filter files (default: None)
+        """
         try:
             if os.path.exists(tgt_dir):
                 shutil.rmtree(tgt_dir)
-            shutil.copytree(src_dir, tgt_dir, dirs_exist_ok=True)
+            os.makedirs(tgt_dir, exist_ok=True)
+
+            # Walk through the source directory
+            for root, _, files in os.walk(src_dir):
+                for file in files:
+                    # If a pattern is provided, check if the file matches the pattern
+                    if include_pattern is None or re.match(include_pattern, file):
+                        src_file = os.path.join(root, file)
+                        rel_path = os.path.relpath(src_file, src_dir)
+                        tgt_file = os.path.join(tgt_dir, rel_path)
+
+                        os.makedirs(os.path.dirname(tgt_file), exist_ok=True)
+                        shutil.copy2(src_file, tgt_file)
+
             print(f'Successfully copied files from {src_dir} to {tgt_dir}')
 
         except Exception as e:
@@ -146,10 +167,13 @@ def build_and_deploy_fonts(
         run_ez80asm()
     if copy_emulator:
         print("Copying emulator files disabled.")
-        # copy_to_directory(emulator_dir, emulator_tgt_dir)
+        # copy_to_directory(tgt_bin_dir, emulator_tgt_dir)
     if copy_sdcard:
-        print("Copying SD card files disabled.")
-        # copy_to_directory(emulator_dir, sdcard_tgt_dir)
+        # print("Copying SD card files disabled.")
+        if os.path.exists(sdcard_tgt_dir):
+            copy_to_directory(tgt_bin_dir, sdcard_tgt_dir, include_pattern=r'.*\.(bin|font)$')
+        else:
+            print(f"SD card target directory not found: {sdcard_tgt_dir}")
     if run_emulator:
         run_fab_emulator()
 
@@ -163,7 +187,7 @@ if __name__ == '__main__':
     tgt_bin_file = f'font.bin'
     emulator_dir = '/home/smith/Agon/.emulator'
     emulator_tgt_dir = f'/mystuff/agon-utils/{tgt_bin_dir}'
-    sdcard_tgt_dir = '/media/smith/AGON/mystuff/fonts/tgt'
+    sdcard_tgt_dir = '/media/smith/AGON/mystuff/agon-utils/examples/font_editor/tgt'
     emulator_exec = './fab-agon-emulator'
 
     build_fonts = True

@@ -8,7 +8,7 @@
   <setting name="tgt_bin_file" value="font.bin"/>
   <setting name="emulator_dir" value="/home/smith/Agon/.emulator"/>
   <setting name="emulator_tgt_dir" value="/mystuff/agon-utils/examples/font_editor/tgt"/>
-  <setting name="sdcard_tgt_dir" value="/media/smith/AGON/mystuff/fonts/tgt"/>
+  <setting name="sdcard_tgt_dir" value="/media/smith/AGON/mystuff/agon-utils/examples/font_editor/tgt"/>
   <setting name="emulator_exec" value="./fab-agon-emulator"/>
   <setting name="build_fonts" value="True"/>
   <setting name="assemble" value="True"/>

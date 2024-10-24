@@ -194,7 +194,7 @@ wife_of_bath:
     db "maids, even old women. Each gave him something different; he\r\n"
     db "had no true answer, until a shriveled crone, wise in knowledge,\r\n"
     db "offered him the right response. But her price was small, or so he\r\n"
-    db "thought—for the old woman demanded he wed her. Loath, but\r\n"
+    db "thought--for the old woman demanded he wed her. Loath, but\r\n"
     db "bound by his vow, he kept his word.\r\n"
     db "\r\n"
     db "On their wedding day, the crone said: 'Women wish for mastery,\r\n"

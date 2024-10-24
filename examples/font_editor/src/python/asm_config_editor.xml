@@ -141,7 +141,7 @@
         <widget_type>FontConfigTextBox</widget_type>
         <label_text>SD Card Tgt Dir</label_text>
         <data_type>string</data_type>
-        <default_value>/media/smith/AGON/mystuff/fonts/tgt</default_value>
+        <default_value>/media/smith/AGON/mystuff/agon-utils/examples/font_editor/tgt</default_value>
         <description></description>
         <event_handlers>
             <on_change>

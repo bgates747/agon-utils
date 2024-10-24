@@ -12,7 +12,7 @@ if __name__ == "__main__":
         'tgt_bin_file': 'font.bin',
         'emulator_dir': '/home/smith/Agon/.emulator',
         'emulator_tgt_dir': '/mystuff/agon-utils/examples/font_editor/tgt',
-        'sdcard_tgt_dir': '/media/smith/AGON/mystuff/fonts/tgt',
+        'sdcard_tgt_dir': '/media/smith/AGON/mystuff/agon-utils/examples/font_editor/tgt',
         'emulator_exec': './fab-agon-emulator',
         'build_fonts': True,
         'assemble': True,

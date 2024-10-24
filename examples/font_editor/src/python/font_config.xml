@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <settings>
-  <setting name="original_font_path" value="/home/smith/Agon/mystuff/agon-utils/examples/font_editor/src/fonts/net/ttf/amiga_forever/amiga_forever.ttf"/>
-  <setting name="font_name" value="amiga_forever"/>
+  <setting name="original_font_path" value="/home/smith/Agon/mystuff/agon-utils/examples/font_editor/src/fonts/net/ttf/ubuntu/UbuntuMono-R.ttf"/>
+  <setting name="font_name" value="UbuntuMono-R"/>
   <setting name="font_variant" value="Regular"/>
   <setting name="point_size" value="16"/>
   <setting name="font_width" value="8"/>

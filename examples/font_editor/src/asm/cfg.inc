@@ -1,2 +1,2 @@
 screen_mode: equ 19
-font_name: equ amiga_forever_Regular_8x8
+font_name: equ UbuntuMono_R_Narrow_8x16
