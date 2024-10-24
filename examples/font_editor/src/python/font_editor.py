@@ -8,6 +8,7 @@ from menu_bar import MenuBar
 from image_display import ImageDisplay
 from custom_widgets import ConsoleDisplay
 from editor_widget import EditorWidget
+from config_editor_dialog import DoAssemblyDialog
 
 class FontEditor(ttk.Frame):
     """
@@ -39,6 +40,14 @@ class FontEditor(ttk.Frame):
         self.font_config_editor = ConfigEditor(config_frame, config_editor_file, app_reference=self)
         self.font_config_editor.pack(fill="y", expand=True)  # Fills available vertical space only
 
+        # Add the "Do Assembly" button at the bottom of the config frame
+        do_assembly_button = tk.Button(
+            config_frame,
+            text="Do Assembly",
+            command=self.open_assembly_dialog
+        )
+        do_assembly_button.pack(side=tk.BOTTOM, pady=10)
+
         # Right Frame for ImageDisplay and EditorWidget
         image_frame = tk.Frame(main_content_frame)
         image_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)  # Expands fully
@@ -69,6 +78,13 @@ class FontEditor(ttk.Frame):
         if file_path:
             open_file(self, file_path)
 
+    def open_assembly_dialog(self):
+        """Open the assembly configuration dialog with the current font configuration."""
+        font_config = self.font_config_editor.get_config()  # Get the current font config
+        config_editor_file = "examples/font_editor/src/python/asm_config_editor.xml"
+        app_reference = self
+
+        dialog = DoAssemblyDialog(self, config_editor_file, app_reference, font_config)
 
 if __name__ == "__main__":
     root = tk.Tk()

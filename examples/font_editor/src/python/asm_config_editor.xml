@@ -175,7 +175,7 @@
         <widget_type>FontConfigCheckBox</widget_type>
         <label_text>Build Fonts</label_text>
         <data_type>bool</data_type>
-        <default_value>True</default_value>
+        <default_value>1</default_value>
         <description></description>
         <event_handlers>
             <on_change>
@@ -192,7 +192,7 @@
         <widget_type>FontConfigCheckBox</widget_type>
         <label_text>Assemble App</label_text>
         <data_type>bool</data_type>
-        <default_value>True</default_value>
+        <default_value>1</default_value>
         <description></description>
         <event_handlers>
             <on_change>
@@ -209,7 +209,7 @@
         <widget_type>FontConfigCheckBox</widget_type>
         <label_text>Copy to Emulator</label_text>
         <data_type>bool</data_type>
-        <default_value>False</default_value>
+        <default_value>0</default_value>
         <description></description>
         <event_handlers>
             <on_change>
@@ -226,7 +226,7 @@
         <widget_type>FontConfigCheckBox</widget_type>
         <label_text>Copy to SD Card</label_text>
         <data_type>bool</data_type>
-        <default_value>False</default_value>
+        <default_value>0</default_value>
         <description></description>
         <event_handlers>
             <on_change>
@@ -243,7 +243,7 @@
         <widget_type>FontConfigCheckBox</widget_type>
         <label_text>Run Emulator</label_text>
         <data_type>bool</data_type>
-        <default_value>True</default_value>
+        <default_value>1</default_value>
         <description></description>
         <event_handlers>
             <on_change>
