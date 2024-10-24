@@ -35,8 +35,8 @@ exit:
     include "vdu_fonts.inc"
 
 ; Application includes
-    include "cfg.inc"
     include "fonts_list.inc"
+    include "cfg.inc"
 
 main:
     ld a,screen_mode

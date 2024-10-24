@@ -1,0 +1,4317 @@
+PC     Output      Line
+040000             0001   	.assume adl=1
+040000             0002       .org 0x040000
+040000             0003   
+040000 C3 45 00 04 0004       jp start
+040004             0005   
+040004 FF FF FF FF 0006       .align 64
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+040040 4D 4F 53    0007       .db "MOS"
+040043 00          0008       .db 00h
+040044 01          0009       .db 01h
+040045             0010   
+040045             0011   start:
+040045 F5          0012       push af
+040046 C5          0013       push bc
+040047 D5          0014       push de
+040048 DD E5       0015       push ix
+04004A FD E5       0016       push iy
+04004C             0017   
+04004C CD 7A 12 04 0018   	call main
+040050             0019   
+040050             0020   exit:
+040050 FD E1       0021       pop iy
+040052 DD E1       0022       pop ix
+040054 D1          0023       pop de
+040055 C1          0024       pop bc
+040056 F1          0025       pop af
+040057 21 00 00 00 0026       ld hl,0
+04005B C9          0027       ret
+04005C             0028   
+04005C             0029   ; API includes
+04005C             0030       include "mos_api.inc"
+04005C             0001*  ; https://github.com/envenomator/Agon/blob/master/ez80asm%20examples%20(annotated)/mos_api.inc
+04005C             0002*  ;
+04005C             0003*  ; Title:	AGON MOS - API for user projects
+04005C             0004*  ; Author:	Dean Belfield
+04005C             0005*  ;			Adapted for agon-ez80asm by Jeroen Venema
+04005C             0006*  ;			Added MOS error codes for return in HL
+04005C             0007*  ; Created:	03/08/2022
+04005C             0008*  ; Last Updated:	10/08/2023
+04005C             0009*  ;
+04005C             0010*  ; Modinfo:
+04005C             0011*  ; 05/08/2022:	Added mos_feof
+04005C             0012*  ; 09/08/2022:	Added system variables: cursorX, cursorY
+04005C             0013*  ; 18/08/2022:	Added system variables: scrchar, scrpixel, audioChannel, audioSuccess, vpd_pflags
+04005C             0014*  ; 05/09/2022:	Added mos_ren, vdp_pflag_mode
+04005C             0015*  ; 24/09/2022:	Added mos_getError, mos_mkdir
+04005C             0016*  ; 13/10/2022:	Added mos_oscli
+04005C             0017*  ; 23/02/2023:	Added more sysvars, fixed typo in sysvar_audioSuccess, offsets for sysvar_scrCols, sysvar_scrRows
+04005C             0018*  ; 04/03/2023:	Added sysvar_scrpixelIndex
+04005C             0019*  ; 08/03/2023:	Renamed sysvar_keycode to sysvar_keyascii, added sysvar_vkeycode
+04005C             0020*  ; 15/03/2023:	Added mos_copy, mos_getrtc, mos_setrtc, rtc, vdp_pflag_rtc
+04005C             0021*  ; 21/03/2023:	Added mos_setintvector, sysvars for keyboard status, vdu codes for vdp
+04005C             0022*  ; 22/03/2023:	The VDP commands are now indexed from 0x80
+04005C             0023*  ; 29/03/2023:	Added mos_uopen, mos_uclose, mos_ugetc, mos_uputc
+04005C             0024*  ; 13/04/2023:	Added FatFS file structures (FFOBJID, FIL, DIR, FILINFO)
+04005C             0025*  ; 15/04/2023:	Added mos_getfil, mos_fread, mos_fwrite and mos_flseek
+04005C             0026*  ; 19/05/2023:	Added sysvar_scrMode
+04005C             0027*  ; 05/06/2023:	Added sysvar_rtcEnable
+04005C             0028*  ; 03/08/2023:	Added mos_setkbvector
+04005C             0029*  ; 10/08/2023:	Added mos_getkbmap
+04005C             0030*  
+04005C             0031*  ; VDP control (VDU 23, 0, n)
+04005C             0032*  ;
+04005C             0033*  vdp_gp:				EQU 80h
+04005C             0034*  vdp_keycode:		EQU 81h
+04005C             0035*  vdp_cursor:			EQU	82h
+04005C             0036*  vdp_scrchar:		EQU	83h
+04005C             0037*  vdp_scrpixel:		EQU	84h
+04005C             0038*  vdp_audio:			EQU	85h
+04005C             0039*  vdp_mode:			EQU	86h
+04005C             0040*  vdp_rtc:			EQU	87h
+04005C             0041*  vdp_keystate:		EQU	88h
+04005C             0042*  vdp_logicalcoords:	EQU	C0h
+04005C             0043*  vdp_terminalmode:	EQU	FFh
+04005C             0044*  
+04005C             0045*  ;
+04005C             0046*  ; Macro for calling the API
+04005C             0047*  ; Parameters:
+04005C             0048*  ; - function: One of the function numbers listed below
+04005C             0049*  ;
+04005C             0050*  	MACRO	MOSCALL	function
+04005C             0051*  			LD	A, function
+04005C             0052*  			RST.LIL	08h
+04005C             0053*  	ENDMACRO
+04005C             0054*  
+04005C             0055*  ; MOS high level functions
+04005C             0056*  ;
+04005C             0057*  ; Get keycode
+04005C             0058*  ; Returns:
+04005C             0059*  ;  A: ASCII code of key pressed, or 0 if no key pressed
+04005C             0060*  mos_getkey:			EQU	00h
+04005C             0061*  
+04005C             0062*  ; Load an area of memory from a file.
+04005C             0063*  ; HLU: Address of filename (zero terminated)
+04005C             0064*  ; DEU: Address at which to load
+04005C             0065*  ; BCU: Maximum allowed size (bytes)
+04005C             0066*  ; Returns:
+04005C             0067*  ; - A: File error, or 0 if OK
+04005C             0068*  ; - F: Carry reset indicates no room for file.
+04005C             0069*  mos_load:			EQU	01h
+04005C             0070*  
+04005C             0071*  ; Save a file to the SD card from RAM
+04005C             0072*  ; HLU: Address of filename (zero terminated)
+04005C             0073*  ; DEU: Address to save from
+04005C             0074*  ; BCU: Number of bytes to save
+04005C             0075*  ; Returns:
+04005C             0076*  ; - A: File error, or 0 if OK
+04005C             0077*  ; - F: Carry reset indicates no room for file
+04005C             0078*  mos_save:			EQU	02h
+04005C             0079*  
+04005C             0080*  ; Change directory
+04005C             0081*  ; HLU: Address of path (zero terminated)
+04005C             0082*  ; Returns:
+04005C             0083*  ; - A: File error, or 0 if OK
+04005C             0084*  mos_cd:				EQU	03h
+04005C             0085*  
+04005C             0086*  ; Directory listing
+04005C             0087*  ; HLU: Address of path (zero terminated)
+04005C             0088*  ; Returns:
+04005C             0089*  ; - A: File error, or 0 if OK
+04005C             0090*  mos_dir:			EQU	04h
+04005C             0091*  
+04005C             0092*  ; Delete a file from the SD card
+04005C             0093*  ; HLU: Address of filename (zero terminated)
+04005C             0094*  ; Returns:
+04005C             0095*  ; - A: File error, or 0 if OK
+04005C             0096*  mos_del:			EQU	05h
+04005C             0097*  
+04005C             0098*  ; Rename a file on the SD card
+04005C             0099*  ; HLU: Address of filename1 (zero terminated)
+04005C             0100*  ; DEU: Address of filename2 (zero terminated)
+04005C             0101*  ; Returns:
+04005C             0102*  ; - A: File error, or 0 if OK
+04005C             0103*  mos_ren:			EQU	06h
+04005C             0104*  
+04005C             0105*  ; Make a folder on the SD card
+04005C             0106*  ; HLU: Address of filename (zero terminated)
+04005C             0107*  ; Returns:
+04005C             0108*  ; - A: File error, or 0 if OK
+04005C             0109*  mos_mkdir:			EQU	07h
+04005C             0110*  
+04005C             0111*  ; Get a pointer to a system variable
+04005C             0112*  ; Returns:
+04005C             0113*  ; IXU: Pointer to system variables (see mos_api.asm for more details)
+04005C             0114*  mos_sysvars:		EQU	08h
+04005C             0115*  
+04005C             0116*  ; Invoke the line editor
+04005C             0117*  ; HLU: Address of the buffer
+04005C             0118*  ; BCU: Buffer length
+04005C             0119*  ;   E: 0 to not clear buffer, 1 to clear
+04005C             0120*  ; Returns:
+04005C             0121*  ;   A: Key that was used to exit the input loop (CR=13, ESC=27)
+04005C             0122*  mos_editline:		EQU	09h
+04005C             0123*  
+04005C             0124*  ; Open a file
+04005C             0125*  ; HLU: Filename
+04005C             0126*  ;   C: Mode
+04005C             0127*  ; Returns:
+04005C             0128*  ;   A: Filehandle, or 0 if couldn't open
+04005C             0129*  mos_fopen:			EQU	0Ah
+04005C             0130*  
+04005C             0131*  ; Close a file
+04005C             0132*  ;   C: Filehandle
+04005C             0133*  ; Returns
+04005C             0134*  ;   A: Number of files still open
+04005C             0135*  mos_fclose:			EQU	0Bh
+04005C             0136*  
+04005C             0137*  ; Get a character from a file
+04005C             0138*  ;   C: Filehandle
+04005C             0139*  ; Returns:
+04005C             0140*  ;   A: Character read
+04005C             0141*  ;   F: C set if last character in file, otherwise NC
+04005C             0142*  mos_fgetc:			EQU	0Ch
+04005C             0143*  
+04005C             0144*  ; Write a character to a file
+04005C             0145*  ;   C: Filehandle
+04005C             0146*  ;   B: Character to write
+04005C             0147*  mos_fputc:			EQU	0Dh
+04005C             0148*  
+04005C             0149*  ; Check whether we're at the end of the file
+04005C             0150*  ;   C: Filehandle
+04005C             0151*  ; Returns:
+04005C             0152*  ;   A: 1 if at end of file, otherwise 0
+04005C             0153*  mos_feof:			EQU	0Eh
+04005C             0154*  
+04005C             0155*  ; Copy an error message
+04005C             0156*  ;   E: The error code
+04005C             0157*  ; HLU: Address of buffer to copy message into
+04005C             0158*  ; BCU: Size of buffer
+04005C             0159*  mos_getError:		EQU	0Fh
+04005C             0160*  
+04005C             0161*  ; Execute a MOS command
+04005C             0162*  ; HLU: Pointer the the MOS command string
+04005C             0163*  ; DEU: Pointer to additional command structure
+04005C             0164*  ; BCU: Number of additional commands
+04005C             0165*  ; Returns:
+04005C             0166*  ;   A: MOS error code
+04005C             0167*  mos_oscli:			EQU	10h
+04005C             0168*  
+04005C             0169*  ; Copy a file on the SD card
+04005C             0170*  ; HLU: Address of filename1 (zero terminated)
+04005C             0171*  ; DEU: Address of filename2 (zero terminated)
+04005C             0172*  ; Returns:
+04005C             0173*  ; - A: File error, or 0 if OK
+04005C             0174*  mos_copy:			EQU	11h
+04005C             0175*  
+04005C             0176*  ; Fetch a RTC string
+04005C             0177*  ; HLU: Pointer to a buffer to copy the string to
+04005C             0178*  ; Returns:
+04005C             0179*  ;   A: Length of time
+04005C             0180*  mos_getrtc:			EQU	12h
+04005C             0181*  
+04005C             0182*  ; Set the RTC
+04005C             0183*  ; HLU: Pointer to a buffer with the time data in
+04005C             0184*  mos_setrtc:			EQU	13h
+04005C             0185*  
+04005C             0186*  ; Set an interrupt vector
+04005C             0187*  ; HLU: Pointer to the interrupt vector (24-bit pointer)
+04005C             0188*  ;   E: Vector # to set
+04005C             0189*  ; Returns:
+04005C             0190*  ; HLU: Pointer to the previous vector
+04005C             0191*  mos_setintvector:	EQU	14h
+04005C             0192*  
+04005C             0193*  ; Open UART1
+04005C             0194*  ; IXU: Pointer to UART struct
+04005C             0195*  ;	+0: Baud rate (24-bit, little endian)
+04005C             0196*  ;	+3: Data bits
+04005C             0197*  ;	+4: Stop bits
+04005C             0198*  ;	+5: Parity bits
+04005C             0199*  ;	+6: Flow control (0: None, 1: Hardware)
+04005C             0200*  ;	+7: Enabled interrupts
+04005C             0201*  ; Returns:
+04005C             0202*  ;   A: Error code (0 = no error)
+04005C             0203*  mos_uopen:			EQU	15h
+04005C             0204*  
+04005C             0205*  ; Close UART1
+04005C             0206*  mos_uclose:			EQU	16h
+04005C             0207*  
+04005C             0208*  ; Get a character from UART1
+04005C             0209*  ; Returns:
+04005C             0210*  ;   A: Character read
+04005C             0211*  ;   F: C if successful
+04005C             0212*  ;   F: NC if the UART is not open
+04005C             0213*  mos_ugetc:			EQU	17h
+04005C             0214*  
+04005C             0215*  ; Write a character to UART1
+04005C             0216*  ;   C: Character to write
+04005C             0217*  ; Returns:
+04005C             0218*  ;   F: C if successful
+04005C             0219*  ;   F: NC if the UART is not open
+04005C             0220*  mos_uputc:			EQU	18h
+04005C             0221*  
+04005C             0222*  ; Convert a file handle to a FIL structure pointer
+04005C             0223*  ;   C: Filehandle
+04005C             0224*  ; Returns:
+04005C             0225*  ; HLU: Pointer to a FIL struct
+04005C             0226*  mos_getfil:			EQU	19h
+04005C             0227*  
+04005C             0228*  ; Read a block of data from a file
+04005C             0229*  ;   C: Filehandle
+04005C             0230*  ; HLU: Pointer to where to write the data to
+04005C             0231*  ; DEU: Number of bytes to read
+04005C             0232*  ; Returns:
+04005C             0233*  ; DEU: Number of bytes read
+04005C             0234*  mos_fread:			EQU	1Ah
+04005C             0235*  
+04005C             0236*  ; Write a block of data to a file
+04005C             0237*  ;  C: Filehandle
+04005C             0238*  ; HLU: Pointer to where the data is
+04005C             0239*  ; DEU: Number of bytes to write
+04005C             0240*  ; Returns:
+04005C             0241*  ; DEU: Number of bytes read
+04005C             0242*  mos_fwrite:			EQU	1Bh
+04005C             0243*  
+04005C             0244*  ; Move the read/write pointer in a file
+04005C             0245*  ;   C: Filehandle
+04005C             0246*  ; HLU: Least significant 3 bytes of the offset from the start of the file (DWORD)
+04005C             0247*  ;   E: Most significant byte of the offset
+04005C             0248*  ; Returns:
+04005C             0249*  ;   A: FRESULT
+04005C             0250*  mos_flseek:			EQU	1Ch
+04005C             0251*  
+04005C             0252*  ; Move the read/write pointer in a file relative to the current position
+04005C             0253*  ;   C: Filehandle
+04005C             0254*  ; DEU: Signed 24-bit offset
+04005C             0255*  ; Returns:
+04005C             0256*  ;   A: FRESULT
+04005C             0257*  mos_api_flseek_rel:
+04005C C5          0258*  	push bc ; back up file handle in c
+04005D D5          0259*  	push de ; save offset
+04005E             0260*  	MOSCALL mos_getfil
+04005E 3E 19       0001*M 			LD	A, function
+040060 5B CF       0002*M 			RST.LIL	08h
+040062 E5          0261*  	push hl
+040063 FD E1       0262*  	pop iy ; iy points to FIL struct
+040065 FD 27 11    0263*  	ld hl,(iy+fil_fptr) ; get lowest 3 bytes of current position
+040068 AF          0264*  	xor a ; clear carry
+040069 D1          0265*  	pop de ; restore offset
+04006A ED 5A       0266*  	adc hl,de ; adc the offset because we need sign flag
+04006C F2 74 00 04 0267*  	jp p,@not_neg
+040070 21 00 00 00 0268*  	ld hl,0 ; seek to beginning of file
+040074             0269*  @not_neg:
+040074 C1          0270*  	pop bc ; restore file handle to c
+040075 1E 00       0271*  	ld e,0 ; highest byte of offset
+040077             0272*  	MOSCALL mos_flseek
+040077 3E 1C       0001*M 			LD	A, function
+040079 5B CF       0002*M 			RST.LIL	08h
+04007B C9          0273*  	ret
+04007C             0274*  
+04007C             0275*  ; Set a VDP keyboard packet receiver callback
+04007C             0276*  ;   C: If non-zero then set the top byte of HLU(callback address)  to MB (for ADL=0 callers)
+04007C             0277*  ; HLU: Pointer to callback
+04007C             0278*  mos_setkbvector:	EQU	1Dh
+04007C             0279*  
+04007C             0280*  ; Get the address of the keyboard map
+04007C             0281*  ; Returns:
+04007C             0282*  ; IXU: Base address of the keymap
+04007C             0283*  mos_getkbmap:		EQU	1Eh
+04007C             0284*  
+04007C             0285*  ; MOS program exit codes
+04007C             0286*  ;
+04007C             0287*  EXIT_OK:				EQU  0;	"OK",
+04007C             0288*  EXIT_ERROR_SD_ACCESS:	EQU	 1;	"Error accessing SD card",
+04007C             0289*  EXIT_ERROR_ASSERTION:	EQU  2;	"Assertion failed",
+04007C             0290*  EXIT_SD_CARDFAILURE:	EQU  3;	"SD card failure",
+04007C             0291*  EXIT_FILENOTFOUND:		EQU  4;	"Could not find file",
+04007C             0292*  EXIT_PATHNOTFOUND:		EQU  5;	"Could not find path",
+04007C             0293*  EXIT_INVALIDPATHNAME:	EQU  6;	"Invalid path name",
+04007C             0294*  EXIT_ACCESSDENIED_FULL:	EQU  7;	"Access denied or directory full",
+04007C             0295*  EXIT_ACCESSDENIED:		EQU  8;	"Access denied",
+04007C             0296*  EXIT_INVALIDOBJECT:		EQU  9;	"Invalid file/directory object",
+04007C             0297*  EXIT_SD_WRITEPROTECTED:	EQU 10;	"SD card is write protected",
+04007C             0298*  EXIT_INVALIDDRIVENUMBER:EQU 11;	"Logical drive number is invalid",
+04007C             0299*  EXIT_NOVOLUMEWORKAREA:	EQU 12;	"Volume has no work area",
+04007C             0300*  EXIT_NOVALIDFATVOLUME:	EQU 13;	"No valid FAT volume",
+04007C             0301*  EXIT_ERRORMKFS:			EQU 14;	"Error occurred during mkfs",
+04007C             0302*  EXIT_VOLUMETIMEOUT:		EQU 15;	"Volume timeout",
+04007C             0303*  EXIT_VOLUMELOCKED:		EQU 16;	"Volume locked",
+04007C             0304*  EXIT_LFNALLOCATION:		EQU 17;	"LFN working buffer could not be allocated",
+04007C             0305*  EXIT_MAXOPENFILES:		EQU 18;	"Too many open files",
+04007C             0306*  EXIT_INVALIDPARAMETER:	EQU 19;	"Invalid parameter",
+04007C             0307*  EXIT_INVALIDCOMMAND:	EQU 20;	"Invalid command",
+04007C             0308*  EXIT_INVALIDEXECUTABLE:	EQU 21;	"Invalid executable",
+04007C             0309*  
+04007C             0310*  ; FatFS file access functions
+04007C             0311*  ;
+04007C             0312*  ; Open a file
+04007C             0313*  ; HLU: Pointer to a blank FIL struct
+04007C             0314*  ; DEU: Pointer to the filename (0 terminated)
+04007C             0315*  ;   C: File mode
+04007C             0316*  ; Returns:
+04007C             0317*  ;   A: FRESULT
+04007C             0318*  ffs_fopen:			EQU	80h
+04007C             0319*  
+04007C             0320*  ; Close a file
+04007C             0321*  ; HLU: Pointer to a blank FIL struct
+04007C             0322*  ; Returns:
+04007C             0323*  ;   A: FRESULT
+04007C             0324*  ffs_fclose:			EQU	81h
+04007C             0325*  
+04007C             0326*  ; Read data from a file
+04007C             0327*  ; HLU: Pointer to a FIL struct
+04007C             0328*  ; DEU: Pointer to where to write the file out
+04007C             0329*  ; BCU: Number of bytes to read
+04007C             0330*  ; Returns:
+04007C             0331*  ;   A: FRESULT
+04007C             0332*  ; BCU: Number of bytes read
+04007C             0333*  ffs_fread:			EQU	82h
+04007C             0334*  
+04007C             0335*  ; Write data to a file
+04007C             0336*  ; HLU: Pointer to a FIL struct
+04007C             0337*  ; DEU: Pointer to the data to write out
+04007C             0338*  ; BCU: Number of bytes to write
+04007C             0339*  ; Returns:
+04007C             0340*  ;   A: FRESULT
+04007C             0341*  ; BCU: Number of bytes written
+04007C             0342*  ffs_fwrite:			EQU	83h
+04007C             0343*  
+04007C             0344*  ; Move the read/write pointer in a file
+04007C             0345*  ; HLU: Pointer to a FIL struct
+04007C             0346*  ; DEU: Least significant 3 bytes of the offset from the start of the file (DWORD)
+04007C             0347*  ;   C: Most significant byte of the offset
+04007C             0348*  ; Returns:
+04007C             0349*  ;   A: FRESULT
+04007C             0350*  ffs_flseek:			EQU	84h
+04007C             0351*  
+04007C             0352*  ; not implemented
+04007C             0353*  ffs_ftruncate:		EQU	85h
+04007C             0354*  
+04007C             0355*  ; not implemented
+04007C             0356*  ffs_fsync:			EQU	86h
+04007C             0357*  
+04007C             0358*  ; not implemented
+04007C             0359*  ffs_fforward:		EQU	87h
+04007C             0360*  
+04007C             0361*  ; not implemented
+04007C             0362*  ffs_fexpand:		EQU	88h
+04007C             0363*  
+04007C             0364*  ; not implemented
+04007C             0365*  ffs_fgets:			EQU	89h
+04007C             0366*  
+04007C             0367*  ; not implemented
+04007C             0368*  ffs_fputc:			EQU	8Ah
+04007C             0369*  
+04007C             0370*  ; not implemented
+04007C             0371*  ffs_fputs:			EQU	8Bh
+04007C             0372*  
+04007C             0373*  ; not implemented
+04007C             0374*  ffs_fprintf:		EQU	8Ch
+04007C             0375*  
+04007C             0376*  ; not implemented
+04007C             0377*  ffs_ftell:			EQU	8Dh
+04007C             0378*  
+04007C             0379*  ; Check for EOF
+04007C             0380*  ; HLU: Pointer to a FILINFO struct
+04007C             0381*  ; Returns:
+04007C             0382*  ;   A: 1 if end of file, otherwise 0
+04007C             0383*  ffs_feof:			EQU	8Eh
+04007C             0384*  
+04007C             0385*  ; not implemented
+04007C             0386*  ffs_fsize:			EQU	8Fh
+04007C             0387*  
+04007C             0388*  ; not implemented
+04007C             0389*  ffs_ferror:			EQU	90h
+04007C             0390*  
+04007C             0391*  ; FatFS directory access functions
+04007C             0392*  ;
+04007C             0393*  ; Open a directory
+04007C             0394*  ; HLU: Pointer to a blank DIR struct
+04007C             0395*  ; DEU: Pointer to the directory path
+04007C             0396*  ; Returns:
+04007C             0397*  ; A: FRESULT
+04007C             0398*  ffs_dopen:			EQU	91h
+04007C             0399*  
+04007C             0400*  ; Close a directory
+04007C             0401*  ; HLU: Pointer to an open DIR struct
+04007C             0402*  ; Returns:
+04007C             0403*  ; A: FRESULT
+04007C             0404*  ffs_dclose:			EQU	92h
+04007C             0405*  
+04007C             0406*  ; Read the next FILINFO from an open DIR
+04007C             0407*  ; HLU: Pointer to an open DIR struct
+04007C             0408*  ; DEU: Pointer to an empty FILINFO struct
+04007C             0409*  ; Returns:
+04007C             0410*  ; A: FRESULT
+04007C             0411*  ffs_dread:			EQU	93h
+04007C             0412*  
+04007C             0413*  ; not implemented
+04007C             0414*  ffs_dfindfirst:		EQU	94h
+04007C             0415*  
+04007C             0416*  ; not implemented
+04007C             0417*  ffs_dfindnext:		EQU	95h
+04007C             0418*  
+04007C             0419*  ; FatFS file and directory management functions
+04007C             0420*  ;
+04007C             0421*  ; Check file exists
+04007C             0422*  ; HLU: Pointer to a FILINFO struct
+04007C             0423*  ; DEU: Pointer to the filename (0 terminated)
+04007C             0424*  ; Returns:
+04007C             0425*  ;   A: FRESULT
+04007C             0426*  ffs_stat:			EQU	96h
+04007C             0427*  
+04007C             0428*  ; not implemented
+04007C             0429*  ffs_unlink:			EQU	97h
+04007C             0430*  
+04007C             0431*  ; not implemented
+04007C             0432*  ffs_rename:			EQU	98h
+04007C             0433*  
+04007C             0434*  ; not implemented
+04007C             0435*  ffs_chmod:			EQU	99h
+04007C             0436*  
+04007C             0437*  ; not implemented
+04007C             0438*  ffs_utime:			EQU	9Ah
+04007C             0439*  
+04007C             0440*  ; not implemented
+04007C             0441*  ffs_mkdir:			EQU	9Bh
+04007C             0442*  
+04007C             0443*  ; not implemented
+04007C             0444*  ffs_chdir:			EQU	9Ch
+04007C             0445*  
+04007C             0446*  ; not implemented
+04007C             0447*  ffs_chdrive:		EQU	9Dh
+04007C             0448*  
+04007C             0449*  ; Copy the current directory (string) into buffer (hl)
+04007C             0450*  ; HLU: Pointer to a buffer
+04007C             0451*  ; BCU: Maximum length of buffer
+04007C             0452*  ; Returns:
+04007C             0453*  ; A: FRESULT
+04007C             0454*  ffs_getcwd:			EQU	9Eh
+04007C             0455*  
+04007C             0456*  ; FatFS volume management and system configuration functions
+04007C             0457*  ;
+04007C             0458*  ; not implemented
+04007C             0459*  ffs_mount:			EQU	9Fh
+04007C             0460*  
+04007C             0461*  ; not implemented
+04007C             0462*  ffs_mkfs:			EQU	A0h
+04007C             0463*  
+04007C             0464*  ; not implemented
+04007C             0465*  ffs_fdisk:			EQU	A1h
+04007C             0466*  
+04007C             0467*  ; not implemented
+04007C             0468*  ffs_getfree:		EQU	A2h
+04007C             0469*  
+04007C             0470*  ; not implemented
+04007C             0471*  ffs_getlabel:		EQU	A3h
+04007C             0472*  
+04007C             0473*  ; not implemented
+04007C             0474*  ffs_setlabel:		EQU	A4h
+04007C             0475*  
+04007C             0476*  ; not implemented
+04007C             0477*  ffs_setcp:			EQU	A5h
+04007C             0478*  
+04007C             0479*  ; File access modes
+04007C             0480*  ;
+04007C             0481*  fa_read:			EQU	01h
+04007C             0482*  fa_write:			EQU	02h
+04007C             0483*  fa_open_existing:	EQU	00h
+04007C             0484*  fa_create_new:		EQU	04h
+04007C             0485*  fa_create_always:	EQU	08h
+04007C             0486*  fa_open_always:		EQU	10h
+04007C             0487*  fa_open_append:		EQU	30h
+04007C             0488*  
+04007C             0489*  ; System variable indexes for api_sysvars
+04007C             0490*  ; Index into _sysvars in globals.asm
+04007C             0491*  ;
+04007C             0492*  sysvar_time:			EQU	00h	; 4: Clock timer in centiseconds (incremented by 2 every VBLANK)
+04007C             0493*  sysvar_vpd_pflags:		EQU	04h	; 1: Flags to indicate completion of VDP commands
+04007C             0494*  sysvar_keyascii:		EQU	05h	; 1: ASCII keycode, or 0 if no key is pressed
+04007C             0495*  sysvar_keymods:			EQU	06h	; 1: Keycode modifiers
+04007C             0496*  sysvar_cursorX:			EQU	07h	; 1: Cursor X position
+04007C             0497*  sysvar_cursorY:			EQU	08h	; 1: Cursor Y position
+04007C             0498*  sysvar_scrchar:			EQU	09h	; 1: Character read from screen
+04007C             0499*  sysvar_scrpixel:		EQU	0Ah	; 3: Pixel data read from screen (R,B,G)
+04007C             0500*  sysvar_audioChannel:	EQU	0Dh	; 1: Audio channel
+04007C             0501*  sysvar_audioSuccess:	EQU	0Eh	; 1: Audio channel note queued (0 = no, 1 = yes)
+04007C             0502*  sysvar_scrWidth:		EQU	0Fh	; 2: Screen width in pixels
+04007C             0503*  sysvar_scrHeight:		EQU	11h	; 2: Screen height in pixels
+04007C             0504*  sysvar_scrCols:			EQU	13h	; 1: Screen columns in characters
+04007C             0505*  sysvar_scrRows:			EQU	14h	; 1: Screen rows in characters
+04007C             0506*  sysvar_scrColours:		EQU	15h	; 1: Number of colours displayed
+04007C             0507*  sysvar_scrpixelIndex:	EQU	16h	; 1: Index of pixel data read from screen
+04007C             0508*  sysvar_vkeycode:		EQU	17h	; 1: Virtual key code from FabGL
+04007C             0509*  sysvar_vkeydown:		EQU	18h	; 1: Virtual key state from FabGL (0=up, 1=down)
+04007C             0510*  sysvar_vkeycount:		EQU	19h	; 1: Incremented every time a key packet is received
+04007C             0511*  sysvar_rtc:				EQU	1Ah	; 6: Real time clock data
+04007C             0512*  sysvar_spare:			EQU	20h	; 2: Spare, previously used by rtc
+04007C             0513*  sysvar_keydelay:		EQU	22h	; 2: Keyboard repeat delay
+04007C             0514*  sysvar_keyrate:			EQU	24h	; 2: Keyboard repeat reat
+04007C             0515*  sysvar_keyled:			EQU	26h	; 1: Keyboard LED status
+04007C             0516*  sysvar_scrMode:			EQU	27h	; 1: Screen mode
+04007C             0517*  sysvar_rtcEnable:		EQU	28h	; 1: RTC enable flag (0: disabled, 1: use ESP32 RTC)
+04007C             0518*  
+04007C             0519*  ; Flags for the VPD protocol
+04007C             0520*  ;
+04007C             0521*  vdp_pflag_cursor:		EQU	00000001b
+04007C             0522*  vdp_pflag_scrchar:		EQU	00000010b
+04007C             0523*  vdp_pflag_point:		EQU	00000100b
+04007C             0524*  vdp_pflag_audio:		EQU	00001000b
+04007C             0525*  vdp_pflag_mode:			EQU	00010000b
+04007C             0526*  vdp_pflag_rtc:			EQU	00100000b
+04007C             0527*  
+04007C             0528*  ;
+04007C             0529*  ; FatFS structures
+04007C             0530*  ; These mirror the structures contained in src_fatfs/ff.h in the MOS project
+04007C             0531*  ;
+04007C             0532*  ; Object ID and allocation information (FFOBJID)
+04007C             0533*  ;
+04007C             0534*  ; Indexes into FFOBJID structure
+04007C             0535*  ffobjid_fs:			EQU	0	; 3: Pointer to the hosting volume of this object
+04007C             0536*  ffobjid_id:			EQU	3	; 2: Hosting volume mount ID
+04007C             0537*  ffobjid_attr:		EQU	5	; 1: Object attribute
+04007C             0538*  ffobjid_stat:		EQU	6	; 1: Object chain status (b1-0: =0:not contiguous, =2:contiguous, =3:fragmented in this session, b2:sub-directory stretched)
+04007C             0539*  ffobjid_sclust:		EQU	7	; 4: Object data start cluster (0:no cluster or root directory)
+04007C             0540*  ffobjid_objsize:	EQU	11	; 4: Object size (valid when sclust != 0)
+04007C             0541*  ;
+04007C             0542*  ; File object structure (FIL)
+04007C             0543*  ;
+04007C             0544*  ; Indexes into FIL structure
+04007C             0545*  fil_obj:		EQU 0	; 15: Object identifier
+04007C             0546*  fil_flag:		EQU	15 	;  1: File status flags
+04007C             0547*  fil_err:		EQU	16	;  1: Abort flag (error code)
+04007C             0548*  fil_fptr:		EQU	17	;  4: File read/write pointer (Zeroed on file open)
+04007C             0549*  fil_clust:		EQU	21	;  4: Current cluster of fpter (invalid when fptr is 0)
+04007C             0550*  fil_sect:		EQU	25	;  4: Sector number appearing in buf[] (0:invalid)
+04007C             0551*  fil_dir_sect:	EQU	29	;  4: Sector number containing the directory entry
+04007C             0552*  fil_dir_ptr:	EQU	33	;  3: Pointer to the directory entry in the win[]
+04007C             0553*  ;
+04007C             0554*  ; Directory object structure (DIR)
+04007C             0555*  ; Indexes into DIR structure
+04007C             0556*  dir_obj:		EQU  0	; 15: Object identifier
+04007C             0557*  dir_dptr:		EQU	15	;  4: Current read/write offset
+04007C             0558*  dir_clust:		EQU	19	;  4: Current cluster
+04007C             0559*  dir_sect:		EQU	23	;  4: Current sector (0:Read operation has terminated)
+04007C             0560*  dir_dir:		EQU	27	;  3: Pointer to the directory item in the win[]
+04007C             0561*  dir_fn:			EQU	30	; 12: SFN (in/out) {body[8],ext[3],status[1]}
+04007C             0562*  dir_blk_ofs:	EQU	42	;  4: Offset of current entry block being processed (0xFFFFFFFF:Invalid)
+04007C             0563*  ;
+04007C             0564*  ; File information structure (FILINFO)
+04007C             0565*  ;
+04007C             0566*  ; Indexes into FILINFO structure
+04007C             0567*  filinfo_fsize:		EQU 0	;   4: File size
+04007C             0568*  filinfo_fdate:		EQU	4	;   2: Modified date
+04007C             0569*  filinfo_ftime:		EQU	6	;   2: Modified time
+04007C             0570*  filinfo_fattrib:	EQU	8	;   1: File attribute
+04007C             0571*  filinfo_altname:	EQU	9	;  13: Alternative file name
+04007C             0572*  filinfo_fname:		EQU	22	; 256: Primary file name
+04007C             0031       include "functions.inc"
+04007C             0001*      MACRO printChar char
+04007C             0002*          LD A, char
+04007C             0003*          RST.LIL 10h
+04007C             0004*      ENDMACRO
+04007C             0005*  
+04007C             0006*  ; https://github.com/envenomator/Agon/blob/master/ez80asm%20examples%20(annotated)/functions.s
+04007C             0007*  ; Print a zero-terminated string
+04007C             0008*  ; HL: Pointer to string
+04007C             0009*  printString:
+04007C C5          0010*  	PUSH	BC
+04007D 01 00 00 00 0011*  	LD		BC,0
+040081 3E 00       0012*  	LD 	 	A,0
+040083 5B DF       0013*  	RST.LIL 18h
+040085 C1          0014*  	POP		BC
+040086 C9          0015*  	RET
+040087             0016*  ; print a VDU sequence
+040087             0017*  ; HL: Pointer to VDU sequence - <1 byte length> <data>
+040087             0018*  sendVDUsequence:
+040087 C5          0019*  	PUSH	BC
+040088 01 00 00 00 0020*  	LD		BC, 0
+04008C 4E          0021*  	LD		C, (HL)
+04008D 5B DF       0022*  	RST.LIL	18h
+04008F C1          0023*  	POP		BC
+040090 C9          0024*  	RET
+040091             0025*  ; Print Newline sequence to VDP
+040091             0026*  printNewLine:
+040091 F5          0027*      push af ; for some reason rst.lil 10h sets carry flag
+040092 3E 0D       0028*  	LD	A, '\r'
+040094 5B D7       0029*  	RST.LIL 10h
+040096 3E 0A       0030*  	LD	A, '\n'
+040098 5B D7       0031*  	RST.LIL 10h
+04009A F1          0032*      pop af
+04009B C9          0033*  	RET
+04009C             0034*  ; Print a 24-bit HEX number
+04009C             0035*  ; HLU: Number to print
+04009C             0036*  printHex24:
+04009C E5          0037*  	PUSH	HL
+04009D 21 02 00 00 0038*  	LD		HL, 2
+0400A1 39          0039*  	ADD		HL, SP
+0400A2 7E          0040*  	LD		A, (HL)
+0400A3 E1          0041*  	POP		HL
+0400A4 CD AE 00 04 0042*  	CALL	printHex8
+0400A8             0043*  ; Print a 16-bit HEX number
+0400A8             0044*  ; HL: Number to print
+0400A8             0045*  printHex16:
+0400A8 7C          0046*  	LD		A,H
+0400A9 CD AE 00 04 0047*  	CALL	printHex8
+0400AD 7D          0048*  	LD		A,L
+0400AE             0049*  ; Print an 8-bit HEX number
+0400AE             0050*  ; A: Number to print
+0400AE             0051*  printHex8:
+0400AE 4F          0052*  	LD		C,A
+0400AF 1F          0053*  	RRA
+0400B0 1F          0054*  	RRA
+0400B1 1F          0055*  	RRA
+0400B2 1F          0056*  	RRA
+0400B3 CD B8 00 04 0057*  	CALL	@F
+0400B7 79          0058*  	LD		A,C
+0400B8             0059*  @@:
+0400B8 E6 0F       0060*  	AND		0Fh
+0400BA C6 90       0061*  	ADD		A,90h
+0400BC 27          0062*  	DAA
+0400BD CE 40       0063*  	ADC		A,40h
+0400BF 27          0064*  	DAA
+0400C0 5B D7       0065*  	RST.LIL	10h
+0400C2 C9          0066*  	RET
+0400C3             0067*  
+0400C3             0068*  ; Print a 0x HEX prefix
+0400C3             0069*  DisplayHexPrefix:
+0400C3 3E 30       0070*  	LD	A, '0'
+0400C5 5B D7       0071*  	RST.LIL 10h
+0400C7 3E 78       0072*  	LD	A, 'x'
+0400C9 5B D7       0073*  	RST.LIL 10h
+0400CB C9          0074*  	RET
+0400CC             0075*  
+0400CC             0076*      MACRO printDecBC
+0400CC             0077*          push hl
+0400CC             0078*          push bc
+0400CC             0079*          pop hl
+0400CC             0080*          call printDec
+0400CC             0081*          pop hl
+0400CC             0082*      ENDMACRO
+0400CC             0083*  
+0400CC             0084*      MACRO printDecDE
+0400CC             0085*          push hl
+0400CC             0086*          push de
+0400CC             0087*          pop hl
+0400CC             0088*          call printDec
+0400CC             0089*          pop hl
+0400CC             0090*      ENDMACRO
+0400CC             0091*  
+0400CC             0092*      MACRO printDecHL
+0400CC             0093*          call printDec
+0400CC             0094*      ENDMACRO
+0400CC             0095*  
+0400CC             0096*      MACRO printDecIX
+0400CC             0097*          push hl
+0400CC             0098*          push ix
+0400CC             0099*          pop hl
+0400CC             0100*          call printDec
+0400CC             0101*          pop hl
+0400CC             0102*      ENDMACRO
+0400CC             0103*  
+0400CC             0104*      MACRO printDecIY
+0400CC             0105*          push hl
+0400CC             0106*          push iy
+0400CC             0107*          pop hl
+0400CC             0108*          call printDec
+0400CC             0109*          pop hl
+0400CC             0110*      ENDMACRO
+0400CC             0111*  
+0400CC             0112*  ; Prints the right justified decimal value in HL without leading zeroes
+0400CC             0113*  ; HL : Value to print
+0400CC             0114*  printDec:
+0400CC             0115*  ; BEGIN MY CODE
+0400CC             0116*  ; back up all the things
+0400CC F5          0117*      push af
+0400CD C5          0118*      push bc
+0400CE D5          0119*      push de
+0400CF E5          0120*      push hl
+0400D0             0121*  ; END MY CODE
+0400D0 11 F8 00 04 0122*  	LD	 DE, _printDecBuffer
+0400D4 CD 01 01 04 0123*  	CALL Num2String
+0400D8             0124*  ; BEGIN MY CODE
+0400D8             0125*  ; replace leading zeroes with spaces
+0400D8 21 F8 00 04 0126*      LD	 HL, _printDecBuffer
+0400DC 06 07       0127*      ld   B, 7 ; if HL was 0, we want to keep the final zero
+0400DE             0128*  @loop:
+0400DE 7E          0129*      LD	 A, (HL)
+0400DF FE 30       0130*      CP	 '0'
+0400E1 C2 EF 00 04 0131*      JP	 NZ, @done
+0400E5 3E 20       0132*      LD   A, ' '
+0400E7 77          0133*      LD	 (HL), A
+0400E8 23          0134*      INC	 HL
+0400E9 CD 3A 06 04 0135*      CALL vdu_cursor_forward
+0400ED 10 EF       0136*      DJNZ @loop
+0400EF             0137*  @done:
+0400EF             0138*  ; END MY CODE
+0400EF             0139*  	; LD	 HL, _printDecBuffer
+0400EF CD 7C 00 04 0140*  	CALL printString
+0400F3             0141*  ; BEGIN MY CODE
+0400F3             0142*  ; restore all the things
+0400F3 E1          0143*      pop hl
+0400F4 D1          0144*      pop de
+0400F5 C1          0145*      pop bc
+0400F6 F1          0146*      pop af
+0400F7             0147*  ; END MY CODE
+0400F7 C9          0148*  	RET
+0400F8 00 00 00 00 0149*  _printDecBuffer: blkb 9,0 ; nine bytes full of zeroes
+       00 00 00 00 
+       00          
+040101             0150*  
+040101             0151*  ; This routine converts the value from HL into it's ASCII representation,
+040101             0152*  ; starting to memory location pointing by DE, in decimal form and with leading zeroes
+040101             0153*  ; so it will allways be 8 characters length
+040101             0154*  ; HL : Value to convert to string
+040101             0155*  ; DE : pointer to buffer, at least 8 byte + 0
+040101             0156*  Num2String:
+040101 01 80 69 67 0157*  	LD	 BC,-10000000
+040105 CD 38 01 04 0158*  	CALL OneDigit
+040109 01 C0 BD F0 0159*  	LD	 BC,-1000000
+04010D CD 38 01 04 0160*  	CALL OneDigit
+040111 01 60 79 FE 0161*  	LD	 BC,-100000
+040115 CD 38 01 04 0162*  	CALL OneDigit
+040119 01 F0 D8 FF 0163*  	LD   BC,-10000
+04011D CD 38 01 04 0164*  	CALL OneDigit
+040121 01 18 FC FF 0165*  	LD   BC,-1000
+040125 CD 38 01 04 0166*  	CALL OneDigit
+040129 01 9C FF FF 0167*  	LD   BC,-100
+04012D CD 38 01 04 0168*  	CALL OneDigit
+040131 0E F6       0169*  	LD   C,-10
+040133 CD 38 01 04 0170*  	CALL OneDigit
+040137 48          0171*  	LD   C,B
+040138             0172*  OneDigit:
+040138 3E 2F       0173*  	LD   A,'0'-1
+04013A             0174*  DivideMe:
+04013A 3C          0175*  	INC  A
+04013B 09          0176*  	ADD  HL,BC
+04013C 38 FC       0177*  	JR   C,DivideMe
+04013E ED 42       0178*  	SBC  HL,BC
+040140 12          0179*  	LD   (DE),A
+040141 13          0180*  	INC  DE
+040142 C9          0181*  	RET
+040143             0182*  
+040143             0183*  
+040143             0184*  ; #### new functions added by Brandon R. Gates ####
+040143             0185*  
+040143             0186*  ; print the binary representation of the 8-bit value in a
+040143             0187*  ; destroys a, hl, bc
+040143             0188*  printBin8:
+040143 06 08       0189*      ld b,8      ; loop counter for 8 bits
+040145 21 60 01 04 0190*      ld hl,@cmd  ; set hl to the low byte of the output string
+040149             0191*                  ; (which will be the high bit of the value in a)
+040149             0192*  @loop:
+040149 07          0193*      rlca ; put the next highest bit into carry
+04014A 38 04       0194*      jr c,@one
+04014C 36 30       0195*      ld (hl),'0'
+04014E 18 02       0196*      jr @next_bit
+040150             0197*  @one:
+040150 36 31       0198*      ld (hl),'1'
+040152             0199*  @next_bit:
+040152 23          0200*      inc hl
+040153 10 F4       0201*      djnz @loop
+040155             0202*  ; print it
+040155 21 60 01 04 0203*  	ld hl,@cmd
+040159 01 08 00 00 0204*  	ld bc,@end-@cmd
+04015D 5B DF       0205*  	rst.lil $18
+04015F C9          0206*  	ret
+040160             0207*  @cmd: ds 8 ; eight bytes for eight bits
+040168             0208*  @end:
+040168             0209*  
+040168             0210*  ; print the binary representation of the 8-bit value in a
+040168             0211*  ; in reverse order (lsb first)
+040168             0212*  ; destroys a, hl, bc
+040168             0213*  printBin8Rev:
+040168 06 08       0214*      ld b,8      ; loop counter for 8 bits
+04016A 21 85 01 04 0215*      ld hl,@cmd  ; set hl to the low byte of the output string
+04016E             0216*                  ; (which will be the high bit of the value in a)
+04016E             0217*  @loop:
+04016E 0F          0218*      rrca ; put the next lowest bit into carry
+04016F 38 04       0219*      jr c,@one
+040171 36 30       0220*      ld (hl),'0'
+040173 18 02       0221*      jr @next_bit
+040175             0222*  @one:
+040175 36 31       0223*      ld (hl),'1'
+040177             0224*  @next_bit:
+040177 23          0225*      inc hl
+040178 10 F4       0226*      djnz @loop
+04017A             0227*  ; print it
+04017A 21 85 01 04 0228*  	ld hl,@cmd
+04017E 01 08 00 00 0229*  	ld bc,@end-@cmd
+040182 5B DF       0230*  	rst.lil $18
+040184 C9          0231*  	ret
+040185             0232*  @cmd: ds 8 ; eight bytes for eight bits
+04018D             0233*  @end:
+04018D             0234*  
+04018D             0235*  ; print registers to screen in hexidecimal format
+04018D             0236*  ; inputs: none
+04018D             0237*  ; outputs: values of every register printed to screen
+04018D             0238*  ;    values of each register in global scratch memory
+04018D             0239*  ; destroys: nothing
+04018D             0240*  stepRegistersHex:
+04018D             0241*  ; store everything in scratch
+04018D 22 90 03 04 0242*      ld (uhl),hl
+040191 ED 43 93 03 0243*      ld (ubc),bc
+       04          
+040196 ED 53 96 03 0244*      ld (ude),de
+       04          
+04019B DD 22 99 03 0245*      ld (uix),ix
+       04          
+0401A0 FD 22 9C 03 0246*      ld (uiy),iy
+       04          
+0401A5 F5          0247*      push af ; fml
+0401A6 E1          0248*      pop hl  ; thanks, zilog
+0401A7 22 8D 03 04 0249*      ld (uaf),hl
+0401AB F5          0250*      push af ; dammit
+0401AC             0251*  
+0401AC             0252*  ; home the cursor
+0401AC CD 19 06 04 0253*      call vdu_home_cursor
+0401B0             0254*  
+0401B0             0255*  ; print each register
+0401B0 21 19 03 04 0256*      ld hl,str_afu
+0401B4 CD 7C 00 04 0257*      call printString
+0401B8 2A 8D 03 04 0258*      ld hl,(uaf)
+0401BC CD 9C 00 04 0259*      call printHex24
+0401C0 CD 91 00 04 0260*      call printNewLine
+0401C4             0261*  
+0401C4 21 1D 03 04 0262*      ld hl,str_hlu
+0401C8 CD 7C 00 04 0263*      call printString
+0401CC 2A 90 03 04 0264*      ld hl,(uhl)
+0401D0 CD 9C 00 04 0265*      call printHex24
+0401D4 CD 91 00 04 0266*      call printNewLine
+0401D8             0267*  
+0401D8 21 21 03 04 0268*      ld hl,str_bcu
+0401DC CD 7C 00 04 0269*      call printString
+0401E0 2A 93 03 04 0270*      ld hl,(ubc)
+0401E4 CD 9C 00 04 0271*      call printHex24
+0401E8 CD 91 00 04 0272*      call printNewLine
+0401EC             0273*  
+0401EC 21 25 03 04 0274*      ld hl,str_deu
+0401F0 CD 7C 00 04 0275*      call printString
+0401F4 2A 96 03 04 0276*      ld hl,(ude)
+0401F8 CD 9C 00 04 0277*      call printHex24
+0401FC CD 91 00 04 0278*      call printNewLine
+040200             0279*  
+040200 21 29 03 04 0280*      ld hl,str_ixu
+040204 CD 7C 00 04 0281*      call printString
+040208 2A 99 03 04 0282*      ld hl,(uix)
+04020C CD 9C 00 04 0283*      call printHex24
+040210 CD 91 00 04 0284*      call printNewLine
+040214             0285*  
+040214 21 2D 03 04 0286*      ld hl,str_iyu
+040218 CD 7C 00 04 0287*      call printString
+04021C 2A 9C 03 04 0288*      ld hl,(uiy)
+040220 CD 9C 00 04 0289*      call printHex24
+040224 CD 91 00 04 0290*      call printNewLine
+040228             0291*  
+040228             0292*      ; call vsync
+040228             0293*  
+040228 CD 91 00 04 0294*      call printNewLine
+04022C             0295*  
+04022C             0296*  ; check for right shift key and quit if pressed
+04022C             0297*  	MOSCALL mos_getkbmap
+04022C 3E 1E       0001*M 			LD	A, function
+04022E 5B CF       0002*M 			RST.LIL	08h
+040230             0298*  @stayhere:
+040230             0299*  ; 7 RightShift
+040230 DD CB 00 76 0300*      bit 6,(ix+0)
+040234 20 02       0301*      jr nz,@RightShift
+040236 18 F8       0302*      jr @stayhere
+040238             0303*  @RightShift:
+040238 DD CB 0E 86 0304*      res 0,(ix+14) ; debounce the key (hopefully)
+04023C 3E 80       0305*      ld a,%10000000
+04023E CD F9 05 04 0306*      call multiPurposeDelay
+040242             0307*  
+040242             0308*  ; restore everything
+040242 2A 90 03 04 0309*      ld hl, (uhl)
+040246 ED 4B 93 03 0310*      ld bc, (ubc)
+       04          
+04024B ED 5B 96 03 0311*      ld de, (ude)
+       04          
+040250 DD 2A 99 03 0312*      ld ix, (uix)
+       04          
+040255 FD 2A 9C 03 0313*      ld iy, (uiy)
+       04          
+04025A F1          0314*      pop af
+04025B             0315*  ; all done
+04025B C9          0316*      ret
+04025C             0317*  
+04025C             0318*  ; print registers to screen in hexidecimal format
+04025C             0319*  ; inputs: none
+04025C             0320*  ; outputs: values of every register printed to screen
+04025C             0321*  ;    values of each register in global scratch memory
+04025C             0322*  ; destroys: nothing
+04025C             0323*  dumpRegistersHex:
+04025C             0324*  ; store everything in scratch
+04025C 22 90 03 04 0325*      ld (uhl),hl
+040260 ED 43 93 03 0326*      ld (ubc),bc
+       04          
+040265 ED 53 96 03 0327*      ld (ude),de
+       04          
+04026A DD 22 99 03 0328*      ld (uix),ix
+       04          
+04026F FD 22 9C 03 0329*      ld (uiy),iy
+       04          
+040274 F5          0330*      push af ; fml
+040275 E1          0331*      pop hl  ; thanks, zilog
+040276 22 8D 03 04 0332*      ld (uaf),hl
+04027A F5          0333*      push af ; dammit
+04027B             0334*  
+04027B             0335*  ; home the cursor
+04027B             0336*      ; call vdu_home_cursor
+04027B CD 91 00 04 0337*      call printNewLine
+04027F             0338*  
+04027F             0339*  ; print each register
+04027F 21 19 03 04 0340*      ld hl,str_afu
+040283 CD 7C 00 04 0341*      call printString
+040287 2A 8D 03 04 0342*      ld hl,(uaf)
+04028B CD 9C 00 04 0343*      call printHex24
+04028F CD 91 00 04 0344*      call printNewLine
+040293             0345*  
+040293 21 1D 03 04 0346*      ld hl,str_hlu
+040297 CD 7C 00 04 0347*      call printString
+04029B 2A 90 03 04 0348*      ld hl,(uhl)
+04029F CD 9C 00 04 0349*      call printHex24
+0402A3 CD 91 00 04 0350*      call printNewLine
+0402A7             0351*  
+0402A7 21 21 03 04 0352*      ld hl,str_bcu
+0402AB CD 7C 00 04 0353*      call printString
+0402AF 2A 93 03 04 0354*      ld hl,(ubc)
+0402B3 CD 9C 00 04 0355*      call printHex24
+0402B7 CD 91 00 04 0356*      call printNewLine
+0402BB             0357*  
+0402BB 21 25 03 04 0358*      ld hl,str_deu
+0402BF CD 7C 00 04 0359*      call printString
+0402C3 2A 96 03 04 0360*      ld hl,(ude)
+0402C7 CD 9C 00 04 0361*      call printHex24
+0402CB CD 91 00 04 0362*      call printNewLine
+0402CF             0363*  
+0402CF 21 29 03 04 0364*      ld hl,str_ixu
+0402D3 CD 7C 00 04 0365*      call printString
+0402D7 2A 99 03 04 0366*      ld hl,(uix)
+0402DB CD 9C 00 04 0367*      call printHex24
+0402DF CD 91 00 04 0368*      call printNewLine
+0402E3             0369*  
+0402E3 21 2D 03 04 0370*      ld hl,str_iyu
+0402E7 CD 7C 00 04 0371*      call printString
+0402EB 2A 9C 03 04 0372*      ld hl,(uiy)
+0402EF CD 9C 00 04 0373*      call printHex24
+0402F3 CD 91 00 04 0374*      call printNewLine
+0402F7             0375*  
+0402F7 CD B0 06 04 0376*      call vdu_vblank
+0402FB             0377*  
+0402FB CD 91 00 04 0378*      call printNewLine
+0402FF             0379*  ; restore everything
+0402FF 2A 90 03 04 0380*      ld hl, (uhl)
+040303 ED 4B 93 03 0381*      ld bc, (ubc)
+       04          
+040308 ED 5B 96 03 0382*      ld de, (ude)
+       04          
+04030D DD 2A 99 03 0383*      ld ix, (uix)
+       04          
+040312 FD 2A 9C 03 0384*      ld iy, (uiy)
+       04          
+040317 F1          0385*      pop af
+040318             0386*  ; all done
+040318 C9          0387*      ret
+040319             0388*  
+040319 61 66 3D 00 0389*  str_afu: db "af=",0
+04031D 68 6C 3D 00 0390*  str_hlu: db "hl=",0
+040321 62 63 3D 00 0391*  str_bcu: db "bc=",0
+040325 64 65 3D 00 0392*  str_deu: db "de=",0
+040329 69 78 3D 00 0393*  str_ixu: db "ix=",0
+04032D 69 79 3D 00 0394*  str_iyu: db "iy=",0
+040331             0395*  
+040331             0396*  ; print udeuhl to screen in hexidecimal format
+040331             0397*  ; inputs: none
+040331             0398*  ; outputs: concatenated hexidecimal udeuhl
+040331             0399*  ; destroys: nothing
+040331             0400*  dumpUDEUHLHex:
+040331             0401*  ; store everything in scratch
+040331 22 90 03 04 0402*      ld (uhl),hl
+040335 ED 43 93 03 0403*      ld (ubc),bc
+       04          
+04033A ED 53 96 03 0404*      ld (ude),de
+       04          
+04033F DD 22 99 03 0405*      ld (uix),ix
+       04          
+040344 FD 22 9C 03 0406*      ld (uiy),iy
+       04          
+040349 F5          0407*      push af
+04034A             0408*  
+04034A             0409*  ; print each register
+04034A             0410*  
+04034A 21 84 03 04 0411*      ld hl,str_udeuhl
+04034E CD 7C 00 04 0412*      call printString
+040352 2A 96 03 04 0413*      ld hl,(ude)
+040356 CD 9C 00 04 0414*      call printHex24
+04035A 3E 2E       0415*  	ld a,'.'	; print a dot to separate the values
+04035C 5B D7       0416*  	rst.lil 10h
+04035E 2A 90 03 04 0417*      ld hl,(uhl)
+040362 CD 9C 00 04 0418*      call printHex24
+040366 CD 91 00 04 0419*      call printNewLine
+04036A             0420*  
+04036A             0421*  ; restore everything
+04036A 2A 90 03 04 0422*      ld hl, (uhl)
+04036E ED 4B 93 03 0423*      ld bc, (ubc)
+       04          
+040373 ED 5B 96 03 0424*      ld de, (ude)
+       04          
+040378 DD 2A 99 03 0425*      ld ix, (uix)
+       04          
+04037D FD 2A 9C 03 0426*      ld iy, (uiy)
+       04          
+040382 F1          0427*      pop af
+040383             0428*  ; all done
+040383 C9          0429*      ret
+040384             0430*  
+040384 75 64 65 2E 0431*  str_udeuhl: db "ude.uhl=",0
+       75 68 6C 3D 
+       00          
+04038D             0432*  
+04038D             0433*  ; global scratch memory for registers
+04038D 00 00 00    0434*  uaf: dl 0
+040390 00 00 00    0435*  uhl: dl 0
+040393 00 00 00    0436*  ubc: dl 0
+040396 00 00 00    0437*  ude: dl 0
+040399 00 00 00    0438*  uix: dl 0
+04039C 00 00 00    0439*  uiy: dl 0
+04039F 00 00 00    0440*  usp: dl 0
+0403A2 00 00 00    0441*  upc: dl 0
+0403A5             0442*  
+0403A5             0443*  ; inputs: whatever is in the flags register
+0403A5             0444*  ; outputs: binary representation of flags
+0403A5             0445*  ;          with a header so we know which is what
+0403A5             0446*  ; destroys: nothing
+0403A5             0447*  ; preserves: everything
+0403A5             0448*  dumpFlags:
+0403A5             0449*  ; first we curse zilog for not giving direct access to flags
+0403A5 F5          0450*      push af ; this is so we can send it back unharmed
+0403A6 F5          0451*      push af ; this is so we can pop it to hl
+0403A7             0452*  ; store everything in scratch
+0403A7 22 90 03 04 0453*      ld (uhl),hl
+0403AB ED 43 93 03 0454*      ld (ubc),bc
+       04          
+0403B0 ED 53 96 03 0455*      ld (ude),de
+       04          
+0403B5 DD 22 99 03 0456*      ld (uix),ix
+       04          
+0403BA FD 22 9C 03 0457*      ld (uiy),iy
+       04          
+0403BF             0458*  ; next we print the header
+0403BF 21 EB 03 04 0459*      ld hl,@header
+0403C3 CD 7C 00 04 0460*      call printString
+0403C7 E1          0461*      pop hl ; flags are now in l
+0403C8 7D          0462*      ld a,l ; flags are now in a
+0403C9 CD 43 01 04 0463*      call printBin8
+0403CD CD 91 00 04 0464*  	call printNewLine
+0403D1             0465*  ; restore everything
+0403D1 2A 90 03 04 0466*      ld hl, (uhl)
+0403D5 ED 4B 93 03 0467*      ld bc, (ubc)
+       04          
+0403DA ED 5B 96 03 0468*      ld de, (ude)
+       04          
+0403DF DD 2A 99 03 0469*      ld ix, (uix)
+       04          
+0403E4 FD 2A 9C 03 0470*      ld iy, (uiy)
+       04          
+0403E9 F1          0471*      pop af ; send her home the way she came
+0403EA C9          0472*      ret
+0403EB             0473*  ; Bit 7 (S): Sign flag
+0403EB             0474*  ; Bit 6 (Z): Zero flag
+0403EB             0475*  ; Bit 5 (5): Reserved (copy of bit 5 of the result)
+0403EB             0476*  ; Bit 4 (H): Half Carry flag
+0403EB             0477*  ; Bit 3 (3): Reserved (copy of bit 3 of the result)
+0403EB             0478*  ; Bit 2 (PV): Parity/Overflow flag
+0403EB             0479*  ; Bit 1 (N): Subtract flag
+0403EB             0480*  ; Bit 0 (C): Carry flag
+0403EB 53 5A 78 48 0481*  @header: db "SZxHxPNC\r\n",0 ; cr/lf and 0 terminator
+       78 50 4E 43 
+       0D 0A 00    
+0403F6             0482*  
+0403F6             0483*  ; set all the bits in the flag register
+0403F6             0484*  ; more of an academic exercise than anything useful
+0403F6             0485*  ; inputs; none
+0403F6             0486*  ; outputs; a=0,f=255
+0403F6             0487*  ; destroys: flags, hl
+0403F6             0488*  ; preserves: a, because why not
+0403F6             0489*  setAllFlags:
+0403F6 21 FF 00 00 0490*      ld hl,255
+0403FA 67          0491*      ld h,a ; four cycles to preserve a is cheap
+0403FB E5          0492*      push hl
+0403FC F1          0493*      pop af
+0403FD C9          0494*      ret
+0403FE             0495*  
+0403FE             0496*  ; reset all the bits in the flag register
+0403FE             0497*  ; unlike its inverse counterpart, this may actually be useful
+0403FE             0498*  ; inputs; none
+0403FE             0499*  ; outputs; a=0,f=0
+0403FE             0500*  ; destroys: flags, hl
+0403FE             0501*  ; preserves: a, because why not
+0403FE             0502*  resetAllFlags:
+0403FE 21 00 00 00 0503*      ld hl,0
+040402 67          0504*      ld h,a ; four cycles to preserve a is cheap
+040403 E5          0505*      push hl
+040404 F1          0506*      pop af
+040405 C9          0507*      ret
+040406             0508*  
+040406             0509*  ; wait until user presses a key
+040406             0510*  ; inputs: none
+040406             0511*  ; outputs: none
+040406             0512*  ; destroys: af,ix
+040406             0513*  waitKeypress:
+040406             0514*      MOSCALL mos_sysvars
+040406 3E 08       0001*M 			LD	A, function
+040408 5B CF       0002*M 			RST.LIL	08h
+04040A AF          0515*      xor a ; zero out any prior keypresses
+04040B DD 77 05    0516*      ld (ix+sysvar_keyascii),a
+04040E             0517*  @loop:
+04040E DD 7E 05    0518*      ld a,(ix+sysvar_keyascii)
+040411 A7          0519*      and a
+040412 C0          0520*      ret nz
+040413 18 F9       0521*      jr @loop
+040415             0522*  
+040415             0523*  
+040415             0524*  ; print bytes from an address to the screen in hexidecimal format
+040415             0525*  ; inputs: hl = address of first byte to print, a = number of bytes to print
+040415             0526*  ; outputs: values of each byte printed to screen separated by spaces
+040415             0527*  ; destroys: nothing
+040415             0528*  dumpMemoryHex:
+040415             0529*  ; save registers to the stack
+040415 C5          0530*      push bc
+040416 E5          0531*      push hl
+040417 F5          0532*      push af
+040418             0533*  
+040418             0534*  ; print the address and separator
+040418 CD 9C 00 04 0535*      call printHex24
+04041C 3E 3A       0536*      ld a,':'
+04041E 5B D7       0537*      rst.lil 10h
+040420 3E 20       0538*      ld a,' '
+040422 5B D7       0539*      rst.lil 10h
+040424             0540*  
+040424             0541*  ; set b to be our loop counter
+040424 F1          0542*      pop af
+040425 47          0543*      ld b,a
+040426 E1          0544*      pop hl
+040427 E5          0545*      push hl
+040428 F5          0546*      push af
+040429             0547*  @loop:
+040429             0548*  ; print the byte
+040429 7E          0549*      ld a,(hl)
+04042A CD AE 00 04 0550*      call printHex8
+04042E             0551*  ; print a space
+04042E 3E 20       0552*      ld a,' '
+040430 5B D7       0553*      rst.lil 10h
+040432 23          0554*      inc hl
+040433 10 F4       0555*      djnz @loop
+040435             0556*      ; call printNewLine
+040435             0557*  
+040435             0558*  ; restore everything
+040435 F1          0559*      pop af
+040436 E1          0560*      pop hl
+040437 C1          0561*      pop bc
+040438             0562*  
+040438             0563*  ; all done
+040438 C9          0564*      ret
+040439             0565*  
+040439             0566*  
+040439             0567*  ; print bytes from an address to the screen in binary format
+040439             0568*  ; inputs: hl = address of first byte to print, a = number of bytes to print
+040439             0569*  ; outputs: values of each byte printed to screen separated by spaces
+040439             0570*  ; destroys: nothing
+040439             0571*  dumpMemoryBin:
+040439             0572*  ; save all registers to the stack
+040439 F5          0573*      push af
+04043A C5          0574*      push bc
+04043B D5          0575*      push de
+04043C E5          0576*      push hl
+04043D DD E5       0577*      push ix
+04043F FD E5       0578*      push iy
+040441             0579*  
+040441             0580*  ; set b to be our loop counter
+040441 47          0581*      ld b,a
+040442             0582*  @loop:
+040442             0583*  ; print the byte
+040442 7E          0584*      ld a,(hl)
+040443 E5          0585*      push hl
+040444 C5          0586*      push bc
+040445 CD 43 01 04 0587*      call printBin8
+040449 C1          0588*      pop bc
+04044A             0589*  ; print a space
+04044A 3E 20       0590*      ld a,' '
+04044C 5B D7       0591*      rst.lil 10h
+04044E E1          0592*      pop hl
+04044F 23          0593*      inc hl
+040450 10 F0       0594*      djnz @loop
+040452 CD 91 00 04 0595*      call printNewLine
+040456             0596*  
+040456             0597*  ; restore everything
+040456 FD E1       0598*      pop iy
+040458 DD E1       0599*      pop ix
+04045A E1          0600*      pop hl
+04045B D1          0601*      pop de
+04045C C1          0602*      pop bc
+04045D F1          0603*      pop af
+04045E             0604*  ; all done
+04045E C9          0605*      ret
+04045F             0606*  
+04045F             0607*  ; print bytes from an address to the screen in binary format
+04045F             0608*  ; with the bits of each byte in reverse order (lsb first)
+04045F             0609*  ; inputs: hl = address of first byte to print, a = number of bytes to print
+04045F             0610*  ; outputs: values of each byte printed to screen separated by spaces
+04045F             0611*  ; destroys: nothing
+04045F             0612*  dumpMemoryBinRev:
+04045F             0613*  ; save all registers to the stack
+04045F F5          0614*      push af
+040460 C5          0615*      push bc
+040461 D5          0616*      push de
+040462 E5          0617*      push hl
+040463 DD E5       0618*      push ix
+040465 FD E5       0619*      push iy
+040467             0620*  
+040467             0621*  ; set b to be our loop counter
+040467 47          0622*      ld b,a
+040468             0623*  @loop:
+040468             0624*  ; print the byte
+040468 7E          0625*      ld a,(hl)
+040469 E5          0626*      push hl
+04046A C5          0627*      push bc
+04046B CD 68 01 04 0628*      call printBin8Rev
+04046F C1          0629*      pop bc
+040470             0630*  ; print a space
+040470 3E 20       0631*      ld a,' '
+040472 5B D7       0632*      rst.lil 10h
+040474 E1          0633*      pop hl
+040475 23          0634*      inc hl
+040476 10 F0       0635*      djnz @loop
+040478 CD 91 00 04 0636*      call printNewLine
+04047C             0637*  
+04047C             0638*  ; restore everything
+04047C FD E1       0639*      pop iy
+04047E DD E1       0640*      pop ix
+040480 E1          0641*      pop hl
+040481 D1          0642*      pop de
+040482 C1          0643*      pop bc
+040483 F1          0644*      pop af
+040484             0645*  ; all done
+040484 C9          0646*      ret
+040485             0032       include "files.inc"
+040485             0001*  ; load to onboard 8k sram
+040485             0002*  filedata: equ 0xB7E000; Directory object structure (DIR)
+040485             0033       include "timer.inc"
+040485             0001*  ; Table 32. Timer Control Registers
+040485             0002*  ; this constant is the base address of the timer control registers
+040485             0003*  ; each timer takes three bytes:
+040485             0004*  ;   0: control register
+040485             0005*  ;   1: low byte of timer reset value
+040485             0006*  ;   2: high byte of timer reset value
+040485             0007*  ; note that the value is only 8-bits,so we use in0/out0 i/o calls,
+040485             0008*  ; which correctly force the high and upper bytes of the address bus to zero
+040485             0009*  TMR_CTL:     equ 80h
+040485             0010*  
+040485             0011*  ; Timer Control Register Bit Definitions
+040485             0012*  PRT_IRQ_0:    equ %00000000 ; The timer does not reach its end-of-count value.
+040485             0013*                              ; This bit is reset to 0 every time the TMRx_CTL register is read.
+040485             0014*  PRT_IRQ_1:    equ %10000000 ; The timer reaches its end-of-count value. If IRQ_EN is set to 1,
+040485             0015*                              ; an interrupt signal is sent to the CPU. This bit remains 1 until
+040485             0016*                              ; the TMRx_CTL register is read.
+040485             0017*  
+040485             0018*  IRQ_EN_0:     equ %00000000 ; Timer interrupt requests are disabled.
+040485             0019*  IRQ_EN_1:     equ %01000000 ; Timer interrupt requests are enabled.
+040485             0020*  
+040485             0021*  PRT_MODE_0:   equ %00000000 ; The timer operates in SINGLE PASS mode. PRT_EN (bit 0) is reset to
+040485             0022*                              ;  0,and counting stops when the end-of-count value is reached.
+040485             0023*  PRT_MODE_1:   equ %00010000 ; The timer operates in CONTINUOUS mode. The timer reload value is
+040485             0024*                              ; written to the counter when the end-of-count value is reached.
+040485             0025*  
+040485             0026*  ; CLK_DIV is a 2-bit mask that sets the timer input source clock divider
+040485             0027*  CLK_DIV_256:  equ %00001100 ;
+040485             0028*  CLK_DIV_64:   equ %00001000 ;
+040485             0029*  CLK_DIV_16:   equ %00000100 ;
+040485             0030*  CLK_DIV_4:    equ %00000000 ;
+040485             0031*  
+040485             0032*  RST_EN_0:     equ %00000000 ; The reload and restart function is disabled.
+040485             0033*  RST_EN_1:     equ %00000010 ; The reload and restart function is enabled.
+040485             0034*                              ; When a 1 is written to this bit,the values in the reload registers
+040485             0035*                              ;  are loaded into the downcounter when the timer restarts. The
+040485             0036*                              ; programmer must ensure that this bit is set to 1 each time
+040485             0037*                              ; SINGLE-PASS mode is used.
+040485             0038*  
+040485             0039*  ; disable/enable the programmable reload timer
+040485             0040*  PRT_EN_0:     equ %00000000 ;
+040485             0041*  PRT_EN_1:     equ %00000001 ;
+040485             0042*  
+040485             0043*  ; Table 37. Timer Input Source Select Register
+040485             0044*  ; Each of the 4 timers are allocated two bits of the 8-bit register
+040485             0045*  ; in little-endian order,with TMR0 using bits 0 and 1,TMR1 using bits 2 and 3,etc.
+040485             0046*  ;   00: System clock / CLK_DIV
+040485             0047*  ;   01: RTC / CLK_DIV
+040485             0048*  ;   NOTE: these are the values given in the manual,but it may be a typo
+040485             0049*  ;   10: GPIO port B pin 1.
+040485             0050*  ;   11: GPIO port B pin 1.
+040485             0051*  TMR_ISS:   equ 92h ; register address
+040485             0052*  
+040485             0053*  ; Table 51. Real-Time Clock Control Register
+040485             0054*  RTC_CTRL: equ EDh ; register address
+040485             0055*  
+040485             0056*  ; alarm interrupt disable/enable
+040485             0057*  RTC_ALARM_0:    equ %00000000
+040485             0058*  RTC_ALARM_1:    equ %10000000
+040485             0059*  
+040485             0060*  ; interrupt on alarm disable/enable
+040485             0061*  RTC_INT_ENT_0:  equ %00000000
+040485             0062*  RTC_INT_ENT_1:  equ %01000000
+040485             0063*  
+040485             0064*  RTC_BCD_EN_0:   equ %00000000   ; RTC count and alarm registers are binary
+040485             0065*  RTC_BCD_EN_1:   equ %00100000   ; RTC count and alarm registers are BCD
+040485             0066*  
+040485             0067*  RTC_CLK_SEL_0:  equ %00000000   ; RTC clock source is crystal oscillator output (32768 Hz).
+040485             0068*                                  ; On-chip 32768 Hz oscillator is enabled.
+040485             0069*  RTC_CLK_SEL_1:  equ %00010000   ; RTC clock source is power line frequency input as set by FREQ_SEL.
+040485             0070*                                  ; On-chip 32768 Hz oscillator is disabled.
+040485             0071*  
+040485             0072*  RTC_FREQ_SEL_0: equ %00000000   ; 60 Hz power line frequency.
+040485             0073*  RTC_FREQ_SEL_1: equ %00001000   ; 50 Hz power line frequency.
+040485             0074*  
+040485             0075*  RTC_SLP_WAKE_0: equ %00000000   ; RTC does not generate a sleep-mode recovery reset.
+040485             0076*  RTC_SLP_WAKE_1: equ %00000010   ; RTC generates a sleep-mode recovery reset.
+040485             0077*  
+040485             0078*  RTC_UNLOCK_0:   equ %00000000   ; RTC count registers are locked to prevent Write access.
+040485             0079*                                  ; RTC counter is enabled.
+040485             0080*  RTC_UNLOCK_1:   equ %00000001   ; RTC count registers are unlocked to allow Write access.
+040485             0081*                                  ; RTC counter is disabled.
+040485             0082*  
+040485             0083*  ; prt_reload_emulator: equ 11234 ; 1/102.4 seconds on emulator with 16 clock divider
+040485             0084*  
+040485             0085*  prt_reload_emulator: equ 11519 ; 1 centisecond on emulator with 16 clock divider
+040485             0086*  prt_reload_hardware: equ 11532 ; 1 centisecond on hardware with 16 clock divider
+040485 00 00 00    0087*  prt_reload: dl 0x000000
+040488             0088*  
+040488             0089*  ; ; returns: a = 0 if running on hardware,1 if running on emulator
+040488             0090*  ; ;          de = number PRT interrupts during test interval
+040488             0091*  ; prt_calibrate:
+040488             0092*  ;     call vdu_vblank
+040488             0093*  ; ; set a MOS timer
+040488             0094*  ;     ld hl,120*1 ; 1 second
+040488             0095*  ;     ld iy,tmr_test
+040488             0096*  ;     call tmr_set
+040488             0097*  ; ; set a PRT timer
+040488             0098*  ;     ; ld hl,prt_reload_hardware
+040488             0099*  ;     ; ld hl,prt_reload_emulator
+040488             0100*  ;     ld hl,prt_reload_emulator + prt_reload_hardware / 2
+040488             0101*  ;     ld (prt_reload),hl
+040488             0102*  ;     call prt_set
+040488             0103*  ; @loop:
+040488             0104*  ; ; check time remaining on MOS timer
+040488             0105*  ;     call tmr_get
+040488             0106*  ;     jp z,@done ; time expired,so quit
+040488             0107*  ;     jp m,@done ; time past expiration (negative),so quit
+040488             0108*  ;     jr @loop
+040488             0109*  ; @done:
+040488             0110*  ;     ld de,(prt_irq_counter)
+040488             0111*  ;     ld bc,prt_reload_hardware ; default value for running on hardware
+040488             0112*  ;     ld (prt_reload),bc
+040488             0113*  ;     ld hl,100 ; halfway between 101 for real hardware and 99 for emulator
+040488             0114*  ;     xor a ; clear carry,zero is default value for running on hardware
+040488             0115*  ;     ld (is_emulator),a
+040488             0116*  ;     sbc hl,de
+040488             0117*  ;     ld hl,on_hardware ; default message for running on hardware
+040488             0118*  ;     jp z,prt_calibrate ; zero result is indeterminate so we try again
+040488             0119*  ;     ret m ; negative result means we're on hardware
+040488             0120*  ;     inc a ; we're on emulator
+040488             0121*  ;     ld (is_emulator),a
+040488             0122*  ;     ld bc,prt_reload_emulator
+040488             0123*  ;     ld (prt_reload),bc
+040488             0124*  ;     ld hl,on_emulator
+040488             0125*  ;     ret
+040488             0126*  
+040488             0127*  ; calibrating_timer: defb "Calibrating timer\r\n",0
+040488             0128*  
+040488             0129*  ; set PRT timer
+040488             0130*  prt_set:
+040488 21 00 00 00 0131*      ld hl,0
+04048C 22 D6 04 04 0132*      ld (prt_irq_counter),hl
+040490 2A 85 04 04 0133*      ld hl,(prt_reload)
+040494 ED 29 84    0134*      out0 ($84),l
+040497 ED 21 85    0135*  	out0 ($85),h
+04049A             0136*  ; disable timer
+04049A 3E 06       0137*      ld a,PRT_IRQ_0 | IRQ_EN_0 | PRT_MODE_0 | CLK_DIV_16 | RST_EN_1 | PRT_EN_0
+04049C ED 39 83    0138*  	out0 ($83),a
+04049F             0139*  ; enable timer,with interrupt and CONTINUOUS mode,clock divider 16
+04049F 3E 57       0140*      ld a,PRT_IRQ_0 | IRQ_EN_1 | PRT_MODE_1 | CLK_DIV_16 | RST_EN_1 | PRT_EN_1
+0404A1 ED 39 83    0141*  	out0 ($83),a
+0404A4 C9          0142*      ret
+0404A5             0143*  
+0404A5             0144*  ; ===============================================
+0404A5             0145*  ; PRT Timer Interrupt Handling
+0404A5             0146*  ; https://github.com/tomm/agon-cpu-emulator/blob/main/sdcard/regression_suite/timerirq.inc
+0404A5             0147*  ; -----------------------------------------------
+0404A5             0148*  prt_irq_init:
+0404A5             0149*      ; set up interrupt vector table 2
+0404A5 21 00 00 00 0150*  	ld hl,0
+0404A9 3A 0C 01 00 0151*  	ld a,($10c)
+0404AD 6F          0152*  	ld l,a
+0404AE 3A 0D 01 00 0153*  	ld a,($10d)
+0404B2 67          0154*  	ld h,a
+0404B3             0155*  
+0404B3             0156*  	; skip over CALL ($c3)
+0404B3 23          0157*  	inc hl
+0404B4             0158*  	; load address of jump into vector table 2 (in ram)
+0404B4 ED 27       0159*  	ld hl,(hl)
+0404B6             0160*  
+0404B6             0161*  	; write CALL prt_irq_handler to vector table 2
+0404B6 3E C3       0162*  	ld a,$c3
+0404B8 77          0163*  	ld (hl),a
+0404B9 23          0164*  	inc hl
+0404BA 11 C1 04 04 0165*  	ld de,prt_irq_handler
+0404BE ED 1F       0166*  	ld (hl),de
+0404C0             0167*  
+0404C0 C9          0168*      ret
+0404C1             0169*  
+0404C1             0170*  prt_irq_handler:
+0404C1 F3          0171*  	di
+0404C2 F5          0172*  	push af
+0404C3 E5          0173*      push hl
+0404C4 ED 38 83    0174*  	in0 a,($83)
+0404C7 2A D6 04 04 0175*  	ld hl,(prt_irq_counter)
+0404CB 23          0176*  	inc hl
+0404CC 22 D6 04 04 0177*  	ld (prt_irq_counter),hl
+0404D0 E1          0178*      pop hl
+0404D1 F1          0179*  	pop af
+0404D2 FB          0180*  	ei
+0404D3 5B ED 4D    0181*  	reti.l
+0404D6             0182*  
+0404D6             0183*  prt_irq_counter:
+0404D6 00 00 00    0184*  	.dl 0
+0404D9             0185*  prt_irq_counter_saved:
+0404D9 00 00 00    0186*      .dl 0
+0404DC             0187*  
+0404DC             0188*  prt_loop_reset:
+0404DC E5          0189*      push hl
+0404DD 21 00 00 00 0190*  	ld hl,0
+0404E1 22 D6 04 04 0191*  	ld (prt_irq_counter),hl
+0404E5 22 47 05 04 0192*      ld (prt_loop_counter),hl
+0404E9 22 4A 05 04 0193*      ld (prt_loops),hl
+0404ED CD 88 04 04 0194*      call prt_set
+0404F1 E1          0195*      pop hl
+0404F2 C9          0196*      ret
+0404F3             0197*  
+0404F3             0198*  prt_loop_start:
+0404F3 E5          0199*      push hl
+0404F4 21 00 00 00 0200*  	ld hl,0
+0404F8 22 D6 04 04 0201*  	ld (prt_irq_counter),hl
+0404FC E1          0202*      pop hl
+0404FD C9          0203*      ret
+0404FE             0204*  
+0404FE             0205*  prt_loop_stop:
+0404FE E5          0206*      push hl
+0404FF D5          0207*      push de
+040500 2A D6 04 04 0208*      ld hl,(prt_irq_counter)
+040504 ED 5B 47 05 0209*      ld de,(prt_loop_counter)
+       04          
+040509 19          0210*      add hl,de
+04050A 22 47 05 04 0211*      ld (prt_loop_counter),hl
+04050E 21 00 00 00 0212*      ld hl,0
+040512 22 D6 04 04 0213*      ld (prt_irq_counter),hl
+040516 2A 4A 05 04 0214*      ld hl,(prt_loops)
+04051A 23          0215*      inc hl
+04051B 22 4A 05 04 0216*      ld (prt_loops),hl
+04051F D1          0217*      pop de
+040520 E1          0218*      pop hl
+040521 C9          0219*      ret
+040522             0220*  
+040522             0221*  ; inputs: bc = y,x text coordinates to print
+040522             0222*  prt_loop_print:
+040522 F5          0223*      push af
+040523 E5          0224*      push hl
+040524 C5          0225*      push bc
+040525 D5          0226*      push de
+040526 DD E5       0227*      push ix
+040528 FD E5       0228*      push iy
+04052A CD 3F 06 04 0229*      call vdu_move_cursor
+04052E             0230*  
+04052E 2A 47 05 04 0231*      ld hl,(prt_loop_counter)
+040532 CD CC 00 04 0232*      call printDec
+040536             0233*  
+040536 2A 4A 05 04 0234*      ld hl,(prt_loops)
+04053A CD CC 00 04 0235*      call printDec
+04053E             0236*  
+04053E FD E1       0237*      pop iy
+040540 DD E1       0238*      pop ix
+040542 D1          0239*      pop de
+040543 C1          0240*      pop bc
+040544 E1          0241*      pop hl
+040545 F1          0242*      pop af
+040546 C9          0243*      ret
+040547             0244*  
+040547             0245*  prt_loop_counter:
+040547 00 00 00    0246*      .dl 0
+04054A             0247*  prt_loops:
+04054A 00 00 00    0248*      .dl 0
+04054D             0249*  
+04054D             0250*  ; ===============================================
+04054D             0251*  ; Timer functions
+04054D             0252*  ; -----------------------------------------------
+04054D             0253*  ; set a countdown timer
+04054D             0254*  ; inputs: hl = time to set in 1/120ths of a second; iy = pointer to 3-byte buffer holding start time,iy+3 = pointer to 3-byte buffer holding timer set value
+04054D             0255*  ; returns: hl = current time
+04054D             0256*  tmr_set:
+04054D FD 2F 03    0257*      ld (iy+3),hl            ; set time remaining
+040550             0258*      MOSCALL mos_sysvars     ; ix points to syvars table
+040550 3E 08       0001*M 			LD	A, function
+040552 5B CF       0002*M 			RST.LIL	08h
+040554 DD 27 00    0259*      ld hl,(ix+sysvar_time)  ; get current time
+040557 FD 2F 00    0260*      ld (iy+0),hl            ; set start time
+04055A C9          0261*      ret
+04055B             0262*  
+04055B             0263*  ; gets time remaining on a countdown timer
+04055B             0264*  ; inputs: iy = pointer to 3-byte buffer holding start time,iy+3 = pointer to 3-byte buffer holding timer set value
+04055B             0265*  ; returns: hl pos = time remaining in 1/120ths of a second,hl neg = time past expiration
+04055B             0266*  ;          sign flags: pos = time not expired,zero or neg = time expired
+04055B             0267*  tmr_get:
+04055B             0268*      MOSCALL mos_sysvars     ; ix points to syvars table
+04055B 3E 08       0001*M 			LD	A, function
+04055D 5B CF       0002*M 			RST.LIL	08h
+04055F DD 17 00    0269*      ld de,(ix+sysvar_time)  ; get current time
+040562 FD 27 00    0270*      ld hl,(iy+0)            ; get start time
+040565 AF          0271*      xor a                   ; clear carry
+040566 ED 52       0272*      sbc hl,de               ; hl = time elapsed (will always be zero or negative)
+040568 FD 17 03    0273*      ld de,(iy+3)            ; get timer set value
+04056B AF          0274*      xor a                   ; clear carry
+04056C ED 5A       0275*      adc hl,de               ; hl = time remaining
+04056E             0276*                              ; (we do adc because add hl,rr doesn't set sign or zero flags)
+04056E C9          0277*      ret
+04056F             0278*  
+04056F 00 00 00    0279*  timestamp_now: dl 0
+040572 00 00 00    0280*  timestamp_old: dl 0
+040575 00 00 00    0281*  timestamp_chg: dl 0
+040578             0282*  
+040578             0283*  ; update the global timestamp from the system clock
+040578             0284*  ; inputs: none
+040578             0285*  ; returns: hl = time elapsed in 1/120ths of a second
+040578             0286*  ;          de = current time
+040578             0287*  ;          ix = pointer to syvars table
+040578             0288*  ; destroys: af,hl,de,ix
+040578             0289*  timestamp_tick:
+040578 ED 5B 6F 05 0290*      ld de,(timestamp_now)   ; get previous time
+       04          
+04057D ED 53 72 05 0291*      ld (timestamp_old),de   ; save previous time
+       04          
+040582             0292*      MOSCALL mos_sysvars     ; ix points to syvars table
+040582 3E 08       0001*M 			LD	A, function
+040584 5B CF       0002*M 			RST.LIL	08h
+040586 DD 27 00    0293*      ld hl,(ix+sysvar_time)  ; get current time
+040589 22 6F 05 04 0294*      ld (timestamp_now),hl   ; save current time
+04058D AF          0295*      xor a                   ; clear carry
+04058E ED 52       0296*      sbc hl,de               ; hl = time elapsed
+040590 22 75 05 04 0297*      ld (timestamp_chg),hl   ; save elapsed time
+040594 C9          0298*      ret
+040595             0299*  
+040595             0300*  ; set a countdown timer
+040595             0301*  ; inputs: hl = time to set in 1/120ths of a second; iy = pointer to 3-byte buffer holding start time,iy+3 = pointer to 3-byte buffer holding timer set value
+040595             0302*  ; requires: timestamp_tick to be called at least once before this function
+040595             0303*  ; returns: hl = current time
+040595             0304*  ; destroys: hl
+040595             0305*  timestamp_tmr_set:
+040595 FD 2F 03    0306*      ld (iy+3),hl            ; set time remaining
+040598 2A 6F 05 04 0307*      ld hl,(timestamp_now)   ; get current timestamp
+04059C FD 2F 00    0308*      ld (iy+0),hl            ; set start time
+04059F C9          0309*      ret
+0405A0             0310*  
+0405A0             0311*  ; gets time remaining on a countdown timer following the global timestamp
+0405A0             0312*  ; inputs: iy = pointer to 3-byte buffer holding start time,iy+3 = pointer to 3-byte buffer holding timer set value
+0405A0             0313*  ; requires: timestamp_tick to be called at least once before this function
+0405A0             0314*  ; returns: hl pos = time remaining in 1/120ths of a second,hl neg = time past expiration
+0405A0             0315*  ;          sign flags: pos = time not expired,zero or neg = time expired
+0405A0             0316*  ; destroys: af,hl,de
+0405A0             0317*  timestamp_tmr_get:
+0405A0 ED 5B 6F 05 0318*      ld de,(timestamp_now)   ; get current timestamp
+       04          
+0405A5 FD 27 00    0319*      ld hl,(iy+0)            ; get start time
+0405A8 AF          0320*      xor a                   ; clear carry
+0405A9 ED 52       0321*      sbc hl,de               ; hl = time elapsed (will always be zero or negative)
+0405AB FD 17 03    0322*      ld de,(iy+3)            ; get timer set value
+0405AE AF          0323*      xor a                   ; clear carry
+0405AF ED 5A       0324*      adc hl,de               ; hl = time remaining
+0405B1             0325*                              ; (we do adc because add hl,rr doesn't set sign or zero flags)
+0405B1 C9          0326*      ret
+0405B2             0327*  
+0405B2             0328*  ; main loop timer functions
+0405B2             0329*  tmr_main_loop: ds 6 ; buffer to hold main loop timer
+0405B8             0330*  
+0405B8             0331*  ; set a countdown timer for the main loop using the timestamp timer
+0405B8             0332*  ; inputs: hl = time to set in 1/120ths of a second
+0405B8             0333*  ; returns: hl = current time
+0405B8             0334*  ; destroys: af,hl,de,ix,iy
+0405B8             0335*  tmr_main_loop_set:
+0405B8 FD 21 B2 05 0336*      ld iy,tmr_main_loop
+       04          
+0405BD FD 2F 03    0337*      ld (iy+3),hl ; set time remaining
+0405C0 CD 78 05 04 0338*      call timestamp_tick
+0405C4 2A 6F 05 04 0339*      ld hl,(timestamp_now)   ; get current timestamp
+0405C8 FD 2F 00    0340*      ld (iy+0),hl ; set start time
+0405CB C9          0341*      ret
+0405CC             0342*  
+0405CC             0343*  ; gets time remaining on the main loop countdown timer following the global timestamp
+0405CC             0344*  ; returns: hl pos = time remaining in 1/120ths of a second,hl neg = time past expiration
+0405CC             0345*  ;          sign flags: pos = time not expired,zero or neg = time expired
+0405CC             0346*  ; destroys: af,hl,de,ix,iy
+0405CC             0347*  tmr_main_loop_get:
+0405CC CD 78 05 04 0348*      call timestamp_tick
+0405D0 FD 21 B2 05 0349*      ld iy,tmr_main_loop
+       04          
+0405D5 CD A0 05 04 0350*      call timestamp_tmr_get
+0405D9 C9          0351*      ret
+0405DA             0352*  
+0405DA             0353*  ; set a stopwatch
+0405DA             0354*  ; returns: hl = start time
+0405DA             0355*  ; destroys: hl,ix
+0405DA             0356*  stopwatch_set:
+0405DA             0357*      MOSCALL mos_sysvars     ; ix points to syvars table
+0405DA 3E 08       0001*M 			LD	A, function
+0405DC 5B CF       0002*M 			RST.LIL	08h
+0405DE DD 27 00    0358*      ld hl,(ix+sysvar_time)  ; get current time
+0405E1 22 F6 05 04 0359*      ld (stopwatch_started),hl            ; set start time
+0405E5 C9          0360*      ret
+0405E6             0361*  
+0405E6             0362*  ; gets time elapsed on a stopwatch
+0405E6             0363*  ; returns: hl = time elapsed in 1/120ths of a second
+0405E6             0364*  ; destroys: af,hl,de,ix
+0405E6             0365*  stopwatch_get:
+0405E6             0366*      MOSCALL mos_sysvars     ; ix points to syvars table
+0405E6 3E 08       0001*M 			LD	A, function
+0405E8 5B CF       0002*M 			RST.LIL	08h
+0405EA DD 27 00    0367*      ld hl,(ix+sysvar_time)  ; get current time
+0405ED ED 5B F6 05 0368*      ld de,(stopwatch_started)            ; get start time
+       04          
+0405F2 AF          0369*      xor a                   ; clear carry
+0405F3 ED 52       0370*      sbc hl,de               ; hl = time elapsed (will always be zero or positive)
+0405F5 C9          0371*      ret
+0405F6             0372*  
+0405F6             0373*  stopwatch_started: ds 3 ; buffer to hold stopwatch start time
+0405F9             0374*  
+0405F9             0375*  ; ------------------
+0405F9             0376*  ; delay routine
+0405F9             0377*  ; Author: Richard Turrnidge
+0405F9             0378*  ; https://github.com/richardturnnidge/lessons/blob/main/slowdown.inc
+0405F9             0379*  ; routine waits a fixed time,then returns
+0405F9             0380*  ; arrive with A =  the delay byte. One bit to be set only.
+0405F9             0381*  ; eg. ld A,00000100b
+0405F9             0382*  
+0405F9             0383*  multiPurposeDelay:
+0405F9 F5          0384*      push af
+0405FA C5          0385*      push bc
+0405FB DD E5       0386*      push ix
+0405FD 47          0387*      ld b,a
+0405FE 3E 08       0388*      ld a,$08
+040600 5B CF       0389*      RST.LIL	08h                 ; get IX pointer to sysvars
+040602             0390*  
+040602             0391*  waitLoop:
+040602             0392*  
+040602 DD 7E 00    0393*      ld a,(ix + 0)              ; ix+0h is lowest byte of clock timer
+040605             0394*  
+040605             0395*                                  ;   we check if bit set is same as last time we checked.
+040605             0396*                                  ;   bit 0 - don't use
+040605             0397*                                  ;   bit 1 - changes 64 times per second
+040605             0398*                                  ;   bit 2 - changes 32 times per second
+040605             0399*                                  ;   bit 3 - changes 16 times per second
+040605             0400*  
+040605             0401*                                  ;   bit 4 - changes 8 times per second
+040605             0402*                                  ;   bit 5 - changes 4 times per second
+040605             0403*                                  ;   bit 6 - changes 2 times per second
+040605             0404*                                  ;   bit 7 - changes 1 times per second
+040605 A0          0405*      and b
+040606 4F          0406*      ld c,a
+040607 3A 18 06 04 0407*      ld a,(oldTimeStamp)
+04060B B9          0408*      cp c                        ; is A same as last value?
+04060C 28 F4       0409*      jr z,waitLoop              ; loop here if it is
+04060E 79          0410*      ld a,c
+04060F 32 18 06 04 0411*      ld (oldTimeStamp),a        ; set new value
+040613             0412*  
+040613 DD E1       0413*      pop ix
+040615 C1          0414*      pop bc
+040616 F1          0415*      pop af
+040617 C9          0416*      ret
+040618             0417*  
+040618 00          0418*  oldTimeStamp:   .db 00h
+040619             0034       include "vdu.inc"
+040619             0001*  ; &E8-&EF 	232-239 	Bitmap plot §
+040619             0002*  plot_bmp: equ 0xE8
+040619             0003*  ; 5 	Plot absolute in current foreground colour
+040619             0004*  dr_abs_fg: equ 5
+040619             0005*  
+040619             0006*  ; VDU 30: Home cursor
+040619             0007*  vdu_home_cursor:
+040619 3E 1E       0008*      ld a,30
+04061B 5B D7       0009*  	rst.lil $10
+04061D C9          0010*  	ret
+04061E             0011*  
+04061E             0012*  cursor_on:
+04061E 21 29 06 04 0013*  	ld hl,@cmd
+040622 01 03 00 00 0014*  	ld bc,@end-@cmd
+040626 5B DF       0015*  	rst.lil $18
+040628 C9          0016*  	ret
+040629             0017*  @cmd:
+040629 17 01 01    0018*  	db 23,1,1
+04062C             0019*  @end:
+04062C             0020*  
+04062C             0021*  cursor_off:
+04062C 21 37 06 04 0022*  	ld hl,@cmd
+040630 01 03 00 00 0023*  	ld bc,@end-@cmd
+040634 5B DF       0024*  	rst.lil $18
+040636 C9          0025*  	ret
+040637             0026*  @cmd:
+040637 17 01 00    0027*  	db 23,1,0
+04063A             0028*  @end:
+04063A             0029*  
+04063A             0030*  ; VDU 9: Move cursor forward one character
+04063A             0031*  vdu_cursor_forward:
+04063A 3E 09       0032*      ld a,9
+04063C 5B D7       0033*  	rst.lil $10
+04063E C9          0034*  	ret
+04063F             0035*  
+04063F             0036*  ; VDU 31, x, y: Move text cursor to x, y text position (TAB(x, y))
+04063F             0037*  ; inputs: c=x, b=y 8-bit unsigned integers
+04063F             0038*  vdu_move_cursor:
+04063F ED 43 50 06 0039*      ld (@x0),bc
+       04          
+040644 21 4F 06 04 0040*  	ld hl,@cmd
+040648 01 03 00 00 0041*  	ld bc,@end-@cmd
+04064C 5B DF       0042*  	rst.lil $18
+04064E C9          0043*  	ret
+04064F 1F          0044*  @cmd: 	db 31
+040650 00          0045*  @x0:	db 0
+040651 00          0046*  @y0: 	db 0
+040652 00          0047*  @end: 	db 0 ; padding
+040653             0048*  
+040653             0049*  ; VDU 12: Clear text area (CLS)
+040653             0050*  vdu_cls:
+040653 3E 0C       0051*      ld a,12
+040655 5B D7       0052*  	rst.lil $10
+040657 C9          0053*  	ret
+040658             0054*  
+040658             0055*  vdu_flip:
+040658 21 63 06 04 0056*  	ld hl,@cmd
+04065C 01 03 00 00 0057*  	ld bc,@end-@cmd
+040660 5B DF       0058*  	rst.lil $18
+040662 C9          0059*  	ret
+040663 17 00 C3    0060*  @cmd: db 23,0,0xC3
+040666             0061*  @end:
+040666             0062*  
+040666             0063*  ; VDU 16: Clear graphics area (CLG)
+040666             0064*  vdu_clg:
+040666 3E 10       0065*      ld a,16
+040668 5B D7       0066*  	rst.lil $10
+04066A C9          0067*  	ret
+04066B             0068*  
+04066B             0069*  ; VDU 17, colour: Define text colour (COLOUR)
+04066B             0070*  vdu_colour_text:
+04066B 32 7B 06 04 0071*  	ld (@arg),a
+04066F 21 7A 06 04 0072*  	ld hl,@cmd
+040673 01 02 00 00 0073*  	ld bc,@end-@cmd
+040677 5B DF       0074*  	rst.lil $18
+040679 C9          0075*  	ret
+04067A 11          0076*  @cmd: db 17
+04067B 00          0077*  @arg: db 0
+04067C             0078*  @end:
+04067C             0079*  
+04067C             0080*  
+04067C             0081*  vdu_gcol_bg:
+04067C 32 93 06 04 0082*  	ld (@mode),a
+040680 79          0083*      ld a,c
+040681 C6 80       0084*      add a,128
+040683 32 94 06 04 0085*      ld (@col),a
+040687 21 92 06 04 0086*  	ld hl,@cmd
+04068B 01 03 00 00 0087*  	ld bc,@end-@cmd
+04068F 5B DF       0088*  	rst.lil $18
+040691 C9          0089*  	ret
+040692 12          0090*  @cmd:  db 18
+040693 00          0091*  @mode: db 0
+040694 00          0092*  @col:  db 0
+040695             0093*  @end:
+040695             0094*  
+040695             0095*  
+040695             0096*  ; VDU 28, left, bottom, right, top: Set text viewport **
+040695             0097*  ; MIND THE LITTLE-ENDIANESS
+040695             0098*  ; inputs: c=left,b=bottom,e=right,d=top
+040695             0099*  ; outputs; nothing
+040695             0100*  ; destroys: a might make it out alive
+040695             0101*  vdu_set_txt_viewport:
+040695 ED 43 AB 06 0102*      ld (@lb),bc
+       04          
+04069A ED 53 AD 06 0103*  	ld (@rt),de
+       04          
+04069F 21 AA 06 04 0104*  	ld hl,@cmd
+0406A3 01 05 00 00 0105*  	ld bc,@end-@cmd
+0406A7 5B DF       0106*  	rst.lil $18
+0406A9 C9          0107*  	ret
+0406AA 1C          0108*  @cmd:   db 28 ; set text viewport command
+0406AB 00 00       0109*  @lb: 	dw 0x0000 ; set by bc
+0406AD 00 00       0110*  @rt: 	dw 0x0000 ; set by de
+0406AF 00          0111*  @end:   db 0x00	  ; padding
+0406B0             0112*  
+0406B0             0113*  ; Wait for VBLANK interrupt
+0406B0             0114*  vdu_vblank:
+0406B0 DD E5       0115*      PUSH 	IX
+0406B2             0116*  	MOSCALL	mos_sysvars
+0406B2 3E 08       0001*M 			LD	A, function
+0406B4 5B CF       0002*M 			RST.LIL	08h
+0406B6 DD 7E 00    0117*  	LD	A, (IX + sysvar_time + 0)
+0406B9             0118*  @wait:
+0406B9 DD BE 00    0119*      CP 	A, (IX + sysvar_time + 0)
+0406BC 28 FB       0120*      JR	Z, @wait
+0406BE DD E1       0121*      POP	IX
+0406C0 C9          0122*      RET
+0406C1             0123*  
+0406C1             0124*  ; VDU 24, left; bottom; right; top;: Set graphics viewport
+0406C1             0125*  ; NOTE: the order of the y-coordinate parameters are inverted
+0406C1             0126*  ; 	because we have turned off logical screen scaling
+0406C1             0127*  ; inputs: bc=x0,de=y0,ix=x1,iy=y1
+0406C1             0128*  ; outputs; nothing
+0406C1             0129*  ; destroys: a might make it out alive
+0406C1             0130*  vdu_set_gfx_viewport:
+0406C1 ED 43 E1 06 0131*      ld (@x0),bc
+       04          
+0406C6 FD 22 E3 06 0132*      ld (@y1),iy
+       04          
+0406CB DD 22 E5 06 0133*  	ld (@x1),ix
+       04          
+0406D0 ED 53 E7 06 0134*  	ld (@y0),de
+       04          
+0406D5 21 E0 06 04 0135*  	ld hl,@cmd
+0406D9 01 09 00 00 0136*  	ld bc,@end-@cmd
+0406DD 5B DF       0137*  	rst.lil $18
+0406DF C9          0138*  	ret
+0406E0 18          0139*  @cmd:   db 24 ; set graphics viewport command
+0406E1 00 00       0140*  @x0: 	dw 0x0000 ; set by bc
+0406E3 00 00       0141*  @y1: 	dw 0x0000 ; set by iy
+0406E5 00 00       0142*  @x1: 	dw 0x0000 ; set by ix
+0406E7 00 00       0143*  @y0: 	dw 0x0000 ; set by de
+0406E9 00          0144*  @end:   db 0x00	  ; padding
+0406EA             0145*  
+0406EA             0146*  ; SCREEN MODES
+0406EA             0147*  ; ===============================
+0406EA             0148*  ; Mode  Horz  Vert  Cols  Refresh
+0406EA             0149*  ; ---   ----  ----  ----  -------
+0406EA             0150*  ; 11    320   240   2     60hz
+0406EA             0151*  ; 139   320   240   2     60hz
+0406EA             0152*  ; 23    512   384   2     60hz
+0406EA             0153*  ; 151   512   384   2     60hz
+0406EA             0154*  ; 6     640   240   2     60hz
+0406EA             0155*  ; 134   640   240   2     60hz
+0406EA             0156*  ; 2     640   480   2     60hz
+0406EA             0157*  ; 130   640   480   2     60hz
+0406EA             0158*  ; 17    800   600   2     60hz
+0406EA             0159*  ; 145   800   600   2     60hz
+0406EA             0160*  ; 18    1024  768   2     60hz
+0406EA             0161*  ; 146   1024  768   2     60hz
+0406EA             0162*  ; ---   ----  ----  ----  -------
+0406EA             0163*  ; 10    320   240   4     60hz
+0406EA             0164*  ; 138   320   240   4     60hz
+0406EA             0165*  ; 22    512   384   4     60hz
+0406EA             0166*  ; 150   512   384   4     60hz
+0406EA             0167*  ; 5     640   240   4     60hz
+0406EA             0168*  ; 133   640   240   4     60hz
+0406EA             0169*  ; 1     640   480   4     60hz
+0406EA             0170*  ; 129   640   480   4     60hz
+0406EA             0171*  ; 16    800   600   4     60hz
+0406EA             0172*  ; 19    1024  768   4     60hz
+0406EA             0173*  ; ---   ----  ----  ----  -------
+0406EA             0174*  ; 9     320   240   16    60hz
+0406EA             0175*  ; 137   320   240   16    60hz
+0406EA             0176*  ; 21    512   384   16    60hz
+0406EA             0177*  ; 149   512   384   16    60hz
+0406EA             0178*  ; 4     640   240   16    60hz
+0406EA             0179*  ; 132   640   240   16    60hz
+0406EA             0180*  ; 0     640   480   16    60hz
+0406EA             0181*  ; 7     n/a   n/a   16    60hz
+0406EA             0182*  ; ---   ----  ----  ----  -------
+0406EA             0183*  ; 8     320   240   64    60hz
+0406EA             0184*  ; 136   320   240   64    60hz
+0406EA             0185*  ; 20    512   384   64    60hz
+0406EA             0186*  ; 3     640   240   64    60hz
+0406EA             0187*  ; ---   ----  ----  ----  -------
+0406EA             0188*  vdu_set_screen_mode:
+0406EA 32 FA 06 04 0189*  	ld (@arg),a
+0406EE 21 F9 06 04 0190*  	ld hl,@cmd
+0406F2 01 02 00 00 0191*  	ld bc,@end-@cmd
+0406F6 5B DF       0192*  	rst.lil $18
+0406F8 C9          0193*  	ret
+0406F9 16          0194*  @cmd: db 22 ; set screen mode
+0406FA 00          0195*  @arg: db 0  ; screen mode parameter
+0406FB             0196*  @end:
+0406FB             0197*  
+0406FB             0198*  ; VDU 23, 0, &C0, n: Turn logical screen scaling on and off *
+0406FB             0199*  ; inputs: a is scaling mode, 1=on, 0=off
+0406FB             0200*  ; note: default setting on boot is scaling ON
+0406FB             0201*  vdu_set_scaling:
+0406FB 32 0D 07 04 0202*  	ld (@arg),a
+0406FF 21 0A 07 04 0203*  	ld hl,@cmd
+040703 01 04 00 00 0204*  	ld bc,@end-@cmd
+040707 5B DF       0205*  	rst.lil $18
+040709 C9          0206*  	ret
+04070A 17 00 C0    0207*  @cmd: db 23,0,0xC0
+04070D 00          0208*  @arg: db 0  ; scaling on/off
+04070E             0209*  @end:
+04070E             0210*  
+04070E             0211*  ; VDU 23, 27, &20, bufferId; : Select bitmap (using a buffer ID)
+04070E             0212*  ; inputs: hl=bufferId
+04070E             0213*  vdu_buff_select:
+04070E 22 20 07 04 0214*  	ld (@bufferId),hl
+040712 21 1D 07 04 0215*  	ld hl,@cmd
+040716 01 05 00 00 0216*  	ld bc,@end-@cmd
+04071A 5B DF       0217*  	rst.lil $18
+04071C C9          0218*  	ret
+04071D 17 1B 20    0219*  @cmd: db 23,27,0x20
+040720 00 00       0220*  @bufferId: dw 0x0000
+040722 00          0221*  @end: db 0x00 ; padding
+040723             0222*  
+040723             0223*  ; VDU 23, 27, &21, w; h; format: Create bitmap from selected buffer
+040723             0224*  ; inputs: a=format; bc=width; de=height
+040723             0225*  ; prerequisites: buffer selected by vdu_bmp_select or vdu_buff_select
+040723             0226*  ; formats: https://agonconsole8.github.io/agon-docs/VDP---Bitmaps-API.html
+040723             0227*  ; 0 	RGBA8888 (4-bytes per pixel)
+040723             0228*  ; 1 	RGBA2222 (1-bytes per pixel)
+040723             0229*  ; 2 	Mono/Mask (1-bit per pixel)
+040723             0230*  ; 3 	Reserved for internal use by VDP (“native” format)
+040723             0231*  vdu_bmp_create:
+040723 ED 43 3F 07 0232*      ld (@width),bc
+       04          
+040728 ED 53 41 07 0233*      ld (@height),de
+       04          
+04072D 32 43 07 04 0234*      ld (@fmt),a
+040731 21 3C 07 04 0235*  	ld hl,@cmd
+040735 01 08 00 00 0236*  	ld bc,@end-@cmd
+040739 5B DF       0237*  	rst.lil $18
+04073B C9          0238*  	ret
+04073C 17 1B 21    0239*  @cmd:       db 23,27,0x21
+04073F 00 00       0240*  @width:     dw 0x0000
+040741 00 00       0241*  @height:    dw 0x0000
+040743 00          0242*  @fmt:       db 0x00
+040744             0243*  @end:
+040744             0244*  
+040744             0245*  ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
+040744             0246*  ; &E8-&EF 	232-239 	Bitmap plot §
+040744             0247*  ; VDU 25, mode, x; y;: PLOT command
+040744             0248*  ; inputs: bc=x0, de=y0
+040744             0249*  ; prerequisites: vdu_buff_select
+040744             0250*  vdu_plot_bmp:
+040744 ED 43 5B 07 0251*      ld (@x0),bc
+       04          
+040749 ED 53 5D 07 0252*      ld (@y0),de
+       04          
+04074E 21 59 07 04 0253*  	ld hl,@cmd
+040752 01 06 00 00 0254*  	ld bc,@end-@cmd
+040756 5B DF       0255*  	rst.lil $18
+040758 C9          0256*  	ret
+040759 19          0257*  @cmd:   db 25
+04075A ED          0258*  @mode:  db plot_bmp+dr_abs_fg ; 0xED
+04075B 00 00       0259*  @x0: 	dw 0x0000
+04075D 00 00       0260*  @y0: 	dw 0x0000
+04075F 00          0261*  @end:   db 0x00 ; padding
+040760             0262*  
+040760             0263*  ; load an rgba2222 image file to a working buffer and make it an rgba8888 bitmap in a target buffer
+040760             0264*  ; inputs: bc,de image width,height ; hl = targetBufferId ; ix = file size ; iy = pointer to filename
+040760             0265*  vdu_load_img_rgba2_to_8:
+040760             0266*  ; backup the target buffer id and image dimensions
+040760 E5          0267*      push hl
+040761 D5          0268*      push de
+040762 C5          0269*      push bc
+040763             0270*  ; load the rgba2 image to working buffer 65534
+040763 21 FE FF 00 0271*      ld hl,65534 ; temporary working buffer id
+040767 CD 6A 08 04 0272*  	call vdu_load_buffer_from_file
+04076B             0273*  ; restore the image dimensions and target buffer id
+04076B C1          0274*      pop bc
+04076C D1          0275*      pop de
+04076D E1          0276*      pop hl
+04076E             0277*  ; fall through to vdu_rgba2_to_8
+04076E             0278*  
+04076E             0279*  ; https://discord.com/channels/1158535358624039014/1158536711148675072/1257757461729771771
+04076E             0280*  ; ok, so the "expand bitmap" can be used, when coupled with a "reverse" - the expanded bitmap _doesn't_ come out "right" otherwise, cos of endian-ness
+04076E             0281*  ; the "expand bitmap" command is:
+04076E             0282*  ; VDU 23,0,&A0,targetBufferID%;&48,2,sourceBufferId%;0,&7F,&BF,&FF
+04076E             0283*  ; and then to reverse the byte order to fix endian-ness:
+04076E             0284*  ; VDU 23,0,&A0,targetBufferID%;24,4,4;
+04076E             0285*  ; finally you'd need to set that buffer to be an RGBA8888 format bitmap:
+04076E             0286*  ; VDU 23,27,&20,targetBufferID%;
+04076E             0287*  ; VDU 23,27,&21,width%;height%;0
+04076E             0288*  ; -------------------------------------------------------------------
+04076E             0289*  ; inputs: bc,de image width,height ; hl = targetBufferId
+04076E             0290*  ; prerequisites: rgba2 image data loaded into workingBufferId 65534
+04076E             0291*  vdu_rgba2_to_8:
+04076E             0292*  ; load the image dimensions and buffer id parameters
+04076E ED 43 CA 07 0293*      ld (@width),bc
+       04          
+040773 ED 53 CC 07 0294*      ld (@height),de
+       04          
+040778 22 AF 07 04 0295*      ld (@bufferId0),hl
+04077C 22 BC 07 04 0296*      ld (@bufferId2),hl
+040780 22 C5 07 04 0297*      ld (@bufferId1),hl
+040784             0298*  ; clean up bytes that got stomped on by the ID loads
+040784 3E 48       0299*      ld a,0x48
+040786 32 B1 07 04 0300*      ld (@bufferId0+2),a
+04078A 3E 17       0301*      ld a,23
+04078C 32 C7 07 04 0302*      ld (@bufferId1+2),a
+040790 3E 18       0303*      ld a,24
+040792 32 BE 07 04 0304*      ld (@bufferId2+2),a
+040796 AF          0305*      xor a
+040797 32 CE 07 04 0306*      ld (@height+2),a
+04079B             0307*  ; send the vdu command strings
+04079B 21 A6 07 04 0308*      ld hl,@beg
+04079F 01 29 00 00 0309*      ld bc,@end-@beg
+0407A3 5B DF       0310*      rst.lil $18
+0407A5 C9          0311*      ret
+0407A6             0312*  @beg:
+0407A6             0313*  ; Command 14: Consolidate blocks in a buffer
+0407A6             0314*  ; VDU 23, 0, &A0, bufferId; 14
+0407A6 17 00 A0    0315*      db 23,0,0xA0
+0407A9 FE FF       0316*      dw 65534 ; workingBufferId
+0407AB 0E          0317*      db 14 ; consolidate blocks
+0407AC             0318*  ; the "expand bitmap" command is:
+0407AC             0319*  ; VDU 23,0,&A0,targetBufferID%;&48,2,sourceBufferId%;0,&7F,&BF,&FF
+0407AC 17 00 A0    0320*      db 23,0,0xA0
+0407AF 00 00       0321*  @bufferId0: dw 0x0000 ; targetBufferId
+0407B1 48          0322*      db 0x48 ; given as decimal command 72 in the docs
+0407B2 02          0323*      db 2 ; options mask: %00000011 is the number of bits per pixel in the source bitmap
+0407B3 FE FF       0324*      dw 65534 ; sourceBufferId
+0407B5 00 7F BF FF 0325*      db 0x00,0x7F,0xBF,0xFF ; expanding to bytes by bit-shifting?
+0407B9             0326*  ; reverse the byte order to fix endian-ness:
+0407B9             0327*  ; Command 24: Reverse the order of data of blocks within a buffer
+0407B9             0328*  ; VDU 23, 0, &A0, bufferId; 24, options, [valueSize;] [chunkSize;]
+0407B9             0329*  ; VDU 23,0,&A0,targetBufferID%;24,4,4;
+0407B9 17 00 A0    0330*      db 23,0,0xA0
+0407BC 00 00       0331*  @bufferId2:    dw 0x0000 ; targetBufferId
+0407BE 18          0332*      db 24 ; reverse byte order
+0407BF 04          0333*      db 4 ; option: Reverse data of the value size within chunk of data of the specified size
+0407C0 04 00       0334*      dw 4 ; size (4 bytes)
+0407C2             0335*  ; finally you'd need to set that buffer to be an RGBA8888 format bitmap:
+0407C2             0336*  ; VDU 23,27,&20,targetBufferID%;
+0407C2 17 1B 20    0337*      db 23,27,0x20 ; select bitmap
+0407C5 00 00       0338*  @bufferId1: dw 0x0000 ; targetBufferId
+0407C7             0339*  ; VDU 23,27,&21,width%;height%;0
+0407C7 17 1B 21    0340*      db 23,27,0x21 ; create bitmap from buffer
+0407CA 00 00       0341*  @width: dw 0x0000
+0407CC 00 00       0342*  @height: dw 0x0000
+0407CE 00          0343*      db 0x00 ; rgba8888 format
+0407CF             0344*  @end:
+0407CF             0345*  
+0407CF             0346*  ; scratch variables
+0407CF 00 00 00    0347*  bufferId0: dl 0x000000
+0407D2 00 00 00    0348*  bufferId1: dl 0x000000
+0407D5             0349*  
+0407D5             0350*  ; load a vdu buffer from local memory
+0407D5             0351*  ; inputs: hl = bufferId ; bc = length ; de = pointer to data
+0407D5             0352*  vdu_load_buffer:
+0407D5 ED 43 FE 07 0353*      ld (@length),bc
+       04          
+0407DA D5          0354*      push de ; save data pointer
+0407DB             0355*  ; send the vdu command string
+0407DB 7D          0356*      ld a,l
+0407DC 32 FB 07 04 0357*      ld (@bufferId),a
+0407E0 7C          0358*      ld a,h
+0407E1 32 FC 07 04 0359*      ld (@bufferId+1),a
+0407E5 21 F8 07 04 0360*      ld hl,@cmd
+0407E9 01 08 00 00 0361*      ld bc,@end-@cmd
+0407ED 5B DF       0362*      rst.lil $18
+0407EF             0363*  ; send the buffer data
+0407EF E1          0364*      pop hl ; pointer to data
+0407F0 ED 4B FE 07 0365*      ld bc,(@length)
+       04          
+0407F5 5B DF       0366*      rst.lil $18 ; send it
+0407F7 C9          0367*      ret
+0407F8             0368*  ; Upload data :: VDU 23, 0 &A0, bufferId; 0, length; <buffer-data>
+0407F8 17 00 A0    0369*  @cmd:       db 23,0,0xA0
+0407FB 00 00       0370*  @bufferId:	dw 0x0000
+0407FD 00          0371*  		    db 0 ; load buffer
+0407FE 00 00       0372*  @length:	dw 0x0000
+040800 00          0373*  @end: db 0 ; padding
+040801             0374*  
+040801             0375*  ; clear a buffer
+040801             0376*  ; inputs: hl = bufferId
+040801             0377*  vdu_clear_buffer:
+040801 7D          0378*      ld a,l
+040802 32 19 08 04 0379*      ld (@bufferId),a
+040806 7C          0380*      ld a,h
+040807 32 1A 08 04 0381*      ld (@bufferId+1),a
+04080B 21 16 08 04 0382*      ld hl,@cmd
+04080F 01 06 00 00 0383*      ld bc,@end-@cmd
+040813 5B DF       0384*      rst.lil $18
+040815 C9          0385*      ret
+040816 17 00 A0    0386*  @cmd:       db 23,0,0xA0
+040819 00 00       0387*  @bufferId:	dw 0x0000
+04081B 02          0388*  		    db 2 ; clear buffer
+04081C             0389*  @end:
+04081C             0390*  
+04081C             0391*  vdu_clear_all_buffers:
+04081C             0392*  ; clear all buffers
+04081C 21 27 08 04 0393*      ld hl,@beg
+040820 01 06 00 00 0394*      ld bc,@end-@beg
+040824 5B DF       0395*      rst.lil $18
+040826 C9          0396*      ret
+040827 17 00 A0    0397*  @beg: db 23,0,$A0
+04082A FF FF       0398*        dw -1 ; clear all buffers
+04082C 02          0399*        db 2  ; command 2: clear a buffer
+04082D             0400*  @end:
+04082D             0401*  
+04082D             0402*  ; Command 14: Consolidate blocks in a buffer
+04082D             0403*  vdu_consolidate_buffer:
+04082D             0404*  ; set parameters for vdu call
+04082D 7D          0405*      ld a,l
+04082E 32 45 08 04 0406*      ld (@bufferId),a
+040832 7C          0407*      ld a,h
+040833 32 46 08 04 0408*      ld (@bufferId+1),a
+040837 21 42 08 04 0409*      ld hl,@beg
+04083B 01 06 00 00 0410*      ld bc,@end-@beg
+04083F 5B DF       0411*      rst.lil $18
+040841 C9          0412*      ret
+040842             0413*  ; VDU 23, 0, &A0, bufferId; 14
+040842 17 00 A0    0414*  @beg: db 23,0,0xA0
+040845 00 00       0415*  @bufferId: dw 0x0000
+040847 0E          0416*             db 14
+040848             0417*  @end:
+040848             0418*  
+040848             0419*  ; load an image file to a buffer and make it a bitmap
+040848             0420*  ; inputs: a = image type ; bc,de image width,height ; hl = bufferId ; ix = file size ; iy = pointer to filename
+040848             0421*  vdu_load_img:
+040848             0422*  ; back up image type and dimension parameters
+040848 22 CF 07 04 0423*      ld (bufferId0),hl
+04084C F5          0424*      push af
+04084D C5          0425*  	push bc
+04084E D5          0426*  	push de
+04084F             0427*  ; load the image
+04084F CD 6A 08 04 0428*  	call vdu_load_buffer_from_file
+040853             0429*  ; now make it a bitmap
+040853 2A CF 07 04 0430*      ld hl,(bufferId0)
+040857 CD 2D 08 04 0431*      call vdu_consolidate_buffer
+04085B 2A CF 07 04 0432*      ld hl,(bufferId0)
+04085F CD 0E 07 04 0433*      call vdu_buff_select
+040863 D1          0434*  	pop de ; image height
+040864 C1          0435*  	pop bc ; image width
+040865 F1          0436*  	pop af ; image type
+040866 C3 23 07 04 0437*  	jp vdu_bmp_create ; will return to caller from there
+04086A             0438*  
+04086A             0439*  ; inputs: hl = bufferId; iy = pointer to filename
+04086A             0440*  vdu_load_buffer_from_file:
+04086A 22 CF 07 04 0441*      ld (bufferId0),hl
+04086E             0442*  
+04086E             0443*  ; clear target buffer
+04086E CD 01 08 04 0444*      call vdu_clear_buffer
+040872             0445*  
+040872             0446*  ; open the file in read mode
+040872             0447*  ; Open a file
+040872             0448*  ; HLU: Filename
+040872             0449*  ;   C: Mode
+040872             0450*  ; Returns:
+040872             0451*  ;   A: Filehandle, or 0 if couldn't open
+040872 FD E5       0452*  	push iy ; pointer to filename
+040874 E1          0453*  	pop hl
+040875 0E 01       0454*  	ld c,fa_read
+040877             0455*      MOSCALL mos_fopen
+040877 3E 0A       0001*M 			LD	A, function
+040879 5B CF       0002*M 			RST.LIL	08h
+04087B 32 B6 08 04 0456*      ld (@filehandle),a
+04087F             0457*  
+04087F             0458*  @read_file:
+04087F             0459*  ; Read a block of data from a file
+04087F             0460*  ;   C: Filehandle
+04087F             0461*  ; HLU: Pointer to where to write the data to
+04087F             0462*  ; DEU: Number of bytes to read
+04087F             0463*  ; Returns:
+04087F             0464*  ; DEU: Number of bytes read
+04087F 3A B6 08 04 0465*      ld a,(@filehandle)
+040883 4F          0466*      ld c,a
+040884 21 00 E0 B7 0467*      ld hl,filedata
+040888 11 00 20 00 0468*      ld de,8192 ; max we can read into onboard sram at one time
+04088C             0469*      MOSCALL mos_fread
+04088C 3E 1A       0001*M 			LD	A, function
+04088E 5B CF       0002*M 			RST.LIL	08h
+040890             0470*  
+040890             0471*  ; ; DEBUG: print chunk size
+040890             0472*  ;     push de
+040890             0473*  ;     pop hl
+040890             0474*  ;     call printDec
+040890             0475*  ;     call printNewLine
+040890             0476*  
+040890             0477*  ; test de for zero bytes read
+040890 21 00 00 00 0478*      ld hl,0
+040894 AF          0479*      xor a ; clear carry
+040895 ED 52       0480*      sbc hl,de
+040897 CA AD 08 04 0481*      jp z,@close_file
+04089B             0482*  
+04089B             0483*  ; load a vdu buffer from local memory
+04089B             0484*  ; inputs: hl = bufferId ; bc = length ; de = pointer to data
+04089B 2A CF 07 04 0485*      ld hl,(bufferId0)
+04089F D5          0486*      push de ; chunksize
+0408A0 C1          0487*      pop bc
+0408A1 11 00 E0 B7 0488*      ld de,filedata
+0408A5 CD D5 07 04 0489*      call vdu_load_buffer
+0408A9             0490*  
+0408A9             0491*  ; ; print progress breadcrumbs
+0408A9             0492*  ;     ld a,'.'
+0408A9             0493*  ;     rst.lil 10h
+0408A9             0494*  
+0408A9             0495*  ; read the next block
+0408A9 C3 7F 08 04 0496*      jp @read_file
+0408AD             0497*  
+0408AD             0498*  ; close the file
+0408AD             0499*  @close_file:
+0408AD 3A B6 08 04 0500*      ld a,(@filehandle)
+0408B1             0501*      MOSCALL mos_fclose
+0408B1 3E 0B       0001*M 			LD	A, function
+0408B3 5B CF       0002*M 			RST.LIL	08h
+0408B5 C9          0502*      ret ; vdu_load_buffer_from_file
+0408B6             0503*  
+0408B6 00          0504*  @filehandle: db 0 ; file handle
+0408B7 00 00 00    0505*  @fil: dl 0 ; pointer to FIL struct
+0408BA             0506*  
+0408BA 00 00 00    0507*  @chunkpointer: dl 0 ; pointer to current chunk
+0408BD             0508*  
+0408BD             0509*  ; File information structure (FILINFO)
+0408BD             0510*  @filinfo:
+0408BD 00 00 00 00 0511*  @filinfo_fsize:    blkb 4, 0   ; File size (4 bytes)
+0408C1 00 00       0512*  @filinfo_fdate:    blkb 2, 0   ; Modified date (2 bytes)
+0408C3 00 00       0513*  @filinfo_ftime:    blkb 2, 0   ; Modified time (2 bytes)
+0408C5 00          0514*  @filinfo_fattrib:  blkb 1, 0   ; File attribute (1 byte)
+0408C6 00 00 00 00 0515*  @filinfo_altname:  blkb 13, 0  ; Alternative file name (13 bytes)
+       00 00 00 00 
+       00 00 00 00 
+       00          
+0408D3 00 00 00 00 0516*  @filinfo_fname:    blkb 256, 0 ; Primary file name (256 bytes)
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+0409D3             0035       include "vdu_fonts.inc"
+0409D3             0001*  ; select font
+0409D3             0002*  ; inputs: hl = bufferId, a = font flags
+0409D3             0003*  ; Flags:
+0409D3             0004*  ; Bit	Description
+0409D3             0005*  ; 0	Adjust cursor position to ensure text baseline is aligned
+0409D3             0006*  ;   0: Do not adjust cursor position (best for changing font on a new line)
+0409D3             0007*  ;   1: Adjust cursor position (best for changing font in the middle of a line)
+0409D3             0008*  ; 1-7	Reserved for future use
+0409D3             0009*  ; VDU 23, 0, &95, 0, bufferId; flags: Select font
+0409D3             0010*  vdu_font_select:
+0409D3 22 EA 09 04 0011*      ld (@bufferId),hl
+0409D7 32 EC 09 04 0012*      ld (@flags),a
+0409DB 21 E6 09 04 0013*      ld hl,@cmd
+0409DF 01 07 00 00 0014*      ld bc,@end-@cmd
+0409E3 5B DF       0015*      rst.lil $18
+0409E5 C9          0016*      ret
+0409E6 17 00 95 00 0017*  @cmd: db 23, 0, 0x95, 0
+0409EA 00 00       0018*  @bufferId: dw 0x0000
+0409EC 00          0019*  @flags: db 0x00
+0409ED             0020*  @end:
+0409ED             0021*  
+0409ED             0022*  ; create font from buffer
+0409ED             0023*  ; inputs: hl = bufferId, e = width, d = height, d = ascent, a = flags
+0409ED             0024*  ; VDU 23, 0, &95, 1, bufferId; width, height, ascent, flags: Create font from buffer
+0409ED             0025*  vdu_font_create:
+0409ED 22 12 0A 04 0026*      ld (@bufferId),hl
+0409F1 ED 53 14 0A 0027*      ld (@width),de ; also loads height
+       04          
+0409F6 32 17 0A 04 0028*      ld (@flags),a
+0409FA 7A          0029*      ld a,d ; height
+0409FB 32 16 0A 04 0030*      ld (@ascent),a ; ascent = height
+0409FF             0031*  ; consolidate buffer
+0409FF CD 2D 08 04 0032*      call vdu_consolidate_buffer
+040A03             0033*  ; create font
+040A03 21 0E 0A 04 0034*      ld hl,@cmd
+040A07 01 0A 00 00 0035*      ld bc,@end-@cmd
+040A0B 5B DF       0036*      rst.lil $18
+040A0D C9          0037*      ret
+040A0E 17 00 95 01 0038*  @cmd: db 23, 0, 0x95, 1
+040A12 00 00       0039*  @bufferId: dw 0x0000
+040A14 00          0040*  @width: db 0x00
+040A15 00          0041*  @height: db 0x00
+040A16 00          0042*  @ascent: db 0x00
+040A17 00          0043*  @flags: db 0x00
+040A18             0044*  @end:
+040A18             0045*  
+040A18             0046*  ; set or adjust font property
+040A18             0047*  ; inputs: hl = bufferId, a = field, de = value
+040A18             0048*  ; VDU 23, 0, &95, 2, bufferId; field, value;: Set or adjust font property
+040A18             0049*  vdu_font_property:
+040A18 22 34 0A 04 0050*      ld (@bufferId),hl
+040A1C 32 36 0A 04 0051*      ld (@field),a
+040A20 ED 53 37 0A 0052*      ld (@value),de
+       04          
+040A25 21 30 0A 04 0053*      ld hl,@cmd
+040A29 01 09 00 00 0054*      ld bc,@end-@cmd
+040A2D 5B DF       0055*      rst.lil $18
+040A2F C9          0056*      ret
+040A30 17 00 95 02 0057*  @cmd: db 23, 0, 0x95, 2
+040A34 00 00       0058*  @bufferId: dw 0x0000
+040A36 00          0059*  @field: db 0x00
+040A37 00 00       0060*  @value: dw 0x0000
+040A39 00          0061*  @end: db 0x00 ; padding
+040A3A             0062*  
+040A3A             0063*  ; VDU 23, 0, &95, 3, bufferId; [<args>]: Reserved
+040A3A             0064*  
+040A3A             0065*  ; Clear/Delete font
+040A3A             0066*  ; inputs: hl = bufferId
+040A3A             0067*  ; VDU 23, 0, &95, 4, bufferId;: Clear/Delete font
+040A3A             0068*  vdu_font_clear:
+040A3A 22 4D 0A 04 0069*      ld (@bufferId),hl
+040A3E 21 49 0A 04 0070*      ld hl,@cmd
+040A42 01 06 00 00 0071*      ld bc,@end-@cmd
+040A46 5B DF       0072*      rst.lil $18
+040A48 C9          0073*      ret
+040A49 17 00 95 04 0074*  @cmd: db 23, 0, 0x95, 4
+040A4D 00 00       0075*  @bufferId: dw 0x0000
+040A4F 00          0076*  @end: db 0x00 ; padding
+040A50             0077*  
+040A50             0078*  ; Copy system font to buffer
+040A50             0079*  ; inputs: hl = bufferId
+040A50             0080*  ; VDU 23, 0, &95, 5, bufferId;: Copy system font to buffer
+040A50             0081*  vdu_font_copy_system:
+040A50 22 63 0A 04 0082*      ld (@bufferId),hl
+040A54 21 5F 0A 04 0083*      ld hl,@cmd
+040A58 01 06 00 00 0084*      ld bc,@end-@cmd
+040A5C 5B DF       0085*      rst.lil $18
+040A5E C9          0086*      ret
+040A5F 17 00 95 05 0087*  @cmd: db 23, 0, 0x95, 5
+040A63 00 00       0088*  @bufferId: dw 0x0000
+040A65 00          0089*  @end: db 0x00 ; padding
+040A66             0036   
+040A66             0037   ; Application includes
+040A66             0038       include "fonts_list.inc"
+040A66             0001*  ; Generated by build_91c_asm_font.py
+040A66             0002*  num_fonts: equ 49
+040A66             0003*  
+040A66             0004*  ; Index list:
+040A66             0005*  AmType_1_Narrow_12x19: equ 0
+040A66             0006*  AmType_1_Regular_16x19: equ 1
+040A66             0007*  AmType_3_Bold_Narrow_12x16: equ 2
+040A66             0008*  Apple_Chancery_Narrow_16x32: equ 3
+040A66             0009*  AppleMyungjo_Regular_10x12: equ 4
+040A66             0010*  AppleMyungjo_Regular_10x15: equ 5
+040A66             0011*  AppleMyungjo_Regular_12x14: equ 6
+040A66             0012*  AppleMyungjo_Regular_12x15: equ 7
+040A66             0013*  AppleMyungjo_Regular_14x16: equ 8
+040A66             0014*  AppleMyungjo_Regular_16x17: equ 9
+040A66             0015*  AppleMyungjo_Regular_8x10: equ 10
+040A66             0016*  AppleMyungjo_Regular_9x11: equ 11
+040A66             0017*  Arial_Black_Narrow_8x16: equ 12
+040A66             0018*  Arial_Black_Regular_12x12: equ 13
+040A66             0019*  Lat2_Fixed13_Regular_24x13: equ 14
+040A66             0020*  Lat2_Fixed13_Regular_8x13: equ 15
+040A66             0021*  Lat2_Fixed13_Wide_16x13: equ 16
+040A66             0022*  Lat2_Fixed14_Regular_8x14: equ 17
+040A66             0023*  Lat2_Fixed15_Regular_8x15: equ 18
+040A66             0024*  Lat2_VGA8_Regular_8x8: equ 19
+040A66             0025*  Lat38_VGA14_Regular_8x14: equ 20
+040A66             0026*  Lat38_VGA16_Regular_8x16: equ 21
+040A66             0027*  Lat38_VGA28x16_Regular_16x28: equ 22
+040A66             0028*  Lat38_VGA32x16_Regular_16x32: equ 23
+040A66             0029*  Lat38_VGA8_Regular_8x8: equ 24
+040A66             0030*  ONESR____Regular_11x12: equ 25
+040A66             0031*  STIXGeneral_Narrow_12x17: equ 26
+040A66             0032*  Squarewave_Regular_7x12: equ 27
+040A66             0033*  Squarewave_Regular_7x14: equ 28
+040A66             0034*  commodore_64_Regular_7x10: equ 29
+040A66             0035*  commodore_64_Regular_8x10: equ 30
+040A66             0036*  commodore_64_Regular_8x8: equ 31
+040A66             0037*  _commodore_8x10: equ 32
+040A66             0038*  computer_pixel_7_Regular_8x12: equ 33
+040A66             0039*  computerfont_Regular_10x14: equ 34
+040A66             0040*  dopecre_Regular_12x13: equ 35
+040A66             0041*  dopecre_Regular_8x8: equ 36
+040A66             0042*  edition_12_Regular_10x12: equ 37
+040A66             0043*  gamer_2_Regular_8x13: equ 38
+040A66             0044*  mbf_pexo_Regular_6x8: equ 39
+040A66             0045*  onesize_Regular_10x11: equ 40
+040A66             0046*  planetary_contact_Regular_8x8: equ 41
+040A66             0047*  power_pixel_7_Regular_16x17: equ 42
+040A66             0048*  setback_Regular_10x14: equ 43
+040A66             0049*  super_mario_bros_2_Regular_8x8: equ 44
+040A66             0050*  super_mario_bros_2_Regular_9x8: equ 45
+040A66             0051*  wendy_neue_Regular_12x16: equ 46
+040A66             0052*  wendy_neue_Regular_6x8: equ 47
+040A66             0053*  wendy_neue_Regular_7x8: equ 48
+040A66             0054*  
+040A66             0055*  font_list: ; width; height; filesize; filename;:
+040A66 0C 00 00 13 0056*  	dl 12, 19, 0, fn_AmType_1_Narrow_12x19
+       00 00 00 00 
+       00 B2 0C 04 
+040A72 10 00 00 13 0057*  	dl 16, 19, 0, fn_AmType_1_Regular_16x19
+       00 00 00 00 
+       00 CD 0C 04 
+040A7E 0C 00 00 10 0058*  	dl 12, 16, 0, fn_AmType_3_Bold_Narrow_12x16
+       00 00 00 00 
+       00 E9 0C 04 
+040A8A 10 00 00 20 0059*  	dl 16, 32, 0, fn_Apple_Chancery_Narrow_16x32
+       00 00 00 00 
+       00 09 0D 04 
+040A96 0A 00 00 0C 0060*  	dl 10, 12, 0, fn_AppleMyungjo_Regular_10x12
+       00 00 00 00 
+       00 2A 0D 04 
+040AA2 0A 00 00 0F 0061*  	dl 10, 15, 0, fn_AppleMyungjo_Regular_10x15
+       00 00 00 00 
+       00 4A 0D 04 
+040AAE 0C 00 00 0E 0062*  	dl 12, 14, 0, fn_AppleMyungjo_Regular_12x14
+       00 00 00 00 
+       00 6A 0D 04 
+040ABA 0C 00 00 0F 0063*  	dl 12, 15, 0, fn_AppleMyungjo_Regular_12x15
+       00 00 00 00 
+       00 8A 0D 04 
+040AC6 0E 00 00 10 0064*  	dl 14, 16, 0, fn_AppleMyungjo_Regular_14x16
+       00 00 00 00 
+       00 AA 0D 04 
+040AD2 10 00 00 11 0065*  	dl 16, 17, 0, fn_AppleMyungjo_Regular_16x17
+       00 00 00 00 
+       00 CA 0D 04 
+040ADE 08 00 00 0A 0066*  	dl 8, 10, 0, fn_AppleMyungjo_Regular_8x10
+       00 00 00 00 
+       00 EA 0D 04 
+040AEA 09 00 00 0B 0067*  	dl 9, 11, 0, fn_AppleMyungjo_Regular_9x11
+       00 00 00 00 
+       00 09 0E 04 
+040AF6 08 00 00 10 0068*  	dl 8, 16, 0, fn_Arial_Black_Narrow_8x16
+       00 00 00 00 
+       00 28 0E 04 
+040B02 0C 00 00 0C 0069*  	dl 12, 12, 0, fn_Arial_Black_Regular_12x12
+       00 00 00 00 
+       00 45 0E 04 
+040B0E 18 00 00 0D 0070*  	dl 24, 13, 0, fn_Lat2_Fixed13_Regular_24x13
+       00 00 00 00 
+       00 64 0E 04 
+040B1A 08 00 00 0D 0071*  	dl 8, 13, 0, fn_Lat2_Fixed13_Regular_8x13
+       00 00 00 00 
+       00 84 0E 04 
+040B26 10 00 00 0D 0072*  	dl 16, 13, 0, fn_Lat2_Fixed13_Wide_16x13
+       00 00 00 00 
+       00 A3 0E 04 
+040B32 08 00 00 0E 0073*  	dl 8, 14, 0, fn_Lat2_Fixed14_Regular_8x14
+       00 00 00 00 
+       00 C0 0E 04 
+040B3E 08 00 00 0F 0074*  	dl 8, 15, 0, fn_Lat2_Fixed15_Regular_8x15
+       00 00 00 00 
+       00 DF 0E 04 
+040B4A 08 00 00 08 0075*  	dl 8, 8, 0, fn_Lat2_VGA8_Regular_8x8
+       00 00 00 00 
+       00 FE 0E 04 
+040B56 08 00 00 0E 0076*  	dl 8, 14, 0, fn_Lat38_VGA14_Regular_8x14
+       00 00 00 00 
+       00 19 0F 04 
+040B62 08 00 00 10 0077*  	dl 8, 16, 0, fn_Lat38_VGA16_Regular_8x16
+       00 00 00 00 
+       00 37 0F 04 
+040B6E 10 00 00 1C 0078*  	dl 16, 28, 0, fn_Lat38_VGA28x16_Regular_16x28
+       00 00 00 00 
+       00 55 0F 04 
+040B7A 10 00 00 20 0079*  	dl 16, 32, 0, fn_Lat38_VGA32x16_Regular_16x32
+       00 00 00 00 
+       00 77 0F 04 
+040B86 08 00 00 08 0080*  	dl 8, 8, 0, fn_Lat38_VGA8_Regular_8x8
+       00 00 00 00 
+       00 99 0F 04 
+040B92 0B 00 00 0C 0081*  	dl 11, 12, 0, fn_ONESR____Regular_11x12
+       00 00 00 00 
+       00 B5 0F 04 
+040B9E 0C 00 00 11 0082*  	dl 12, 17, 0, fn_STIXGeneral_Narrow_12x17
+       00 00 00 00 
+       00 D1 0F 04 
+040BAA 07 00 00 0C 0083*  	dl 7, 12, 0, fn_Squarewave_Regular_7x12
+       00 00 00 00 
+       00 EF 0F 04 
+040BB6 07 00 00 0E 0084*  	dl 7, 14, 0, fn_Squarewave_Regular_7x14
+       00 00 00 00 
+       00 0C 10 04 
+040BC2 07 00 00 0A 0085*  	dl 7, 10, 0, fn_commodore_64_Regular_7x10
+       00 00 00 00 
+       00 29 10 04 
+040BCE 08 00 00 0A 0086*  	dl 8, 10, 0, fn_commodore_64_Regular_8x10
+       00 00 00 00 
+       00 48 10 04 
+040BDA 08 00 00 08 0087*  	dl 8, 8, 0, fn_commodore_64_Regular_8x8
+       00 00 00 00 
+       00 67 10 04 
+040BE6 08 00 00 0A 0088*  	dl 8, 10, 0, fn__commodore_8x10
+       00 00 00 00 
+       00 85 10 04 
+040BF2 08 00 00 0C 0089*  	dl 8, 12, 0, fn_computer_pixel_7_Regular_8x12
+       00 00 00 00 
+       00 99 10 04 
+040BFE 0A 00 00 0E 0090*  	dl 10, 14, 0, fn_computerfont_Regular_10x14
+       00 00 00 00 
+       00 BC 10 04 
+040C0A 0C 00 00 0D 0091*  	dl 12, 13, 0, fn_dopecre_Regular_12x13
+       00 00 00 00 
+       00 DC 10 04 
+040C16 08 00 00 08 0092*  	dl 8, 8, 0, fn_dopecre_Regular_8x8
+       00 00 00 00 
+       00 F7 10 04 
+040C22 0A 00 00 0C 0093*  	dl 10, 12, 0, fn_edition_12_Regular_10x12
+       00 00 00 00 
+       00 10 11 04 
+040C2E 08 00 00 0D 0094*  	dl 8, 13, 0, fn_gamer_2_Regular_8x13
+       00 00 00 00 
+       00 2E 11 04 
+040C3A 06 00 00 08 0095*  	dl 6, 8, 0, fn_mbf_pexo_Regular_6x8
+       00 00 00 00 
+       00 48 11 04 
+040C46 0A 00 00 0B 0096*  	dl 10, 11, 0, fn_onesize_Regular_10x11
+       00 00 00 00 
+       00 62 11 04 
+040C52 08 00 00 08 0097*  	dl 8, 8, 0, fn_planetary_contact_Regular_8x8
+       00 00 00 00 
+       00 7D 11 04 
+040C5E 10 00 00 11 0098*  	dl 16, 17, 0, fn_power_pixel_7_Regular_16x17
+       00 00 00 00 
+       00 A0 11 04 
+040C6A 0A 00 00 0E 0099*  	dl 10, 14, 0, fn_setback_Regular_10x14
+       00 00 00 00 
+       00 C1 11 04 
+040C76 08 00 00 08 0100*  	dl 8, 8, 0, fn_super_mario_bros_2_Regular_8x8
+       00 00 00 00 
+       00 DC 11 04 
+040C82 09 00 00 08 0101*  	dl 9, 8, 0, fn_super_mario_bros_2_Regular_9x8
+       00 00 00 00 
+       00 00 12 04 
+040C8E 0C 00 00 10 0102*  	dl 12, 16, 0, fn_wendy_neue_Regular_12x16
+       00 00 00 00 
+       00 24 12 04 
+040C9A 06 00 00 08 0103*  	dl 6, 8, 0, fn_wendy_neue_Regular_6x8
+       00 00 00 00 
+       00 42 12 04 
+040CA6 07 00 00 08 0104*  	dl 7, 8, 0, fn_wendy_neue_Regular_7x8
+       00 00 00 00 
+       00 5E 12 04 
+040CB2             0105*  
+040CB2             0106*  ; files_list: ; filename:
+040CB2 41 6D 54 79 0107*  fn_AmType_1_Narrow_12x19: db "AmType_1_Narrow_12x19.font",0
+       70 65 5F 31 
+       5F 4E 61 72 
+       72 6F 77 5F 
+       31 32 78 31 
+       39 2E 66 6F 
+       6E 74 00    
+040CCD 41 6D 54 79 0108*  fn_AmType_1_Regular_16x19: db "AmType_1_Regular_16x19.font",0
+       70 65 5F 31 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 31 36 78 
+       31 39 2E 66 
+       6F 6E 74 00 
+040CE9 41 6D 54 79 0109*  fn_AmType_3_Bold_Narrow_12x16: db "AmType_3_Bold Narrow_12x16.font",0
+       70 65 5F 33 
+       5F 42 6F 6C 
+       64 20 4E 61 
+       72 72 6F 77 
+       5F 31 32 78 
+       31 36 2E 66 
+       6F 6E 74 00 
+040D09 41 70 70 6C 0110*  fn_Apple_Chancery_Narrow_16x32: db "Apple Chancery_Narrow_16x32.font",0
+       65 20 43 68 
+       61 6E 63 65 
+       72 79 5F 4E 
+       61 72 72 6F 
+       77 5F 31 36 
+       78 33 32 2E 
+       66 6F 6E 74 
+       00          
+040D2A 41 70 70 6C 0111*  fn_AppleMyungjo_Regular_10x12: db "AppleMyungjo_Regular_10x12.font",0
+       65 4D 79 75 
+       6E 67 6A 6F 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 31 30 78 
+       31 32 2E 66 
+       6F 6E 74 00 
+040D4A 41 70 70 6C 0112*  fn_AppleMyungjo_Regular_10x15: db "AppleMyungjo_Regular_10x15.font",0
+       65 4D 79 75 
+       6E 67 6A 6F 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 31 30 78 
+       31 35 2E 66 
+       6F 6E 74 00 
+040D6A 41 70 70 6C 0113*  fn_AppleMyungjo_Regular_12x14: db "AppleMyungjo_Regular_12x14.font",0
+       65 4D 79 75 
+       6E 67 6A 6F 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 31 32 78 
+       31 34 2E 66 
+       6F 6E 74 00 
+040D8A 41 70 70 6C 0114*  fn_AppleMyungjo_Regular_12x15: db "AppleMyungjo_Regular_12x15.font",0
+       65 4D 79 75 
+       6E 67 6A 6F 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 31 32 78 
+       31 35 2E 66 
+       6F 6E 74 00 
+040DAA 41 70 70 6C 0115*  fn_AppleMyungjo_Regular_14x16: db "AppleMyungjo_Regular_14x16.font",0
+       65 4D 79 75 
+       6E 67 6A 6F 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 31 34 78 
+       31 36 2E 66 
+       6F 6E 74 00 
+040DCA 41 70 70 6C 0116*  fn_AppleMyungjo_Regular_16x17: db "AppleMyungjo_Regular_16x17.font",0
+       65 4D 79 75 
+       6E 67 6A 6F 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 31 36 78 
+       31 37 2E 66 
+       6F 6E 74 00 
+040DEA 41 70 70 6C 0117*  fn_AppleMyungjo_Regular_8x10: db "AppleMyungjo_Regular_8x10.font",0
+       65 4D 79 75 
+       6E 67 6A 6F 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 38 78 31 
+       30 2E 66 6F 
+       6E 74 00    
+040E09 41 70 70 6C 0118*  fn_AppleMyungjo_Regular_9x11: db "AppleMyungjo_Regular_9x11.font",0
+       65 4D 79 75 
+       6E 67 6A 6F 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 39 78 31 
+       31 2E 66 6F 
+       6E 74 00    
+040E28 41 72 69 61 0119*  fn_Arial_Black_Narrow_8x16: db "Arial Black_Narrow_8x16.font",0
+       6C 20 42 6C 
+       61 63 6B 5F 
+       4E 61 72 72 
+       6F 77 5F 38 
+       78 31 36 2E 
+       66 6F 6E 74 
+       00          
+040E45 41 72 69 61 0120*  fn_Arial_Black_Regular_12x12: db "Arial Black_Regular_12x12.font",0
+       6C 20 42 6C 
+       61 63 6B 5F 
+       52 65 67 75 
+       6C 61 72 5F 
+       31 32 78 31 
+       32 2E 66 6F 
+       6E 74 00    
+040E64 4C 61 74 32 0121*  fn_Lat2_Fixed13_Regular_24x13: db "Lat2-Fixed13_Regular_24x13.font",0
+       2D 46 69 78 
+       65 64 31 33 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 32 34 78 
+       31 33 2E 66 
+       6F 6E 74 00 
+040E84 4C 61 74 32 0122*  fn_Lat2_Fixed13_Regular_8x13: db "Lat2-Fixed13_Regular_8x13.font",0
+       2D 46 69 78 
+       65 64 31 33 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 38 78 31 
+       33 2E 66 6F 
+       6E 74 00    
+040EA3 4C 61 74 32 0123*  fn_Lat2_Fixed13_Wide_16x13: db "Lat2-Fixed13_Wide_16x13.font",0
+       2D 46 69 78 
+       65 64 31 33 
+       5F 57 69 64 
+       65 5F 31 36 
+       78 31 33 2E 
+       66 6F 6E 74 
+       00          
+040EC0 4C 61 74 32 0124*  fn_Lat2_Fixed14_Regular_8x14: db "Lat2-Fixed14_Regular_8x14.font",0
+       2D 46 69 78 
+       65 64 31 34 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 38 78 31 
+       34 2E 66 6F 
+       6E 74 00    
+040EDF 4C 61 74 32 0125*  fn_Lat2_Fixed15_Regular_8x15: db "Lat2-Fixed15_Regular_8x15.font",0
+       2D 46 69 78 
+       65 64 31 35 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 38 78 31 
+       35 2E 66 6F 
+       6E 74 00    
+040EFE 4C 61 74 32 0126*  fn_Lat2_VGA8_Regular_8x8: db "Lat2-VGA8_Regular_8x8.font",0
+       2D 56 47 41 
+       38 5F 52 65 
+       67 75 6C 61 
+       72 5F 38 78 
+       38 2E 66 6F 
+       6E 74 00    
+040F19 4C 61 74 33 0127*  fn_Lat38_VGA14_Regular_8x14: db "Lat38-VGA14_Regular_8x14.font",0
+       38 2D 56 47 
+       41 31 34 5F 
+       52 65 67 75 
+       6C 61 72 5F 
+       38 78 31 34 
+       2E 66 6F 6E 
+       74 00       
+040F37 4C 61 74 33 0128*  fn_Lat38_VGA16_Regular_8x16: db "Lat38-VGA16_Regular_8x16.font",0
+       38 2D 56 47 
+       41 31 36 5F 
+       52 65 67 75 
+       6C 61 72 5F 
+       38 78 31 36 
+       2E 66 6F 6E 
+       74 00       
+040F55 4C 61 74 33 0129*  fn_Lat38_VGA28x16_Regular_16x28: db "Lat38-VGA28x16_Regular_16x28.font",0
+       38 2D 56 47 
+       41 32 38 78 
+       31 36 5F 52 
+       65 67 75 6C 
+       61 72 5F 31 
+       36 78 32 38 
+       2E 66 6F 6E 
+       74 00       
+040F77 4C 61 74 33 0130*  fn_Lat38_VGA32x16_Regular_16x32: db "Lat38-VGA32x16_Regular_16x32.font",0
+       38 2D 56 47 
+       41 33 32 78 
+       31 36 5F 52 
+       65 67 75 6C 
+       61 72 5F 31 
+       36 78 33 32 
+       2E 66 6F 6E 
+       74 00       
+040F99 4C 61 74 33 0131*  fn_Lat38_VGA8_Regular_8x8: db "Lat38-VGA8_Regular_8x8.font",0
+       38 2D 56 47 
+       41 38 5F 52 
+       65 67 75 6C 
+       61 72 5F 38 
+       78 38 2E 66 
+       6F 6E 74 00 
+040FB5 4F 4E 45 53 0132*  fn_ONESR____Regular_11x12: db "ONESR____Regular_11x12.font",0
+       52 5F 5F 5F 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 31 31 78 
+       31 32 2E 66 
+       6F 6E 74 00 
+040FD1 53 54 49 58 0133*  fn_STIXGeneral_Narrow_12x17: db "STIXGeneral_Narrow_12x17.font",0
+       47 65 6E 65 
+       72 61 6C 5F 
+       4E 61 72 72 
+       6F 77 5F 31 
+       32 78 31 37 
+       2E 66 6F 6E 
+       74 00       
+040FEF 53 71 75 61 0134*  fn_Squarewave_Regular_7x12: db "Squarewave_Regular_7x12.font",0
+       72 65 77 61 
+       76 65 5F 52 
+       65 67 75 6C 
+       61 72 5F 37 
+       78 31 32 2E 
+       66 6F 6E 74 
+       00          
+04100C 53 71 75 61 0135*  fn_Squarewave_Regular_7x14: db "Squarewave_Regular_7x14.font",0
+       72 65 77 61 
+       76 65 5F 52 
+       65 67 75 6C 
+       61 72 5F 37 
+       78 31 34 2E 
+       66 6F 6E 74 
+       00          
+041029 63 6F 6D 6D 0136*  fn_commodore_64_Regular_7x10: db "commodore_64_Regular_7x10.font",0
+       6F 64 6F 72 
+       65 5F 36 34 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 37 78 31 
+       30 2E 66 6F 
+       6E 74 00    
+041048 63 6F 6D 6D 0137*  fn_commodore_64_Regular_8x10: db "commodore_64_Regular_8x10.font",0
+       6F 64 6F 72 
+       65 5F 36 34 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 38 78 31 
+       30 2E 66 6F 
+       6E 74 00    
+041067 63 6F 6D 6D 0138*  fn_commodore_64_Regular_8x8: db "commodore_64_Regular_8x8.font",0
+       6F 64 6F 72 
+       65 5F 36 34 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 38 78 38 
+       2E 66 6F 6E 
+       74 00       
+041085 63 6F 6D 6D 0139*  fn__commodore_8x10: db "commodore_8x10.font",0
+       6F 64 6F 72 
+       65 5F 38 78 
+       31 30 2E 66 
+       6F 6E 74 00 
+041099 63 6F 6D 70 0140*  fn_computer_pixel_7_Regular_8x12: db "computer_pixel_7_Regular_8x12.font",0
+       75 74 65 72 
+       5F 70 69 78 
+       65 6C 5F 37 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 38 78 31 
+       32 2E 66 6F 
+       6E 74 00    
+0410BC 63 6F 6D 70 0141*  fn_computerfont_Regular_10x14: db "computerfont_Regular_10x14.font",0
+       75 74 65 72 
+       66 6F 6E 74 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 31 30 78 
+       31 34 2E 66 
+       6F 6E 74 00 
+0410DC 64 6F 70 65 0142*  fn_dopecre_Regular_12x13: db "dopecre_Regular_12x13.font",0
+       63 72 65 5F 
+       52 65 67 75 
+       6C 61 72 5F 
+       31 32 78 31 
+       33 2E 66 6F 
+       6E 74 00    
+0410F7 64 6F 70 65 0143*  fn_dopecre_Regular_8x8: db "dopecre_Regular_8x8.font",0
+       63 72 65 5F 
+       52 65 67 75 
+       6C 61 72 5F 
+       38 78 38 2E 
+       66 6F 6E 74 
+       00          
+041110 65 64 69 74 0144*  fn_edition_12_Regular_10x12: db "edition_12_Regular_10x12.font",0
+       69 6F 6E 5F 
+       31 32 5F 52 
+       65 67 75 6C 
+       61 72 5F 31 
+       30 78 31 32 
+       2E 66 6F 6E 
+       74 00       
+04112E 67 61 6D 65 0145*  fn_gamer_2_Regular_8x13: db "gamer_2_Regular_8x13.font",0
+       72 5F 32 5F 
+       52 65 67 75 
+       6C 61 72 5F 
+       38 78 31 33 
+       2E 66 6F 6E 
+       74 00       
+041148 6D 62 66 5F 0146*  fn_mbf_pexo_Regular_6x8: db "mbf_pexo_Regular_6x8.font",0
+       70 65 78 6F 
+       5F 52 65 67 
+       75 6C 61 72 
+       5F 36 78 38 
+       2E 66 6F 6E 
+       74 00       
+041162 6F 6E 65 73 0147*  fn_onesize_Regular_10x11: db "onesize_Regular_10x11.font",0
+       69 7A 65 5F 
+       52 65 67 75 
+       6C 61 72 5F 
+       31 30 78 31 
+       31 2E 66 6F 
+       6E 74 00    
+04117D 70 6C 61 6E 0148*  fn_planetary_contact_Regular_8x8: db "planetary_contact_Regular_8x8.font",0
+       65 74 61 72 
+       79 5F 63 6F 
+       6E 74 61 63 
+       74 5F 52 65 
+       67 75 6C 61 
+       72 5F 38 78 
+       38 2E 66 6F 
+       6E 74 00    
+0411A0 70 6F 77 65 0149*  fn_power_pixel_7_Regular_16x17: db "power_pixel_7_Regular_16x17.font",0
+       72 5F 70 69 
+       78 65 6C 5F 
+       37 5F 52 65 
+       67 75 6C 61 
+       72 5F 31 36 
+       78 31 37 2E 
+       66 6F 6E 74 
+       00          
+0411C1 73 65 74 62 0150*  fn_setback_Regular_10x14: db "setback_Regular_10x14.font",0
+       61 63 6B 5F 
+       52 65 67 75 
+       6C 61 72 5F 
+       31 30 78 31 
+       34 2E 66 6F 
+       6E 74 00    
+0411DC 73 75 70 65 0151*  fn_super_mario_bros_2_Regular_8x8: db "super_mario_bros_2_Regular_8x8.font",0
+       72 5F 6D 61 
+       72 69 6F 5F 
+       62 72 6F 73 
+       5F 32 5F 52 
+       65 67 75 6C 
+       61 72 5F 38 
+       78 38 2E 66 
+       6F 6E 74 00 
+041200 73 75 70 65 0152*  fn_super_mario_bros_2_Regular_9x8: db "super_mario_bros_2_Regular_9x8.font",0
+       72 5F 6D 61 
+       72 69 6F 5F 
+       62 72 6F 73 
+       5F 32 5F 52 
+       65 67 75 6C 
+       61 72 5F 39 
+       78 38 2E 66 
+       6F 6E 74 00 
+041224 77 65 6E 64 0153*  fn_wendy_neue_Regular_12x16: db "wendy_neue_Regular_12x16.font",0
+       79 5F 6E 65 
+       75 65 5F 52 
+       65 67 75 6C 
+       61 72 5F 31 
+       32 78 31 36 
+       2E 66 6F 6E 
+       74 00       
+041242 77 65 6E 64 0154*  fn_wendy_neue_Regular_6x8: db "wendy_neue_Regular_6x8.font",0
+       79 5F 6E 65 
+       75 65 5F 52 
+       65 67 75 6C 
+       61 72 5F 36 
+       78 38 2E 66 
+       6F 6E 74 00 
+04125E 77 65 6E 64 0155*  fn_wendy_neue_Regular_7x8: db "wendy_neue_Regular_7x8.font",0
+       79 5F 6E 65 
+       75 65 5F 52 
+       65 67 75 6C 
+       61 72 5F 37 
+       78 38 2E 66 
+       6F 6E 74 00 
+04127A             0039       include "cfg.inc"
+04127A             0001*  screen_mode: equ 19
+04127A             0002*  font_name: equ AmType_3_Bold_Narrow_12x16
+04127A             0040   
+04127A             0041   main:
+04127A 3E 13       0042       ld a,screen_mode
+04127C CD EA 06 04 0043       call vdu_set_screen_mode
+041280             0044   
+041280             0045   ; print test string
+041280 CD 91 00 04 0046       call printNewLine
+041284 21 CC 16 04 0047       ld hl,uxor_balnea
+041288 CD 7C 00 04 0048       call printString
+04128C CD 91 00 04 0049       call printNewLine
+041290             0050   
+041290             0051   ; inputs: hl = bufferId; iy = pointer to filename
+041290 1E 02       0052       ld e,font_name
+041292 16 0C       0053       ld d,12 ; bytes per font list record
+041294 ED 5C       0054       mlt de
+041296 FD 21 66 0A 0055       ld iy,font_list
+       04          
+04129B FD 19       0056       add iy,de
+04129D FD E5       0057       push iy
+04129F             0058   
+04129F FD 37 09    0059       ld iy,(iy+9)
+0412A2             0060   
+0412A2             0061   ; debug print filename at iy
+0412A2 CD 91 00 04 0062       call printNewLine
+0412A6 FD E5       0063       push iy
+0412A8 E1          0064       pop hl
+0412A9 CD 7C 00 04 0065       call printString
+0412AD CD 91 00 04 0066       call printNewLine
+0412B1             0067   
+0412B1 21 00 40 00 0068       ld hl,0x4000
+0412B5 E5          0069       push hl
+0412B6 CD 6A 08 04 0070       call vdu_load_buffer_from_file
+0412BA             0071   
+0412BA             0072   ; create font from buffer
+0412BA             0073   ; inputs: hl = bufferId, e = width, d = height, d = ascent, a = flags
+0412BA             0074   ; VDU 23, 0, &95, 1, bufferId; width, height, ascent, flags: Create font from buffer
+0412BA E1          0075       pop hl ; bufferId
+0412BB FD E1       0076       pop iy ; pointer to font list record
+0412BD E5          0077       push hl
+0412BE FD 7E 00    0078       ld a,(iy+0)
+0412C1 5F          0079       ld e,a  ; width
+0412C2 FD 7E 03    0080       ld a,(iy+3)
+0412C5 57          0081       ld d,a  ; height / ascent
+0412C6 3E 00       0082       ld a,0 ; flags
+0412C8 CD ED 09 04 0083       call vdu_font_create
+0412CC             0084   
+0412CC             0085   ; select font
+0412CC             0086   ; inputs: hl = bufferId, a = font flags
+0412CC             0087   ; Flags:
+0412CC             0088   ; Bit	Description
+0412CC             0089   ; 0	Adjust cursor position to ensure text baseline is aligned
+0412CC             0090   ;   0: Do not adjust cursor position (best for changing font on a new line)
+0412CC             0091   ;   1: Adjust cursor position (best for changing font in the middle of a line)
+0412CC             0092   ; 1-7	Reserved for future use
+0412CC             0093   ; VDU 23, 0, &95, 0, bufferId; flags: Select font
+0412CC E1          0094       pop hl
+0412CD 3E 00       0095       ld a,0
+0412CF CD D3 09 04 0096       call vdu_font_select
+0412D3             0097   
+0412D3             0098   ; print test string
+0412D3 CD 91 00 04 0099       call printNewLine
+0412D7 21 17 1E 04 0100       ld hl,wife_of_bath
+0412DB CD 7C 00 04 0101       call printString
+0412DF CD 91 00 04 0102       call printNewLine
+0412E3             0103   
+0412E3             0104   ; all done
+0412E3 C9          0105       ret
+0412E4             0106   
+0412E4             0107   
+0412E4             0108   ; test_string: db "01234567890!@#$%^&*()\r\nabcdefghijklmnopqrstuvwxyz\r\nABCDEFGHIJKLMNOPQRSTUVWXYZ",0
+0412E4             0109   test_string:
+0412E4 20 21 22 23 0110       db 0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,0x29,0x2A,0x2B,0x2C,0x2D,0x2E,0x2F,13,10
+       24 25 26 27 
+       28 29 2A 2B 
+       2C 2D 2E 2F 
+       0D 0A       
+0412F6 30 31 32 33 0111       db 0x30,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x3A,0x3B,0x3C,0x3D,0x3E,0x3F,13,10
+       34 35 36 37 
+       38 39 3A 3B 
+       3C 3D 3E 3F 
+       0D 0A       
+041308 40 41 42 43 0112       db 0x40,0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4A,0x4B,0x4C,0x4D,0x4E,0x4F,13,10
+       44 45 46 47 
+       48 49 4A 4B 
+       4C 4D 4E 4F 
+       0D 0A       
+04131A 50 51 52 53 0113       db 0x50,0x51,0x52,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5A,0x5B,0x5C,0x5D,0x5E,0x5F,13,10
+       54 55 56 57 
+       58 59 5A 5B 
+       5C 5D 5E 5F 
+       0D 0A       
+04132C 60 61 62 63 0114       db 0x60,0x61,0x62,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6A,0x6B,0x6C,0x6D,0x6E,0x6F,13,10
+       64 65 66 67 
+       68 69 6A 6B 
+       6C 6D 6E 6F 
+       0D 0A       
+04133E 70 71 72 73 0115       db 0x70,0x71,0x72,0x73,0x74,0x75,0x76,0x77,0x78,0x79,0x7A,0x7B,0x7C,0x7D,0x7E,0x7F,13,10
+       74 75 76 77 
+       78 79 7A 7B 
+       7C 7D 7E 7F 
+       0D 0A       
+041350 80 81 82 83 0116       db 0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,13,10
+       84 85 86 87 
+       88 89 8A 8B 
+       8C 8D 8E 8F 
+       0D 0A       
+041362 90 91 92 93 0117       db 0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0x9C,0x9D,0x9E,0x9F,13,10
+       94 95 96 97 
+       98 99 9A 9B 
+       9C 9D 9E 9F 
+       0D 0A       
+041374 A0 A1 A2 A3 0118       db 0xA0,0xA1,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,13,10
+       A4 A5 A6 A7 
+       A8 A9 AA AB 
+       AC AD AE AF 
+       0D 0A       
+041386 B0 B1 B2 B3 0119       db 0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF,13,10
+       B4 B5 B6 B7 
+       B8 B9 BA BB 
+       BC BD BE BF 
+       0D 0A       
+041398 C0 C1 C2 C3 0120       db 0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,13,10
+       C4 C5 C6 C7 
+       C8 C9 CA CB 
+       CC CD CE CF 
+       0D 0A       
+0413AA D0 D1 D2 D3 0121       db 0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF,13,10
+       D4 D5 D6 D7 
+       D8 D9 DA DB 
+       DC DD DE DF 
+       0D 0A       
+0413BC E0 E1 E2 E3 0122       db 0xE0,0xE1,0xE2,0xE3,0xE4,0xE5,0xE6,0xE7,0xE8,0xE9,0xEA,0xEB,0xEC,0xED,0xEE,0xEF,13,10
+       E4 E5 E6 E7 
+       E8 E9 EA EB 
+       EC ED EE EF 
+       0D 0A       
+0413CE F0 F1 F2 F3 0123       db 0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF,13,10
+       F4 F5 F6 F7 
+       F8 F9 FA FB 
+       FC FD FE FF 
+       0D 0A       
+0413E0 00          0124       db 0x00
+0413E1             0125   
+0413E1             0126   lorem_ipsum:
+0413E1 4C 6F 72 65 0127       db "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\r\n"
+       6D 20 69 70 
+       73 75 6D 20 
+       64 6F 6C 6F 
+       72 20 73 69 
+       74 20 61 6D 
+       65 74 2C 20 
+       63 6F 6E 73 
+       65 63 74 65 
+       74 75 72 20 
+       61 64 69 70 
+       69 73 63 69 
+       6E 67 20 65 
+       6C 69 74 2E 
+       0D 0A       
+04141B 4E 75 6C 6C 0128       db "Nulla autem virtuosa tristitia, sed gloria virtutis in ipso est.\r\n"
+       61 20 61 75 
+       74 65 6D 20 
+       76 69 72 74 
+       75 6F 73 61 
+       20 74 72 69 
+       73 74 69 74 
+       69 61 2C 20 
+       73 65 64 20 
+       67 6C 6F 72 
+       69 61 20 76 
+       69 72 74 75 
+       74 69 73 20 
+       69 6E 20 69 
+       70 73 6F 20 
+       65 73 74 2E 
+       0D 0A       
+04145D 4E 61 6D 20 0129       db "Nam sapientis animum fluctibus movet; in vita, res novae,\r\n"
+       73 61 70 69 
+       65 6E 74 69 
+       73 20 61 6E 
+       69 6D 75 6D 
+       20 66 6C 75 
+       63 74 69 62 
+       75 73 20 6D 
+       6F 76 65 74 
+       3B 20 69 6E 
+       20 76 69 74 
+       61 2C 20 72 
+       65 73 20 6E 
+       6F 76 61 65 
+       2C 0D 0A    
+041498 6E 6F 76 61 0130       db "novas tempestates ferunt. Fortis enim est, qui dolorem, cum\r\n"
+       73 20 74 65 
+       6D 70 65 73 
+       74 61 74 65 
+       73 20 66 65 
+       72 75 6E 74 
+       2E 20 46 6F 
+       72 74 69 73 
+       20 65 6E 69 
+       6D 20 65 73 
+       74 2C 20 71 
+       75 69 20 64 
+       6F 6C 6F 72 
+       65 6D 2C 20 
+       63 75 6D 0D 
+       0A          
+0414D5 70 6F 74 65 0131       db "potest, arcet. Nemo tam divitiis abundat, qui, si desit libertas,\r\n"
+       73 74 2C 20 
+       61 72 63 65 
+       74 2E 20 4E 
+       65 6D 6F 20 
+       74 61 6D 20 
+       64 69 76 69 
+       74 69 69 73 
+       20 61 62 75 
+       6E 64 61 74 
+       2C 20 71 75 
+       69 2C 20 73 
+       69 20 64 65 
+       73 69 74 20 
+       6C 69 62 65 
+       72 74 61 73 
+       2C 0D 0A    
+041518 62 65 61 74 0132       db "beatus. Hic igitur ratio victum etiam sine voluptas quaerit.\r\n"
+       75 73 2E 20 
+       48 69 63 20 
+       69 67 69 74 
+       75 72 20 72 
+       61 74 69 6F 
+       20 76 69 63 
+       74 75 6D 20 
+       65 74 69 61 
+       6D 20 73 69 
+       6E 65 20 76 
+       6F 6C 75 70 
+       74 61 73 20 
+       71 75 61 65 
+       72 69 74 2E 
+       0D 0A       
+041556 4E 61 6D 20 0133       db "Nam in medio stat virtus: tam paupertas quam divitiae vitandae.\r\n"
+       69 6E 20 6D 
+       65 64 69 6F 
+       20 73 74 61 
+       74 20 76 69 
+       72 74 75 73 
+       3A 20 74 61 
+       6D 20 70 61 
+       75 70 65 72 
+       74 61 73 20 
+       71 75 61 6D 
+       20 64 69 76 
+       69 74 69 61 
+       65 20 76 69 
+       74 61 6E 64 
+       61 65 2E 0D 
+       0A          
+041597 4D 65 6E 73 0134       db "Mens sibi conscia recti, semper aditum ad libertatem invocat.\r\n"
+       20 73 69 62 
+       69 20 63 6F 
+       6E 73 63 69 
+       61 20 72 65 
+       63 74 69 2C 
+       20 73 65 6D 
+       70 65 72 20 
+       61 64 69 74 
+       75 6D 20 61 
+       64 20 6C 69 
+       62 65 72 74 
+       61 74 65 6D 
+       20 69 6E 76 
+       6F 63 61 74 
+       2E 0D 0A    
+0415D6 51 75 69 64 0135       db "Quid est enim aliud esse versutum? Quod si ita se habeat,\r\n"
+       20 65 73 74 
+       20 65 6E 69 
+       6D 20 61 6C 
+       69 75 64 20 
+       65 73 73 65 
+       20 76 65 72 
+       73 75 74 75 
+       6D 3F 20 51 
+       75 6F 64 20 
+       73 69 20 69 
+       74 61 20 73 
+       65 20 68 61 
+       62 65 61 74 
+       2C 0D 0A    
+041611 6E 6F 6E 20 0136       db "non possit beatam praestare vitam sapientia. Quamquam tu hanc\r\n"
+       70 6F 73 73 
+       69 74 20 62 
+       65 61 74 61 
+       6D 20 70 72 
+       61 65 73 74 
+       61 72 65 20 
+       76 69 74 61 
+       6D 20 73 61 
+       70 69 65 6E 
+       74 69 61 2E 
+       20 51 75 61 
+       6D 71 75 61 
+       6D 20 74 75 
+       20 68 61 6E 
+       63 0D 0A    
+041650 63 6F 67 6E 0137       db "cognitionem, Quirine, si tibi probatur, repudiandam non esse\r\n"
+       69 74 69 6F 
+       6E 65 6D 2C 
+       20 51 75 69 
+       72 69 6E 65 
+       2C 20 73 69 
+       20 74 69 62 
+       69 20 70 72 
+       6F 62 61 74 
+       75 72 2C 20 
+       72 65 70 75 
+       64 69 61 6E 
+       64 61 6D 20 
+       6E 6F 6E 20 
+       65 73 73 65 
+       0D 0A       
+04168E 64 69 63 65 0138       db "dices. Quae cum dixisset paulumque institisset, Quid est?\r\n"
+       73 2E 20 51 
+       75 61 65 20 
+       63 75 6D 20 
+       64 69 78 69 
+       73 73 65 74 
+       20 70 61 75 
+       6C 75 6D 71 
+       75 65 20 69 
+       6E 73 74 69 
+       74 69 73 73 
+       65 74 2C 20 
+       51 75 69 64 
+       20 65 73 74 
+       3F 0D 0A    
+0416C9 0D 0A       0139       db "\r\n"
+0416CB 00          0140       db 0
+0416CC             0141   
+0416CC             0142   uxor_balnea:
+0416CC 45 72 61 74 0143       db "Erat mulier, uxor Balnea, quae quinque viros tenuit sub vinculo\r\n"
+       20 6D 75 6C 
+       69 65 72 2C 
+       20 75 78 6F 
+       72 20 42 61 
+       6C 6E 65 61 
+       2C 20 71 75 
+       61 65 20 71 
+       75 69 6E 71 
+       75 65 20 76 
+       69 72 6F 73 
+       20 74 65 6E 
+       75 69 74 20 
+       73 75 62 20 
+       76 69 6E 63 
+       75 6C 6F 0D 
+       0A          
+04170D 6D 61 74 72 0144       db "matrimonii, una post alterum, et omnis vitam per amorem egit.\r\n"
+       69 6D 6F 6E 
+       69 69 2C 20 
+       75 6E 61 20 
+       70 6F 73 74 
+       20 61 6C 74 
+       65 72 75 6D 
+       2C 20 65 74 
+       20 6F 6D 6E 
+       69 73 20 76 
+       69 74 61 6D 
+       20 70 65 72 
+       20 61 6D 6F 
+       72 65 6D 20 
+       65 67 69 74 
+       2E 0D 0A    
+04174C 4E 75 6C 6C 0145       db "Nulla mors amoris ipsam superavit. Cui rogatus est, vir novus,\r\n"
+       61 20 6D 6F 
+       72 73 20 61 
+       6D 6F 72 69 
+       73 20 69 70 
+       73 61 6D 20 
+       73 75 70 65 
+       72 61 76 69 
+       74 2E 20 43 
+       75 69 20 72 
+       6F 67 61 74 
+       75 73 20 65 
+       73 74 2C 20 
+       76 69 72 20 
+       6E 6F 76 75 
+       73 2C 0D 0A 
+04178C 64 65 20 6D 0146       db "de matrimonio. At narravit fabulam miram, magna et risum.\r\n"
+       61 74 72 69 
+       6D 6F 6E 69 
+       6F 2E 20 41 
+       74 20 6E 61 
+       72 72 61 76 
+       69 74 20 66 
+       61 62 75 6C 
+       61 6D 20 6D 
+       69 72 61 6D 
+       2C 20 6D 61 
+       67 6E 61 20 
+       65 74 20 72 
+       69 73 75 6D 
+       2E 0D 0A    
+0417C7 0D 0A       0147       db "\r\n"
+0417C9 41 64 65 6F 0148       db "Adeo fabula incepit: Vir nobilis, eques, in diebus Arthuri, errans\r\n"
+       20 66 61 62 
+       75 6C 61 20 
+       69 6E 63 65 
+       70 69 74 3A 
+       20 56 69 72 
+       20 6E 6F 62 
+       69 6C 69 73 
+       2C 20 65 71 
+       75 65 73 2C 
+       20 69 6E 20 
+       64 69 65 62 
+       75 73 20 41 
+       72 74 68 75 
+       72 69 2C 20 
+       65 72 72 61 
+       6E 73 0D 0A 
+04180D 70 65 72 20 0149       db "per silvas obscuras, invenit puellam pulcherrimam. Sed, ah, homo\r\n"
+       73 69 6C 76 
+       61 73 20 6F 
+       62 73 63 75 
+       72 61 73 2C 
+       20 69 6E 76 
+       65 6E 69 74 
+       20 70 75 65 
+       6C 6C 61 6D 
+       20 70 75 6C 
+       63 68 65 72 
+       72 69 6D 61 
+       6D 2E 20 53 
+       65 64 2C 20 
+       61 68 2C 20 
+       68 6F 6D 6F 
+       0D 0A       
+04184F 6C 75 78 75 0150       db "luxuriae succubuit; deliquit eam contra voluntatem. Rex dedit\r\n"
+       72 69 61 65 
+       20 73 75 63 
+       63 75 62 75 
+       69 74 3B 20 
+       64 65 6C 69 
+       71 75 69 74 
+       20 65 61 6D 
+       20 63 6F 6E 
+       74 72 61 20 
+       76 6F 6C 75 
+       6E 74 61 74 
+       65 6D 2E 20 
+       52 65 78 20 
+       64 65 64 69 
+       74 0D 0A    
+04188E 65 75 6D 20 0151       db "eum damnum multum, et iussit mortem. Regina tamen eius vitam\r\n"
+       64 61 6D 6E 
+       75 6D 20 6D 
+       75 6C 74 75 
+       6D 2C 20 65 
+       74 20 69 75 
+       73 73 69 74 
+       20 6D 6F 72 
+       74 65 6D 2E 
+       20 52 65 67 
+       69 6E 61 20 
+       74 61 6D 65 
+       6E 20 65 69 
+       75 73 20 76 
+       69 74 61 6D 
+       0D 0A       
+0418CC 73 65 72 76 0152       db "servavit, sed tantum si responsum verum ad quaestionem sciret:\r\n"
+       61 76 69 74 
+       2C 20 73 65 
+       64 20 74 61 
+       6E 74 75 6D 
+       20 73 69 20 
+       72 65 73 70 
+       6F 6E 73 75 
+       6D 20 76 65 
+       72 75 6D 20 
+       61 64 20 71 
+       75 61 65 73 
+       74 69 6F 6E 
+       65 6D 20 73 
+       63 69 72 65 
+       74 3A 0D 0A 
+04190C 27 51 75 69 0153       db "'Quid volunt mulieres vere?'. Ita iter periculosum cepit.\r\n"
+       64 20 76 6F 
+       6C 75 6E 74 
+       20 6D 75 6C 
+       69 65 72 65 
+       73 20 76 65 
+       72 65 3F 27 
+       2E 20 49 74 
+       61 20 69 74 
+       65 72 20 70 
+       65 72 69 63 
+       75 6C 6F 73 
+       75 6D 20 63 
+       65 70 69 74 
+       2E 0D 0A    
+041947 0D 0A       0154       db "\r\n"
+041949 45 71 75 65 0155       db "Eques per terras erravit, quaerens responsum ab omnibus: damas\r\n"
+       73 20 70 65 
+       72 20 74 65 
+       72 72 61 73 
+       20 65 72 72 
+       61 76 69 74 
+       2C 20 71 75 
+       61 65 72 65 
+       6E 73 20 72 
+       65 73 70 6F 
+       6E 73 75 6D 
+       20 61 62 20 
+       6F 6D 6E 69 
+       62 75 73 3A 
+       20 64 61 6D 
+       61 73 0D 0A 
+041989 64 69 76 61 0156       db "divas, ancillas, et vetulas. Quis rogavit, varia respondit; nescivit\r\n"
+       73 2C 20 61 
+       6E 63 69 6C 
+       6C 61 73 2C 
+       20 65 74 20 
+       76 65 74 75 
+       6C 61 73 2E 
+       20 51 75 69 
+       73 20 72 6F 
+       67 61 76 69 
+       74 2C 20 76 
+       61 72 69 61 
+       20 72 65 73 
+       70 6F 6E 64 
+       69 74 3B 20 
+       6E 65 73 63 
+       69 76 69 74 
+       0D 0A       
+0419CF 76 65 72 65 0157       db "vere, quid volunt mulieres, donec foemina vetus decrepita, sed\r\n"
+       2C 20 71 75 
+       69 64 20 76 
+       6F 6C 75 6E 
+       74 20 6D 75 
+       6C 69 65 72 
+       65 73 2C 20 
+       64 6F 6E 65 
+       63 20 66 6F 
+       65 6D 69 6E 
+       61 20 76 65 
+       74 75 73 20 
+       64 65 63 72 
+       65 70 69 74 
+       61 2C 20 73 
+       65 64 0D 0A 
+041A0F 73 61 70 69 0158       db "sapientia abundans, obtulit ei responsum rectum. Pretium erat\r\n"
+       65 6E 74 69 
+       61 20 61 62 
+       75 6E 64 61 
+       6E 73 2C 20 
+       6F 62 74 75 
+       6C 69 74 20 
+       65 69 20 72 
+       65 73 70 6F 
+       6E 73 75 6D 
+       20 72 65 63 
+       74 75 6D 2E 
+       20 50 72 65 
+       74 69 75 6D 
+       20 65 72 61 
+       74 0D 0A    
+041A4E 70 61 72 76 0159       db "parvulum, vel, sic putavit ille. Nam vetula rogavit quod ipse\r\n"
+       75 6C 75 6D 
+       2C 20 76 65 
+       6C 2C 20 73 
+       69 63 20 70 
+       75 74 61 76 
+       69 74 20 69 
+       6C 6C 65 2E 
+       20 4E 61 6D 
+       20 76 65 74 
+       75 6C 61 20 
+       72 6F 67 61 
+       76 69 74 20 
+       71 75 6F 64 
+       20 69 70 73 
+       65 0D 0A    
+041A8D 65 61 6D 20 0160       db "eam uxoraret. Illum hoc taeduit, sed voto facto, promissum tenuit.\r\n"
+       75 78 6F 72 
+       61 72 65 74 
+       2E 20 49 6C 
+       6C 75 6D 20 
+       68 6F 63 20 
+       74 61 65 64 
+       75 69 74 2C 
+       20 73 65 64 
+       20 76 6F 74 
+       6F 20 66 61 
+       63 74 6F 2C 
+       20 70 72 6F 
+       6D 69 73 73 
+       75 6D 20 74 
+       65 6E 75 69 
+       74 2E 0D 0A 
+041AD1 0D 0A       0161       db "\r\n"
+041AD3 49 6E 20 6E 0162       db "In nuptiali die, vetula dixit: 'Mulieres volunt dominari in vita;\r\n"
+       75 70 74 69 
+       61 6C 69 20 
+       64 69 65 2C 
+       20 76 65 74 
+       75 6C 61 20 
+       64 69 78 69 
+       74 3A 20 27 
+       4D 75 6C 69 
+       65 72 65 73 
+       20 76 6F 6C 
+       75 6E 74 20 
+       64 6F 6D 69 
+       6E 61 72 69 
+       20 69 6E 20 
+       76 69 74 61 
+       3B 0D 0A    
+041B16 76 65 6C 69 0163       db "velint regnum suum tenere, dominam esse in domo et anima\r\n"
+       6E 74 20 72 
+       65 67 6E 75 
+       6D 20 73 75 
+       75 6D 20 74 
+       65 6E 65 72 
+       65 2C 20 64 
+       6F 6D 69 6E 
+       61 6D 20 65 
+       73 73 65 20 
+       69 6E 20 64 
+       6F 6D 6F 20 
+       65 74 20 61 
+       6E 69 6D 61 
+       0D 0A       
+041B50 73 75 61 20 0164       db "sua libere vivere.' Hoc scivit verum esse, et licentiam in vitam\r\n"
+       6C 69 62 65 
+       72 65 20 76 
+       69 76 65 72 
+       65 2E 27 20 
+       48 6F 63 20 
+       73 63 69 76 
+       69 74 20 76 
+       65 72 75 6D 
+       20 65 73 73 
+       65 2C 20 65 
+       74 20 6C 69 
+       63 65 6E 74 
+       69 61 6D 20 
+       69 6E 20 76 
+       69 74 61 6D 
+       0D 0A       
+041B92 69 70 73 61 0165       db "ipsam dedit ut ipsa dominaretur. Tunc mutatio mirabilis facta!\r\n"
+       6D 20 64 65 
+       64 69 74 20 
+       75 74 20 69 
+       70 73 61 20 
+       64 6F 6D 69 
+       6E 61 72 65 
+       74 75 72 2E 
+       20 54 75 6E 
+       63 20 6D 75 
+       74 61 74 69 
+       6F 20 6D 69 
+       72 61 62 69 
+       6C 69 73 20 
+       66 61 63 74 
+       61 21 0D 0A 
+041BD2 0D 0A       0166       db "\r\n"
+041BD4 56 65 74 75 0167       db "Vetula ipsa repente pulcherrima facta est, iuvenis mulier dulcis\r\n"
+       6C 61 20 69 
+       70 73 61 20 
+       72 65 70 65 
+       6E 74 65 20 
+       70 75 6C 63 
+       68 65 72 72 
+       69 6D 61 20 
+       66 61 63 74 
+       61 20 65 73 
+       74 2C 20 69 
+       75 76 65 6E 
+       69 73 20 6D 
+       75 6C 69 65 
+       72 20 64 75 
+       6C 63 69 73 
+       0D 0A       
+041C16 61 74 71 75 0168       db "atque praeclara. Et eques tandem laetus fuit; ex illo die beatus,\r\n"
+       65 20 70 72 
+       61 65 63 6C 
+       61 72 61 2E 
+       20 45 74 20 
+       65 71 75 65 
+       73 20 74 61 
+       6E 64 65 6D 
+       20 6C 61 65 
+       74 75 73 20 
+       66 75 69 74 
+       3B 20 65 78 
+       20 69 6C 6C 
+       6F 20 64 69 
+       65 20 62 65 
+       61 74 75 73 
+       2C 0D 0A    
+041C59 71 75 6F 64 0169       db "quod sibi consortem novam benigneque passus est dominam.\r\n"
+       20 73 69 62 
+       69 20 63 6F 
+       6E 73 6F 72 
+       74 65 6D 20 
+       6E 6F 76 61 
+       6D 20 62 65 
+       6E 69 67 6E 
+       65 71 75 65 
+       20 70 61 73 
+       73 75 73 20 
+       65 73 74 20 
+       64 6F 6D 69 
+       6E 61 6D 2E 
+       0D 0A       
+041C93 41 6D 6F 72 0170       db "Amorem suum vera vidit: non tantum pulchritudinem quaesivit\r\n"
+       65 6D 20 73 
+       75 75 6D 20 
+       76 65 72 61 
+       20 76 69 64 
+       69 74 3A 20 
+       6E 6F 6E 20 
+       74 61 6E 74 
+       75 6D 20 70 
+       75 6C 63 68 
+       72 69 74 75 
+       64 69 6E 65 
+       6D 20 71 75 
+       61 65 73 69 
+       76 69 74 0D 
+       0A          
+041CD0 73 65 64 20 0171       db "sed libertatem suam ac respectum quae amica vere debet.\r\n"
+       6C 69 62 65 
+       72 74 61 74 
+       65 6D 20 73 
+       75 61 6D 20 
+       61 63 20 72 
+       65 73 70 65 
+       63 74 75 6D 
+       20 71 75 61 
+       65 20 61 6D 
+       69 63 61 20 
+       76 65 72 65 
+       20 64 65 62 
+       65 74 2E 0D 
+       0A          
+041D09 0D 0A       0172       db "\r\n"
+041D0B 53 69 63 20 0173       db "Sic uxor Balnea, fabulam finiens, risit amice, exemplo vitae suae.\r\n"
+       75 78 6F 72 
+       20 42 61 6C 
+       6E 65 61 2C 
+       20 66 61 62 
+       75 6C 61 6D 
+       20 66 69 6E 
+       69 65 6E 73 
+       2C 20 72 69 
+       73 69 74 20 
+       61 6D 69 63 
+       65 2C 20 65 
+       78 65 6D 70 
+       6C 6F 20 76 
+       69 74 61 65 
+       20 73 75 61 
+       65 2E 0D 0A 
+041D4F 49 70 73 61 0174       db "Ipsa, quinque viris domitam, vel audaciam habuit de vita docere.\r\n"
+       2C 20 71 75 
+       69 6E 71 75 
+       65 20 76 69 
+       72 69 73 20 
+       64 6F 6D 69 
+       74 61 6D 2C 
+       20 76 65 6C 
+       20 61 75 64 
+       61 63 69 61 
+       6D 20 68 61 
+       62 75 69 74 
+       20 64 65 20 
+       76 69 74 61 
+       20 64 6F 63 
+       65 72 65 2E 
+       0D 0A       
+041D91 4C 69 63 65 0175       db "Licet risum multum ferre, fabula ipsa veritatem sapientem tenet:\r\n"
+       74 20 72 69 
+       73 75 6D 20 
+       6D 75 6C 74 
+       75 6D 20 66 
+       65 72 72 65 
+       2C 20 66 61 
+       62 75 6C 61 
+       20 69 70 73 
+       61 20 76 65 
+       72 69 74 61 
+       74 65 6D 20 
+       73 61 70 69 
+       65 6E 74 65 
+       6D 20 74 65 
+       6E 65 74 3A 
+       0D 0A       
+041DD3 69 70 73 61 0176       db "ipsa vita est dulcis, et in amore pari dominatio verum gaudium.\r\n"
+       20 76 69 74 
+       61 20 65 73 
+       74 20 64 75 
+       6C 63 69 73 
+       2C 20 65 74 
+       20 69 6E 20 
+       61 6D 6F 72 
+       65 20 70 61 
+       72 69 20 64 
+       6F 6D 69 6E 
+       61 74 69 6F 
+       20 76 65 72 
+       75 6D 20 67 
+       61 75 64 69 
+       75 6D 2E 0D 
+       0A          
+041E14 0D 0A       0177       db "\r\n"
+041E16 00          0178       db 0
+041E17             0179   
+041E17             0180   wife_of_bath:
+041E17 53 68 65 20 0181       db "She was a woman, wife of Bath, who held five husbands in her\r\n"
+       77 61 73 20 
+       61 20 77 6F 
+       6D 61 6E 2C 
+       20 77 69 66 
+       65 20 6F 66 
+       20 42 61 74 
+       68 2C 20 77 
+       68 6F 20 68 
+       65 6C 64 20 
+       66 69 76 65 
+       20 68 75 73 
+       62 61 6E 64 
+       73 20 69 6E 
+       20 68 65 72 
+       0D 0A       
+041E55 6D 61 74 72 0182       db "matrimonial chains, one after another, and lived all through love.\r\n"
+       69 6D 6F 6E 
+       69 61 6C 20 
+       63 68 61 69 
+       6E 73 2C 20 
+       6F 6E 65 20 
+       61 66 74 65 
+       72 20 61 6E 
+       6F 74 68 65 
+       72 2C 20 61 
+       6E 64 20 6C 
+       69 76 65 64 
+       20 61 6C 6C 
+       20 74 68 72 
+       6F 75 67 68 
+       20 6C 6F 76 
+       65 2E 0D 0A 
+041E99 4E 6F 20 66 0183       db "No fear of loss could conquer her. When a new man asked her\r\n"
+       65 61 72 20 
+       6F 66 20 6C 
+       6F 73 73 20 
+       63 6F 75 6C 
+       64 20 63 6F 
+       6E 71 75 65 
+       72 20 68 65 
+       72 2E 20 57 
+       68 65 6E 20 
+       61 20 6E 65 
+       77 20 6D 61 
+       6E 20 61 73 
+       6B 65 64 20 
+       68 65 72 0D 
+       0A          
+041ED6 66 6F 72 20 0184       db "for marriage, she told him a marvelous tale, great and merry.\r\n"
+       6D 61 72 72 
+       69 61 67 65 
+       2C 20 73 68 
+       65 20 74 6F 
+       6C 64 20 68 
+       69 6D 20 61 
+       20 6D 61 72 
+       76 65 6C 6F 
+       75 73 20 74 
+       61 6C 65 2C 
+       20 67 72 65 
+       61 74 20 61 
+       6E 64 20 6D 
+       65 72 72 79 
+       2E 0D 0A    
+041F15 0D 0A       0185       db "\r\n"
+041F17 53 6F 20 74 0186       db "So the tale begins: A noble knight, in Arthur's days, wandered\r\n"
+       68 65 20 74 
+       61 6C 65 20 
+       62 65 67 69 
+       6E 73 3A 20 
+       41 20 6E 6F 
+       62 6C 65 20 
+       6B 6E 69 67 
+       68 74 2C 20 
+       69 6E 20 41 
+       72 74 68 75 
+       72 27 73 20 
+       64 61 79 73 
+       2C 20 77 61 
+       6E 64 65 72 
+       65 64 0D 0A 
+041F57 74 68 72 6F 0187       db "through shadowed woods and found a lovely young maiden. Alas,\r\n"
+       75 67 68 20 
+       73 68 61 64 
+       6F 77 65 64 
+       20 77 6F 6F 
+       64 73 20 61 
+       6E 64 20 66 
+       6F 75 6E 64 
+       20 61 20 6C 
+       6F 76 65 6C 
+       79 20 79 6F 
+       75 6E 67 20 
+       6D 61 69 64 
+       65 6E 2E 20 
+       41 6C 61 73 
+       2C 0D 0A    
+041F96 74 68 65 20 0188       db "the man fell to his lust and wronged her against her will. The king\r\n"
+       6D 61 6E 20 
+       66 65 6C 6C 
+       20 74 6F 20 
+       68 69 73 20 
+       6C 75 73 74 
+       20 61 6E 64 
+       20 77 72 6F 
+       6E 67 65 64 
+       20 68 65 72 
+       20 61 67 61 
+       69 6E 73 74 
+       20 68 65 72 
+       20 77 69 6C 
+       6C 2E 20 54 
+       68 65 20 6B 
+       69 6E 67 0D 
+       0A          
+041FDB 73 65 6E 74 0189       db "sentenced him to death, but the queen spared his life, if only he\r\n"
+       65 6E 63 65 
+       64 20 68 69 
+       6D 20 74 6F 
+       20 64 65 61 
+       74 68 2C 20 
+       62 75 74 20 
+       74 68 65 20 
+       71 75 65 65 
+       6E 20 73 70 
+       61 72 65 64 
+       20 68 69 73 
+       20 6C 69 66 
+       65 2C 20 69 
+       66 20 6F 6E 
+       6C 79 20 68 
+       65 0D 0A    
+04201E 63 6F 75 6C 0190       db "could answer one true question: 'What do women truly want?' So,\r\n"
+       64 20 61 6E 
+       73 77 65 72 
+       20 6F 6E 65 
+       20 74 72 75 
+       65 20 71 75 
+       65 73 74 69 
+       6F 6E 3A 20 
+       27 57 68 61 
+       74 20 64 6F 
+       20 77 6F 6D 
+       65 6E 20 74 
+       72 75 6C 79 
+       20 77 61 6E 
+       74 3F 27 20 
+       53 6F 2C 0D 
+       0A          
+04205F 68 65 20 62 0191       db "he began a perilous quest.\r\n"
+       65 67 61 6E 
+       20 61 20 70 
+       65 72 69 6C 
+       6F 75 73 20 
+       71 75 65 73 
+       74 2E 0D 0A 
+04207B 0D 0A       0192       db "\r\n"
+04207D 54 68 65 20 0193       db "The knight roamed far, seeking answers from all: fine ladies,\r\n"
+       6B 6E 69 67 
+       68 74 20 72 
+       6F 61 6D 65 
+       64 20 66 61 
+       72 2C 20 73 
+       65 65 6B 69 
+       6E 67 20 61 
+       6E 73 77 65 
+       72 73 20 66 
+       72 6F 6D 20 
+       61 6C 6C 3A 
+       20 66 69 6E 
+       65 20 6C 61 
+       64 69 65 73 
+       2C 0D 0A    
+0420BC 6D 61 69 64 0194       db "maids, even old women. Each gave him something different; he\r\n"
+       73 2C 20 65 
+       76 65 6E 20 
+       6F 6C 64 20 
+       77 6F 6D 65 
+       6E 2E 20 45 
+       61 63 68 20 
+       67 61 76 65 
+       20 68 69 6D 
+       20 73 6F 6D 
+       65 74 68 69 
+       6E 67 20 64 
+       69 66 66 65 
+       72 65 6E 74 
+       3B 20 68 65 
+       0D 0A       
+0420FA 68 61 64 20 0195       db "had no true answer, until a shriveled crone, wise in knowledge,\r\n"
+       6E 6F 20 74 
+       72 75 65 20 
+       61 6E 73 77 
+       65 72 2C 20 
+       75 6E 74 69 
+       6C 20 61 20 
+       73 68 72 69 
+       76 65 6C 65 
+       64 20 63 72 
+       6F 6E 65 2C 
+       20 77 69 73 
+       65 20 69 6E 
+       20 6B 6E 6F 
+       77 6C 65 64 
+       67 65 2C 0D 
+       0A          
+04213B 6F 66 66 65 0196       db "offered him the right response. But her price was small, or so he\r\n"
+       72 65 64 20 
+       68 69 6D 20 
+       74 68 65 20 
+       72 69 67 68 
+       74 20 72 65 
+       73 70 6F 6E 
+       73 65 2E 20 
+       42 75 74 20 
+       68 65 72 20 
+       70 72 69 63 
+       65 20 77 61 
+       73 20 73 6D 
+       61 6C 6C 2C 
+       20 6F 72 20 
+       73 6F 20 68 
+       65 0D 0A    
+04217E 74 68 6F 75 0197       db "thought—for the old woman demanded he wed her. Loath, but\r\n"
+       67 68 74 E2 
+       80 94 66 6F 
+       72 20 74 68 
+       65 20 6F 6C 
+       64 20 77 6F 
+       6D 61 6E 20 
+       64 65 6D 61 
+       6E 64 65 64 
+       20 68 65 20 
+       77 65 64 20 
+       68 65 72 2E 
+       20 4C 6F 61 
+       74 68 2C 20 
+       62 75 74 0D 
+       0A          
+0421BB 62 6F 75 6E 0198       db "bound by his vow, he kept his word.\r\n"
+       64 20 62 79 
+       20 68 69 73 
+       20 76 6F 77 
+       2C 20 68 65 
+       20 6B 65 70 
+       74 20 68 69 
+       73 20 77 6F 
+       72 64 2E 0D 
+       0A          
+0421E0 0D 0A       0199       db "\r\n"
+0421E2 4F 6E 20 74 0200       db "On their wedding day, the crone said: 'Women wish for mastery,\r\n"
+       68 65 69 72 
+       20 77 65 64 
+       64 69 6E 67 
+       20 64 61 79 
+       2C 20 74 68 
+       65 20 63 72 
+       6F 6E 65 20 
+       73 61 69 64 
+       3A 20 27 57 
+       6F 6D 65 6E 
+       20 77 69 73 
+       68 20 66 6F 
+       72 20 6D 61 
+       73 74 65 72 
+       79 2C 0D 0A 
+042222 74 6F 20 68 0201       db "to hold their realm, to be the lady at home and in heart, and\r\n"
+       6F 6C 64 20 
+       74 68 65 69 
+       72 20 72 65 
+       61 6C 6D 2C 
+       20 74 6F 20 
+       62 65 20 74 
+       68 65 20 6C 
+       61 64 79 20 
+       61 74 20 68 
+       6F 6D 65 20 
+       61 6E 64 20 
+       69 6E 20 68 
+       65 61 72 74 
+       2C 20 61 6E 
+       64 0D 0A    
+042261 74 6F 20 6C 0202       db "to live free in spirit.' He knew this to be true, so he gave her\r\n"
+       69 76 65 20 
+       66 72 65 65 
+       20 69 6E 20 
+       73 70 69 72 
+       69 74 2E 27 
+       20 48 65 20 
+       6B 6E 65 77 
+       20 74 68 69 
+       73 20 74 6F 
+       20 62 65 20 
+       74 72 75 65 
+       2C 20 73 6F 
+       20 68 65 20 
+       67 61 76 65 
+       20 68 65 72 
+       0D 0A       
+0422A3 66 72 65 65 0203       db "freedom in their life together. Then, a wondrous change took place!\r\n"
+       64 6F 6D 20 
+       69 6E 20 74 
+       68 65 69 72 
+       20 6C 69 66 
+       65 20 74 6F 
+       67 65 74 68 
+       65 72 2E 20 
+       54 68 65 6E 
+       2C 20 61 20 
+       77 6F 6E 64 
+       72 6F 75 73 
+       20 63 68 61 
+       6E 67 65 20 
+       74 6F 6F 6B 
+       20 70 6C 61 
+       63 65 21 0D 
+       0A          
+0422E8 0D 0A       0204       db "\r\n"
+0422EA 54 68 65 20 0205       db "The old crone transformed, becoming young, sweet, and fair.\r\n"
+       6F 6C 64 20 
+       63 72 6F 6E 
+       65 20 74 72 
+       61 6E 73 66 
+       6F 72 6D 65 
+       64 2C 20 62 
+       65 63 6F 6D 
+       69 6E 67 20 
+       79 6F 75 6E 
+       67 2C 20 73 
+       77 65 65 74 
+       2C 20 61 6E 
+       64 20 66 61 
+       69 72 2E 0D 
+       0A          
+042327 54 68 65 20 0206       db "The knight was overjoyed; from that day forth he was blessed,\r\n"
+       6B 6E 69 67 
+       68 74 20 77 
+       61 73 20 6F 
+       76 65 72 6A 
+       6F 79 65 64 
+       3B 20 66 72 
+       6F 6D 20 74 
+       68 61 74 20 
+       64 61 79 20 
+       66 6F 72 74 
+       68 20 68 65 
+       20 77 61 73 
+       20 62 6C 65 
+       73 73 65 64 
+       2C 0D 0A    
+042366 66 6F 72 20 0207       db "for his new bride was both noble and gentle. In her, he saw real\r\n"
+       68 69 73 20 
+       6E 65 77 20 
+       62 72 69 64 
+       65 20 77 61 
+       73 20 62 6F 
+       74 68 20 6E 
+       6F 62 6C 65 
+       20 61 6E 64 
+       20 67 65 6E 
+       74 6C 65 2E 
+       20 49 6E 20 
+       68 65 72 2C 
+       20 68 65 20 
+       73 61 77 20 
+       72 65 61 6C 
+       0D 0A       
+0423A8 6C 6F 76 65 0208       db "love: not just beauty, but the freedom and respect a true partner\r\n"
+       3A 20 6E 6F 
+       74 20 6A 75 
+       73 74 20 62 
+       65 61 75 74 
+       79 2C 20 62 
+       75 74 20 74 
+       68 65 20 66 
+       72 65 65 64 
+       6F 6D 20 61 
+       6E 64 20 72 
+       65 73 70 65 
+       63 74 20 61 
+       20 74 72 75 
+       65 20 70 61 
+       72 74 6E 65 
+       72 0D 0A    
+0423EB 64 65 73 65 0209       db "deserves.\r\n"
+       72 76 65 73 
+       2E 0D 0A    
+0423F6 0D 0A       0210       db "\r\n"
+0423F8 54 68 75 73 0211       db "Thus, the wife of Bath, ending her tale, laughed fondly, with\r\n"
+       2C 20 74 68 
+       65 20 77 69 
+       66 65 20 6F 
+       66 20 42 61 
+       74 68 2C 20 
+       65 6E 64 69 
+       6E 67 20 68 
+       65 72 20 74 
+       61 6C 65 2C 
+       20 6C 61 75 
+       67 68 65 64 
+       20 66 6F 6E 
+       64 6C 79 2C 
+       20 77 69 74 
+       68 0D 0A    
+042437 61 20 6C 65 0212       db "a lesson from her own life. With five husbands tamed, she had\r\n"
+       73 73 6F 6E 
+       20 66 72 6F 
+       6D 20 68 65 
+       72 20 6F 77 
+       6E 20 6C 69 
+       66 65 2E 20 
+       57 69 74 68 
+       20 66 69 76 
+       65 20 68 75 
+       73 62 61 6E 
+       64 73 20 74 
+       61 6D 65 64 
+       2C 20 73 68 
+       65 20 68 61 
+       64 0D 0A    
+042476 64 61 72 65 0213       db "dared to teach on life and love. Though jesting, her tale held\r\n"
+       64 20 74 6F 
+       20 74 65 61 
+       63 68 20 6F 
+       6E 20 6C 69 
+       66 65 20 61 
+       6E 64 20 6C 
+       6F 76 65 2E 
+       20 54 68 6F 
+       75 67 68 20 
+       6A 65 73 74 
+       69 6E 67 2C 
+       20 68 65 72 
+       20 74 61 6C 
+       65 20 68 65 
+       6C 64 0D 0A 
+0424B6 77 69 73 64 0214       db "wisdom: life is sweet, and in equal love, true joy is shared.\r\n"
+       6F 6D 3A 20 
+       6C 69 66 65 
+       20 69 73 20 
+       73 77 65 65 
+       74 2C 20 61 
+       6E 64 20 69 
+       6E 20 65 71 
+       75 61 6C 20 
+       6C 6F 76 65 
+       2C 20 74 72 
+       75 65 20 6A 
+       6F 79 20 69 
+       73 20 73 68 
+       61 72 65 64 
+       2E 0D 0A    
+0424F5 0D 0A       0215       db "\r\n"
+0424F7 00          0216       db 0
