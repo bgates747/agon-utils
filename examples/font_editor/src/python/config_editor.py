@@ -17,7 +17,7 @@ class ConfigEditor(tk.Frame):
         self.visibility_rules = []
         self.event_handlers = {}
         self.create_widgets()
-        # self.create_buttons()
+        self.create_buttons()
 
     def create_buttons(self):
         """Add buttons to print current and  values to the console."""

@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+
+    <setting name="font_src_dir">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text>Font Src Dir</label_text>
+        <data_type>string</data_type>
+        <default_value>examples/font_editor/src/fonts</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>font_src_dir_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="font_tgt_dir">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text>Font Src Dir</label_text>
+        <data_type>string</data_type>
+        <default_value>examples/font_editor/tgt/fonts</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>font_tgt_dir_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="recursive">
+        <widget_type>FontConfigCheckBox</widget_type>
+        <label_text>Rescursive</label_text>
+        <data_type>bool</data_type>
+        <default_value>1</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>recursive_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="ttf">
+        <widget_type>FontConfigCheckBox</widget_type>
+        <label_text>ttf</label_text>
+        <data_type>bool</data_type>
+        <default_value>1</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>ttf_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="otf">
+        <widget_type>FontConfigCheckBox</widget_type>
+        <label_text>otf</label_text>
+        <data_type>bool</data_type>
+        <default_value>1</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>otf_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="psf">
+        <widget_type>FontConfigCheckBox</widget_type>
+        <label_text>psf</label_text>
+        <data_type>bool</data_type>
+        <default_value>1</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>psf_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+    
+    <setting name="point_size">
+        <widget_type>FontConfigDeltaControl</widget_type>
+        <label_text>Point Size</label_text>
+        <data_type>int</data_type>
+        <default_value>16</default_value>
+        <min_value>1</min_value>
+        <max_value>+256</max_value>
+        <step_value>1</step_value>
+        <description>Size of the font in points</description>
+        <hidden>
+            <font_type>
+                <item>png</item>
+                <item>font</item>
+            </font_type>
+        </hidden>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>point_size_on_change_handler</item> -->
+                <item>default_redraw_font_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="raster_type">
+        <widget_type>FontConfigComboBox</widget_type>
+        <label_text>Raster Type</label_text>
+        <data_type>string</data_type>
+        <default_value>threshold</default_value>
+        <options>
+            <item>threshold</item>
+            <item>quantized</item>
+            <item>grayscale</item>
+            <item>palette</item>
+        </options>
+        <description>Type of rasterization</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item> 
+                <!-- <item>raster_type_on_change_handler</item>  -->
+                <item>default_redraw_font_handler</item> 
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+    
+    <setting name="threshold">
+        <widget_type>FontConfigDeltaControl</widget_type>
+        <label_text>Threshold</label_text>
+        <data_type>int</data_type>
+        <default_value>128</default_value>
+        <min_value>0</min_value>
+        <max_value>255</max_value>
+        <step_value>1</step_value>
+        <description>Threshold value for binary conversion (if thresholded)</description>
+        <visible>
+            <setting name="raster_type">
+                <item>threshold</item>
+            </setting>
+        </visible>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>threshold_on_change_handler</item> -->
+                <item>default_redraw_font_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+    
+    <setting name="palette">
+        <widget_type>FontConfigComboBox</widget_type>
+        <label_text>Palette</label_text>
+        <data_type>string</data_type>
+        <default_value>Agon64</default_value>
+        <options>
+            <item>Agon64</item>
+            <item>Agon16</item>
+            <item>Agon4</item>
+            <item>Agon2</item>
+            <item>RGB222</item>
+            <item>RGB332</item>
+            <item>Rainbow</item>
+            <item>VRGB2222</item>
+        </options>
+        <description>Color palette to use when rasterizing font.</description>
+        <visible>
+            <setting name="raster_type">
+                <item>palette</item>
+            </setting>
+        </visible>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>palette_on_change_handler</item> -->
+                <item>default_redraw_font_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+    
+    <setting name="fg_color">
+        <widget_type>FontConfigColorPicker</widget_type>
+        <label_text>FG Color</label_text>
+        <data_type>string</data_type>
+        <default_value>255,255,255,255</default_value>
+        <description>Foreground Color RGBA tuple</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>fg_color_on_change_handler</item> -->
+                <item>default_redraw_font_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+    
+    <setting name="bg_color">
+        <widget_type>FontConfigColorPicker</widget_type>
+        <label_text>BG Color</label_text>
+        <data_type>string</data_type>
+        <default_value>0,0,0,255</default_value>
+        <description>Background Color RGBA tuple</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>bg_color_on_change_handler</item> -->
+                <item>default_redraw_font_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+    
+    <setting name="ascii_start">
+        <widget_type>FontConfigDeltaControl</widget_type>
+        <label_text>ASCII Start</label_text>
+        <data_type>int</data_type>
+        <default_value>32</default_value>
+        <min_value>0</min_value>
+        <max_value>65536</max_value>
+        <step_value>16</step_value>
+        <description>ASCII start range for the font</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>ascii_start_on_change_handler</item> -->
+                <item>default_redraw_font_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+    
+    <setting name="ascii_end">
+        <widget_type>FontConfigDeltaControl</widget_type>
+        <label_text>ASCII End</label_text>
+        <data_type>int</data_type>
+        <default_value>127</default_value>
+        <min_value>0</min_value>
+        <max_value>65536</max_value>
+        <step_value>16</step_value>
+        <description>ASCII end range for the font</description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>ascii_end_on_change_handler</item> -->
+                <item>default_redraw_font_handler</item>
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+</settings>

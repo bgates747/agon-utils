@@ -9,6 +9,7 @@ from image_display import ImageDisplay
 from custom_widgets import ConsoleDisplay
 from editor_widget import EditorWidget
 from config_editor_dialog import DoAssemblyDialog
+from batch_convert_dialog import BatchConvertDialog
 
 class FontEditor(ttk.Frame):
     """
@@ -48,6 +49,14 @@ class FontEditor(ttk.Frame):
         )
         do_assembly_button.pack(side=tk.BOTTOM, pady=10)
 
+        # Add the "Batch Convert" button at the bottom of the config frame
+        batch_convert_button = tk.Button(
+            config_frame,
+            text="Batch Convert",
+            command=self.open_batch_convert_dialog
+        )
+        batch_convert_button.pack(side=tk.BOTTOM, pady=10)
+
         # Right Frame for ImageDisplay and EditorWidget
         image_frame = tk.Frame(main_content_frame)
         image_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)  # Expands fully
@@ -85,6 +94,13 @@ class FontEditor(ttk.Frame):
         app_reference = self
 
         dialog = DoAssemblyDialog(self, config_editor_file, app_reference, font_config)
+
+    def open_batch_convert_dialog(self):
+        """Open the batch conversion dialog with the current font configuration."""
+        config_editor_file = "examples/font_editor/src/python/batch_convert_dialog.xml"
+        app_reference = self
+
+        dialog = BatchConvertDialog(self, config_editor_file, app_reference)
 
 if __name__ == "__main__":
     root = tk.Tk()

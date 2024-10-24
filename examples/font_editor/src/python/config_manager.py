@@ -3,16 +3,29 @@ from xml.dom import minidom
 import json
 import os
 
+# def get_typed_data(data_type, value):
+#     if data_type == 'int':
+#         return int(value)
+#     elif data_type == 'float':
+#         return float(value)
+#     elif data_type == 'string':
+#         return str(value)
+#     elif data_type == 'bool':
+#         return bool(value)
+#     return value
+
 def get_typed_data(data_type, value):
-    if data_type == 'int':
+    """
+    Converts the value to the specified data type.
+    """
+    if data_type == 'bool':
+        return value.lower() in ('true', '1')
+    elif data_type == 'int':
         return int(value)
     elif data_type == 'float':
         return float(value)
-    elif data_type == 'string':
-        return str(value)
-    elif data_type == 'bool':
-        return bool(value)
-    return value
+    else:  # default to string
+        return value
 
 def dict_to_text(data_dict):
     """Return a nicely formatted string version of the dictionary, suitable for console printing or pasting into code."""
