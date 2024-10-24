@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from config_manager import get_app_config_value
 from file_manager import open_file
-from font_config_editor import FontConfigEditor
+from config_editor import ConfigEditor
 from menu_bar import MenuBar
 from image_display import ImageDisplay
 from custom_widgets import ConsoleDisplay
@@ -30,13 +30,13 @@ class FontEditor(ttk.Frame):
         main_content_frame = tk.Frame(self)
         main_content_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Left Frame for FontConfigEditor
+        # Left Frame for ConfigEditor
         config_frame = tk.Frame(main_content_frame)
         config_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10, anchor="n")  # Only expand vertically
 
-        # Create an instance of FontConfigEditor with XML data properties and an app reference
+        # Create an instance of ConfigEditor with XML data properties and an app reference
         config_editor_file = os.path.join(os.path.dirname(__file__), "font_config_editor.xml")
-        self.font_config_editor = FontConfigEditor(config_frame, config_editor_file, app_reference=self)
+        self.font_config_editor = ConfigEditor(config_frame, config_editor_file, app_reference=self)
         self.font_config_editor.pack(fill="y", expand=True)  # Fills available vertical space only
 
         # Right Frame for ImageDisplay and EditorWidget

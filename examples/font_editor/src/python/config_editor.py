@@ -3,7 +3,7 @@ from tkinter import Button
 from font_config_widget import FontConfigDeltaControl, FontConfigTextBox, FontConfigComboBox, FontConfigColorPicker, FontConfigCheckBox
 from config_manager import dict_to_text, load_xml
 
-class FontConfigEditor(tk.Frame):
+class ConfigEditor(tk.Frame):
     """
     A dynamic editor for font configurations, creating controls based on data-driven configuration.
     """

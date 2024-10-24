@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter import Toplevel
-from font_config_editor import FontConfigEditor
+from config_editor import ConfigEditor
 
-class FontConfigEditorDialog(Toplevel):
+class ConfigEditorDialog(Toplevel):
     """
-    A modal dialog that displays the FontConfigEditor with Set and Cancel buttons.
+    A modal dialog that displays the ConfigEditor with Set and Cancel buttons.
     """
     def __init__(self, parent, config_editor_file, app_reference, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -16,8 +16,8 @@ class FontConfigEditorDialog(Toplevel):
         self.transient(parent)
         self.grab_set()
 
-        # Create the FontConfigEditor widget
-        self.editor = FontConfigEditor(self, config_editor_file, app_reference)
+        # Create the ConfigEditor widget
+        self.editor = ConfigEditor(self, config_editor_file, app_reference)
         self.editor.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Create the buttons frame
@@ -46,23 +46,23 @@ class FontConfigEditorDialog(Toplevel):
 
 class MainApp(tk.Tk):
     """
-    Main application with a button to spawn the FontConfigEditorDialog.
+    Main application with a button to spawn the ConfigEditorDialog.
     """
     def __init__(self):
         super().__init__()
         self.title("Main Application")
         self.geometry("300x100")  # Adjust the size as needed
 
-        # Create a button to open the FontConfigEditorDialog
+        # Create a button to open the ConfigEditorDialog
         open_button = tk.Button(self, text="Open Font Config Editor", command=self.open_editor_dialog)
         open_button.pack(pady=20)
 
     def open_editor_dialog(self):
-        """Open the FontConfigEditorDialog when the button is pressed."""
+        """Open the ConfigEditorDialog when the button is pressed."""
         config_editor_file = "examples/font_editor/src/python/asm_config_editor.xml"
         app_reference = None  # Replace with the actual app reference if needed
 
-        dialog = FontConfigEditorDialog(self, config_editor_file, app_reference)
+        dialog = ConfigEditorDialog(self, config_editor_file, app_reference)
 
 if __name__ == "__main__":
     app = MainApp()
