@@ -2,7 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 from custom_widgets import GridToggleButton, ZoomControl
 from config_manager import get_app_config_value
-from agon_font import create_blank_font_image
+from agon_font import create_blank_font_image, read_font
 
 class ImageDisplay(tk.Frame):
     """A widget to display and zoom an image on a canvas, handle mouse clicks, and extract characters."""
@@ -238,3 +238,18 @@ class ImageDisplay(tk.Frame):
         new_height = int(self.working_image.height * zoom_factor)
         self.canvas.config(width=new_width, height=new_height)
         self.config(width=new_width, height=new_height)
+
+    def render_font(self):
+        """Redraw the font image based on the current configuration."""        
+        file_path = self.app_reference.current_font_file
+        print(f"Rendering font image from {file_path}")
+
+        font_config = self.app_reference.font_config_editor.get_config()
+        font_config, font_image = read_font(file_path, font_config)
+        font_config['font_width_mod'] = font_config['font_width'] + font_config['offset_width'] + font_config['scale_width']
+        font_config['font_height_mod'] = font_config['font_height'] + font_config['offset_height'] + font_config['scale_height']
+        self.app_reference.font_config_editor.set_controls_from_config(font_config)
+        self.load_image(font_image)
+        if self.app_reference.editor_widget:
+            self.app_reference.editor_widget.initialize_grid()
+            self.trigger_click_on_ascii_code(self.current_ascii_code)

@@ -1,9 +1,7 @@
 import tkinter as tk
 from tkinter import Button
-import xml.etree.ElementTree as ET
 from font_config_widget import FontConfigDeltaControl, FontConfigTextBox, FontConfigComboBox, FontConfigColorPicker, FontConfigCheckBox
 from config_manager import dict_to_text, load_xml
-from agon_font import read_font
 
 class FontConfigEditor(tk.Frame):
     """
@@ -94,18 +92,3 @@ class FontConfigEditor(tk.Frame):
                     if not dependent_control.hidden:
                         dependent_control.grid_remove()
                         dependent_control.hidden = True
-
-    def render_font(self):
-        """Redraw the font image based on the current configuration."""        
-        file_path = self.app_reference.current_font_file
-        print(f"Rendering font image from {file_path}")
-
-        font_config = self.get_config()
-        font_config, font_image = read_font(file_path, font_config)
-        font_config['font_width_mod'] = font_config['font_width'] + font_config['offset_width'] + font_config['scale_width']
-        font_config['font_height_mod'] = font_config['font_height'] + font_config['offset_height'] + font_config['scale_height']
-        self.set_controls_from_config(font_config)
-        self.app_reference.image_display.load_image(font_image)
-        if self.app_reference.editor_widget:
-            self.app_reference.editor_widget.initialize_grid()
-            self.app_reference.image_display.trigger_click_on_ascii_code(self.app_reference.image_display.current_ascii_code)
