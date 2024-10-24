@@ -1,23 +1,55 @@
-def convert_font_to_txt(font_filepath):
-    """
-    Converts the binary data of a .font file to a .txt file.
-    Each row in the text file will contain 16 bytes in hex format, separated by spaces.
+import xml.etree.ElementTree as ET
+from config_manager import save_font_metadata_to_xml
 
-    :param font_filepath: Path to the .font file
-    """
-    txt_filepath = font_filepath.replace('.font', '.txt')
-    
-    with open(font_filepath, 'rb') as f:
-        font_data = f.read()
-    
-    with open(txt_filepath, 'w') as f:
-        for i in range(0, len(font_data), 16):
-            # Get 16 bytes from the data
-            row_data = font_data[i:i + 16]
-            # Convert each byte to 2-digit hex format with leading zeroes
-            hex_row = ' '.join(f'{byte:02X}' for byte in row_data)
-            # Write the row to the text file
-            f.write(hex_row + '\n')
+if __name__ == "__main__":
+    # Your current parameters
+    settings = {
+        'font_filename': 'Apple Chancery_Narrow_16x32.font',
+        'screen_mode': 19,
+        'asm_dir': 'examples/font_editor/src/asm',
+        'asm_file': 'app.asm',
+        'tgt_bin_dir': 'examples/font_editor/tgt',
+        'tgt_bin_file': 'font.bin',
+        'emulator_dir': '/home/smith/Agon/.emulator',
+        'emulator_tgt_dir': '/mystuff/agon-utils/examples/font_editor/tgt',
+        'sdcard_tgt_dir': '/media/smith/AGON/mystuff/fonts/tgt',
+        'emulator_exec': './fab-agon-emulator',
+        'build_fonts': True,
+        'assemble': True,
+        'copy_emulator': False,
+        'copy_sdcard': False,
+        'run_emulator': True
+    }
 
-# Example usage
-convert_font_to_txt('examples/font_editor/tgt/Arial Black_Regular_12x12.font')
+    xml_filepath = 'examples/font_editor/src/python/asm_config.xml'
+    save_font_metadata_to_xml(settings, xml_filepath)
+
+    xml_filepath = 'examples/font_editor/src/python/font_settings.xml'
+    with open(xml_filepath, 'w') as f:
+        f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        f.write('<settings>\n')
+
+        for key, value in settings.items():
+            print(f"{key}: {value}")
+
+            xml_string = f"""
+            <setting name="{key}">
+                <widget_type>FontConfigTextBox</widget_type>
+                <label_text></label_text>
+                <data_type>string</data_type>
+                <default_value>{value}</default_value>
+                <description></description>
+                <event_handlers>
+                    <on_change>
+                        <item>default_on_change_handler</item>
+                        <!-- <item>{key}_on_change_handler</item> -->
+                    </on_change>
+                    <on_hover>
+                        <item>default_on_mouse_enter</item>
+                    </on_hover>
+                </event_handlers>
+            </setting>
+            """
+            f.write(xml_string)
+
+        f.write('</settings>\n')

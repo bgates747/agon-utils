@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import Button
 import xml.etree.ElementTree as ET
-from font_config_widget import FontConfigDeltaControl, FontConfigTextBox, FontConfigComboBox, FontConfigColorPicker
+from font_config_widget import FontConfigDeltaControl, FontConfigTextBox, FontConfigComboBox, FontConfigColorPicker, FontConfigCheckBox
 from config_manager import dict_to_text, load_xml
-from agon_font import resample_and_scale_image, read_font
+from agon_font import read_font
 
 class FontConfigEditor(tk.Frame):
     """
@@ -40,6 +40,8 @@ class FontConfigEditor(tk.Frame):
                 control = FontConfigComboBox(self, config_setting, self.font_config_xml)
             elif widget_type == "FontConfigColorPicker":
                 control = FontConfigColorPicker(self, config_setting, self.font_config_xml)
+            elif widget_type == "FontConfigCheckBox":
+                control = FontConfigCheckBox(self, config_setting, self.font_config_xml)
             else:
                 raise ValueError(f"Unsupported widget type: {widget_type}")
             

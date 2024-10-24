@@ -10,6 +10,8 @@ def get_typed_data(data_type, value):
         return float(value)
     elif data_type == 'string':
         return str(value)
+    elif data_type == 'bool':
+        return bool(value)
     return value
 
 def dict_to_text(data_dict):

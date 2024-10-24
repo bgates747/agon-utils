@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+
+    <setting name="font_filename">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text></label_text>
+        <data_type>string</data_type>
+        <default_value>Apple Chancery_Narrow_16x32.font</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>font_filename_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="screen_mode">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text></label_text>
+        <data_type>int</data_type>
+        <default_value>19</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>screen_mode_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="asm_dir">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text></label_text>
+        <data_type>string</data_type>
+        <default_value>examples/font_editor/src/asm</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>asm_dir_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="asm_file">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text></label_text>
+        <data_type>string</data_type>
+        <default_value>app.asm</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>asm_file_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="tgt_bin_dir">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text></label_text>
+        <data_type>string</data_type>
+        <default_value>examples/font_editor/tgt</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>tgt_bin_dir_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="tgt_bin_file">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text></label_text>
+        <data_type>string</data_type>
+        <default_value>font.bin</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>tgt_bin_file_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="emulator_dir">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text></label_text>
+        <data_type>string</data_type>
+        <default_value>/home/smith/Agon/.emulator</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>emulator_dir_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="emulator_tgt_dir">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text></label_text>
+        <data_type>string</data_type>
+        <default_value>/mystuff/agon-utils/examples/font_editor/tgt</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>emulator_tgt_dir_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="sdcard_tgt_dir">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text></label_text>
+        <data_type>string</data_type>
+        <default_value>/media/smith/AGON/mystuff/fonts/tgt</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>sdcard_tgt_dir_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="emulator_exec">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text></label_text>
+        <data_type>string</data_type>
+        <default_value>./fab-agon-emulator</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>emulator_exec_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="build_fonts">
+        <widget_type>FontConfigCheckBox</widget_type>
+        <label_text></label_text>
+        <data_type>bool</data_type>
+        <default_value>True</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>build_fonts_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="assemble">
+        <widget_type>FontConfigCheckBox</widget_type>
+        <label_text></label_text>
+        <data_type>bool</data_type>
+        <default_value>True</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>assemble_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="copy_emulator">
+        <widget_type>FontConfigCheckBox</widget_type>
+        <label_text></label_text>
+        <data_type>bool</data_type>
+        <default_value>False</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>copy_emulator_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="copy_sdcard">
+        <widget_type>FontConfigCheckBox</widget_type>
+        <label_text></label_text>
+        <data_type>bool</data_type>
+        <default_value>False</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>copy_sdcard_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+    <setting name="run_emulator">
+        <widget_type>FontConfigCheckBox</widget_type>
+        <label_text></label_text>
+        <data_type>bool</data_type>
+        <default_value>True</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>run_emulator_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
+</settings>

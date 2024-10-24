@@ -301,3 +301,29 @@ class FontConfigColorPicker(FontConfigWidget):
 
                 # Trigger on_change event if color has changed
                 self.on_change_widget.event_generate(self.on_change_event)
+
+class FontConfigCheckBox(FontConfigWidget):
+    """A widget for displaying and editing a boolean-based configuration value."""
+    def __init__(self, parent, config_setting, font_config_xml, **kwargs):
+        super().__init__(parent, config_setting, font_config_xml, **kwargs)
+
+        # Create a BooleanVar to manage the state of the Checkbutton
+        self.bool_var = tk.BooleanVar(value=bool(self._value))
+
+        # Create the Checkbutton widget
+        self.checkbox = tk.Checkbutton(
+            self,
+            variable=self.bool_var,
+            command=self._handle_value_change  # Bind the change handler to the click event
+        )
+        self.checkbox.grid(row=0, column=1, padx=self.pad_x)
+
+        # Set the on_change_object to the BooleanVar
+        self.on_change_object = self.bool_var
+
+        # Set the initial value
+        self.value = self._value
+
+    def set_display_value(self, new_value):
+        """Set the display value of the CheckBox."""
+        self.bool_var.set(bool(new_value))
