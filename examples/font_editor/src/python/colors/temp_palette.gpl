@@ -4,11 +4,7 @@ Columns: 16
 #
 170   0   0 Color 0
 255   0   0 Color 1
- 85   0   0 Color 2
-170  85  85 Color 3
-255  85  85 Color 4
-255 170 170 Color 5
-  0   0   0 Color 6
-170 170 170 Color 7
- 85  85  85 Color 8
-255 255 255 Color 9
+  0   0   0 Color 2
+170 170 170 Color 3
+ 85  85  85 Color 4
+255 255 255 Color 5

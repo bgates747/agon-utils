@@ -1,5 +1,5 @@
 from PIL import Image, ImageDraw, ImageFont
-import numpy as np
+import agonutils as au
 import struct
 import os
 from config_manager import load_font_metadata_from_xml, save_font_metadata_to_xml, dict_to_text
@@ -101,6 +101,13 @@ def resample_and_scale_image(font_config, original_image):
         font_image = font_image.convert("L")
         font_image = apply_threshold(font_image, threshold)
         font_image = font_image.convert("RGBA")
+    elif font_config['raster_type'] == 'palette':
+        palette_fileame = f"colors/{font_config['palette']}.gpl"
+        palette_filepath = os.path.join(os.path.dirname(__file__), palette_fileame)
+        temp_img_filepath = os.path.join(os.path.dirname(__file__), 'temp.png')
+        font_image.save(temp_img_filepath)
+        au.convert_to_palette(temp_img_filepath, temp_img_filepath, palette_filepath, 'RGB')
+        font_image = Image.open(temp_img_filepath)
 
     return font_config, font_image
 
@@ -176,7 +183,7 @@ def create_blank_font_image(font_config):
 
 def create_font_image(char_images, font_config):
     """
-    Creates a PNG image from the dictionary of character images and arranges them in a grid.
+    Creates a PIL image from the dictionary of character images and arranges them in a grid.
     
     :param char_images: Dictionary of PIL Images representing each character, with ASCII codes as keys
     :param font_config: Dictionary with font configuration
