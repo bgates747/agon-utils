@@ -223,14 +223,6 @@ class ImageDisplay(tk.Frame):
         char_x = click_x // font_config['font_width_mod']
         char_y = click_y // font_config['font_height_mod']
         return char_x, char_y
-
-    def crop_image(self, image, target_width, target_height):
-        return image.crop((0, 0, target_width, target_height)) 
-
-    def enlarge_image(self, image, target_width, target_height):
-        new_image = Image.new("RGBA", (target_width, target_height), color=255)
-        new_image.paste(image, (0, 0))
-        return new_image
     
     def update_display_dimensions(self):
         zoom_factor = self.zoom_levels[self.current_zoom_index] / 100
@@ -249,6 +241,10 @@ class ImageDisplay(tk.Frame):
         font_config['font_width_mod'] = font_config['font_width'] + font_config['offset_width'] + font_config['scale_width']
         font_config['font_height_mod'] = font_config['font_height'] + font_config['offset_height'] + font_config['scale_height']
         self.app_reference.font_config_editor.set_controls_from_config(font_config)
+
+        # Convert to RGB because alpha channel trips up tkinter
+        font_image = font_image.convert("RGB")
+        
         self.load_image(font_image)
         if self.app_reference.editor_widget:
             self.app_reference.editor_widget.initialize_grid()
