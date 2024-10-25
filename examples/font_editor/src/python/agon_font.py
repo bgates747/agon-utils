@@ -105,9 +105,9 @@ def resample_and_scale_image(font_config, original_image):
         palette_fileame = f"colors/{font_config['palette']}.gpl"
         palette_filepath = os.path.join(os.path.dirname(__file__), palette_fileame)
         temp_img_filepath = os.path.join(os.path.dirname(__file__), 'temp.png')
-        font_image.save(temp_img_filepath)
+        font_image.convert('RGB').save(temp_img_filepath)
         au.convert_to_palette(temp_img_filepath, temp_img_filepath, palette_filepath, 'RGB')
-        font_image = Image.open(temp_img_filepath)
+        font_image = Image.open(temp_img_filepath).convert('RGBA')
 
     return font_config, font_image
 
