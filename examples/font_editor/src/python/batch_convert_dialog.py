@@ -32,27 +32,47 @@ class BatchConvertDialog(ConfigEditorDialog):
         print("GO button pressed")
         self.values_dict = self.editor.get_config()
         font_tgt_dir = self.values_dict['font_tgt_dir']
+
         if not os.path.exists(font_tgt_dir):
             os.makedirs(font_tgt_dir)
+
         file_paths = generate_file_list(self.values_dict)
+
         for file_path in file_paths:
-            font_config = generate_blank_font_config()
-            font_config = update_dict_from_dict(self.values_dict, font_config)
-            font_config['original_font_path'] = file_path
-            font_config, font_image = read_font(file_path, font_config)
-            font_config.update({
-                'font_variant': '',
-                'font_width_mod': font_config['font_width'], 
-                'font_height_mod': font_config['font_height'],
+            try:
+                font_config = generate_blank_font_config()
+                font_config = update_dict_from_dict(self.values_dict, font_config)
+                font_config['original_font_path'] = file_path
+
+                # Read font and update config
+                font_config, font_image = read_font(file_path, font_config)
+                font_config.update({
+                    'font_variant': '',
+                    'font_width_mod': font_config['font_width'],
+                    'font_height_mod': font_config['font_height'],
                 })
-            tgt_png_filename = f"{os.path.splitext(os.path.basename(file_path))[0]}.png"
-            font_image.save(os.path.join(font_tgt_dir, tgt_png_filename))
-            tgt_font_filename = f"{os.path.splitext(os.path.basename(file_path))[0]}.font"
-            tgt_font_filepath = os.path.join(font_tgt_dir, tgt_font_filename)
-            write_agon_font(font_config, font_image, tgt_font_filepath)
-            tgt_xml_filepath = f"{tgt_font_filepath}.xml"
-            save_font_metadata_to_xml(font_config, tgt_xml_filepath)
-            self.destroy()
+
+                # Save PNG
+                tgt_png_filename = f"{os.path.splitext(os.path.basename(file_path))[0]}.png"
+                font_image.save(os.path.join(font_tgt_dir, tgt_png_filename))
+
+                # Save .font file
+                tgt_font_filename = f"{os.path.splitext(os.path.basename(file_path))[0]}.font"
+                tgt_font_filepath = os.path.join(font_tgt_dir, tgt_font_filename)
+                write_agon_font(font_config, font_image, tgt_font_filepath)
+
+                # Save XML metadata
+                tgt_xml_filepath = f"{tgt_font_filepath}.xml"
+                save_font_metadata_to_xml(font_config, tgt_xml_filepath)
+
+                # Print successful processing
+                print(f"Successfully processed: {file_path}")
+
+            except Exception as e:
+                # Print the error and file that caused it
+                print(f"Error processing {file_path}: {e}")
+
+        self.destroy()
 
 def generate_file_list(batch_convert_dict):
     """
