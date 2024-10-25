@@ -546,7 +546,7 @@ def read_agon_font(font_filepath, font_config):
 # -----------------------------------------------------------------------------
 
 def write_agon_font(font_config, font_image, tgt_font_filepath):
-    font_image.show()
+    # font_image.show()
     """
     Writes a .font file based on the provided font image and configuration.
     

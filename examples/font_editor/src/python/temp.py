@@ -83,6 +83,7 @@
 #               f"Character size: {char_w}x{char_h} pixels")
 
 import tkinter as tk
+from config_manager import get_typed_data
 
 # Create the main window
 root = tk.Tk()
@@ -112,8 +113,11 @@ checkbox_var.trace_add('write', lambda *args: on_checkbox_toggle())
 checkbox = tk.Checkbutton(root, text="Check Me!", variable=checkbox_var)
 checkbox.pack(pady=10)
 
+value = get_typed_data("bool","False")
+print(value)
+
 # Set initial checkbox state
-set_checkbox(False)  # Set the checkbox to checked initially
+set_checkbox(value)  # Set the checkbox to checked initially
 
 # Start the Tkinter event loop
 root.mainloop()

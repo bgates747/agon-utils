@@ -3,30 +3,58 @@ from xml.dom import minidom
 import json
 import os
 
+def generate_blank_font_config():
+    return {
+        "original_font_path": None,
+        "font_name": None,
+        "font_variant": None,
+        "point_size": None,
+        "font_width": None,
+        "font_height": None,
+        "font_width_mod": None,
+        "font_height_mod": None,
+        "offset_left": None,
+        "offset_top": None,
+        "offset_width": None,
+        "offset_height": None,
+        "scale_width": None,
+        "scale_height": None,
+        "raster_type": None,
+        "threshold": None,
+        "palette": None,
+        "fg_color": None,
+        "bg_color": None,
+        "ascii_start": None,
+        "ascii_end": None,
+        "chars_per_row": None
+    }
+
+def update_dict_from_dict(src_dict, tgt_dict):
+    """
+    Updates the values of tgt_dict from src_dict.
+
+    :param src_dict: Dictionary with source values
+    :param tgt_dict: Dictionary to be updated
+    :return: Updated tgt_dict
+    """
+    for key in src_dict:
+        if key in tgt_dict:
+            tgt_dict[key] = src_dict[key]
+
+    return tgt_dict
+
 def get_typed_data(data_type, value):
     """
     Converts the value to the specified data type.
-    Ensures that booleans are returned as '1' or '0' for compatibility with Tkinter widgets.
     """
     if data_type == 'bool':
-        return bool(value)
+        return value in ['True', 'true', '1', True, 1]
     elif data_type == 'int':
         return int(value)
     elif data_type == 'float':
         return float(value)
     else:  # default to string
         return str(value)
-
-# def get_typed_data(data_type, value):
-#     if data_type == 'int':
-#         return int(value)
-#     elif data_type == 'float':
-#         return float(value)
-#     elif data_type == 'string':
-#         return str(value)
-#     elif data_type == 'bool':
-#         return bool(value)
-#     return value
 
 def dict_to_text(data_dict):
     """Return a nicely formatted string version of the dictionary, suitable for console printing or pasting into code."""

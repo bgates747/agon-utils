@@ -1,17 +1,17 @@
 <?xml version="1.0" ?>
 <settings>
-  <setting name="font_src_dir" value="examples/font_editor/src/fonts"/>
+  <setting name="font_src_dir" value="examples/font_editor/src/fonts/pi/cfonts"/>
   <setting name="font_tgt_dir" value="examples/font_editor/tgt/cfonts"/>
   <setting name="recursive" value="False"/>
   <setting name="ttf" value="False"/>
   <setting name="otf" value="False"/>
-  <setting name="psf" value="False"/>
+  <setting name="psf" value="True"/>
   <setting name="point_size" value="16"/>
   <setting name="raster_type" value="threshold"/>
   <setting name="threshold" value="128"/>
   <setting name="palette" value="Agon64"/>
   <setting name="fg_color" value="255,255,255,255"/>
   <setting name="bg_color" value="0,0,0,255"/>
-  <setting name="ascii_start" value="32"/>
-  <setting name="ascii_end" value="127"/>
+  <setting name="ascii_start" value="0"/>
+  <setting name="ascii_end" value="255"/>
 </settings>

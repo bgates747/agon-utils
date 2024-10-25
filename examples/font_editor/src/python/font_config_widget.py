@@ -323,3 +323,7 @@ class FontConfigCheckBox(FontConfigWidget):
 
         # Set the initial state
         self.set_display_value(self._value)
+
+    def set_display_value(self, new_value):
+        """Set the state of the CheckBox."""
+        self.bool_var.set(new_value)
