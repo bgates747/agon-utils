@@ -1,2 +1,2 @@
 screen_mode: equ 19
-font_name: equ Lat2_Fixed14_Regular_7x14
+font_name: equ UbuntuMono_R_Regular_8x16
