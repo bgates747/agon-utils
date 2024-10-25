@@ -16,16 +16,23 @@ def sanitize_label(label):
     # Replace non-alphanumeric characters except underscores with underscores
     return re.sub(r'[^A-Za-z0-9_]', '_', label)
 
-def build_fonts_asm(src_dir, tgt_dir):
+def build_fonts_asm(src_dir, tgt_dir, recursive=False):
     """
     Generates an assembly file listing fonts from .font files in the target directory.
 
+    :param src_dir: Source directory (not used here but kept for consistency)
     :param tgt_dir: Directory containing .font files
-    :param output_file: Output file path for the generated assembly code
+    :param recursive: If True, performs a recursive search; if False, only searches the top level
+    :return: List of sorted .font file paths
     """
-    # Find and sort all .font files in the target directory
     font_files = []
+
+    # Walk through the directory
     for root, _, files in os.walk(tgt_dir):
+        # If not recursive, skip subdirectories
+        if not recursive and root != tgt_dir:
+            continue
+
         for file in files:
             if file.endswith(".font"):
                 full_path = os.path.join(root, file)
