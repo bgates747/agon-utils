@@ -671,6 +671,79 @@ def bin_to_text(filepath, hexdump=False):
             # Write the row to the text file
             f.write(output_row + '\n')
 
+# Helper function to quantize an 8-bit channel to 2-bit
+def quantize_channel(channel):
+    if channel < 64:
+        return 0
+    elif channel < 128:
+        return 1
+    elif channel < 192:
+        return 2
+    else:
+        return 3
+
+# Helper function to encode 8-bit RGBA tuple into a 2-bit packed pixel
+def rgba8_to_rgba2(rgba):
+    r, g, b, a = rgba
+    r_q = quantize_channel(r)
+    g_q = quantize_channel(g)
+    b_q = quantize_channel(b)
+    a_q = quantize_channel(a)
+
+    # Pack the 2-bit channels into a single integer
+    return (a_q << 6) | (b_q << 4) | (g_q << 2) | r_q
+
+def write_rgba2_font(font_config, font_image, tgt_font_filepath):
+    # Extract font dimensions and padding
+    font_width_mod = font_config['font_width_mod']
+    font_height_mod = font_config['font_height_mod']
+    ascii_start = font_config['ascii_start']
+    ascii_end = font_config['ascii_end']
+    bg_color = font_config['bg_color']
+    bg_color = tuple(map(int, bg_color.split(',')))
+    if bg_color[3] == 0:
+        bg_color_rgba2 = 0
+    else:
+        bg_color_rgba2 = rgba8_to_rgba2(bg_color)
+
+    # Extract individual character images from the font image
+    char_images = get_chars_from_image(font_config, font_image)
+
+    # Convert each image into an RGBA2 image
+    temp_png_filepath = os.path.join(os.path.dirname(__file__), 'temp.png')
+    temp_rgba2_filepath = os.path.join(os.path.dirname(__file__), 'temp.rgba2')
+    for ascii_code in range(ascii_start, ascii_end + 1):
+        char_image = char_images.get(ascii_code)
+        if char_image:
+            # Convert the image to RGBA2 format
+            char_image.save(temp_png_filepath)
+            au.img_to_rgba2(temp_png_filepath, temp_rgba2_filepath)
+            with open(temp_rgba2_filepath, 'rb') as f:
+                rgba2_image = f.read()
+            # Update the processed image in the dictionary
+            char_images[ascii_code] = rgba2_image
+
+    # Prepare blank data for characters outside the ASCII range
+    blank_data = bytes([bg_color_rgba2] * (font_width_mod * font_height_mod))
+    # Write the processed font data to a new .rgba2 file
+    font_data = bytearray()
+
+    for ascii_code in range(256):
+        if ascii_code < ascii_start or ascii_code > ascii_end:
+            # Use pre-generated blank data for characters outside the range
+            font_data.extend(blank_data)
+        else:
+            font_data.extend(char_images[ascii_code])
+
+    with open(tgt_font_filepath, 'wb') as f:
+        f.write(font_data)
+
+    # Clean up temporary files
+    if os.path.exists(temp_png_filepath):
+        os.remove(temp_png_filepath)
+    if os.path.exists(temp_rgba2_filepath):
+        os.remove(temp_rgba2_filepath)
+
 if __name__ == '__main__':
     font_source_dir = 'examples/font_editor/tgt'
     font_filename = 'Arial Black_Regular_12x12.xml'
