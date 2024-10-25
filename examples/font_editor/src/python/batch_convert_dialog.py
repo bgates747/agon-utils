@@ -2,6 +2,7 @@
 from config_editor_dialog import ConfigEditorDialog
 from config_manager import save_values_dict_to_xml, generate_blank_font_config, update_dict_from_dict
 from agon_font import read_font, write_agon_font, save_font_metadata_to_xml
+from file_manager import make_filename_from_config
 import os
 
 class BatchConvertDialog(ConfigEditorDialog):
@@ -40,24 +41,30 @@ class BatchConvertDialog(ConfigEditorDialog):
 
         for file_path in file_paths:
             try:
+                # Get the base filename without extension
+                base_filename = os.path.splitext(os.path.basename(file_path))[0]
+                
+                # Generate a blank font config and update it
                 font_config = generate_blank_font_config()
                 font_config = update_dict_from_dict(self.values_dict, font_config)
-                font_config['original_font_path'] = file_path
 
                 # Read font and update config
                 font_config, font_image = read_font(file_path, font_config)
                 font_config.update({
+                    'original_font_path': file_path,
+                    'font_name': base_filename,
                     'font_variant': '',
                     'font_width_mod': font_config['font_width'],
                     'font_height_mod': font_config['font_height'],
                 })
+                base_filename = make_filename_from_config(font_config)
 
                 # Save PNG
-                tgt_png_filename = f"{os.path.splitext(os.path.basename(file_path))[0]}.png"
+                tgt_png_filename = f"{base_filename}.png"
                 font_image.save(os.path.join(font_tgt_dir, tgt_png_filename))
 
                 # Save .font file
-                tgt_font_filename = f"{os.path.splitext(os.path.basename(file_path))[0]}.font"
+                tgt_font_filename = f"{base_filename}.font"
                 tgt_font_filepath = os.path.join(font_tgt_dir, tgt_font_filename)
                 write_agon_font(font_config, font_image, tgt_font_filepath)
 
