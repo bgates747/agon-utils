@@ -3,9 +3,9 @@
   <setting name="font_src_dir" value="examples/font_editor/src/fonts"/>
   <setting name="font_tgt_dir" value="examples/font_editor/tgt/fonts"/>
   <setting name="recursive" value="False"/>
-  <setting name="ttf" value="True"/>
-  <setting name="otf" value="True"/>
-  <setting name="psf" value="True"/>
+  <setting name="ttf" value="False"/>
+  <setting name="otf" value="False"/>
+  <setting name="psf" value="False"/>
   <setting name="point_size" value="16"/>
   <setting name="raster_type" value="threshold"/>
   <setting name="threshold" value="128"/>

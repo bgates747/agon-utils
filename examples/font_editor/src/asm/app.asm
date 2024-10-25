@@ -142,6 +142,26 @@ lorem_ipsum:
     db "cognitionem, Quirine, si tibi probatur, repudiandam non esse\r\n"
     db "dices. Quae cum dixisset paulumque institisset, Quid est?\r\n"
     db "\r\n"
+
+pullo_vorenus:
+    db "Erant in ea legione fortissimi viri, centuriones, qui primis\r\n"
+    db "ordinibus appropinquarent, Titus Pullo et Lucius Vorenus.\r\n"
+    db "Hi perpetuas inter se controversias habebant, quinam\r\n"
+    db "anteferretur, omnibusque annis de locis summis\r\n"
+    db "simultatibus contendebant.\r\n"
+
+    db "Cum acerrime ad munitiones pugnaretur, Pullo exclamat:\r\n"
+    db "'Quid dubitas, Vorene? Aut quem locum tuae virtutis\r\n"
+    db "exspectas?' Statim extra munitiones procedit, et ubi\r\n"
+    db "hostes confertissimi sunt, irrumpit. Vorenus,\r\n"
+    db "existimationem veritus, eum sequitur et tela conicit.\r\n"
+
+    db "Pullo gladio impeditus circumvenitur; Vorenus auxilium\r\n"
+    db "fert et hostes propellit. Ambo, compluribus interfectis,\r\n"
+    db "cum summa laude intra munitiones redeunt. Sic fortuna\r\n"
+    db "in contentione utrumque versavit, ut uter utri auxilio\r\n"
+    db "fuerit nec diiudicari posset, uter virtute anteferendus\r\n"
+    db "videretur.\r\n"
     db 0
 
 uxor_balnea:
@@ -157,6 +177,7 @@ uxor_balnea:
     db "servavit, sed tantum si responsum verum ad quaestionem sciret:\r\n"
     db "'Quid volunt mulieres vere?'. Ita iter periculosum cepit.\r\n"
     db "\r\n"
+    db 0
     db "Eques per terras erravit, quaerens responsum ab omnibus: damas\r\n"
     db "divas, ancillas, et vetulas. Quis rogavit, varia respondit; nescivit\r\n"
     db "vere, quid volunt mulieres, donec foemina vetus decrepita, sed\r\n"

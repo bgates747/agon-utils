@@ -1,7 +1,7 @@
 import os
 import tkinter as tk
 from tkinter import ttk
-from config_manager import get_app_config_value
+from config_manager import get_app_config_value, xml_values_to_dict
 from file_manager import open_file
 from config_editor import ConfigEditor
 from menu_bar import MenuBar
@@ -97,10 +97,11 @@ class FontEditor(ttk.Frame):
 
     def open_batch_convert_dialog(self):
         """Open the batch conversion dialog with the current font configuration."""
-        config_editor_file = "examples/font_editor/src/python/batch_convert_dialog.xml"
         app_reference = self
-
-        dialog = BatchConvertDialog(self, config_editor_file, app_reference)
+        xml_values_filepath = 'examples/font_editor/src/python/batch_convert_values.xml'
+        xml_defaults_filepath = 'examples/font_editor/src/python/batch_convert_dialog.xml'
+        values_dict = xml_values_to_dict(xml_defaults_filepath, xml_values_filepath)
+        dialog = BatchConvertDialog(self, xml_defaults_filepath, app_reference, values_dict, xml_values_filepath)
 
 if __name__ == "__main__":
     root = tk.Tk()

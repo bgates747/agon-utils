@@ -1,7 +1,6 @@
 from config_manager import dict_to_text, get_typed_data, xml_to_dict, load_xml
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-import os
 
 def xml_defaults_to_dict(xml_defaults_filepath):
     """
