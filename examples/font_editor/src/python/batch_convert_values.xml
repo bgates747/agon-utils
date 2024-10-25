@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <settings>
   <setting name="font_src_dir" value="examples/font_editor/src/fonts"/>
-  <setting name="font_tgt_dir" value="examples/font_editor/tgt/fonts"/>
+  <setting name="font_tgt_dir" value="examples/font_editor/tgt/cfonts"/>
   <setting name="recursive" value="False"/>
   <setting name="ttf" value="False"/>
   <setting name="otf" value="False"/>

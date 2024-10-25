@@ -22,7 +22,7 @@
         <widget_type>FontConfigTextBox</widget_type>
         <label_text>Font Src Dir</label_text>
         <data_type>string</data_type>
-        <default_value>examples/font_editor/tgt/fonts</default_value>
+        <default_value>examples/font_editor/tgt/fonts/cfonts</default_value>
         <description></description>
         <event_handlers>
             <on_change>
@@ -39,7 +39,7 @@
         <widget_type>FontConfigCheckBox</widget_type>
         <label_text>Rescursive</label_text>
         <data_type>bool</data_type>
-        <default_value>1</default_value>
+        <default_value>0</default_value>
         <description></description>
         <event_handlers>
             <on_change>
@@ -56,7 +56,7 @@
         <widget_type>FontConfigCheckBox</widget_type>
         <label_text>ttf</label_text>
         <data_type>bool</data_type>
-        <default_value>1</default_value>
+        <default_value>0</default_value>
         <description></description>
         <event_handlers>
             <on_change>
@@ -73,7 +73,7 @@
         <widget_type>FontConfigCheckBox</widget_type>
         <label_text>otf</label_text>
         <data_type>bool</data_type>
-        <default_value>1</default_value>
+        <default_value>0</default_value>
         <description></description>
         <event_handlers>
             <on_change>
@@ -90,7 +90,7 @@
         <widget_type>FontConfigCheckBox</widget_type>
         <label_text>psf</label_text>
         <data_type>bool</data_type>
-        <default_value>1</default_value>
+        <default_value>0</default_value>
         <description></description>
         <event_handlers>
             <on_change>

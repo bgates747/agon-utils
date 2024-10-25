@@ -31,12 +31,12 @@ class FontConfigWidget(tk.Frame):
     @property
     def value(self):
         """Get the current value of the control."""
-        return self._value
+        return get_typed_data(self.data_type, self._value)
 
     @value.setter
     def value(self, new_value):
         """Set the current value and update the display."""
-        self._value = new_value
+        self._value = get_typed_data(self.data_type, new_value)
         self.set_display_value(new_value)
 
     def set_display_value(self, new_value):
@@ -308,9 +308,9 @@ class FontConfigCheckBox(FontConfigWidget):
         super().__init__(parent, config_setting, font_config_xml, **kwargs)
 
         # Create a BooleanVar to manage the state of the Checkbutton
-        self.bool_var = tk.BooleanVar(value=bool(self._value))
+        self.bool_var = tk.BooleanVar()
 
-        # Create the Checkbutton widget
+        # Create the Checkbutton widget with no label text
         self.checkbox = tk.Checkbutton(
             self,
             variable=self.bool_var,
@@ -321,9 +321,5 @@ class FontConfigCheckBox(FontConfigWidget):
         # Set the on_change_object to the BooleanVar
         self.on_change_object = self.bool_var
 
-        # Set the initial value
-        self.value = self._value
-
-    def set_display_value(self, new_value):
-        """Set the display value of the CheckBox."""
-        self.bool_var.set(bool(new_value))
+        # Set the initial state
+        self.set_display_value(self._value)

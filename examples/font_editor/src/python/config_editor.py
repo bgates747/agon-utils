@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import Button
 from font_config_widget import FontConfigDeltaControl, FontConfigTextBox, FontConfigComboBox, FontConfigColorPicker, FontConfigCheckBox
-from config_manager import dict_to_text, load_xml
+from config_manager import dict_to_text, load_xml, get_typed_data
 
 class ConfigEditor(tk.Frame):
     """
@@ -59,7 +59,7 @@ class ConfigEditor(tk.Frame):
             row += 1
             
     def get_config(self):
-        """Return a dictionary of  values for all controls, with config_setting as the key."""
+        """Return a dictionary of values for all controls, with config_setting as the key."""
         values = {}
         for config_setting, control in self.controls.items():
             values[config_setting] = control.value

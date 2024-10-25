@@ -9,8 +9,7 @@ def get_typed_data(data_type, value):
     Ensures that booleans are returned as '1' or '0' for compatibility with Tkinter widgets.
     """
     if data_type == 'bool':
-        # Handle boolean conversion specifically for Tkinter compatibility
-        return '1' if value.lower() in ('true', '1') else '0'
+        return bool(value)
     elif data_type == 'int':
         return int(value)
     elif data_type == 'float':
@@ -18,16 +17,16 @@ def get_typed_data(data_type, value):
     else:  # default to string
         return str(value)
 
-def get_typed_data(data_type, value):
-    if data_type == 'int':
-        return int(value)
-    elif data_type == 'float':
-        return float(value)
-    elif data_type == 'string':
-        return str(value)
-    elif data_type == 'bool':
-        return bool(value)
-    return value
+# def get_typed_data(data_type, value):
+#     if data_type == 'int':
+#         return int(value)
+#     elif data_type == 'float':
+#         return float(value)
+#     elif data_type == 'string':
+#         return str(value)
+#     elif data_type == 'bool':
+#         return bool(value)
+#     return value
 
 def dict_to_text(data_dict):
     """Return a nicely formatted string version of the dictionary, suitable for console printing or pasting into code."""
