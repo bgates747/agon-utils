@@ -225,8 +225,43 @@ def revert_changes():
 def make_filename_from_config(font_config):
     """Generate a filename based on the font configuration."""
     font_name = font_config['font_name']
-    font_variant = font_config['font_variant']
-    font_width = font_config['font_width_mod']
-    font_height = font_config['font_height_mod']
+    font_variant = font_config.get('font_variant', '')
+    font_width = font_config.get('font_width_mod', None)
+    font_height = font_config.get('font_height_mod', None)
+
+    # Construct the filename step by step
+    filename_parts = [font_name]
+
+    # Add font_variant if it's not None or empty
+    if font_variant:
+        filename_parts.append(font_variant)
+
+    # Add width and height only if both are present
+    if font_width is not None and font_height is not None:
+        filename_parts.append(f"{font_width}x{font_height}")
+
+    # Join parts with underscores
+    return "_".join(filename_parts)
+
+def compute_relative_path(from_path, to_path):
+    """
+    Compute the relative path from 'from_path' to 'to_path'.
     
-    return f"{font_name}_{font_variant}_{font_width}x{font_height}"
+    Parameters:
+    - from_path (str): The starting file path.
+    - to_path (str): The target file path.
+    
+    Returns:
+    - str: The relative path from 'from_path' to 'to_path'.
+    """
+    # Get the directory names of the input paths
+    from_dir = os.path.dirname(from_path)
+    to_dir = os.path.dirname(to_path)
+
+    # Compute the relative path
+    relative_path = os.path.relpath(to_dir, start=from_dir)
+
+    # Include the target file in the result
+    relative_path = os.path.join(relative_path, os.path.basename(to_path))
+
+    return relative_path

@@ -379,7 +379,7 @@
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>ASCII Start</label_text>
         <data_type>int</data_type>
-        <default_value>32</default_value>
+        <default_value>0</default_value>
         <min_value>0</min_value>
         <max_value>65536</max_value>
         <step_value>16</step_value>
@@ -400,7 +400,7 @@
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>ASCII End</label_text>
         <data_type>int</data_type>
-        <default_value>127</default_value>
+        <default_value>255</default_value>
         <min_value>0</min_value>
         <max_value>65536</max_value>
         <step_value>16</step_value>
