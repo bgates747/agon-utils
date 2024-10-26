@@ -2,14 +2,55 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build agonutils",
+            "label": "build agonutils (Linux-ARM)",
             "type": "shell",
-            "command": "python setup.py build",
+            "command": "python3",
+            "args": ["setup.py", "build"],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": []
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/.venv/lib/python3/site-packages"
+                }
+            },
+            "detail": "Build task for Linux ARM"
+        },
+        {
+            "label": "build agonutils (Linux-x86_64)",
+            "type": "shell",
+            "command": "python3",
+            "args": ["setup.py", "build"],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/.venv/lib/python3/site-packages"
+                }
+            },
+            "detail": "Build task for Linux x86_64"
+        },
+        {
+            "label": "build agonutils (macOS)",
+            "type": "shell",
+            "command": "python3",
+            "args": ["setup.py", "build"],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/.venv/lib/python3/site-packages"
+                }
+            },
+            "detail": "Build task for macOS"
         }
     ]
 }
