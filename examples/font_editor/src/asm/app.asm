@@ -65,7 +65,7 @@ main:
     call printString
     call printNewLine
 
-    ld hl,0x4000
+    ld hl,0x4000 ; bufferId
     push hl
     call vdu_load_buffer_from_file
 

@@ -2534,7 +2534,7 @@ PC     Output      Line
        00          
 040B70             0039       include "cfg.inc"
 040B70             0001*  screen_mode: equ 20
-040B70             0002*  font_name: equ Lat2_VGA14_8x14
+040B70             0002*  font_name: equ amiga_forever_narrow_8x16
 040B70             0040   
 040B70             0041   main:
 040B70 3E 14       0042       ld a,screen_mode
@@ -2547,7 +2547,7 @@ PC     Output      Line
 040B76             0049   ;     call printNewLine
 040B76             0050   
 040B76             0051   ; inputs: hl = bufferId; iy = pointer to filename
-040B76 1E 00       0052       ld e,font_name
+040B76 1E 02       0052       ld e,font_name
 040B78 16 0C       0053       ld d,12 ; bytes per font list record
 040B7A ED 5C       0054       mlt de
 040B7C FD 21 66 0A 0055       ld iy,font_list
