@@ -46,7 +46,7 @@
 # import shutil
 
 # # Source directory containing the files
-# source_dir = '/home/smith/Agon/mystuff/mac'
+# source_dir = '/home/smith/Agon/emulator/sdcard/mystuff/mac'
 
 # # Loop through each file in the source directory
 # for filename in os.listdir(source_dir):
@@ -75,7 +75,7 @@ import os
 from fontTools.ttLib import TTCollection
 
 # Directory containing the .ttc files
-source_dir = '/home/smith/Agon/mystuff/mac/ttc'
+source_dir = '/home/smith/Agon/emulator/sdcard/mystuff/mac/ttc'
 
 # Loop through each .ttc file in the source directory
 for filename in os.listdir(source_dir):

@@ -5,26 +5,29 @@ font_list_height: equ 3
 font_list_bufferId: equ 6
 font_list_filename: equ 9
 
-num_fonts: equ 6
+num_fonts: equ 7
 
 ; Index list:
 Lat2_VGA14_8x14: equ 0
-amiga_forever_8x8: equ 1
-amiga_forever_narrow_8x16: equ 2
-computer_pixel_7_10x15: equ 3
-computer_pixel_7_10x24: equ 4
-computer_pixel_7_8x14: equ 5
+amiga_forever_16x24: equ 1
+amiga_forever_8x8: equ 2
+amiga_forever_narrow_8x16: equ 3
+computer_pixel_7_10x15: equ 4
+computer_pixel_7_10x24: equ 5
+computer_pixel_7_8x14: equ 6
 
 font_list: ; width; height; bufferId; filename;:
 	dl 8, 14, 64000, fn_Lat2_VGA14_8x14
-	dl 8, 8, 64001, fn_amiga_forever_8x8
-	dl 8, 16, 64002, fn_amiga_forever_narrow_8x16
-	dl 10, 15, 64003, fn_computer_pixel_7_10x15
-	dl 10, 24, 64004, fn_computer_pixel_7_10x24
-	dl 8, 14, 64005, fn_computer_pixel_7_8x14
+	dl 16, 24, 64001, fn_amiga_forever_16x24
+	dl 8, 8, 64002, fn_amiga_forever_8x8
+	dl 8, 16, 64003, fn_amiga_forever_narrow_8x16
+	dl 10, 15, 64004, fn_computer_pixel_7_10x15
+	dl 10, 24, 64005, fn_computer_pixel_7_10x24
+	dl 8, 14, 64006, fn_computer_pixel_7_8x14
 
 ; files_list: ; filename:
 fn_Lat2_VGA14_8x14: db "fonts/Lat2-VGA14_8x14.font",0
+fn_amiga_forever_16x24: db "fonts/amiga_forever_16x24.font",0
 fn_amiga_forever_8x8: db "fonts/amiga_forever_8x8.font",0
 fn_amiga_forever_narrow_8x16: db "fonts/amiga_forever_narrow_8x16.font",0
 fn_computer_pixel_7_10x15: db "fonts/computer_pixel_7_10x15.font",0

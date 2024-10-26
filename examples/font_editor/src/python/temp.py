@@ -212,8 +212,8 @@ def compute_relative_path(from_path, to_path):
     return relative_path
 
 # Example usage
-from_path = '/home/smith/Agon/mystuff/agon-utils/examples/font_editor/src/fonts/mac/ttf/Arial Black.ttf'
-to_path = '/home/smith/Agon/mystuff/agon-utils/examples/font_editor/tgt/arial_black.rgba2'
+from_path = '/home/smith/Agon/emulator/sdcard/mystuff/agon-utils/examples/font_editor/src/fonts/mac/ttf/Arial Black.ttf'
+to_path = '/home/smith/Agon/emulator/sdcard/mystuff/agon-utils/examples/font_editor/tgt/arial_black.rgba2'
 
 relative_path = compute_relative_path(from_path, to_path)
 print(f"Relative path from '{from_path}' to '{to_path}': {relative_path}")

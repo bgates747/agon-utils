@@ -54,8 +54,9 @@ def configure_vscode():
 def check_python_dev_headers():
     """Check if Python development headers are available."""
     python_version = f"python{sys.version_info.major}.{sys.version_info.minor}"
+    pyenv_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     venv_include_dir = os.path.join(sys.prefix, 'include', python_version)
-    pyenv_include_dir = os.path.expanduser(f"~/.pyenv/versions/{sys.version[:4]}/include/{python_version}")
+    pyenv_include_dir = os.path.expanduser(f"~/.pyenv/versions/{pyenv_version}/include/{python_version}")
     
     print(f"Checking for Python development headers in: {venv_include_dir} or {pyenv_include_dir}")
     

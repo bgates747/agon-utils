@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <settings>
-  <setting name="font_src_dir" value="/home/smith/Agon/mystuff/agon-utils/examples/font_editor/src/fonts"/>
+  <setting name="font_src_dir" value="/home/smith/Agon/emulator/sdcard/mystuff/agon-utils/examples/font_editor/src/fonts"/>
   <setting name="font_tgt_dir" value="examples/font_editor/tgt/all"/>
   <setting name="recursive" value="True"/>
   <setting name="ttf" value="True"/>
