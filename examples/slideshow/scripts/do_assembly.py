@@ -50,7 +50,7 @@ def copy_to_emulator():
 
         # Define the source and target directories
         src_directory = "examples/asm/tgt"
-        tgt_directory = ".emulator/sdcard/mystuff/agonutils/examples/asm/tgt"
+        tgt_directory = "emulator/sdcard/mystuff/agonutils/examples/asm/tgt"
 
         # Change working directory to the original directory to ensure correct paths
         os.chdir(original_dir)
@@ -99,9 +99,9 @@ def run_fab_agon_emulator():
         original_dir = os.getcwd()
 
         # Define the emulator directory
-        emulator_directory = ".emulator"
+        emulator_directory = "emulator"
 
-        # Change working directory to the .emulator directory
+        # Change working directory to the emulator directory
         os.chdir(emulator_directory)
 
         # Define the command to execute

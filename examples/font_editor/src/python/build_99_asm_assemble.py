@@ -139,8 +139,9 @@ def build_and_deploy_fonts(
         write_autoexec(autoexec_file, emulator_tgt_dir, tgt_bin_file)
         try:
             os.chdir(emulator_dir)
+            os.listdir(emulator_dir)  # Check if the directory is accessible
 
-            command = [os.path.basename(emulator_exec)]
+            command = [emulator_exec]
             
             # Start the emulator as a separate process, suppressing its I/O
             with open(os.devnull, 'wb') as devnull:
@@ -185,7 +186,7 @@ if __name__ == '__main__':
     asm_file = 'app.asm'
     tgt_bin_dir = 'examples/font_editor/tgt'
     tgt_bin_file = f'font.bin'
-    emulator_dir = '/home/smith/Agon/.emulator'
+    emulator_dir = '/home/smith/Agon/emulator'
     emulator_tgt_dir = f'/mystuff/agon-utils/{tgt_bin_dir}'
     sdcard_tgt_dir = '/media/smith/AGON/mystuff/agon-utils/examples/font_editor/tgt'
     emulator_exec = './fab-agon-emulator'

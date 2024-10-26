@@ -82,42 +82,106 @@
 #         print(f"Resolution {res[0]}x{res[1]}: {cols} cols x {rows} rows, "
 #               f"Character size: {char_w}x{char_h} pixels")
 
+
 import tkinter as tk
-from config_manager import get_typed_data
+from tkinter import ttk
 
-# Create the main window
+# Multi-line text string
+data = """
+; 11    320   240   2     60hz
+; 139   320   240   2     60hz
+; 23    512   384   2     60hz
+; 151   512   384   2     60hz
+; 6     640   240   2     60hz
+; 134   640   240   2     60hz
+; 2     640   480   2     60hz
+; 130   640   480   2     60hz
+; 17    800   600   2     60hz
+; 145   800   600   2     60hz
+; 18    1024  768   2     60hz
+; 146   1024  768   2     60hz
+; 10    320   240   4     60hz
+; 138   320   240   4     60hz
+; 22    512   384   4     60hz
+; 150   512   384   4     60hz
+; 5     640   240   4     60hz
+; 133   640   240   4     60hz
+; 1     640   480   4     60hz
+; 129   640   480   4     60hz
+; 16    800   600   4     60hz
+; 19    1024  768   4     60hz
+; 9     320   240   16    60hz
+; 137   320   240   16    60hz
+; 21    512   384   16    60hz
+; 149   512   384   16    60hz
+; 4     640   240   16    60hz
+; 132   640   240   16    60hz
+; 0     640   480   16    60hz
+; 8     320   240   64    60hz
+; 136   320   240   64    60hz
+; 20    512   384   64    60hz
+; 3     640   240   64    60hz
+"""
+
+# Initialize an empty dictionary
+modes_dict = {}
+
+# Split the data into lines and process each line
+for line in data.splitlines():
+    if not line.strip():
+        continue
+
+    line = line.lstrip(';').strip()
+    parts = line.split()
+
+    mode = int(parts[0])
+    horz = int(parts[1])
+    vert = int(parts[2])
+    cols = int(parts[3])
+    refresh = parts[4]
+
+    # Store only entries with mode <= 127
+    if mode <= 127:
+        modes_dict[mode] = {
+            'Mode': mode,
+            'Horz': horz,
+            'Vert': vert,
+            'Cols': cols,
+            'Refresh': refresh
+        }
+
+# Convert the dictionary to a list of records for sorting
+records = list(modes_dict.values())
+
+# Sort the records by 'Horz' (descending), 'Vert' (descending), 'Cols' (descending)
+sorted_records = sorted(records, key=lambda x: (-x['Horz'], -x['Vert'], -x['Cols']))
+
+# Print the sorted dataset
+for record in sorted_records:
+    print(record)
+
+# Convert records to a list of mode strings for the combobox
+mode_options = [f"{rec['Mode']}: {rec['Horz']}x{rec['Vert']}x{rec['Cols']}" 
+                for rec in sorted_records]
+
+def on_select(event):
+    """Callback for when a mode is selected from the combobox."""
+    selected_mode = combobox.get()
+    print(f"Selected: {selected_mode}")
+
+# Create the main Tkinter window
 root = tk.Tk()
-root.title("Tkinter Checkbox Example")
+root.title("Select Screen Mode")
 
-# Create a BooleanVar to store the state of the checkbox
-checkbox_var = tk.BooleanVar()
+# Create a Combobox
+combobox = ttk.Combobox(root, values=mode_options, state="readonly")
+combobox.pack(padx=10, pady=10)
 
-# Function to update the checkbox state based on a given boolean
-def set_checkbox(value: bool):
-    """Sets the checkbox state to the given boolean value."""
-    checkbox_var.set(value)
+# Set a default value
+combobox.set("Select a screen mode")
 
-# Function to get the current state of the checkbox as a boolean
-def get_checkbox() -> bool:
-    """Returns the current state of the checkbox as a boolean."""
-    return checkbox_var.get()
-
-# Callback function to print the checkbox state when toggled
-def on_checkbox_toggle():
-    print(f"Checkbox state: {get_checkbox()}")
-
-# Link the callback to the variable change
-checkbox_var.trace_add('write', lambda *args: on_checkbox_toggle())
-
-# Create the Checkbutton widget
-checkbox = tk.Checkbutton(root, text="Check Me!", variable=checkbox_var)
-checkbox.pack(pady=10)
-
-value = get_typed_data("bool","False")
-print(value)
-
-# Set initial checkbox state
-set_checkbox(value)  # Set the checkbox to checked initially
+# Bind the selection event
+combobox.bind("<<ComboboxSelected>>", on_select)
 
 # Start the Tkinter event loop
 root.mainloop()

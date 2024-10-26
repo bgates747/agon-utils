@@ -1,9 +1,7 @@
-import os
+
 import tkinter as tk
 from tkinter import Toplevel
 from config_editor import ConfigEditor
-from build_99_asm_assemble import build_and_deploy_fonts
-
 class ConfigEditorDialog(Toplevel):
     """
     A modal dialog that displays the ConfigEditor with Set and Cancel buttons.
@@ -61,32 +59,3 @@ class ConfigEditorDialog(Toplevel):
         """Handle the GO button click."""
         print("GO button pressed")
         self.destroy()
-
-class DoAssemblyDialog(ConfigEditorDialog):
-    """
-    A modal dialog for assembly configuration that includes the font configuration dictionary.
-    """
-    def __init__(self, parent, config_editor_file, app_reference, font_config, *args, **kwargs):
-        self.font_config = font_config
-        super().__init__(parent, config_editor_file, app_reference, *args, **kwargs)
-
-    def init_values(self):
-        """Initialize values based on the font configuration."""
-        font_filepath = self.font_config['original_font_path']
-        font_filename = os.path.basename(font_filepath)
-        if 'font_filename' in self.editor.controls:
-            self.editor.controls['font_filename'].value = font_filename
-
-    def on_go(self):
-        """Handle the GO button click by running the build_and_deploy_fonts function."""
-        print("GO button pressed")
-
-        # Extract the current configuration values from the form
-        kwargs = self.editor.get_config()
-
-        # Call the build_and_deploy_fonts function with the extracted configuration
-        build_and_deploy_fonts(**kwargs)
-
-        # Close the dialog after triggering the build
-        self.destroy()
-

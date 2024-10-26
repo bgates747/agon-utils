@@ -8,7 +8,7 @@ from menu_bar import MenuBar
 from image_display import ImageDisplay
 from custom_widgets import ConsoleDisplay
 from editor_widget import EditorWidget
-from config_editor_dialog import DoAssemblyDialog
+from asm_config_editor import DoAssemblyDialog
 from batch_convert_dialog import BatchConvertDialog
 
 class FontEditor(ttk.Frame):

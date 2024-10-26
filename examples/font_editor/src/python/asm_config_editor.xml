@@ -22,7 +22,7 @@
         <widget_type>FontConfigTextBox</widget_type>
         <label_text>Screen Mode</label_text>
         <data_type>int</data_type>
-        <default_value>19</default_value>
+        <default_value>20</default_value>
         <description></description>
         <event_handlers>
             <on_change>
@@ -107,7 +107,7 @@
         <widget_type>FontConfigTextBox</widget_type>
         <label_text>Emulator Dir</label_text>
         <data_type>string</data_type>
-        <default_value>/home/smith/Agon/.emulator</default_value>
+        <default_value>/home/smith/Agon/emulator</default_value>
         <description></description>
         <event_handlers>
             <on_change>
