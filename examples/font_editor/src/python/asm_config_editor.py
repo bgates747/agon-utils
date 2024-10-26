@@ -39,7 +39,7 @@ def parse_font_file(full_font_filepath):
     font_xml_file = f"{full_font_filepath}.xml"
     print(f"Loading font metadata from: {font_xml_file}")
     font_config = load_font_metadata_from_xml(font_xml_file)
-    return font_config['font_name'], font_config['font_variant'], font_config['font_width'], font_config['font_height'], os.path.basename(full_font_filepath)
+    return font_config['font_name'], font_config['font_variant'], font_config['font_width_mod'], font_config['font_height_mod'], os.path.basename(full_font_filepath)
 
 # Helper function to sanitize label names
 def sanitize_label(label):
