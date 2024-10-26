@@ -34,6 +34,7 @@ def build_and_deploy_fonts(
     asm_file,
     tgt_bin_dir,
     tgt_bin_file,
+    tgt_font_dir,
     emulator_dir,
     emulator_tgt_dir,
     sdcard_tgt_dir,
@@ -163,7 +164,7 @@ def build_and_deploy_fonts(
     # Execute functions based on parameters
     if build_fonts:
         make_cfg(font_filename, screen_mode, asm_dir)
-        build_fonts_asm(asm_dir, tgt_bin_dir)
+        build_fonts_asm(asm_dir, tgt_font_dir)
     if assemble:
         run_ez80asm()
     if copy_emulator:
@@ -186,6 +187,7 @@ if __name__ == '__main__':
     asm_file = 'app.asm'
     tgt_bin_dir = 'examples/font_editor/tgt'
     tgt_bin_file = f'font.bin'
+    tgt_font_dir = 'examples/font_editor/tgt/fonts'
     emulator_dir = '/home/smith/Agon/emulator'
     emulator_tgt_dir = f'/mystuff/agon-utils/{tgt_bin_dir}'
     sdcard_tgt_dir = '/media/smith/AGON/mystuff/agon-utils/examples/font_editor/tgt'
@@ -204,6 +206,7 @@ if __name__ == '__main__':
         asm_file,
         tgt_bin_dir,
         tgt_bin_file,
+        tgt_font_dir,
         emulator_dir,
         emulator_tgt_dir,
         sdcard_tgt_dir,

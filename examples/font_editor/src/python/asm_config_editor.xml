@@ -103,6 +103,23 @@
         </event_handlers>
     </setting>
 
+    <setting name="tgt_font_dir">
+        <widget_type>FontConfigTextBox</widget_type>
+        <label_text>Tgt App Dir</label_text>
+        <data_type>string</data_type>
+        <default_value>examples/font_editor/tgt/fonts</default_value>
+        <description></description>
+        <event_handlers>
+            <on_change>
+                <item>default_on_change_handler</item>
+                <!-- <item>tgt_bin_dir_on_change_handler</item> -->
+            </on_change>
+            <on_hover>
+                <item>default_on_mouse_enter</item>
+            </on_hover>
+        </event_handlers>
+    </setting>
+
     <setting name="emulator_dir">
         <widget_type>FontConfigTextBox</widget_type>
         <label_text>Emulator Dir</label_text>
