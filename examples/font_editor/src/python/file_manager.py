@@ -181,6 +181,7 @@ def get_save_filename(app_reference):
     selected_filetype = file_path.split('.')[-1].lower()
     extensions = {
         "font": ".font",
+        "rgba2": ".rgba2",
         "png": ".png", 
         "xml": ".xml"
     }
