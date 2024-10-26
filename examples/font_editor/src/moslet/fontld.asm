@@ -88,6 +88,6 @@ main:
     pop bc
     djnz @load_loop
 
-    jp exit
+    call printNewLine
 
-@bufferId: dl 0
+    ret
