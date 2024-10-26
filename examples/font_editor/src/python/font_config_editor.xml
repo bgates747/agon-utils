@@ -38,7 +38,7 @@
         <widget_type>FontConfigTextBox</widget_type>
         <label_text>Variant</label_text>
         <data_type>string</data_type>
-        <default_value>Regular</default_value>
+        <default_value></default_value>
         <description>Variant of the font, e.g. Regular, Bold, Italic, Condensed</description>
         <event_handlers>
             <on_change>

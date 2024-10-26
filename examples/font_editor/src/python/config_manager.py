@@ -248,7 +248,7 @@ def parse_font_filename(file_path):
         print("Warning: Unable to parse width and height from filename.")
         width, height = 0, 0
 
-    font_variant = parts[-2] if len(parts) >= 2 else "Regular"
+    font_variant = parts[-2] if len(parts) >= 2 else ""
     font_name = '_'.join(parts[:-2]) if len(parts) > 2 else "unknown_font"
 
     return {
