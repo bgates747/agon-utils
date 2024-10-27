@@ -96,47 +96,28 @@ def run_fab_emulator(emulator_dir,autoexec_text,original_dir):
         print(f'Returned to original directory: {os.getcwd()}')
 
 def write_autoexec(autoexec_file, autoexec_text):
-    """
-    Creates a text file containing commands for the emulator, with CRLF line endings.
-    :param autoexec_file: Path where the autoexec.txt file will be modified
-    :param autoexec_text: List of strings to write to the file
-    """
-
-    # Open the file in write mode with newline set to '\r\n'
-    with open(autoexec_file, 'w') as f:
-        # Write each line with explicit CRLF line endings
-        for line in autoexec_text:
-            f.write(line + '\r\n')
+    if autoexec_text:
+        with open(autoexec_file, 'w') as f:
+            # Write each line with explicit CRLF line endings
+            for line in autoexec_text:
+                f.write(line + '\r\n')
 
 def build_and_run(
-        asm_src_dir,
-        emulator_dir,
-        assemble,
-        copy_sdcard,
-        run_emulator
+    asm_src_dir,
+    emulator_dir,
+    assemble,
+    copy_sdcard,
+    run_emulator,
+    autoexec_text,
+    app_name,
+    tgt_dir,
+    tgt_bin_filename
 ):
-    """
-    Assembles font files, copies to emulator and SD card directories, and runs the emulator.
-
-    :param asm_src_dir: Directory containing the assembly source file
-    :param asm_src_filename: Assembly source file name
-    :param tgt_bin_filename: Output binary file (created in asm_src_dir, then moved)
-    ;param tgt_font_dir: Target directory for font files
-    :param emulator_dir: Source directory for emulator files
-    :param emulator_tgt_dir: Target directory in the emulator
-    :param sdcard_tgt_dir: Target directory on the SD card
-    :param emulator_exec: Path to the emulator executable
-    :param assemble: Flag to run the assembler
-    :param copy_emulator: Flag to copy files to emulator
-    :param copy_sdcard: Flag to copy files to SD card
-    :param run_emulator: Flag to run the emulator
-    """
     original_dir = os.getcwd()
 
     sdcard_tgt_dir = f'/media/smith/AGON/{tgt_dir}'
     tgt_emulator_bin_dir = f'{emulator_dir}/sdcard/{tgt_dir}'
     asm_src_filename = f'{app_name}.asm'
-    tgt_bin_filename = f'{app_name}.bin'
 
     # Execute functions based on parameters
     if assemble:
@@ -150,19 +131,29 @@ def build_and_run(
         run_fab_emulator(emulator_dir,autoexec_text,original_dir)
 
 if __name__ == '__main__':
-    # Define the source and target directories
     tgt_dir = 'mos'
     app_name = 'mymoslet'
     emulator_dir = '/home/smith/Agon/emulator'
     asm_src_dir = 'examples/moslets'
+    tgt_bin_filename = f'{app_name}.bin'
+    autoexec_text = []
+    assemble = True
+    copy_sdcard = True
+    run_emulator = False
+    build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
+
+    tgt_dir = 'mos'
+    app_name = 'fontld'
+    emulator_dir = '/home/smith/Agon/emulator'
+    asm_src_dir = 'examples/moslets'
+    tgt_bin_filename = f'{app_name}.bin'
     autoexec_text = [
         'SET KEYBOARD 1',
         f'cd /{tgt_dir}',
-        # f'load {tgt_bin_filename}',
+        f'load {tgt_bin_filename}',
         # 'run'
     ]
     assemble = True
-    copy_sdcard = False
+    copy_sdcard = True
     run_emulator = True
-
-    build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,run_emulator)
+    build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
