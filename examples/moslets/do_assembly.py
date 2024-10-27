@@ -57,7 +57,7 @@ def run_ez80asm(asm_src_dir,asm_src_filename,tgt_emulator_bin_dir,tgt_bin_filena
     os.chdir(original_dir)
 
 def run_fab_emulator(emulator_dir,autoexec_text,original_dir):
-    autoexec_file = os.path.join(emulator_dir, 'autoexec.txt')
+    autoexec_file = os.path.join(emulator_dir, 'sdcard/autoexec.txt')
     write_autoexec(autoexec_file, autoexec_text)
     
     if not os.path.exists(emulator_dir):
@@ -96,6 +96,7 @@ def run_fab_emulator(emulator_dir,autoexec_text,original_dir):
         print(f'Returned to original directory: {os.getcwd()}')
 
 def write_autoexec(autoexec_file, autoexec_text):
+    print(f'Autoexec file: {autoexec_file} with text:\r\n{autoexec_text}')
     if autoexec_text:
         with open(autoexec_file, 'w') as f:
             # Write each line with explicit CRLF line endings
@@ -131,6 +132,17 @@ def build_and_run(
         run_fab_emulator(emulator_dir,autoexec_text,original_dir)
 
 if __name__ == '__main__':
+    tgt_dir = 'mos'
+    app_name = 'fontctl'
+    emulator_dir = '/home/smith/Agon/emulator'
+    asm_src_dir = 'examples/moslets'
+    tgt_bin_filename = f'{app_name}.bin'
+    autoexec_text = []
+    assemble = True
+    copy_sdcard = True
+    run_emulator = False
+    build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
+
     tgt_dir = 'mos'
     app_name = 'mymoslet'
     emulator_dir = '/home/smith/Agon/emulator'
