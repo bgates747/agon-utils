@@ -19,8 +19,8 @@ Lat7_TerminusBold16_8x16: equ 7
 Lat7_VGA14_8x14: equ 8
 Lat7_VGA8_8x8: equ 9
 amiga_forever_16x24: equ 10
-amiga_forever_8x8: equ 11
-amiga_forever_narrow_8x16: equ 12
+amiga_forever_8x16: equ 11
+amiga_forever_8x8: equ 12
 computer_pixel_7_10x15: equ 13
 computer_pixel_7_10x24: equ 14
 computer_pixel_7_8x14: equ 15
@@ -37,26 +37,26 @@ font_list: ; width; height; bufferId; filename;:
 	dl 8, 14, 64008, fn_Lat7_VGA14_8x14
 	dl 8, 8, 64009, fn_Lat7_VGA8_8x8
 	dl 16, 24, 64010, fn_amiga_forever_16x24
-	dl 8, 8, 64011, fn_amiga_forever_8x8
-	dl 8, 16, 64012, fn_amiga_forever_narrow_8x16
+	dl 8, 16, 64011, fn_amiga_forever_8x16
+	dl 8, 8, 64012, fn_amiga_forever_8x8
 	dl 10, 15, 64013, fn_computer_pixel_7_10x15
 	dl 10, 24, 64014, fn_computer_pixel_7_10x24
 	dl 8, 14, 64015, fn_computer_pixel_7_8x14
 
 ; files_list: ; filename:
-fn_Lat2_Terminus12x6_6x12: db "fonts/Lat2-Terminus12x6_6x12.font",0
-fn_Lat2_TerminusBold14_8x14: db "fonts/Lat2-TerminusBold14_8x14.font",0
-fn_Lat2_VGA14_8x14: db "fonts/Lat2-VGA14_8x14.font",0
-fn_Lat2_VGA16_8x16: db "fonts/Lat2-VGA16_8x16.font",0
-fn_Lat2_VGA8_8x8: db "fonts/Lat2-VGA8_8x8.font",0
-fn_Lat7_Fixed13_8x13: db "fonts/Lat7-Fixed13_8x13.font",0
-fn_Lat7_Terminus12x6_6x12: db "fonts/Lat7-Terminus12x6_6x12.font",0
-fn_Lat7_TerminusBold16_8x16: db "fonts/Lat7-TerminusBold16_8x16.font",0
-fn_Lat7_VGA14_8x14: db "fonts/Lat7-VGA14_8x14.font",0
-fn_Lat7_VGA8_8x8: db "fonts/Lat7-VGA8_8x8.font",0
-fn_amiga_forever_16x24: db "fonts/amiga_forever_16x24.font",0
-fn_amiga_forever_8x8: db "fonts/amiga_forever_8x8.font",0
-fn_amiga_forever_narrow_8x16: db "fonts/amiga_forever_narrow_8x16.font",0
-fn_computer_pixel_7_10x15: db "fonts/computer_pixel_7_10x15.font",0
-fn_computer_pixel_7_10x24: db "fonts/computer_pixel_7_10x24.font",0
-fn_computer_pixel_7_8x14: db "fonts/computer_pixel_7_8x14.font",0
+fn_Lat2_Terminus12x6_6x12: db "/mos/fonts/Lat2-Terminus12x6_6x12.font",0
+fn_Lat2_TerminusBold14_8x14: db "/mos/fonts/Lat2-TerminusBold14_8x14.font",0
+fn_Lat2_VGA14_8x14: db "/mos/fonts/Lat2-VGA14_8x14.font",0
+fn_Lat2_VGA16_8x16: db "/mos/fonts/Lat2-VGA16_8x16.font",0
+fn_Lat2_VGA8_8x8: db "/mos/fonts/Lat2-VGA8_8x8.font",0
+fn_Lat7_Fixed13_8x13: db "/mos/fonts/Lat7-Fixed13_8x13.font",0
+fn_Lat7_Terminus12x6_6x12: db "/mos/fonts/Lat7-Terminus12x6_6x12.font",0
+fn_Lat7_TerminusBold16_8x16: db "/mos/fonts/Lat7-TerminusBold16_8x16.font",0
+fn_Lat7_VGA14_8x14: db "/mos/fonts/Lat7-VGA14_8x14.font",0
+fn_Lat7_VGA8_8x8: db "/mos/fonts/Lat7-VGA8_8x8.font",0
+fn_amiga_forever_16x24: db "/mos/fonts/amiga_forever_16x24.font",0
+fn_amiga_forever_8x16: db "/mos/fonts/amiga_forever_8x16.font",0
+fn_amiga_forever_8x8: db "/mos/fonts/amiga_forever_8x8.font",0
+fn_computer_pixel_7_10x15: db "/mos/fonts/computer_pixel_7_10x15.font",0
+fn_computer_pixel_7_10x24: db "/mos/fonts/computer_pixel_7_10x24.font",0
+fn_computer_pixel_7_8x14: db "/mos/fonts/computer_pixel_7_8x14.font",0

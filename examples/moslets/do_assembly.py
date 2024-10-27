@@ -161,9 +161,12 @@ if __name__ == '__main__':
     tgt_bin_filename = f'{app_name}.bin'
     autoexec_text = [
         'SET KEYBOARD 1',
-        f'cd /{tgt_dir}',
-        f'load {tgt_bin_filename}',
-        # 'run'
+        # f'cd /{tgt_dir}',
+        # f'load {tgt_bin_filename}',
+        # 'run',
+        'fontld',
+        'fontctl 2 show',
+        ' '
     ]
     assemble = True
     copy_sdcard = True

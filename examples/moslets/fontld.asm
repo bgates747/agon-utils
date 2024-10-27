@@ -1,33 +1,15 @@
-	.assume adl=1   
-    .org 0x040000    
-
-    jp start       
-
-    .align 64      
-    .db "MOS"       
-    .db 00h         
-    .db 01h       
-
-start:              
-    push af
-    push bc
-    push de
-    push ix
-    push iy
-
-	call main
-
-exit:
-    pop iy
-    pop ix
-    pop de
-    pop bc
-    pop af
-    ld hl,0
-    ret
+  			.ASSUME	ADL = 1			
+			INCLUDE "mos_api.inc"
+			ORG $b0000 ; Is a moslet
+	
+			MACRO PROGNAME
+			ASCIZ "fontld.bin"
+			ENDMACRO
+			
+  			include "init.inc"
+			include "parse.inc"
 
 ; API includes
-    include "mos_api.inc"
     include "functions.inc"
     include "files.inc"
     include "timer.inc"
@@ -36,9 +18,9 @@ exit:
 
 ; Application includes
     include "fonts_list.inc"
-    include "cfg.inc"
 
-main:
+; Main routine
+_main:
     ld ix,font_list ; pointer to font list lookup
     ld b,num_fonts ; loop counter
 
@@ -90,4 +72,6 @@ main:
 
     call printNewLine
 
-    ret
+main_end:		; End with no error
+			LD 	HL, 0
+			RET

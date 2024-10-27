@@ -75,9 +75,10 @@ def build_fonts_asm(src_dir, font_dir, tgt_bin_dir, recursive=False):
     parsed_fonts = [parse_font_file(font_file) for font_file in font_files]
 
     # Write assembly file
-    font_rel_dir = os.path.relpath(font_dir, tgt_bin_dir)
-    if font_rel_dir and not font_rel_dir.endswith(os.path.sep):
-        font_rel_dir += os.path.sep
+    # font_rel_dir = os.path.relpath(font_dir, tgt_bin_dir)
+    # if font_rel_dir and not font_rel_dir.endswith(os.path.sep):
+    #     font_rel_dir += os.path.sep
+    font_rel_dir = "/mos/fonts/" # for moslets we want this as an absolute path
 
     output_file = os.path.join(src_dir, "fonts_list.inc")
     with open(output_file, "w") as asm_file:
