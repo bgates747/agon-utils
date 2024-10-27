@@ -5,28 +5,39 @@ import shutil
 import subprocess
 import sys
 
-def copy_to_directory(src_dir, tgt_dir, include_pattern=None):
+def copy_to_directory(src_dir, tgt_dir, include_pattern=None, recursive=False, delete_first=False):
     """
     Copies files from src_dir to tgt_dir, optionally filtering by a regex pattern.
+    Supports deleting the target directory first and recursive copying.
 
     :param src_dir: Source directory to copy from
     :param tgt_dir: Target directory to copy to
     :param include_pattern: Optional regex pattern to filter files (default: None)
+    :param recursive: Whether to copy files recursively (default: False)
+    :param delete_first: Whether to delete the target directory before copying (default: False)
     """
     try:
-        if os.path.exists(tgt_dir):
+        # Delete the target directory if specified
+        if delete_first and os.path.exists(tgt_dir):
             shutil.rmtree(tgt_dir)
+
+        # Recreate the target directory if it doesn't exist
         os.makedirs(tgt_dir, exist_ok=True)
 
         # Walk through the source directory
         for root, _, files in os.walk(src_dir):
+            # Skip subdirectories if not in recursive mode
+            if not recursive and root != src_dir:
+                continue
+
             for file in files:
                 # If a pattern is provided, check if the file matches the pattern
-                if include_pattern is None or re.match(include_pattern, file):
+                if include_pattern is None or re.match(include_pattern, file, re.IGNORECASE):
                     src_file = os.path.join(root, file)
                     rel_path = os.path.relpath(src_file, src_dir)
                     tgt_file = os.path.join(tgt_dir, rel_path)
 
+                    # Ensure the target directory exists before copying
                     os.makedirs(os.path.dirname(tgt_file), exist_ok=True)
                     shutil.copy2(src_file, tgt_file)
 
@@ -108,6 +119,7 @@ def build_and_run(
     emulator_dir,
     assemble,
     copy_sdcard,
+    copy_sdcard_include_pattern,
     run_emulator,
     autoexec_text,
     app_name,
@@ -125,7 +137,7 @@ def build_and_run(
         run_ez80asm(asm_src_dir,asm_src_filename,tgt_emulator_bin_dir,tgt_bin_filename,original_dir)
     if copy_sdcard:
         if os.path.exists(sdcard_tgt_dir):
-            copy_to_directory(tgt_emulator_bin_dir, sdcard_tgt_dir, include_pattern=r'.*\.(bin)$')
+            copy_to_directory(tgt_emulator_bin_dir, sdcard_tgt_dir, copy_sdcard_include_pattern)
         else:
             print(f"SD card target directory not found: {sdcard_tgt_dir}")
     if run_emulator:
@@ -137,28 +149,31 @@ if __name__ == '__main__':
     emulator_dir = '/home/smith/Agon/emulator'
     asm_src_dir = 'examples/moslets'
     tgt_bin_filename = f'{app_name}.bin'
+    copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
     autoexec_text = []
     assemble = True
     copy_sdcard = True
     run_emulator = False
-    build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
+    build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
 
     tgt_dir = 'mos'
     app_name = 'mymoslet'
     emulator_dir = '/home/smith/Agon/emulator'
     asm_src_dir = 'examples/moslets'
     tgt_bin_filename = f'{app_name}.bin'
+    copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
     autoexec_text = []
     assemble = True
     copy_sdcard = True
     run_emulator = False
-    build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
+    build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
 
     tgt_dir = 'mos'
     app_name = 'fontld'
     emulator_dir = '/home/smith/Agon/emulator'
     asm_src_dir = 'examples/moslets'
     tgt_bin_filename = f'{app_name}.bin'
+    copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
     autoexec_text = [
         'SET KEYBOARD 1',
         # f'cd /{tgt_dir}',
@@ -171,4 +186,11 @@ if __name__ == '__main__':
     assemble = True
     copy_sdcard = True
     run_emulator = True
-    build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
+    build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
+
+    src_dir = 'examples/font_editor/tgt/fonts'
+    tgt_dir = '/media/smith/AGON/mos/fonts'
+    include_pattern = r'.*\.font$'
+    recursive = False
+    delete_first = True
+    copy_to_directory(src_dir, tgt_dir, include_pattern, recursive, delete_first)
