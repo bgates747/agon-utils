@@ -52,11 +52,9 @@ main2:			LD 	DE, $FFFF		; Use 65535 for sys
 main3:		; mymod: adding 64000 to the bufferId puts it in the range reserved for 8-bit bufferIds
 			; this effectively limits the number of fonts to 256 ... which should be enough for anyone
 			; (we don't use bufferIds 0-255 because they are reserved for image fonts)
-			push hl
 			ld hl,64000
-			add hl,de ; hl is now the new bufferId parameter
-			ex de,hl ; now we flip it to de
-			pop hl
+			add hl,de ; hl is the new bufferId
+			ex de,hl ; flip it to de
 			; end mymod		 
 			POP 	BC
 			LD	A, C
