@@ -5,45 +5,55 @@ font_list_height: equ 3
 font_list_bufferId: equ 6
 font_list_filename: equ 9
 
-num_fonts: equ 16
+num_fonts: equ 18
 
 ; Index list:
-Lat2_Terminus12x6_6x12: equ 0
-Lat2_TerminusBold14_8x14: equ 1
-Lat2_VGA14_8x14: equ 2
-Lat2_VGA16_8x16: equ 3
-Lat2_VGA8_8x8: equ 4
-Lat7_Fixed13_8x13: equ 5
-Lat7_Terminus12x6_6x12: equ 6
-Lat7_TerminusBold16_8x16: equ 7
-Lat7_VGA14_8x14: equ 8
-Lat7_VGA8_8x8: equ 9
-amiga_forever_16x24: equ 10
-amiga_forever_8x16: equ 11
-amiga_forever_8x8: equ 12
-computer_pixel_7_10x15: equ 13
-computer_pixel_7_10x24: equ 14
-computer_pixel_7_8x14: equ 15
+amiga_forever_16x24: equ 0
+amiga_forever_8x16: equ 1
+amiga_forever_8x8: equ 2
+computer_pixel_7_10x15: equ 3
+computer_pixel_7_10x24: equ 4
+computer_pixel_7_8x14: equ 5
+Lat2_Terminus12x6_6x12: equ 6
+Lat2_TerminusBold14_8x14: equ 7
+Lat2_VGA14_8x14: equ 8
+Lat2_VGA16_8x16: equ 9
+Lat2_VGA8_8x8: equ 10
+Lat7_Fixed13_8x13: equ 11
+Lat7_Terminus12x6_6x12: equ 12
+Lat7_TerminusBold16_8x16: equ 13
+Lat7_VGA14_8x14: equ 14
+Lat7_VGA8_8x8: equ 15
+scriptorium_12x14: equ 16
+Squarewave_Bold_8x12: equ 17
 
 font_list: ; width; height; bufferId; filename;:
-	dl 6, 12, 64000, fn_Lat2_Terminus12x6_6x12
-	dl 8, 14, 64001, fn_Lat2_TerminusBold14_8x14
-	dl 8, 14, 64002, fn_Lat2_VGA14_8x14
-	dl 8, 16, 64003, fn_Lat2_VGA16_8x16
-	dl 8, 8, 64004, fn_Lat2_VGA8_8x8
-	dl 8, 13, 64005, fn_Lat7_Fixed13_8x13
-	dl 6, 12, 64006, fn_Lat7_Terminus12x6_6x12
-	dl 8, 16, 64007, fn_Lat7_TerminusBold16_8x16
-	dl 8, 14, 64008, fn_Lat7_VGA14_8x14
-	dl 8, 8, 64009, fn_Lat7_VGA8_8x8
-	dl 16, 24, 64010, fn_amiga_forever_16x24
-	dl 8, 16, 64011, fn_amiga_forever_8x16
-	dl 8, 8, 64012, fn_amiga_forever_8x8
-	dl 10, 15, 64013, fn_computer_pixel_7_10x15
-	dl 10, 24, 64014, fn_computer_pixel_7_10x24
-	dl 8, 14, 64015, fn_computer_pixel_7_8x14
+	dl 16, 24, 64000, fn_amiga_forever_16x24
+	dl 8, 16, 64001, fn_amiga_forever_8x16
+	dl 8, 8, 64002, fn_amiga_forever_8x8
+	dl 10, 15, 64003, fn_computer_pixel_7_10x15
+	dl 10, 24, 64004, fn_computer_pixel_7_10x24
+	dl 8, 14, 64005, fn_computer_pixel_7_8x14
+	dl 6, 12, 64006, fn_Lat2_Terminus12x6_6x12
+	dl 8, 14, 64007, fn_Lat2_TerminusBold14_8x14
+	dl 8, 14, 64008, fn_Lat2_VGA14_8x14
+	dl 8, 16, 64009, fn_Lat2_VGA16_8x16
+	dl 8, 8, 64010, fn_Lat2_VGA8_8x8
+	dl 8, 13, 64011, fn_Lat7_Fixed13_8x13
+	dl 6, 12, 64012, fn_Lat7_Terminus12x6_6x12
+	dl 8, 16, 64013, fn_Lat7_TerminusBold16_8x16
+	dl 8, 14, 64014, fn_Lat7_VGA14_8x14
+	dl 8, 8, 64015, fn_Lat7_VGA8_8x8
+	dl 12, 14, 64016, fn_scriptorium_12x14
+	dl 8, 12, 64017, fn_Squarewave_Bold_8x12
 
 ; files_list: ; filename:
+fn_amiga_forever_16x24: db "/mos/fonts/amiga_forever_16x24.font",0
+fn_amiga_forever_8x16: db "/mos/fonts/amiga_forever_8x16.font",0
+fn_amiga_forever_8x8: db "/mos/fonts/amiga_forever_8x8.font",0
+fn_computer_pixel_7_10x15: db "/mos/fonts/computer_pixel_7_10x15.font",0
+fn_computer_pixel_7_10x24: db "/mos/fonts/computer_pixel_7_10x24.font",0
+fn_computer_pixel_7_8x14: db "/mos/fonts/computer_pixel_7_8x14.font",0
 fn_Lat2_Terminus12x6_6x12: db "/mos/fonts/Lat2-Terminus12x6_6x12.font",0
 fn_Lat2_TerminusBold14_8x14: db "/mos/fonts/Lat2-TerminusBold14_8x14.font",0
 fn_Lat2_VGA14_8x14: db "/mos/fonts/Lat2-VGA14_8x14.font",0
@@ -54,9 +64,5 @@ fn_Lat7_Terminus12x6_6x12: db "/mos/fonts/Lat7-Terminus12x6_6x12.font",0
 fn_Lat7_TerminusBold16_8x16: db "/mos/fonts/Lat7-TerminusBold16_8x16.font",0
 fn_Lat7_VGA14_8x14: db "/mos/fonts/Lat7-VGA14_8x14.font",0
 fn_Lat7_VGA8_8x8: db "/mos/fonts/Lat7-VGA8_8x8.font",0
-fn_amiga_forever_16x24: db "/mos/fonts/amiga_forever_16x24.font",0
-fn_amiga_forever_8x16: db "/mos/fonts/amiga_forever_8x16.font",0
-fn_amiga_forever_8x8: db "/mos/fonts/amiga_forever_8x8.font",0
-fn_computer_pixel_7_10x15: db "/mos/fonts/computer_pixel_7_10x15.font",0
-fn_computer_pixel_7_10x24: db "/mos/fonts/computer_pixel_7_10x24.font",0
-fn_computer_pixel_7_8x14: db "/mos/fonts/computer_pixel_7_8x14.font",0
+fn_scriptorium_12x14: db "/mos/fonts/scriptorium_12x14.font",0
+fn_Squarewave_Bold_8x12: db "/mos/fonts/Squarewave_Bold_8x12.font",0

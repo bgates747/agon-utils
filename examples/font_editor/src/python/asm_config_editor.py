@@ -69,7 +69,7 @@ def build_fonts_asm(src_dir, font_dir, tgt_bin_dir, recursive=False):
                 font_files.append(full_path)
 
     # Sort font files
-    font_files.sort()
+    font_files.sort(key=lambda x: x.lower())
 
     # Parse font files into structured data
     parsed_fonts = [parse_font_file(font_file) for font_file in font_files]

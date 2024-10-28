@@ -176,11 +176,9 @@ if __name__ == '__main__':
     copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
     autoexec_text = [
         'SET KEYBOARD 1',
-        # f'cd /{tgt_dir}',
-        # f'load {tgt_bin_filename}',
-        # 'run',
         'fontld',
-        'fontctl 2 show',
+        'fontctl 10',
+        'mc',
         ' '
     ]
     assemble = True
