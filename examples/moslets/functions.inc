@@ -334,48 +334,48 @@ dumpRegistersHex:
 
 ; home the cursor
     ; call vdu_home_cursor
-    call printNewLine
+    ; call printNewLine
 
 ; print each register
-    ; ld hl,str_afu
-    ; call printString
-    ; ld hl,(uaf)
-    ; call printHex24
+    ld hl,str_afu
+    call printString
+    ld hl,(uaf)
+    call printHex24
     ; call printNewLine
 
-    ; ld hl,str_hlu
-    ; call printString
-    ; ld hl,(uhl)
-    ; call printHex24
+    ld hl,str_hlu
+    call printString
+    ld hl,(uhl)
+    call printHex24
     ; call printNewLine
 
-    ; ld hl,str_bcu
-    ; call printString
-    ; ld hl,(ubc)
-    ; call printHex24
+    ld hl,str_bcu
+    call printString
+    ld hl,(ubc)
+    call printHex24
     ; call printNewLine
 
-    ; ld hl,str_deu
-    ; call printString
-    ; ld hl,(ude)
-    ; call printHex24
+    ld hl,str_deu
+    call printString
+    ld hl,(ude)
+    call printHex24
     ; call printNewLine
 
     ld hl,str_ixu
     call printString
     ld hl,(uix)
     call printHex24
-    call printNewLine
+    ; call printNewLine
 
-    ; ld hl,str_iyu
-    ; call printString
-    ; ld hl,(uiy)
-    ; call printHex24
+    ld hl,str_iyu
+    call printString
+    ld hl,(uiy)
+    call printHex24
     ; call printNewLine
 
     call vdu_vblank
 
-    ; call printNewLine
+    call printNewLine
 ; restore everything
     ld hl, (uhl)
     ld bc, (ubc)
@@ -386,12 +386,12 @@ dumpRegistersHex:
 ; all done
     ret
 
-str_afu: db "af=",0
-str_hlu: db "hl=",0
-str_bcu: db "bc=",0
-str_deu: db "de=",0
-str_ixu: db "ix=",0
-str_iyu: db "iy=",0
+str_afu: db " af=",0
+str_hlu: db " hl=",0
+str_bcu: db " bc=",0
+str_deu: db " de=",0
+str_ixu: db " ix=",0
+str_iyu: db " iy=",0
 
 ; print udeuhl to screen in hexidecimal format
 ; inputs: none

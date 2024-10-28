@@ -169,6 +169,18 @@ if __name__ == '__main__':
     build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
 
     tgt_dir = 'mos'
+    app_name = 'grid'
+    emulator_dir = '/home/smith/Agon/emulator'
+    asm_src_dir = 'examples/moslets'
+    tgt_bin_filename = f'{app_name}.bin'
+    copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
+    autoexec_text = []
+    assemble = True
+    copy_sdcard = True
+    run_emulator = False
+    build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
+
+    tgt_dir = 'mos'
     app_name = 'fontld'
     emulator_dir = '/home/smith/Agon/emulator'
     asm_src_dir = 'examples/moslets'
@@ -191,4 +203,7 @@ if __name__ == '__main__':
     include_pattern = r'.*\.font$'
     recursive = False
     delete_first = True
-    copy_to_directory(src_dir, tgt_dir, include_pattern, recursive, delete_first)
+    if os.path.exists(tgt_dir):
+        copy_to_directory(src_dir, tgt_dir, include_pattern, recursive, delete_first)
+    else:
+        print(f"SD card not mounted at {tgt_dir}")

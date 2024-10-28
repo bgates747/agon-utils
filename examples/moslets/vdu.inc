@@ -1,7 +1,3 @@
-; &E8-&EF 	232-239 	Bitmap plot §
-plot_bmp: equ 0xE8
-; 5 	Plot absolute in current foreground colour
-dr_abs_fg: equ 5
 
 ; VDU 30: Home cursor
 vdu_home_cursor:
@@ -66,6 +62,17 @@ vdu_clg:
 	rst.lil $10  
 	ret
 
+; COLOUR MODES
+; Mode	Effect
+; 0	Set on-screen pixel to target colour value
+; 1	OR value with the on-screen pixel
+; 2	AND value with the on-screen pixel
+; 3	XOR value with the on-screen pixel
+; 4	Invert the on-screen pixel
+; 5	No operation
+; 6	AND the inverse of the specified colour with the on-screen pixel
+; 7	OR the inverse of the specified colour with the on-screen pixel
+
 ; VDU 17, colour: Define text colour (COLOUR)
 vdu_colour_text:
 	ld (@arg),a        
@@ -77,11 +84,11 @@ vdu_colour_text:
 @arg: db 0 
 @end:
 
-
-vdu_gcol_bg:
+; VDU 18, mode, colour: Set graphics colour (GCOL mode, colour)
+; inputs: a=mode, c=colour (add 128 to set background colour)
+vdu_gcol:
 	ld (@mode),a
     ld a,c
-    add a,128 
     ld (@col),a   
 	ld hl,@cmd         
 	ld bc,@end-@cmd    
@@ -241,24 +248,6 @@ vdu_bmp_create:
 @height:    dw 0x0000
 @fmt:       db 0x00
 @end:
-
-; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
-; &E8-&EF 	232-239 	Bitmap plot §
-; VDU 25, mode, x; y;: PLOT command
-; inputs: bc=x0, de=y0
-; prerequisites: vdu_buff_select
-vdu_plot_bmp:
-    ld (@x0),bc
-    ld (@y0),de
-	ld hl,@cmd
-	ld bc,@end-@cmd
-	rst.lil $18
-	ret
-@cmd:   db 25
-@mode:  db plot_bmp+dr_abs_fg ; 0xED
-@x0: 	dw 0x0000
-@y0: 	dw 0x0000
-@end:   db 0x00 ; padding
 
 ; load an rgba2222 image file to a working buffer and make it an rgba8888 bitmap in a target buffer
 ; inputs: bc,de image width,height ; hl = targetBufferId ; ix = file size ; iy = pointer to filename
