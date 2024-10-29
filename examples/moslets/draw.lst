@@ -1,6 +1,11 @@
 PC     Output      Line
-040000             0001     			.ASSUME	ADL = 1
-040000             0002   			INCLUDE "mos_api.inc"
+040000             0001   ;
+040000             0002   ; Title:	Memfill - Main
+040000             0003   ; Author:	Lennart Benschop
+040000             0004   ; Created:	19/04/2024
+040000             0005   
+040000             0006       .ASSUME	ADL = 1
+040000             0007       INCLUDE "mos_api.inc"
 040000             0001*  ;
 040000             0002*  ; Title:	AGON MOS - API for user projects
 040000             0003*  ; Author:	Dean Belfield
@@ -249,42 +254,41 @@ PC     Output      Line
 040000             0246*  			LD	A, function
 040000             0247*  			RST.L	08h
 040000             0248*  			ENDMACRO
-040000             0003   			ORG $b0000 ; Is a moslet
-0B0000             0004   
-0B0000             0005   			MACRO PROGNAME
-0B0000             0006   			ASCIZ "fontld.bin"
-0B0000             0007   			ENDMACRO
-0B0000             0008   
-0B0000             0009     			include "init.inc"
-0B0000             0001*  ;
-0B0000             0002*  ; Title:	Copy - Initialisation Code
-0B0000             0003*  ; Author:	Dean Belfield, Lennart Benschop
-0B0000             0004*  ; Created:	06/11/2022
-0B0000             0005*  ; Last Updated:	26/12/2022
-0B0000             0006*  ;
-0B0000             0007*  ; Modinfo:
-0B0000             0008*  ; 17/12/2022:	Added parameter processing
-0B0000             0009*  ; 26/12/2022:   Adapted to Copy program, use LEA instead of 3x INC IX, Save/restore MB
-0B0000             0010*  ; Changed:      08/04/2924 adapt to ez80asm
-0B0000             0011*  
-0B0000             0012*  
-0B0000             0013*  argv_ptrs_max:		EQU	16			; Maximum number of arguments allowed in argv
-0B0000             0014*  
-0B0000             0015*  ;
-0B0000             0016*  ; Start in ADL mode
-0B0000             0017*  ;
-0B0000 C3 45 00 0B 0018*  			JP	_start			; Jump to start
-0B0004             0019*  ;
-0B0004             0020*  ; The header stuff is from byte 64 onwards
-0B0004             0021*  ;
-0B0004             0022*  
-0B0004             0023*  _exec_name:
-0B0004             0024*  			PROGNAME			; The executable name, only used in argv
-0B0004 66 6F 6E 74 0001*M 			ASCIZ "fontld.bin"
-       6C 64 2E 62 
-       69 6E 00    
-0B000F             0025*  
-0B000F FF FF FF FF 0026*  			ALIGN	64
+040000             0008       ORG $b0000 ; Is a moslet
+0B0000             0009   
+0B0000             0010       MACRO PROGNAME
+0B0000             0011       ASCIZ "draw.bin"
+0B0000             0012       ENDMACRO
+0B0000             0013   
+0B0000             0014   ;
+0B0000             0015   ; Title:	Copy - Initialisation Code
+0B0000             0016   ; Author:	Dean Belfield, Lennart Benschop
+0B0000             0017   ; Created:	06/11/2022
+0B0000             0018   ; Last Updated:	26/12/2022
+0B0000             0019   ;
+0B0000             0020   ; Modinfo:
+0B0000             0021   ; 17/12/2022:	Added parameter processing
+0B0000             0022   ; 26/12/2022:   Adapted to Copy program, use LEA instead of 3x INC IX, Save/restore MB
+0B0000             0023   ; Changed:      08/04/2924 adapt to ez80asm
+0B0000             0024   
+0B0000             0025   
+0B0000             0026   argv_ptrs_max:		EQU	16			; Maximum number of arguments allowed in argv
+0B0000             0027   
+0B0000             0028   ;
+0B0000             0029   ; Start in ADL mode
+0B0000             0030   ;
+0B0000 C3 45 00 0B 0031   			JP	_start			; Jump to start
+0B0004             0032   ;
+0B0004             0033   ; The header stuff is from byte 64 onwards
+0B0004             0034   ;
+0B0004             0035   
+0B0004             0036   _exec_name:
+0B0004             0037   			PROGNAME			; The executable name, only used in argv
+0B0004 64 72 61 77 0001M      ASCIZ "draw.bin"
+       2E 62 69 6E 
+       00          
+0B000D             0038   
+0B000D FF FF FF FF 0039   			ALIGN	64
        FF FF FF FF 
        FF FF FF FF 
        FF FF FF FF 
@@ -296,114 +300,114 @@ PC     Output      Line
        FF FF FF FF 
        FF FF FF FF 
        FF FF FF FF 
-       FF          
-0B0040             0027*  
-0B0040 4D 4F 53    0028*  			DB	"MOS"			; Flag for MOS - to confirm this is a valid MOS command
-0B0043 00          0029*  			DB	00h			; MOS header version 0
-0B0044 01          0030*  			DB	01h			; Flag for run mode (0: Z80, 1: ADL)
-0B0045             0031*  ;
-0B0045             0032*  ; And the code follows on immediately after the header
-0B0045             0033*  ;
-0B0045 F5          0034*  _start:			PUSH	AF			; Preserve the registers
-0B0046 C5          0035*  			PUSH	BC
-0B0047 D5          0036*  			PUSH	DE
-0B0048 DD E5       0037*  			PUSH	IX
-0B004A FD E5       0038*  			PUSH	IY
-0B004C ED 6E       0039*  			LD	A, MB			; Save MB
-0B004E F5          0040*  			PUSH 	AF
-0B004F AF          0041*  			XOR 	A
-0B0050 ED 6D       0042*  			LD 	MB, A                   ; Clear to zero so MOS API calls know how to use 24-bit addresses.
-0B0052             0043*  
-0B0052 DD 21 B9 00 0044*  			LD	IX, argv_ptrs		; The argv array pointer address
+       FF FF FF    
+0B0040             0040   
+0B0040 4D 4F 53    0041   			DB	"MOS"			; Flag for MOS - to confirm this is a valid MOS command
+0B0043 00          0042   			DB	00h			; MOS header version 0
+0B0044 01          0043   			DB	01h			; Flag for run mode (0: Z80, 1: ADL)
+0B0045             0044   ;
+0B0045             0045   ; And the code follows on immediately after the header
+0B0045             0046   ;
+0B0045 F5          0047   _start:			PUSH	AF			; Preserve the registers
+0B0046 C5          0048   			PUSH	BC
+0B0047 D5          0049   			PUSH	DE
+0B0048 DD E5       0050   			PUSH	IX
+0B004A FD E5       0051   			PUSH	IY
+0B004C ED 6E       0052   			LD	A, MB			; Save MB
+0B004E F5          0053   			PUSH 	AF
+0B004F AF          0054   			XOR 	A
+0B0050 ED 6D       0055   			LD 	MB, A                   ; Clear to zero so MOS API calls know how to use 24-bit addresses.
+0B0052             0056   
+0B0052 DD 21 B9 00 0057   			LD	IX, argv_ptrs		; The argv array pointer address
        0B          
-0B0057 DD E5       0045*  			PUSH	IX
-0B0059 CD 70 00 0B 0046*  			CALL	_parse_params		; Parse the parameters
-0B005D DD E1       0047*  			POP	IX			; IX: argv
-0B005F 06 00       0048*  			LD	B, 0			;  C: argc
-0B0061 CD 55 0E 0B 0049*  			CALL	_main			; Start user code
-0B0065             0050*  
-0B0065 F1          0051*  			POP 	AF
-0B0066 ED 6D       0052*  			LD	MB, A
-0B0068 FD E1       0053*  			POP	IY			; Restore registers
-0B006A DD E1       0054*  			POP	IX
-0B006C D1          0055*  			POP	DE
-0B006D C1          0056*  			POP	BC
-0B006E F1          0057*  			POP	AF
-0B006F C9          0058*  			RET
-0B0070             0059*  
-0B0070             0060*  ; Parse the parameter string into a C array
-0B0070             0061*  ; Parameters
-0B0070             0062*  ; - HL: Address of parameter string
-0B0070             0063*  ; - IX: Address for array pointer storage
-0B0070             0064*  ; Returns:
-0B0070             0065*  ; -  C: Number of parameters parsed
-0B0070             0066*  ;
-0B0070 01 04 00 0B 0067*  _parse_params:		LD	BC, _exec_name
-0B0074 DD 0F 00    0068*  			LD	(IX+0), BC		; ARGV[0] = the executable name
-0B0077 ED 32 03    0069*  			LEA     IX, IX+3
-0B007A CD B2 00 0B 0070*  			CALL	_skip_spaces		; Skip HL past any leading spaces
-0B007E             0071*  ;
-0B007E 01 01 00 00 0072*  			LD	BC, 1			; C: ARGC = 1 - also clears out top 16 bits of BCU
-0B0082 06 0F       0073*  			LD	B, argv_ptrs_max - 1	; B: Maximum number of argv_ptrs
-0B0084             0074*  ;
-0B0084             0075*  _parse_params_1:
-0B0084 C5          0076*  			PUSH	BC			; Stack ARGC
-0B0085 E5          0077*  			PUSH	HL			; Stack start address of token
-0B0086 CD A3 00 0B 0078*  			CALL	_get_token		; Get the next token
-0B008A 79          0079*  			LD	A, C			; A: Length of the token in characters
-0B008B D1          0080*  			POP	DE			; Start address of token (was in HL)
-0B008C C1          0081*  			POP	BC			; ARGC
-0B008D B7          0082*  			OR	A			; Check for A=0 (no token found) OR at end of string
-0B008E C8          0083*  			RET	Z
-0B008F             0084*  ;
-0B008F DD 1F 00    0085*  			LD	(IX+0), DE		; Store the pointer to the token
-0B0092 E5          0086*  			PUSH	HL			; DE=HL
-0B0093 D1          0087*  			POP	DE
-0B0094 CD B2 00 0B 0088*  			CALL	_skip_spaces		; And skip HL past any spaces onto the next character
-0B0098 AF          0089*  			XOR	A
-0B0099 12          0090*  			LD	(DE), A			; Zero-terminate the token
-0B009A ED 32 03    0091*  			LEA  	IX, IX+3			; Advance to next pointer position
-0B009D 0C          0092*  			INC	C			; Increment ARGC
-0B009E 79          0093*  			LD	A, C			; Check for C >= A
-0B009F B8          0094*  			CP	B
-0B00A0 38 E2       0095*  			JR	C, _parse_params_1	; And loop
-0B00A2 C9          0096*  			RET
-0B00A3             0097*  
-0B00A3             0098*  ; Get the next token
-0B00A3             0099*  ; Parameters:
-0B00A3             0100*  ; - HL: Address of parameter string
-0B00A3             0101*  ; Returns:
-0B00A3             0102*  ; - HL: Address of first character after token
-0B00A3             0103*  ; -  C: Length of token (in characters)
-0B00A3             0104*  ;
-0B00A3 0E 00       0105*  _get_token:		LD	C, 0			; Initialise length
-0B00A5 7E          0106*  @@:			LD	A, (HL)			; Get the character from the parameter string
-0B00A6 B7          0107*  			OR	A			; Exit if 0 (end of parameter string in MOS)
-0B00A7 C8          0108*  			RET 	Z
-0B00A8 FE 0D       0109*  			CP	13			; Exit if CR (end of parameter string in BBC BASIC)
-0B00AA C8          0110*  			RET	Z
-0B00AB FE 20       0111*  			CP	' '			; Exit if space (end of token)
-0B00AD C8          0112*  			RET	Z
-0B00AE 23          0113*  			INC	HL			; Advance to next character
-0B00AF 0C          0114*  			INC 	C			; Increment length
-0B00B0 18 F3       0115*  			JR	@B
-0B00B2             0116*  
-0B00B2             0117*  ; Skip spaces in the parameter string
-0B00B2             0118*  ; Parameters:
-0B00B2             0119*  ; - HL: Address of parameter string
-0B00B2             0120*  ; Returns:
-0B00B2             0121*  ; - HL: Address of next none-space character
-0B00B2             0122*  ;    F: Z if at end of string, otherwise NZ if there are more tokens to be parsed
-0B00B2             0123*  ;
-0B00B2 7E          0124*  _skip_spaces:		LD	A, (HL)			; Get the character from the parameter string
-0B00B3 FE 20       0125*  			CP	' '			; Exit if not space
-0B00B5 C0          0126*  			RET	NZ
-0B00B6 23          0127*  			INC	HL			; Advance to next character
-0B00B7 18 F9       0128*  			JR	_skip_spaces		; Increment length
-0B00B9             0129*  
-0B00B9             0130*  ; Storage for the argv array pointers
-0B00B9             0131*  ;
-0B00B9 00 00 00 00 0132*  argv_ptrs:		BLKP	argv_ptrs_max, 0
+0B0057 DD E5       0058   			PUSH	IX
+0B0059 CD 70 00 0B 0059   			CALL	_parse_params		; Parse the parameters
+0B005D DD E1       0060   			POP	IX			; IX: argv
+0B005F 06 00       0061   			LD	B, 0			;  C: argc
+0B0061 CD 56 0B 0B 0062   			CALL	_main			; Start user code
+0B0065             0063   
+0B0065 F1          0064   			POP 	AF
+0B0066 ED 6D       0065   			LD	MB, A
+0B0068 FD E1       0066   			POP	IY			; Restore registers
+0B006A DD E1       0067   			POP	IX
+0B006C D1          0068   			POP	DE
+0B006D C1          0069   			POP	BC
+0B006E F1          0070   			POP	AF
+0B006F C9          0071   			RET
+0B0070             0072   
+0B0070             0073   ; Parse the parameter string into a C array
+0B0070             0074   ; Parameters
+0B0070             0075   ; - HL: Address of parameter string
+0B0070             0076   ; - IX: Address for array pointer storage
+0B0070             0077   ; Returns:
+0B0070             0078   ; -  C: Number of parameters parsed
+0B0070             0079   ;
+0B0070 01 04 00 0B 0080   _parse_params:		LD	BC, _exec_name
+0B0074 DD 0F 00    0081   			LD	(IX+0), BC		; ARGV[0] = the executable name
+0B0077 ED 32 03    0082   			LEA     IX, IX+3
+0B007A CD B2 00 0B 0083   			CALL	_skip_spaces		; Skip HL past any leading spaces
+0B007E             0084   ;
+0B007E 01 01 00 00 0085   			LD	BC, 1			; C: ARGC = 1 - also clears out top 16 bits of BCU
+0B0082 06 0F       0086   			LD	B, argv_ptrs_max - 1	; B: Maximum number of argv_ptrs
+0B0084             0087   ;
+0B0084             0088   _parse_params_1:
+0B0084 C5          0089   			PUSH	BC			; Stack ARGC
+0B0085 E5          0090   			PUSH	HL			; Stack start address of token
+0B0086 CD A3 00 0B 0091   			CALL	_get_token		; Get the next token
+0B008A 79          0092   			LD	A, C			; A: Length of the token in characters
+0B008B D1          0093   			POP	DE			; Start address of token (was in HL)
+0B008C C1          0094   			POP	BC			; ARGC
+0B008D B7          0095   			OR	A			; Check for A=0 (no token found) OR at end of string
+0B008E C8          0096   			RET	Z
+0B008F             0097   ;
+0B008F DD 1F 00    0098   			LD	(IX+0), DE		; Store the pointer to the token
+0B0092 E5          0099   			PUSH	HL			; DE=HL
+0B0093 D1          0100   			POP	DE
+0B0094 CD B2 00 0B 0101   			CALL	_skip_spaces		; And skip HL past any spaces onto the next character
+0B0098 AF          0102   			XOR	A
+0B0099 12          0103   			LD	(DE), A			; Zero-terminate the token
+0B009A ED 32 03    0104   			LEA  	IX, IX+3			; Advance to next pointer position
+0B009D 0C          0105   			INC	C			; Increment ARGC
+0B009E 79          0106   			LD	A, C			; Check for C >= A
+0B009F B8          0107   			CP	B
+0B00A0 38 E2       0108   			JR	C, _parse_params_1	; And loop
+0B00A2 C9          0109   			RET
+0B00A3             0110   
+0B00A3             0111   ; Get the next token
+0B00A3             0112   ; Parameters:
+0B00A3             0113   ; - HL: Address of parameter string
+0B00A3             0114   ; Returns:
+0B00A3             0115   ; - HL: Address of first character after token
+0B00A3             0116   ; -  C: Length of token (in characters)
+0B00A3             0117   ;
+0B00A3 0E 00       0118   _get_token:		LD	C, 0			; Initialise length
+0B00A5 7E          0119   @@:			LD	A, (HL)			; Get the character from the parameter string
+0B00A6 B7          0120   			OR	A			; Exit if 0 (end of parameter string in MOS)
+0B00A7 C8          0121   			RET 	Z
+0B00A8 FE 0D       0122   			CP	13			; Exit if CR (end of parameter string in BBC BASIC)
+0B00AA C8          0123   			RET	Z
+0B00AB FE 20       0124   			CP	' '			; Exit if space (end of token)
+0B00AD C8          0125   			RET	Z
+0B00AE 23          0126   			INC	HL			; Advance to next character
+0B00AF 0C          0127   			INC 	C			; Increment length
+0B00B0 18 F3       0128   			JR	@B
+0B00B2             0129   
+0B00B2             0130   ; Skip spaces in the parameter string
+0B00B2             0131   ; Parameters:
+0B00B2             0132   ; - HL: Address of parameter string
+0B00B2             0133   ; Returns:
+0B00B2             0134   ; - HL: Address of next none-space character
+0B00B2             0135   ;    F: Z if at end of string, otherwise NZ if there are more tokens to be parsed
+0B00B2             0136   ;
+0B00B2 7E          0137   _skip_spaces:		LD	A, (HL)			; Get the character from the parameter string
+0B00B3 FE 20       0138   			CP	' '			; Exit if not space
+0B00B5 C0          0139   			RET	NZ
+0B00B6 23          0140   			INC	HL			; Advance to next character
+0B00B7 18 F9       0141   			JR	_skip_spaces		; Increment length
+0B00B9             0142   
+0B00B9             0143   ; Storage for the argv array pointers
+0B00B9             0144   ;
+0B00B9 00 00 00 00 0145   argv_ptrs:		BLKP	argv_ptrs_max, 0
        00 00 00 00 
        00 00 00 00 
        00 00 00 00 
@@ -415,7 +419,9 @@ PC     Output      Line
        00 00 00 00 
        00 00 00 00 
        00 00 00 00 
-0B00E9             0010   			include "parse.inc"
+0B00E9             0146   
+0B00E9             0147   ; API includes
+0B00E9             0148       include "parse.inc"
 0B00E9             0001*  ;
 0B00E9             0002*  ; Title:	Number Parsing Functions
 0B00E9             0003*  ; Author:	Dean Belfield
@@ -507,9 +513,7 @@ PC     Output      Line
 0B0141 D8          0089*  			RET     	C
 0B0142 E6 5F       0090*  			AND     	5FH			; Convert to upper case
 0B0144 C9          0091*  			RET
-0B0145             0011   
-0B0145             0012   ; API includes
-0B0145             0013       include "functions.inc"
+0B0145             0149       include "functions.inc"
 0B0145             0001*      MACRO printChar char
 0B0145             0002*          LD A, char
 0B0145             0003*          RST.LIL 10h
@@ -1204,10 +1208,10 @@ PC     Output      Line
 0B0536 F1          0644*      pop af
 0B0537             0645*  ; all done
 0B0537 C9          0646*      ret
-0B0538             0014       include "files.inc"
+0B0538             0150       include "files.inc"
 0B0538             0001*  ; load to onboard 8k sram
 0B0538             0002*  filedata: equ 0xB7E000; Directory object structure (DIR)
-0B0538             0015       include "timer.inc"
+0B0538             0151       include "timer.inc"
 0B0538             0001*  ; Table 32. Timer Control Registers
 0B0538             0002*  ; this constant is the base address of the timer control registers
 0B0538             0003*  ; each timer takes three bytes:
@@ -1643,7 +1647,7 @@ PC     Output      Line
 0B06CA C9          0416*      ret
 0B06CB             0417*  
 0B06CB 00          0418*  oldTimeStamp:   .db 00h
-0B06CC             0016       include "vdu.inc"
+0B06CC             0152       include "vdu.inc"
 0B06CC             0001*  
 0B06CC             0002*  ; VDU 30: Home cursor
 0B06CC             0003*  vdu_home_cursor:
@@ -2236,409 +2240,397 @@ PC     Output      Line
        00 00 00 00 
        00 00 00 00 
        00 00 00 00 
-0B0A68             0017       include "vdu_fonts.inc"
-0B0A68             0001*  ; select font
-0B0A68             0002*  ; inputs: hl = bufferId, a = font flags
-0B0A68             0003*  ; Flags:
-0B0A68             0004*  ; Bit	Description
-0B0A68             0005*  ; 0	Adjust cursor position to ensure text baseline is aligned
-0B0A68             0006*  ;   0: Do not adjust cursor position (best for changing font on a new line)
-0B0A68             0007*  ;   1: Adjust cursor position (best for changing font in the middle of a line)
-0B0A68             0008*  ; 1-7	Reserved for future use
-0B0A68             0009*  ; VDU 23, 0, &95, 0, bufferId; flags: Select font
-0B0A68             0010*  vdu_font_select:
-0B0A68 22 7F 0A 0B 0011*      ld (@bufferId),hl
-0B0A6C 32 81 0A 0B 0012*      ld (@flags),a
-0B0A70 21 7B 0A 0B 0013*      ld hl,@cmd
-0B0A74 01 07 00 00 0014*      ld bc,@end-@cmd
-0B0A78 5B DF       0015*      rst.lil $18
-0B0A7A C9          0016*      ret
-0B0A7B 17 00 95 00 0017*  @cmd: db 23, 0, 0x95, 0
-0B0A7F 00 00       0018*  @bufferId: dw 0x0000
-0B0A81 00          0019*  @flags: db 0x00
-0B0A82             0020*  @end:
-0B0A82             0021*  
-0B0A82             0022*  ; create font from buffer
-0B0A82             0023*  ; inputs: hl = bufferId, e = width, d = height, d = ascent, a = flags
-0B0A82             0024*  ; VDU 23, 0, &95, 1, bufferId; width, height, ascent, flags: Create font from buffer
-0B0A82             0025*  vdu_font_create:
-0B0A82 22 A7 0A 0B 0026*      ld (@bufferId),hl
-0B0A86 ED 53 A9 0A 0027*      ld (@width),de ; also loads height
+0B0A68             0153       ; include "vdu_fonts.inc"
+0B0A68             0154       include "vdu_plot.inc"
+0B0A68             0001*  ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
+0B0A68             0002*  ; PLOT code 	(Decimal) 	Effect
+0B0A68             0003*  ; &00-&07 	0-7 	Solid line, includes both ends
+0B0A68             0004*  plot_sl_both: equ 0x00
+0B0A68             0005*  
+0B0A68             0006*  ; &08-&0F 	8-15 	Solid line, final point omitted
+0B0A68             0007*  plot_sl_first: equ 0x08
+0B0A68             0008*  
+0B0A68             0009*  ; &10-&17 	16-23 	Not supported (Dot-dash line, includes both ends, pattern restarted)
+0B0A68             0010*  ; &18-&1F 	24-31 	Not supported (Dot-dash line, first point omitted, pattern restarted)
+0B0A68             0011*  
+0B0A68             0012*  ; &20-&27 	32-39 	Solid line, first point omitted
+0B0A68             0013*  plot_sl_last: equ 0x20
+0B0A68             0014*  
+0B0A68             0015*  ; &28-&2F 	40-47 	Solid line, both points omitted
+0B0A68             0016*  plot_sl_none: equ 0x28
+0B0A68             0017*  
+0B0A68             0018*  ; &30-&37 	48-55 	Not supported (Dot-dash line, first point omitted, pattern continued)
+0B0A68             0019*  ; &38-&3F 	56-63 	Not supported (Dot-dash line, both points omitted, pattern continued)
+0B0A68             0020*  
+0B0A68             0021*  ; &40-&47 	64-71 	Point plot
+0B0A68             0022*  plot_pt: equ 0x40
+0B0A68             0023*  
+0B0A68             0024*  ; &48-&4F 	72-79 	Line fill left and right to non-background §§
+0B0A68             0025*  plot_lf_lr_non_bg: equ 0x48
+0B0A68             0026*  
+0B0A68             0027*  ; &50-&57 	80-87 	Triangle fill
+0B0A68             0028*  plot_tf: equ 0x50
+0B0A68             0029*  
+0B0A68             0030*  ; &58-&5F 	88-95 	Line fill right to background §§
+0B0A68             0031*  plot_lf_r_bg: equ 0x58
+0B0A68             0032*  
+0B0A68             0033*  ; &60-&67 	96-103 	Rectangle fill
+0B0A68             0034*  plot_rf: equ 0x60
+0B0A68             0035*  
+0B0A68             0036*  ; &68-&6F 	104-111 	Line fill left and right to foreground §§
+0B0A68             0037*  plot_lf_lr_fg: equ 0x60
+0B0A68             0038*  
+0B0A68             0039*  ; &70-&77 	112-119 	Parallelogram fill
+0B0A68             0040*  plot_pf: equ 0x70
+0B0A68             0041*  
+0B0A68             0042*  ; &78-&7F 	120-127 	Line fill right to non-foreground §§
+0B0A68             0043*  plot_lf_r_non_fg: equ 0x78
+0B0A68             0044*  
+0B0A68             0045*  ; &80-&87 	128-135 	Not supported (Flood until non-background)
+0B0A68             0046*  ; &88-&8F 	136-143 	Not supported (Flood until foreground)
+0B0A68             0047*  
+0B0A68             0048*  ; &90-&97 	144-151 	Circle outline
+0B0A68             0049*  plot_co: equ 0x90
+0B0A68             0050*  
+0B0A68             0051*  ; &98-&9F 	152-159 	Circle fill
+0B0A68             0052*  plot_cf: equ 0x98
+0B0A68             0053*  
+0B0A68             0054*  ; &A0-&A7 	160-167 	Not supported (Circular arc)
+0B0A68             0055*  ; &A8-&AF 	168-175 	Not supported (Circular segment)
+0B0A68             0056*  ; &B0-&B7 	176-183 	Not supported (Circular sector)
+0B0A68             0057*  
+0B0A68             0058*  ; &B8-&BF 	184-191 	Rectangle copy/move
+0B0A68             0059*  plot_rcm: equ 0xB8
+0B0A68             0060*  
+0B0A68             0061*  ; &C0-&C7 	192-199 	Not supported (Ellipse outline)
+0B0A68             0062*  ; &C8-&CF 	200-207 	Not supported (Ellipse fill)
+0B0A68             0063*  ; &D0-&D7 	208-215 	Not defined
+0B0A68             0064*  ; &D8-&DF 	216-223 	Not defined
+0B0A68             0065*  ; &E0-&E7 	224-231 	Not defined
+0B0A68             0066*  
+0B0A68             0067*  ; &E8-&EF 	232-239 	Bitmap plot §
+0B0A68             0068*  plot_bmp: equ 0xE8
+0B0A68             0069*  
+0B0A68             0070*  ; &F0-&F7 	240-247 	Not defined
+0B0A68             0071*  ; &F8-&FF 	248-255 	Not defined
+0B0A68             0072*  
+0B0A68             0073*  ; § Support added in Agon Console8 VDP 2.1.0 §§ Support added in
+0B0A68             0074*  ; Agon Console8 VDP 2.2.0
+0B0A68             0075*  
+0B0A68             0076*  ; Within each group of eight plot codes, the effects are as follows:
+0B0A68             0077*  ; Plot code 	Effect
+0B0A68             0078*  ; 0 	Move relative
+0B0A68             0079*  mv_rel: equ 0
+0B0A68             0080*  
+0B0A68             0081*  ; 1 	Plot relative in current foreground colour
+0B0A68             0082*  dr_rel_fg: equ 1
+0B0A68             0083*  
+0B0A68             0084*  ; 2 	Not supported (Plot relative in logical inverse colour)
+0B0A68             0085*  ; 3 	Plot relative in current background colour
+0B0A68             0086*  dr_rel_bg: equ 3
+0B0A68             0087*  
+0B0A68             0088*  ; 4 	Move absolute
+0B0A68             0089*  mv_abs: equ 4
+0B0A68             0090*  
+0B0A68             0091*  ; 5 	Plot absolute in current foreground colour
+0B0A68             0092*  dr_abs_fg: equ 5
+0B0A68             0093*  
+0B0A68             0094*  ; 6 	Not supported (Plot absolute in logical inverse colour)
+0B0A68             0095*  ; 7 	Plot absolute in current background colour
+0B0A68             0096*  dr_abs_bg: equ 7
+0B0A68             0097*  
+0B0A68             0098*  ; Codes 0-3 use the position data provided as part of the command
+0B0A68             0099*  ; as a relative position, adding the position given to the current
+0B0A68             0100*  ; graphical cursor position. Codes 4-7 use the position data provided
+0B0A68             0101*  ; as part of the command as an absolute position, setting the current
+0B0A68             0102*  ; graphical cursor position to the position given.
+0B0A68             0103*  
+0B0A68             0104*  ; Codes 2 and 6 on Acorn systems plot using a logical inverse of the
+0B0A68             0105*  ; current pixel colour. These operations cannot currently be supported
+0B0A68             0106*  ; by the graphics system the Agon VDP uses, so these codes are not
+0B0A68             0107*  ; supported. Support for these codes may be added in a future version
+0B0A68             0108*  ; of the VDP firmware.
+0B0A68             0109*  
+0B0A68             0110*  ; 16 colour palette constants
+0B0A68             0111*  c_black: equ 0
+0B0A68             0112*  c_red_dk: equ 1
+0B0A68             0113*  c_green_dk: equ 2
+0B0A68             0114*  c_yellow_dk: equ 3
+0B0A68             0115*  c_blue_dk: equ 4
+0B0A68             0116*  c_magenta_dk: equ 5
+0B0A68             0117*  c_cyan_dk: equ 6
+0B0A68             0118*  c_grey: equ 7
+0B0A68             0119*  c_grey_dk: equ 8
+0B0A68             0120*  c_red: equ 9
+0B0A68             0121*  c_green: equ 10
+0B0A68             0122*  c_yellow: equ 11
+0B0A68             0123*  c_blue: equ 12
+0B0A68             0124*  c_magenta: equ 13
+0B0A68             0125*  c_cyan: equ 14
+0B0A68             0126*  c_white: equ 15
+0B0A68             0127*  
+0B0A68             0128*  ; VDU 25, mode, x; y;: PLOT command
+0B0A68             0129*  ; inputs: a=mode, bc=x0, de=y0
+0B0A68             0130*  vdu_plot:
+0B0A68 32 82 0A 0B 0131*      ld (@mode),a
+0B0A6C ED 43 83 0A 0132*      ld (@x0),bc
        0B          
-0B0A8B 32 AC 0A 0B 0028*      ld (@flags),a
-0B0A8F 7A          0029*      ld a,d ; height
-0B0A90 32 AB 0A 0B 0030*      ld (@ascent),a ; ascent = height
-0B0A94             0031*  ; consolidate buffer
-0B0A94 CD C2 08 0B 0032*      call vdu_consolidate_buffer
-0B0A98             0033*  ; create font
-0B0A98 21 A3 0A 0B 0034*      ld hl,@cmd
-0B0A9C 01 0A 00 00 0035*      ld bc,@end-@cmd
-0B0AA0 5B DF       0036*      rst.lil $18
-0B0AA2 C9          0037*      ret
-0B0AA3 17 00 95 01 0038*  @cmd: db 23, 0, 0x95, 1
-0B0AA7 00 00       0039*  @bufferId: dw 0x0000
-0B0AA9 00          0040*  @width: db 0x00
-0B0AAA 00          0041*  @height: db 0x00
-0B0AAB 00          0042*  @ascent: db 0x00
-0B0AAC 00          0043*  @flags: db 0x00
-0B0AAD             0044*  @end:
-0B0AAD             0045*  
-0B0AAD             0046*  ; set or adjust font property
-0B0AAD             0047*  ; inputs: hl = bufferId, a = field, de = value
-0B0AAD             0048*  ; VDU 23, 0, &95, 2, bufferId; field, value;: Set or adjust font property
-0B0AAD             0049*  vdu_font_property:
-0B0AAD 22 C9 0A 0B 0050*      ld (@bufferId),hl
-0B0AB1 32 CB 0A 0B 0051*      ld (@field),a
-0B0AB5 ED 53 CC 0A 0052*      ld (@value),de
+0B0A71 ED 53 85 0A 0133*      ld (@y0),de
        0B          
-0B0ABA 21 C5 0A 0B 0053*      ld hl,@cmd
-0B0ABE 01 09 00 00 0054*      ld bc,@end-@cmd
-0B0AC2 5B DF       0055*      rst.lil $18
-0B0AC4 C9          0056*      ret
-0B0AC5 17 00 95 02 0057*  @cmd: db 23, 0, 0x95, 2
-0B0AC9 00 00       0058*  @bufferId: dw 0x0000
-0B0ACB 00          0059*  @field: db 0x00
-0B0ACC 00 00       0060*  @value: dw 0x0000
-0B0ACE 00          0061*  @end: db 0x00 ; padding
-0B0ACF             0062*  
-0B0ACF             0063*  ; VDU 23, 0, &95, 3, bufferId; [<args>]: Reserved
-0B0ACF             0064*  
-0B0ACF             0065*  ; Clear/Delete font
-0B0ACF             0066*  ; inputs: hl = bufferId
-0B0ACF             0067*  ; VDU 23, 0, &95, 4, bufferId;: Clear/Delete font
-0B0ACF             0068*  vdu_font_clear:
-0B0ACF 22 E2 0A 0B 0069*      ld (@bufferId),hl
-0B0AD3 21 DE 0A 0B 0070*      ld hl,@cmd
-0B0AD7 01 06 00 00 0071*      ld bc,@end-@cmd
-0B0ADB 5B DF       0072*      rst.lil $18
-0B0ADD C9          0073*      ret
-0B0ADE 17 00 95 04 0074*  @cmd: db 23, 0, 0x95, 4
-0B0AE2 00 00       0075*  @bufferId: dw 0x0000
-0B0AE4 00          0076*  @end: db 0x00 ; padding
-0B0AE5             0077*  
-0B0AE5             0078*  ; Copy system font to buffer
-0B0AE5             0079*  ; inputs: hl = bufferId
-0B0AE5             0080*  ; VDU 23, 0, &95, 5, bufferId;: Copy system font to buffer
-0B0AE5             0081*  vdu_font_copy_system:
-0B0AE5 22 F8 0A 0B 0082*      ld (@bufferId),hl
-0B0AE9 21 F4 0A 0B 0083*      ld hl,@cmd
-0B0AED 01 06 00 00 0084*      ld bc,@end-@cmd
-0B0AF1 5B DF       0085*      rst.lil $18
-0B0AF3 C9          0086*      ret
-0B0AF4 17 00 95 05 0087*  @cmd: db 23, 0, 0x95, 5
-0B0AF8 00 00       0088*  @bufferId: dw 0x0000
-0B0AFA 00          0089*  @end: db 0x00 ; padding
-0B0AFB             0018   
-0B0AFB             0019   ; Application includes
-0B0AFB             0020       include "fonts_list.inc"
-0B0AFB             0001*  ; Generated by asm_config_editor.py
-0B0AFB             0002*  font_list_record_size: equ 12
-0B0AFB             0003*  font_list_width: equ 0
-0B0AFB             0004*  font_list_height: equ 3
-0B0AFB             0005*  font_list_bufferId: equ 6
-0B0AFB             0006*  font_list_filename: equ 9
-0B0AFB             0007*  
-0B0AFB             0008*  num_fonts: equ 18
-0B0AFB             0009*  
-0B0AFB             0010*  ; Index list:
-0B0AFB             0011*  amiga_forever_16x24: equ 0
-0B0AFB             0012*  amiga_forever_8x16: equ 1
-0B0AFB             0013*  amiga_forever_8x8: equ 2
-0B0AFB             0014*  computer_pixel_7_10x15: equ 3
-0B0AFB             0015*  computer_pixel_7_10x24: equ 4
-0B0AFB             0016*  computer_pixel_7_8x14: equ 5
-0B0AFB             0017*  Lat2_Terminus12x6_6x12: equ 6
-0B0AFB             0018*  Lat2_TerminusBold14_8x14: equ 7
-0B0AFB             0019*  Lat2_VGA14_8x14: equ 8
-0B0AFB             0020*  Lat2_VGA16_8x16: equ 9
-0B0AFB             0021*  Lat2_VGA8_8x8: equ 10
-0B0AFB             0022*  Lat7_Fixed13_8x13: equ 11
-0B0AFB             0023*  Lat7_Terminus12x6_6x12: equ 12
-0B0AFB             0024*  Lat7_TerminusBold16_8x16: equ 13
-0B0AFB             0025*  Lat7_VGA14_8x14: equ 14
-0B0AFB             0026*  Lat7_VGA8_8x8: equ 15
-0B0AFB             0027*  scriptorium_12x14: equ 16
-0B0AFB             0028*  Squarewave_Bold_8x12: equ 17
-0B0AFB             0029*  
-0B0AFB             0030*  font_list: ; width; height; bufferId; filename;:
-0B0AFB 10 00 00 18 0031*  	dl 16, 24, 64000, fn_amiga_forever_16x24
-       00 00 00 FA 
-       00 D3 0B 0B 
-0B0B07 08 00 00 10 0032*  	dl 8, 16, 64001, fn_amiga_forever_8x16
-       00 00 01 FA 
-       00 F7 0B 0B 
-0B0B13 08 00 00 08 0033*  	dl 8, 8, 64002, fn_amiga_forever_8x8
-       00 00 02 FA 
-       00 1A 0C 0B 
-0B0B1F 0A 00 00 0F 0034*  	dl 10, 15, 64003, fn_computer_pixel_7_10x15
-       00 00 03 FA 
-       00 3C 0C 0B 
-0B0B2B 0A 00 00 18 0035*  	dl 10, 24, 64004, fn_computer_pixel_7_10x24
-       00 00 04 FA 
-       00 63 0C 0B 
-0B0B37 08 00 00 0E 0036*  	dl 8, 14, 64005, fn_computer_pixel_7_8x14
-       00 00 05 FA 
-       00 8A 0C 0B 
-0B0B43 06 00 00 0C 0037*  	dl 6, 12, 64006, fn_Lat2_Terminus12x6_6x12
-       00 00 06 FA 
-       00 B0 0C 0B 
-0B0B4F 08 00 00 0E 0038*  	dl 8, 14, 64007, fn_Lat2_TerminusBold14_8x14
-       00 00 07 FA 
-       00 D7 0C 0B 
-0B0B5B 08 00 00 0E 0039*  	dl 8, 14, 64008, fn_Lat2_VGA14_8x14
-       00 00 08 FA 
-       00 00 0D 0B 
-0B0B67 08 00 00 10 0040*  	dl 8, 16, 64009, fn_Lat2_VGA16_8x16
-       00 00 09 FA 
-       00 20 0D 0B 
-0B0B73 08 00 00 08 0041*  	dl 8, 8, 64010, fn_Lat2_VGA8_8x8
-       00 00 0A FA 
-       00 40 0D 0B 
-0B0B7F 08 00 00 0D 0042*  	dl 8, 13, 64011, fn_Lat7_Fixed13_8x13
-       00 00 0B FA 
-       00 5E 0D 0B 
-0B0B8B 06 00 00 0C 0043*  	dl 6, 12, 64012, fn_Lat7_Terminus12x6_6x12
-       00 00 0C FA 
-       00 80 0D 0B 
-0B0B97 08 00 00 10 0044*  	dl 8, 16, 64013, fn_Lat7_TerminusBold16_8x16
-       00 00 0D FA 
-       00 A7 0D 0B 
-0B0BA3 08 00 00 0E 0045*  	dl 8, 14, 64014, fn_Lat7_VGA14_8x14
-       00 00 0E FA 
-       00 D0 0D 0B 
-0B0BAF 08 00 00 08 0046*  	dl 8, 8, 64015, fn_Lat7_VGA8_8x8
-       00 00 0F FA 
-       00 F0 0D 0B 
-0B0BBB 0C 00 00 0E 0047*  	dl 12, 14, 64016, fn_scriptorium_12x14
-       00 00 10 FA 
-       00 0E 0E 0B 
-0B0BC7 08 00 00 0C 0048*  	dl 8, 12, 64017, fn_Squarewave_Bold_8x12
-       00 00 11 FA 
-       00 30 0E 0B 
-0B0BD3             0049*  
-0B0BD3             0050*  ; files_list: ; filename:
-0B0BD3 2F 6D 6F 73 0051*  fn_amiga_forever_16x24: db "/mos/fonts/amiga_forever_16x24.font",0
-       2F 66 6F 6E 
-       74 73 2F 61 
-       6D 69 67 61 
-       5F 66 6F 72 
-       65 76 65 72 
-       5F 31 36 78 
-       32 34 2E 66 
-       6F 6E 74 00 
-0B0BF7 2F 6D 6F 73 0052*  fn_amiga_forever_8x16: db "/mos/fonts/amiga_forever_8x16.font",0
-       2F 66 6F 6E 
-       74 73 2F 61 
-       6D 69 67 61 
-       5F 66 6F 72 
-       65 76 65 72 
-       5F 38 78 31 
-       36 2E 66 6F 
-       6E 74 00    
-0B0C1A 2F 6D 6F 73 0053*  fn_amiga_forever_8x8: db "/mos/fonts/amiga_forever_8x8.font",0
-       2F 66 6F 6E 
-       74 73 2F 61 
-       6D 69 67 61 
-       5F 66 6F 72 
-       65 76 65 72 
-       5F 38 78 38 
-       2E 66 6F 6E 
-       74 00       
-0B0C3C 2F 6D 6F 73 0054*  fn_computer_pixel_7_10x15: db "/mos/fonts/computer_pixel_7_10x15.font",0
-       2F 66 6F 6E 
-       74 73 2F 63 
-       6F 6D 70 75 
-       74 65 72 5F 
-       70 69 78 65 
-       6C 5F 37 5F 
-       31 30 78 31 
-       35 2E 66 6F 
-       6E 74 00    
-0B0C63 2F 6D 6F 73 0055*  fn_computer_pixel_7_10x24: db "/mos/fonts/computer_pixel_7_10x24.font",0
-       2F 66 6F 6E 
-       74 73 2F 63 
-       6F 6D 70 75 
-       74 65 72 5F 
-       70 69 78 65 
-       6C 5F 37 5F 
-       31 30 78 32 
-       34 2E 66 6F 
-       6E 74 00    
-0B0C8A 2F 6D 6F 73 0056*  fn_computer_pixel_7_8x14: db "/mos/fonts/computer_pixel_7_8x14.font",0
-       2F 66 6F 6E 
-       74 73 2F 63 
-       6F 6D 70 75 
-       74 65 72 5F 
-       70 69 78 65 
-       6C 5F 37 5F 
-       38 78 31 34 
-       2E 66 6F 6E 
-       74 00       
-0B0CB0 2F 6D 6F 73 0057*  fn_Lat2_Terminus12x6_6x12: db "/mos/fonts/Lat2-Terminus12x6_6x12.font",0
-       2F 66 6F 6E 
-       74 73 2F 4C 
-       61 74 32 2D 
-       54 65 72 6D 
-       69 6E 75 73 
-       31 32 78 36 
-       5F 36 78 31 
-       32 2E 66 6F 
-       6E 74 00    
-0B0CD7 2F 6D 6F 73 0058*  fn_Lat2_TerminusBold14_8x14: db "/mos/fonts/Lat2-TerminusBold14_8x14.font",0
-       2F 66 6F 6E 
-       74 73 2F 4C 
-       61 74 32 2D 
-       54 65 72 6D 
-       69 6E 75 73 
-       42 6F 6C 64 
-       31 34 5F 38 
-       78 31 34 2E 
-       66 6F 6E 74 
-       00          
-0B0D00 2F 6D 6F 73 0059*  fn_Lat2_VGA14_8x14: db "/mos/fonts/Lat2-VGA14_8x14.font",0
-       2F 66 6F 6E 
-       74 73 2F 4C 
-       61 74 32 2D 
-       56 47 41 31 
-       34 5F 38 78 
-       31 34 2E 66 
-       6F 6E 74 00 
-0B0D20 2F 6D 6F 73 0060*  fn_Lat2_VGA16_8x16: db "/mos/fonts/Lat2-VGA16_8x16.font",0
-       2F 66 6F 6E 
-       74 73 2F 4C 
-       61 74 32 2D 
-       56 47 41 31 
-       36 5F 38 78 
-       31 36 2E 66 
-       6F 6E 74 00 
-0B0D40 2F 6D 6F 73 0061*  fn_Lat2_VGA8_8x8: db "/mos/fonts/Lat2-VGA8_8x8.font",0
-       2F 66 6F 6E 
-       74 73 2F 4C 
-       61 74 32 2D 
-       56 47 41 38 
-       5F 38 78 38 
-       2E 66 6F 6E 
-       74 00       
-0B0D5E 2F 6D 6F 73 0062*  fn_Lat7_Fixed13_8x13: db "/mos/fonts/Lat7-Fixed13_8x13.font",0
-       2F 66 6F 6E 
-       74 73 2F 4C 
-       61 74 37 2D 
-       46 69 78 65 
-       64 31 33 5F 
-       38 78 31 33 
-       2E 66 6F 6E 
-       74 00       
-0B0D80 2F 6D 6F 73 0063*  fn_Lat7_Terminus12x6_6x12: db "/mos/fonts/Lat7-Terminus12x6_6x12.font",0
-       2F 66 6F 6E 
-       74 73 2F 4C 
-       61 74 37 2D 
-       54 65 72 6D 
-       69 6E 75 73 
-       31 32 78 36 
-       5F 36 78 31 
-       32 2E 66 6F 
-       6E 74 00    
-0B0DA7 2F 6D 6F 73 0064*  fn_Lat7_TerminusBold16_8x16: db "/mos/fonts/Lat7-TerminusBold16_8x16.font",0
-       2F 66 6F 6E 
-       74 73 2F 4C 
-       61 74 37 2D 
-       54 65 72 6D 
-       69 6E 75 73 
-       42 6F 6C 64 
-       31 36 5F 38 
-       78 31 36 2E 
-       66 6F 6E 74 
-       00          
-0B0DD0 2F 6D 6F 73 0065*  fn_Lat7_VGA14_8x14: db "/mos/fonts/Lat7-VGA14_8x14.font",0
-       2F 66 6F 6E 
-       74 73 2F 4C 
-       61 74 37 2D 
-       56 47 41 31 
-       34 5F 38 78 
-       31 34 2E 66 
-       6F 6E 74 00 
-0B0DF0 2F 6D 6F 73 0066*  fn_Lat7_VGA8_8x8: db "/mos/fonts/Lat7-VGA8_8x8.font",0
-       2F 66 6F 6E 
-       74 73 2F 4C 
-       61 74 37 2D 
-       56 47 41 38 
-       5F 38 78 38 
-       2E 66 6F 6E 
-       74 00       
-0B0E0E 2F 6D 6F 73 0067*  fn_scriptorium_12x14: db "/mos/fonts/scriptorium_12x14.font",0
-       2F 66 6F 6E 
-       74 73 2F 73 
-       63 72 69 70 
-       74 6F 72 69 
-       75 6D 5F 31 
-       32 78 31 34 
-       2E 66 6F 6E 
-       74 00       
-0B0E30 2F 6D 6F 73 0068*  fn_Squarewave_Bold_8x12: db "/mos/fonts/Squarewave_Bold_8x12.font",0
-       2F 66 6F 6E 
-       74 73 2F 53 
-       71 75 61 72 
-       65 77 61 76 
-       65 5F 42 6F 
-       6C 64 5F 38 
-       78 31 32 2E 
-       66 6F 6E 74 
-       00          
-0B0E55             0021   
-0B0E55             0022   ; Main routine
-0B0E55             0023   _main:
-0B0E55 DD 21 FB 0A 0024       ld ix,font_list ; pointer to font list lookup
+0B0A76 21 81 0A 0B 0134*  	ld hl,@cmd
+0B0A7A 01 06 00 00 0135*  	ld bc,@end-@cmd
+0B0A7E 5B DF       0136*  	rst.lil $18
+0B0A80 C9          0137*  	ret
+0B0A81 19          0138*  @cmd:   db 25
+0B0A82 00          0139*  @mode:  db 0
+0B0A83 00 00       0140*  @x0: 	dw 0
+0B0A85 00 00       0141*  @y0: 	dw 0
+0B0A87 00          0142*  @end:   db 0 ; extra byte to soak up deu
+0B0A88             0143*  
+0B0A88             0144*  ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
+0B0A88             0145*  ; &E8-&EF 	232-239 	Bitmap plot §
+0B0A88             0146*  ; VDU 25, mode, x; y;: PLOT command
+0B0A88             0147*  ; inputs: bc=x0, de=y0
+0B0A88             0148*  ; prerequisites: vdu_buff_select
+0B0A88             0149*  vdu_plot_bmp:
+0B0A88 ED 43 9F 0A 0150*      ld (@x0),bc
        0B          
-0B0E5A 06 12       0025       ld b,num_fonts ; loop counter
-0B0E5C             0026   
-0B0E5C             0027   @load_loop:
-0B0E5C C5          0028       push bc ; save loop counter
-0B0E5D             0029   
-0B0E5D             0030   ; load font into a buffer
-0B0E5D             0031   ; inputs: hl = bufferId; iy = pointer to filename
-0B0E5D             0032   ; VDU 23, 0, &95, 1, bufferId; filename: Load font from file
-0B0E5D DD 27 06    0033       ld hl,(ix+font_list_bufferId)
-0B0E60 DD 31 09    0034       ld iy,(ix+font_list_filename)
-0B0E63 CD FF 08 0B 0035       call vdu_load_buffer_from_file
-0B0E67             0036   
-0B0E67             0037   ; create font from buffer
-0B0E67             0038   ; inputs: hl = bufferId, e = width, d = height, d = ascent, a = flags
-0B0E67             0039   ; VDU 23, 0, &95, 1, bufferId; width, height, ascent, flags: Create font from buffer
-0B0E67 DD 27 06    0040       ld hl,(ix+font_list_bufferId)
-0B0E6A DD 7E 00    0041       ld a,(ix+font_list_width)
-0B0E6D 5F          0042       ld e,a  ; width
-0B0E6E DD 7E 03    0043       ld a,(ix+font_list_height)
-0B0E71 57          0044       ld d,a  ; height and ascent
-0B0E72 3E 00       0045       ld a,0 ; flags
-0B0E74 CD 82 0A 0B 0046       call vdu_font_create
-0B0E78             0047   
-0B0E78             0048   ; select font
-0B0E78             0049   ; inputs: hl = bufferId, a = font flags
-0B0E78             0050   ; VDU 23, 0, &95, 0, bufferId; flags: Select font
-0B0E78             0051   ; Flags:
-0B0E78             0052   ; Bit	Description
-0B0E78             0053   ; 0	Adjust cursor position to ensure text baseline is aligned
-0B0E78             0054   ;   0: Do not adjust cursor position (best for changing font on a new line)
-0B0E78             0055   ;   1: Adjust cursor position (best for changing font in the middle of a line)
-0B0E78             0056   ; 1-7	Reserved for future use
-0B0E78 DD 27 06    0057       ld hl,(ix+font_list_bufferId)
-0B0E7B 3E 01       0058       ld a,1 ; flags
-0B0E7D CD 68 0A 0B 0059       call vdu_font_select
-0B0E81             0060   
-0B0E81             0061   ; debug print filename
-0B0E81 CD 5A 01 0B 0062       call printNewLine
-0B0E85 DD 27 09    0063       ld hl,(ix+font_list_filename)
-0B0E88 CD 45 01 0B 0064       call printString
-0B0E8C             0065   
-0B0E8C             0066   ; advance font_list pointer to next record
-0B0E8C ED 32 0C    0067       lea ix,ix+font_list_record_size
-0B0E8F             0068   
-0B0E8F             0069   ; restore loop counter
-0B0E8F C1          0070       pop bc
-0B0E90 10 CA       0071       djnz @load_loop
-0B0E92             0072   
-0B0E92 CD 5A 01 0B 0073       call printNewLine
-0B0E96             0074   
-0B0E96             0075   main_end:		; End with no error
-0B0E96 21 00 00 00 0076   			LD 	HL, 0
-0B0E9A C9          0077   			RET
+0B0A8D ED 53 A1 0A 0151*      ld (@y0),de
+       0B          
+0B0A92 21 9D 0A 0B 0152*  	ld hl,@cmd
+0B0A96 01 06 00 00 0153*  	ld bc,@end-@cmd
+0B0A9A 5B DF       0154*  	rst.lil $18
+0B0A9C C9          0155*  	ret
+0B0A9D 19          0156*  @cmd:   db 25
+0B0A9E ED          0157*  @mode:  db plot_bmp+dr_abs_fg ; 0xED
+0B0A9F 00 00       0158*  @x0: 	dw 0x0000
+0B0AA1 00 00       0159*  @y0: 	dw 0x0000
+0B0AA3 00          0160*  @end:   db 0x00 ; padding
+0B0AA4             0161*  
+0B0AA4             0162*  ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
+0B0AA4             0163*  ; &E8-&EF 	232-239 	Bitmap plot §
+0B0AA4             0164*  ; VDU 25, mode, x; y;: PLOT command
+0B0AA4             0165*  ; inputs: bc=x0, de=y0
+0B0AA4             0166*  ; USING 16.8 FIXED POINT COORDINATES
+0B0AA4             0167*  ; inputs: ub.c is x coordinate, ud.e is y coordinate
+0B0AA4             0168*  ;   the fractional portiion of the inputs are truncated
+0B0AA4             0169*  ;   leaving only the 16-bit integer portion
+0B0AA4             0170*  ; prerequisites: vdu_buff_select
+0B0AA4             0171*  vdu_plot_bmp168:
+0B0AA4             0172*  ; populate in the reverse of normal to keep the
+0B0AA4             0173*  ; inputs from stomping on each other
+0B0AA4 ED 53 C2 0A 0174*      ld (@y0-1),de
+       0B          
+0B0AA9 ED 43 C0 0A 0175*      ld (@x0-1),bc
+       0B          
+0B0AAE 3E ED       0176*      ld a,plot_bmp+dr_abs_fg ; 0xED
+0B0AB0 32 C0 0A 0B 0177*      ld (@mode),a ; restore the mode byte that got stomped on by bcu
+0B0AB4 21 BF 0A 0B 0178*  	ld hl,@cmd
+0B0AB8 01 06 00 00 0179*  	ld bc,@end-@cmd
+0B0ABC 5B DF       0180*  	rst.lil $18
+0B0ABE C9          0181*  	ret
+0B0ABF 19          0182*  @cmd:   db 25
+0B0AC0 ED          0183*  @mode:  db plot_bmp+dr_abs_fg ; 0xED
+0B0AC1 00 00       0184*  @x0: 	dw 0x0000
+0B0AC3 00 00       0185*  @y0: 	dw 0x0000
+0B0AC5             0186*  @end:  ; no padding required b/c we shifted de right
+0B0AC5             0187*  
+0B0AC5             0188*  ; draw a filled rectangle
+0B0AC5             0189*  vdu_plot_rf:
+0B0AC5 ED 43 EC 0A 0190*      ld (@x0),bc
+       0B          
+0B0ACA ED 53 EE 0A 0191*      ld (@y0),de
+       0B          
+0B0ACF DD 22 F2 0A 0192*      ld (@x1),ix
+       0B          
+0B0AD4 FD 22 F4 0A 0193*      ld (@y1),iy
+       0B          
+0B0AD9 3E 19       0194*      ld a,25 ; we have to reload the 2nd plot command
+0B0ADB 32 F0 0A 0B 0195*      ld (@cmd1),a ; because the 24-bit y0 load stomped on it
+0B0ADF 21 EA 0A 0B 0196*  	ld hl,@cmd0
+0B0AE3 01 0C 00 00 0197*  	ld bc,@end-@cmd0
+0B0AE7 5B DF       0198*  	rst.lil $18
+0B0AE9 C9          0199*      ret
+0B0AEA 19          0200*  @cmd0:  db 25 ; plot
+0B0AEB 04          0201*  @arg0:  db plot_sl_both+mv_abs
+0B0AEC 00 00       0202*  @x0:    dw 0x0000
+0B0AEE 00 00       0203*  @y0:    dw 0x0000
+0B0AF0 19          0204*  @cmd1:  db 25 ; plot
+0B0AF1 65          0205*  @arg1:  db plot_rf+dr_abs_fg
+0B0AF2 00 00       0206*  @x1:    dw 0x0000
+0B0AF4 00 00       0207*  @y1:    dw 0x0000
+0B0AF6 00          0208*  @end:   db 0x00 ; padding
+0B0AF7             0209*  
+0B0AF7             0210*  ; draw a filled circle
+0B0AF7             0211*  vdu_plot_cf:
+0B0AF7 ED 43 1E 0B 0212*      ld (@x0),bc
+       0B          
+0B0AFC ED 53 20 0B 0213*      ld (@y0),de
+       0B          
+0B0B01 DD 22 24 0B 0214*      ld (@x1),ix
+       0B          
+0B0B06 FD 22 26 0B 0215*      ld (@y1),iy
+       0B          
+0B0B0B 3E 19       0216*      ld a,25 ; we have to reload the 2nd plot command
+0B0B0D 32 22 0B 0B 0217*      ld (@cmd1),a ; because the 24-bit y0 load stomped on it
+0B0B11 21 1C 0B 0B 0218*  	ld hl,@cmd0
+0B0B15 01 0C 00 00 0219*  	ld bc,@end-@cmd0
+0B0B19 5B DF       0220*  	rst.lil $18
+0B0B1B C9          0221*      ret
+0B0B1C 19          0222*  @cmd0:  db 25 ; plot
+0B0B1D 04          0223*  @arg0:  db plot_sl_both+mv_abs
+0B0B1E 00 00       0224*  @x0:    dw 0x0000
+0B0B20 00 00       0225*  @y0:    dw 0x0000
+0B0B22 19          0226*  @cmd1:  db 25 ; plot
+0B0B23 9D          0227*  @arg1:  db plot_cf+dr_abs_fg
+0B0B24 00 00       0228*  @x1:    dw 0x0000
+0B0B26 00 00       0229*  @y1:    dw 0x0000
+0B0B28 00          0230*  @end:   db 0x00 ; padding
+0B0B29             0231*  
+0B0B29             0232*  ; VDU 25, mode, x; y;: PLOT command
+0B0B29             0233*  ; inputs: a=mode, ix=x0, iy=y0
+0B0B29             0234*  plot:
+0B0B29 32 43 0B 0B 0235*      ld (@mode),a
+0B0B2D DD 22 44 0B 0236*      ld (@x0),ix
+       0B          
+0B0B32 FD 22 46 0B 0237*      ld (@y0),iy
+       0B          
+0B0B37 21 42 0B 0B 0238*  	ld hl,@cmd
+0B0B3B 01 06 00 00 0239*  	ld bc,@end-@cmd
+0B0B3F 5B DF       0240*  	rst.lil $18
+0B0B41 C9          0241*  	ret
+0B0B42 19          0242*  @cmd:   db 25
+0B0B43 00          0243*  @mode:  db 0
+0B0B44 00 00       0244*  @x0: 	dw 0
+0B0B46 00 00       0245*  @y0: 	dw 0
+0B0B48 00          0246*  @end:   db 0 ; padding
+0B0B49             0247*  
+0B0B49             0248*  ; VDU 5: Write text at graphics cursor
+0B0B49             0249*  ; inputs: hl = pointer to text, ix=x0, iy=y0
+0B0B49             0250*  ; prerequisites: gcol foreground set, VDU 5 set
+0B0B49             0251*  plot_text:
+0B0B49 E5          0252*      push hl ; save text pointer
+0B0B4A             0253*  ; move graphics cursor to x0, y0
+0B0B4A 3E 44       0254*      ld a,plot_pt+mv_abs
+0B0B4C CD 29 0B 0B 0255*      call plot
+0B0B50             0256*  ; write text
+0B0B50 E1          0257*      pop hl ; restore text pointer
+0B0B51 CD 45 01 0B 0258*      call printString
+0B0B55 C9          0259*      ret
+0B0B56             0155   
+0B0B56             0156   ; Application includes
+0B0B56             0157   
+0B0B56             0158   ; The main routine
+0B0B56             0159   ; IXU: argv - pointer to array of parameters
+0B0B56             0160   ;   C: argc - number of parameters
+0B0B56             0161   ; Returns:
+0B0B56             0162   ;  HL: Error code, or 0 if OK
+0B0B56             0163   
+0B0B56             0164   min_args: equ 2
+0B0B56             0165   
+0B0B56             0166   _main:
+0B0B56 C5          0167       push bc             ; save the count
+0B0B57 79          0168       ld a,c              ; how many arguments?
+0B0B58 FE 02       0169       cp min_args         ; not enough?
+0B0B5A 30 13       0170       jr nc,main          ; if enough, go to main loop
+0B0B5C 21 BA 0B 0B 0171       ld hl,str_usage     ; if not enough, print usage
+0B0B60 CD 45 01 0B 0172       call printString
+0B0B64 C1          0173       pop bc              ; dummy pop to balance stack
+0B0B65 21 13 00 00 0174       ld hl,19            ; return error code 19
+0B0B69 C9          0175       ret
+0B0B6A             0176   
+0B0B6A             0177   _main_end:
+0B0B6A             0178   ; End with no error
+0B0B6A 21 00 00 00 0179       ld hl,0
+0B0B6E C9          0180       ret
+0B0B6F             0181   
+0B0B6F             0182   main:
+0B0B6F C1          0183       pop bc              ; restore the count
+0B0B70 41          0184       ld b,C              ; b is the loop counter
+0B0B71 05          0185       dec b               ; skip the program name
+0B0B72 ED 32 03    0186       lea ix,ix+3
+0B0B75             0187   
+0B0B75             0188   
+0B0B75 FD 21 90 0B 0189       ld iy,arg1          ; pointer to first argument lut
+       0B          
+0B0B7A FD 27 00    0190       ld hl,(iy)          ; pointer argument function address
+0B0B7D 23          0191       inc hl              ; skip over jp instruction
+0B0B7E 23          0192       inc hl              ; pointer to function name
+0B0B7F DD 17 00    0193       ld de,(ix)          ; pointer to the argument string
+0B0B82 CD 03 0C 0B 0194       call str_equal      ; compare the argument
+0B0B86 C2 AD 0B 0B 0195       jp nz,error         ; if not equal, print usage and return error
+0B0B8A FD E9       0196       jp (iy)             ; if equal, jump to the function
+0B0B8C             0197   
+0B0B8C C3 6A 0B 0B 0198       jp _main_end         ; end of program
+0B0B90             0199   
+0B0B90             0200   arg1:
+0B0B90 96 0B 0B    0201       dl move
+0B0B93 AD 0B 0B    0202       dl error
+0B0B96             0203   
+0B0B96             0204   move:
+0B0B96 18 05       0205       jr @start
+0B0B98 6D 6F 76 65 0206       asciz "move"
+       00          
+0B0B9D             0207   @start:
+0B0B9D 21 98 0B 0B 0208       ld hl,move+2
+0B0BA1 CD 45 01 0B 0209       call printString
+0B0BA5 CD 5A 01 0B 0210       call printNewLine
+0B0BA9 C3 6A 0B 0B 0211       jp _main_end
+0B0BAD             0212   
+0B0BAD             0213   error:
+0B0BAD 21 CF 0B 0B 0214       ld hl,str_error
+0B0BB1 CD 45 01 0B 0215       call printString
+0B0BB5 21 13 00 00 0216       ld hl,19 ; return error code 19
+0B0BB9 C9          0217       ret
+0B0BBA             0218   
+0B0BBA 55 73 61 67 0219   str_usage: ASCIZ "Usage: draw <args>\r\n"
+       65 3A 20 64 
+       72 61 77 20 
+       3C 61 72 67 
+       73 3E 0D 0A 
+       00          
+0B0BCF 45 72 72 6F 0220   str_error: ASCIZ "Error: Args don't match\r\n"
+       72 3A 20 41 
+       72 67 73 20 
+       64 6F 6E 27 
+       74 20 6D 61 
+       74 63 68 0D 
+       0A 00       
+0B0BE9 53 75 63 63 0221   str_success: ASCIZ "Success: Argument found\r\n"
+       65 73 73 3A 
+       20 41 72 67 
+       75 6D 65 6E 
+       74 20 66 6F 
+       75 6E 64 0D 
+       0A 00       
+0B0C03             0222   
+0B0C03             0223   ; compare two zero-terminated strings for equality, case-sensitive
+0B0C03             0224   ; hl: pointer to first string, de: pointer to second string
+0B0C03             0225   ; returns: z if equal, nz if not equal
+0B0C03             0226   ; destroys: a, hl, de
+0B0C03             0227   str_equal:
+0B0C03 1A          0228       ld a,(de)           ; get the first character
+0B0C04 BE          0229       cp (hl)             ; compare to the second character
+0B0C05 C0          0230       ret nz              ; if not equal, return
+0B0C06 B7          0231       or a
+0B0C07 C8          0232       ret z               ; if equal and zero, return
+0B0C08 23          0233       inc hl              ; next character
+0B0C09 13          0234       inc de
+0B0C0A C3 03 0C 0B 0235       jp str_equal        ; loop until end of string
+0B0C0E             0236   
+0B0C0E             0237   ; print the parameters
+0B0C0E             0238   ; inputs: b = number of parameters, ix = pointer to the parameters
+0B0C0E             0239   ; destroys: a, hl, bc
+0B0C0E             0240   print_params:
+0B0C0E DD E5       0241       push ix             ; save the pointer to the parameters
+0B0C10             0242   @loop:
+0B0C10 C5          0243       push bc             ; save the loop counter
+0B0C11 DD 27 00    0244       ld hl,(ix)          ; get the parameter pointer
+0B0C14 CD 45 01 0B 0245       call printString    ; print the parameter string
+0B0C18 3E 20       0246       ld a,' '            ; print a space
+0B0C1A 5B D7       0247       rst.lil $10         ; print the character
+0B0C1C ED 32 03    0248       lea ix,ix+3         ; next parameter pointer
+0B0C1F C1          0249       pop bc              ; get back the loop counter
+0B0C20 10 EE       0250       djnz @loop          ; loop until done
+0B0C22 DD E1       0251       pop ix              ; restore the pointer to the parameters
+0B0C24 C9          0252       ret

@@ -320,7 +320,7 @@ PC     Output      Line
 0B0059 CD 70 00 0B 0046*  			CALL	_parse_params		; Parse the parameters
 0B005D DD E1       0047*  			POP	IX			; IX: argv
 0B005F 06 00       0048*  			LD	B, 0			;  C: argc
-0B0061 CD 51 0B 0B 0049*  			CALL	_main			; Start user code
+0B0061 CD 7E 0B 0B 0049*  			CALL	_main			; Start user code
 0B0065             0050*  
 0B0065 F1          0051*  			POP 	AF
 0B0066 ED 6D       0052*  			LD	MB, A
@@ -2482,84 +2482,153 @@ PC     Output      Line
 0B0B24 00 00       0228*  @x1:    dw 0x0000
 0B0B26 00 00       0229*  @y1:    dw 0x0000
 0B0B28 00          0230*  @end:   db 0x00 ; padding
-0B0B29             0019   
-0B0B29             0020   ; Application includes
-0B0B29             0021       ; include "fonts_list.inc"
-0B0B29             0022   
-0B0B29 48 65 6C 6C 0023   hello_world: ASCIZ "Hello, World!\r\n"
+0B0B29             0231*  
+0B0B29             0232*  ; VDU 25, mode, x; y;: PLOT command
+0B0B29             0233*  ; inputs: a=mode, ix=x0, iy=y0
+0B0B29             0234*  plot:
+0B0B29 32 43 0B 0B 0235*      ld (@mode),a
+0B0B2D DD 22 44 0B 0236*      ld (@x0),ix
+       0B          
+0B0B32 FD 22 46 0B 0237*      ld (@y0),iy
+       0B          
+0B0B37 21 42 0B 0B 0238*  	ld hl,@cmd
+0B0B3B 01 06 00 00 0239*  	ld bc,@end-@cmd
+0B0B3F 5B DF       0240*  	rst.lil $18
+0B0B41 C9          0241*  	ret
+0B0B42 19          0242*  @cmd:   db 25
+0B0B43 00          0243*  @mode:  db 0
+0B0B44 00 00       0244*  @x0: 	dw 0
+0B0B46 00 00       0245*  @y0: 	dw 0
+0B0B48 00          0246*  @end:   db 0 ; padding
+0B0B49             0247*  
+0B0B49             0248*  ; VDU 5: Write text at graphics cursor
+0B0B49             0249*  ; inputs: hl = pointer to text, ix=x0, iy=y0
+0B0B49             0250*  ; prerequisites: gcol foreground set, VDU 5 set
+0B0B49             0251*  plot_text:
+0B0B49 E5          0252*      push hl ; save text pointer
+0B0B4A             0253*  ; move graphics cursor to x0, y0
+0B0B4A 3E 44       0254*      ld a,plot_pt+mv_abs
+0B0B4C CD 29 0B 0B 0255*      call plot
+0B0B50             0256*  ; write text
+0B0B50 E1          0257*      pop hl ; restore text pointer
+0B0B51 CD 45 01 0B 0258*      call printString
+0B0B55 C9          0259*      ret
+0B0B56             0019   
+0B0B56             0020   ; Application includes
+0B0B56             0021       ; include "fonts_list.inc"
+0B0B56             0022   
+0B0B56 48 65 6C 6C 0023   hello_world: ASCIZ "Hello, World!\r\n"
        6F 2C 20 57 
        6F 72 6C 64 
        21 0D 0A 00 
-0B0B39 47 6F 6F 64 0024   goodbye_world: ASCIZ "Goodbye, Cruel World!\r\n"
+0B0B66 47 6F 6F 64 0024   goodbye_world: ASCIZ "Goodbye, Cruel World!\r\n"
        62 79 65 2C 
        20 43 72 75 
        65 6C 20 57 
        6F 72 6C 64 
        21 0D 0A 00 
-0B0B51             0025   
-0B0B51             0026   ; Main routine
-0B0B51             0027   _main:
-0B0B51             0028   
-0B0B51             0029   ; VDU 23, 0, &C0, n: Turn logical screen scaling on and off *
-0B0B51             0030   ; inputs: a is scaling mode, 1=on, 0=off
-0B0B51             0031   ; note: default setting on boot is scaling ON
-0B0B51 AF          0032       xor a
-0B0B52 CD AC 07 0B 0033       call vdu_set_scaling
-0B0B56             0034   
-0B0B56 21 29 0B 0B 0035       ld hl,hello_world
-0B0B5A CD 45 01 0B 0036       call printString
-0B0B5E             0037   
-0B0B5E             0038   ; VDU 18, mode, colour: Set graphics colour (GCOL mode, colour)
-0B0B5E             0039   ; inputs: a=mode, c=colour (add 128 to set background colour)
-0B0B5E AF          0040       xor a
-0B0B5F 0E 0F       0041       ld c,c_white
-0B0B61 CD 2F 07 0B 0042       call vdu_gcol
-0B0B65             0043   ; draw horizontal grid lines
-0B0B65 FD 21 00 00 0044       ld iy,0 ; intial y coordinate
+0B0B7E             0025   
+0B0B7E             0026   ; Main routine
+0B0B7E             0027   _main:
+0B0B7E             0028   
+0B0B7E             0029   ; VDU 23, 0, &C0, n: Turn logical screen scaling on and off *
+0B0B7E             0030   ; inputs: a is scaling mode, 1=on, 0=off
+0B0B7E             0031   ; note: default setting on boot is scaling ON
+0B0B7E AF          0032       xor a
+0B0B7F CD AC 07 0B 0033       call vdu_set_scaling
+0B0B83             0034   
+0B0B83             0035       ; ld hl,hello_world
+0B0B83             0036       ; call printString
+0B0B83             0037   
+0B0B83             0038   ; VDU 18, mode, colour: Set graphics colour (GCOL mode, colour)
+0B0B83             0039   ; inputs: a=mode, c=colour (add 128 to set background colour)
+0B0B83 AF          0040       xor a
+0B0B84 0E 0F       0041       ld c,c_white
+0B0B86 CD 2F 07 0B 0042       call vdu_gcol
+0B0B8A             0043   
+0B0B8A             0044   ; VDU 5: Write text at graphics cursor
+0B0B8A 3E 05       0045       ld a,5
+0B0B8C 5B D7       0046       rst.lil $10
+0B0B8E             0047   
+0B0B8E             0048   ; draw horizontal grid lines
+0B0B8E FD 21 00 00 0049       ld iy,0 ; intial y coordinate
        00          
-0B0B6A 06 20       0045       ld b,32 ; number of lines
-0B0B6C             0046   @loop_horizontal:
-0B0B6C C5          0047       push bc ; save loop counter
-0B0B6D             0048   ; VDU 25, mode, x; y;: PLOT command
-0B0B6D             0049   ; inputs: a=mode, ix=x0, iy=y0
-0B0B6D             0050   ; move cursor to left edge of screen
-0B0B6D 3E 44       0051       ld a,plot_pt+mv_abs
-0B0B6F DD 21 00 00 0052       ld ix,0
+0B0B93 06 18       0050       ld b,24 ; number of lines
+0B0B95 3E FF       0051       ld a,-1 ; cell number
+0B0B97 32 1B 0C 0B 0052       ld (@cell_num),a
+0B0B9B             0053   @loop_horizontal:
+0B0B9B C5          0054       push bc ; save loop counter
+0B0B9C             0055   ; VDU 25, mode, x; y;: PLOT command
+0B0B9C             0056   ; inputs: a=mode, ix=x0, iy=y0
+0B0B9C             0057   ; move cursor to left edge of screen
+0B0B9C 3E 44       0058       ld a,plot_pt+mv_abs
+0B0B9E DD 21 00 00 0059       ld ix,0
        00          
-0B0B74 CD 96 0B 0B 0053       call plot
-0B0B78             0054   ; plot line to right edge of screen
-0B0B78 3E 05       0055       ld a,plot_sl_both+dr_abs_fg
-0B0B7A DD 21 FF 03 0056       ld ix,1023 ; max x coordinate for any screen mode
+0B0BA3 CD 29 0B 0B 0060       call plot
+0B0BA7             0061   ; plot line to right edge of screen
+0B0BA7 3E 05       0062       ld a,plot_sl_both+dr_abs_fg
+0B0BA9 DD 21 FF 03 0063       ld ix,1023 ; max x coordinate for any screen mode
        00          
-0B0B7F CD 96 0B 0B 0057       call plot
-0B0B83             0058   ; increment y coordinate and loop
-0B0B83 ED 33 20    0059       lea iy,iy+32
-0B0B86 C1          0060       pop bc ; restore loop counter
-0B0B87 10 E3       0061       djnz @loop_horizontal
-0B0B89             0062   
-0B0B89             0063   ; print goodbye
-0B0B89 21 39 0B 0B 0064       ld hl,goodbye_world
-0B0B8D CD 45 01 0B 0065       call printString
-0B0B91             0066   
-0B0B91             0067   main_end:
-0B0B91             0068   ; End with no error
-0B0B91 21 00 00 00 0069       LD 	HL, 0
-0B0B95 C9          0070       RET
-0B0B96             0071   
-0B0B96             0072   ; VDU 25, mode, x; y;: PLOT command
-0B0B96             0073   ; inputs: a=mode, ix=x0, iy=y0
-0B0B96             0074   plot:
-0B0B96 32 B0 0B 0B 0075       ld (@mode),a
-0B0B9A DD 22 B1 0B 0076       ld (@x0),ix
-       0B          
-0B0B9F FD 22 B3 0B 0077       ld (@y0),iy
-       0B          
-0B0BA4 21 AF 0B 0B 0078   	ld hl,@cmd
-0B0BA8 01 06 00 00 0079   	ld bc,@end-@cmd
-0B0BAC 5B DF       0080   	rst.lil $18
-0B0BAE C9          0081   	ret
-0B0BAF 19          0082   @cmd:   db 25
-0B0BB0 00          0083   @mode:  db 0
-0B0BB1 00 00       0084   @x0: 	dw 0
-0B0BB3 00 00       0085   @y0: 	dw 0
-0B0BB5 00          0086   @end:   db 0 ; padding
+0B0BAE CD 29 0B 0B 0064       call plot
+0B0BB2             0065   ; Write cell number at graphics cursor
+0B0BB2 3E 44       0066       ld a,plot_pt+mv_abs
+0B0BB4 DD 21 00 00 0067       ld ix,0
+       00          
+0B0BB9 CD 29 0B 0B 0068       call plot
+0B0BBD 3A 1B 0C 0B 0069       ld a,(@cell_num)
+0B0BC1 3C          0070       inc a
+0B0BC2 32 1B 0C 0B 0071       ld (@cell_num),a
+0B0BC6 CD 77 01 0B 0072       call printHex8
+0B0BCA             0073   ; increment y coordinate and loop
+0B0BCA ED 33 20    0074       lea iy,iy+32
+0B0BCD C1          0075       pop bc ; restore loop counter
+0B0BCE 10 CB       0076       djnz @loop_horizontal
+0B0BD0             0077   
+0B0BD0             0078   ; draw vertical grid lines
+0B0BD0 DD 21 00 00 0079       ld ix,0 ; initial x coordinate
+       00          
+0B0BD5 06 20       0080       ld b,32 ; number of lines
+0B0BD7 3E FF       0081       ld a,-1 ; cell number
+0B0BD9 32 1B 0C 0B 0082       ld (@cell_num),a
+0B0BDD             0083   @loop_vertical:
+0B0BDD C5          0084       push bc ; save loop counter
+0B0BDE             0085   ; VDU 25, mode, x; y;: PLOT command
+0B0BDE             0086   ; inputs: a=mode, ix=x0, iy=y0
+0B0BDE             0087   ; move cursor to top edge of screen
+0B0BDE 3E 44       0088       ld a,plot_pt+mv_abs
+0B0BE0 FD 21 00 00 0089       ld iy,0
+       00          
+0B0BE5 CD 29 0B 0B 0090       call plot
+0B0BE9             0091   ; plot line to bottom edge of screen
+0B0BE9 3E 05       0092       ld a,plot_sl_both+dr_abs_fg
+0B0BEB FD 21 FF 02 0093       ld iy,767 ; max y coordinate for any screen mode
+       00          
+0B0BF0 CD 29 0B 0B 0094       call plot
+0B0BF4             0095   ; Write cell number at graphics cursor
+0B0BF4 3E 44       0096       ld a,plot_pt+mv_abs
+0B0BF6 FD 21 00 00 0097       ld iy,0
+       00          
+0B0BFB CD 29 0B 0B 0098       call plot
+0B0BFF 3A 1B 0C 0B 0099       ld a,(@cell_num)
+0B0C03 3C          0100       inc a
+0B0C04 32 1B 0C 0B 0101       ld (@cell_num),a
+0B0C08 CD 77 01 0B 0102       call printHex8
+0B0C0C             0103   ; increment x coordinate and loop
+0B0C0C ED 32 20    0104       lea ix,ix+32
+0B0C0F C1          0105       pop bc ; restore loop counter
+0B0C10 10 CB       0106       djnz @loop_vertical
+0B0C12             0107   
+0B0C12             0108   ; ; print goodbye
+0B0C12             0109   ;     ld hl,goodbye_world
+0B0C12             0110   ;     call printString
+0B0C12             0111   
+0B0C12             0112   ; VDU 4: Write text at text cursor
+0B0C12 3E 04       0113       ld a,4
+0B0C14 5B D7       0114       rst.lil $10
+0B0C16             0115   
+0B0C16             0116   @main_end:
+0B0C16             0117   ; End with no error
+0B0C16 21 00 00 00 0118       LD 	HL, 0
+0B0C1A C9          0119       RET
+0B0C1B             0120   
+0B0C1B 00          0121   @cell_num: db 0

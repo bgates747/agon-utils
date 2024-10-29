@@ -228,3 +228,32 @@ vdu_plot_cf:
 @x1:    dw 0x0000
 @y1:    dw 0x0000
 @end:   db 0x00 ; padding
+
+; VDU 25, mode, x; y;: PLOT command
+; inputs: a=mode, ix=x0, iy=y0
+plot:
+    ld (@mode),a
+    ld (@x0),ix
+    ld (@y0),iy
+	ld hl,@cmd
+	ld bc,@end-@cmd
+	rst.lil $18
+	ret
+@cmd:   db 25
+@mode:  db 0
+@x0: 	dw 0
+@y0: 	dw 0
+@end:   db 0 ; padding
+
+; VDU 5: Write text at graphics cursor
+; inputs: hl = pointer to text, ix=x0, iy=y0
+; prerequisites: gcol foreground set, VDU 5 set
+plot_text:
+    push hl ; save text pointer
+; move graphics cursor to x0, y0
+    ld a,plot_pt+mv_abs
+    call plot
+; write text
+    pop hl ; restore text pointer
+    call printString
+    ret

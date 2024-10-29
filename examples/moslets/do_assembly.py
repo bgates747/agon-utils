@@ -54,6 +54,7 @@ def run_ez80asm(asm_src_dir,asm_src_filename,tgt_emulator_bin_dir,tgt_bin_filena
     # Build the ez80asm command
     command = [
         "ez80asm",
+        "-l",
         asm_src_filename,
         f'{tgt_emulator_bin_dir}/{tgt_bin_filename}' 
     ]
@@ -170,6 +171,18 @@ if __name__ == '__main__':
 
     tgt_dir = 'mos'
     app_name = 'grid'
+    emulator_dir = '/home/smith/Agon/emulator'
+    asm_src_dir = 'examples/moslets'
+    tgt_bin_filename = f'{app_name}.bin'
+    copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
+    autoexec_text = []
+    assemble = True
+    copy_sdcard = True
+    run_emulator = False
+    build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
+
+    tgt_dir = 'mos'
+    app_name = 'draw'
     emulator_dir = '/home/smith/Agon/emulator'
     asm_src_dir = 'examples/moslets'
     tgt_bin_filename = f'{app_name}.bin'
