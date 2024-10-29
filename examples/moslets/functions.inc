@@ -3,6 +3,16 @@
         RST.LIL 10h
     ENDMACRO
 
+; test the sign of HL
+; inputs: HL obviously
+; outputs: sign flag set if HL is negative, zero flag set if HL is zero
+; destroys: flags    
+    MACRO signHL
+        add hl,de
+        or a
+        sbc hl,de
+    ENDMACRO
+
 ; https://github.com/envenomator/Agon/blob/master/ez80asm%20examples%20(annotated)/functions.s
 ; Print a zero-terminated string
 ; HL: Pointer to string
@@ -111,6 +121,7 @@ DisplayHexPrefix:
 
 ; Prints the right justified decimal value in HL without leading zeroes
 ; HL : Value to print
+; preserves all registers and flags
 printDec:
 ; BEGIN MY CODE
 ; back up all the things
