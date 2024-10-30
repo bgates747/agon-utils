@@ -56,8 +56,8 @@ _main_end_error:
     ret
 
 _main_end_ok:
-    ld hl,str_success   ; print success message
-    call printString
+    ; ld hl,str_success   ; print success message
+    ; call printString
     ld hl,0             ; return 0 for success
     ret
 
@@ -75,6 +75,7 @@ main:
 ; ========= BEGIN ARGUMENT-SPECIFIC FUNCTIONS =========
 ; --------- arg1 is the drawing operation to perform ---------
 arg1:
+; plotting funtions
     dl move
     dl line
     dl recf ; rectangle filled
@@ -83,7 +84,45 @@ arg1:
     dl cirf ; circle filled
     dl trif ; triangle filled
     ; dl trio ; triangle outline TODO
+; colour functions
+    dl gcol ; set graphics colour
     dl 0x000000 ; list terminator
+
+; --------- set the graphics colour ---------
+gcol:
+    jr @start
+    asciz "gcol"
+@start:
+; determine whether we're setting the foreground or background colour
+    ld iy,ground ; point to the ground dispatch table
+    call match_next ; get the colour type from arg2
+    jp nz,_main_end_error
+    callIY ; fetch the colour ground
+    push af ; save it
+    call get_numeric_arg ; e has the 8-bit colour value
+    pop af ; restore the colour ground
+    add a,e ; a has the colour to set
+    ld c,a ; and now c has it
+    xor a ; set colour mode zero for straight up pixel painting
+    call vdu_gcol ; set the colour
+    jp _main_end_ok
+
+ground:
+    dl fg
+    dl bg
+    dl 0x000000 ; list terminator
+fg:
+    jr @start
+    asciz "fg"
+@start:
+    xor a ; zero means fg colour will be set
+    ret
+bg:
+    jr @start
+    asciz "bg"
+@start:
+    ld a,128 ; 128 means bg colour will be set
+    ret
 
 ; --------- move the graphics cursor to the specified coordinates ---------
 move:
@@ -194,12 +233,18 @@ trif:
     inc a ; TEMPORARY: sets draw effect to foreground color
     add a,plot_tf ; plots a filled triangle
     push af ; save it
-    call get_plot_coords ; get the move coordinates from arg3 and arg4
+    call get_plot_coords ; get the move coordinates from arg5 and arg6 for the second leg
     pop af ; restore the move type
     call vdu_plot ; move the gfx curor to the specified coordinates
     jp _main_end_ok
 
 ; ========== HELPER FUNCTIONS ==========
+get_numeric_arg:
+    lea ix,ix+3 ; point to the next argument
+    ld hl,(ix)  ; get the argument string
+    call ASC_TO_NUMBER ; convert the string to a number
+    ret ; return with the value in DE
+
 get_plot_coords:
 ; get the move coordinates
     lea ix,ix+3 ; pointer to next argument address
