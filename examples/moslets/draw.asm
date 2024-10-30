@@ -77,9 +77,12 @@ main:
 arg1:
     dl move
     dl line
-    dl rect
+    dl recf ; rectangle filled
+    ; dl reco ; rectangle outline TODO
     dl ciro ; circle outline
     dl cirf ; circle filled
+    dl trif ; triangle filled
+    ; dl trio ; triangle outline TODO
     dl 0x000000 ; list terminator
 
 ; --------- move the graphics cursor to the specified coordinates ---------
@@ -131,14 +134,14 @@ line:
     call vdu_plot ; move the gfx curor to the specified coordinates
     jp _main_end_ok
 
-; --------- draw a rectangle from the current cursor position to the specified coordinates ---------
-rect:
+; --------- draw a filled rectangle from the current cursor position to the specified coordinates ---------
+recf:
     jr @start
-    asciz "rect"
+    asciz "recf"
 @start:
     call get_move_type ; get the move type from arg2
     inc a ; TEMPORARY: sets draw effect to foreground color
-    add a,plot_rf ; TEMPORARY: plots a filled rectangle
+    add a,plot_rf ; plots a filled rectangle
     push af ; save it
     call get_plot_coords ; get the move coordinates from arg3 and arg4
     pop af ; restore the move type
@@ -169,6 +172,27 @@ cirf:
     call get_move_type ; get the move type from arg2
     inc a ; TEMPORARY: sets draw effect to foreground color
     add a,plot_cf ; plots a filled circle
+    push af ; save it
+    call get_plot_coords ; get the move coordinates from arg3 and arg4
+    pop af ; restore the move type
+    call vdu_plot ; move the gfx curor to the specified coordinates
+    jp _main_end_ok
+
+; --------- draw a filled triangle centered on the current gfx cursor ---------
+; --------- whose outline will intersect the specified coordinates  ---------
+trif:
+    jr @start
+    asciz "trif"
+@start:
+    call get_move_type ; get the move type from arg2
+    push af ; save it
+    call get_plot_coords ; get the move coordinates from arg3 and arg4 for the first leg
+    pop af ; restore the move type
+    push af ; save it again
+    call vdu_plot ; move the gfx curor to the specified coordinates
+    pop af ; restore the move type
+    inc a ; TEMPORARY: sets draw effect to foreground color
+    add a,plot_tf ; plots a filled triangle
     push af ; save it
     call get_plot_coords ; get the move coordinates from arg3 and arg4
     pop af ; restore the move type

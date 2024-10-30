@@ -2615,7 +2615,7 @@ PC     Output      Line
 0B0BA7             0068   ; get the first argument, which determines the drawing operation to perform
 0B0BA7 FD 21 BC 0B 0069       ld iy,arg1          ; pointer to first argument dispatch table
        0B          
-0B0BAC CD 9C 0C 0B 0070       call match_next      ; look for a matching argument
+0B0BAC CD C7 0C 0B 0070       call match_next      ; look for a matching argument
 0B0BB0 C2 8C 0B 0B 0071       jp nz,_main_end_error; if no match, return error
 0B0BB4             0072       callIY              ; if match, call the function at IY
 0B0BB4 01 BB 0B 0B 0001M          ld bc,$+7     ; Address of first instruction after the jump
@@ -2626,199 +2626,224 @@ PC     Output      Line
 0B0BBC             0075   ; ========= BEGIN ARGUMENT-SPECIFIC FUNCTIONS =========
 0B0BBC             0076   ; --------- arg1 is the drawing operation to perform ---------
 0B0BBC             0077   arg1:
-0B0BBC CE 0B 0B    0078       dl move
-0B0BBF 17 0C 0B    0079       dl line
-0B0BC2 31 0C 0B    0080       dl rect
-0B0BC5 4D 0C 0B    0081       dl ciro ; circle outline
-0B0BC8 69 0C 0B    0082       dl cirf ; circle filled
-0B0BCB 00 00 00    0083       dl 0x000000 ; list terminator
-0B0BCE             0084   
-0B0BCE             0085   ; --------- move the graphics cursor to the specified coordinates ---------
-0B0BCE             0086   move:
-0B0BCE 18 05       0087       jr @start
-0B0BD0 6D 6F 76 65 0088       asciz "move"
+0B0BBC D1 0B 0B    0078       dl move
+0B0BBF 1A 0C 0B    0079       dl line
+0B0BC2 34 0C 0B    0080       dl recf ; rectangle filled
+0B0BC5             0081       ; dl reco ; rectangle outline TODO
+0B0BC5 50 0C 0B    0082       dl ciro ; circle outline
+0B0BC8 6C 0C 0B    0083       dl cirf ; circle filled
+0B0BCB 88 0C 0B    0084       dl trif ; triangle filled
+0B0BCE             0085       ; dl trio ; triangle outline TODO
+0B0BCE 00 00 00    0086       dl 0x000000 ; list terminator
+0B0BD1             0087   
+0B0BD1             0088   ; --------- move the graphics cursor to the specified coordinates ---------
+0B0BD1             0089   move:
+0B0BD1 18 05       0090       jr @start
+0B0BD3 6D 6F 76 65 0091       asciz "move"
        00          
-0B0BD5             0089   @start:
-0B0BD5 CD 02 0C 0B 0090       call get_move_type ; get the move type from arg2
-0B0BD9 F5          0091       push af ; save it
-0B0BDA CD 85 0C 0B 0092       call get_plot_coords ; get the move coordinates from arg3 and arg4
-0B0BDE F1          0093       pop af ; restore the move type
-0B0BDF CD 68 0A 0B 0094       call vdu_plot ; move the gfx curor to the specified coordinates
-0B0BE3 C3 99 0B 0B 0095       jp _main_end_ok
-0B0BE7             0096   
-0B0BE7             0097   move_type:
-0B0BE7 F0 0B 0B    0098       dl abs
-0B0BEA F9 0B 0B    0099       dl rel
-0B0BED 00 00 00    0100       dl 0x000000 ; list terminator
-0B0BF0             0101   abs:
-0B0BF0 18 04       0102       jr @start
-0B0BF2 61 62 73 00 0103       asciz "abs"
-0B0BF6             0104   @start:
-0B0BF6 3E 04       0105       ld a,mv_abs
-0B0BF8 C9          0106       ret
-0B0BF9             0107   rel:
-0B0BF9 18 04       0108       jr @start
-0B0BFB 72 65 6C 00 0109       asciz "rel"
-0B0BFF             0110   @start:
-0B0BFF 3E 00       0111       ld a,mv_rel
-0B0C01 C9          0112       ret
-0B0C02             0113   
-0B0C02             0114   get_move_type:
-0B0C02 FD 21 E7 0B 0115       ld iy,move_type
+0B0BD8             0092   @start:
+0B0BD8 CD 05 0C 0B 0093       call get_move_type ; get the move type from arg2
+0B0BDC F5          0094       push af ; save it
+0B0BDD CD B0 0C 0B 0095       call get_plot_coords ; get the move coordinates from arg3 and arg4
+0B0BE1 F1          0096       pop af ; restore the move type
+0B0BE2 CD 68 0A 0B 0097       call vdu_plot ; move the gfx curor to the specified coordinates
+0B0BE6 C3 99 0B 0B 0098       jp _main_end_ok
+0B0BEA             0099   
+0B0BEA             0100   move_type:
+0B0BEA F3 0B 0B    0101       dl abs
+0B0BED FC 0B 0B    0102       dl rel
+0B0BF0 00 00 00    0103       dl 0x000000 ; list terminator
+0B0BF3             0104   abs:
+0B0BF3 18 04       0105       jr @start
+0B0BF5 61 62 73 00 0106       asciz "abs"
+0B0BF9             0107   @start:
+0B0BF9 3E 04       0108       ld a,mv_abs
+0B0BFB C9          0109       ret
+0B0BFC             0110   rel:
+0B0BFC 18 04       0111       jr @start
+0B0BFE 72 65 6C 00 0112       asciz "rel"
+0B0C02             0113   @start:
+0B0C02 3E 00       0114       ld a,mv_rel
+0B0C04 C9          0115       ret
+0B0C05             0116   
+0B0C05             0117   get_move_type:
+0B0C05 FD 21 EA 0B 0118       ld iy,move_type
        0B          
-0B0C07 CD 9C 0C 0B 0116       call match_next
-0B0C0B C2 8C 0B 0B 0117       jp nz,_main_end_error
-0B0C0F             0118       callIY ; a comes back with move type
-0B0C0F 01 16 0C 0B 0001M          ld bc,$+7     ; Address of first instruction after the jump
-0B0C13 C5          0002M          push bc       ; which constitutes the return address
-0B0C14 FD E9       0003M          jp   (iy)     ; Jump to the address in IY
-0B0C16 C9          0119       ret
-0B0C17             0120   
-0B0C17             0121   ; --------- draw a line from the current cursor position to the specified coordinates ---------
-0B0C17             0122   line:
-0B0C17 18 05       0123       jr @start
-0B0C19 6C 69 6E 65 0124       asciz "line"
+0B0C0A CD C7 0C 0B 0119       call match_next
+0B0C0E C2 8C 0B 0B 0120       jp nz,_main_end_error
+0B0C12             0121       callIY ; a comes back with move type
+0B0C12 01 19 0C 0B 0001M          ld bc,$+7     ; Address of first instruction after the jump
+0B0C16 C5          0002M          push bc       ; which constitutes the return address
+0B0C17 FD E9       0003M          jp   (iy)     ; Jump to the address in IY
+0B0C19 C9          0122       ret
+0B0C1A             0123   
+0B0C1A             0124   ; --------- draw a line from the current cursor position to the specified coordinates ---------
+0B0C1A             0125   line:
+0B0C1A 18 05       0126       jr @start
+0B0C1C 6C 69 6E 65 0127       asciz "line"
        00          
-0B0C1E             0125   @start:
-0B0C1E CD 02 0C 0B 0126       call get_move_type ; get the move type from arg2
-0B0C22 3C          0127       inc a ; TEMPORARY: sets draw effect to foreground color
-0B0C23 F5          0128       push af ; save it
-0B0C24 CD 85 0C 0B 0129       call get_plot_coords ; get the move coordinates from arg3 and arg4
-0B0C28 F1          0130       pop af ; restore the move type
-0B0C29 CD 68 0A 0B 0131       call vdu_plot ; move the gfx curor to the specified coordinates
-0B0C2D C3 99 0B 0B 0132       jp _main_end_ok
-0B0C31             0133   
-0B0C31             0134   ; --------- draw a rectangle from the current cursor position to the specified coordinates ---------
-0B0C31             0135   rect:
-0B0C31 18 05       0136       jr @start
-0B0C33 72 65 63 74 0137       asciz "rect"
+0B0C21             0128   @start:
+0B0C21 CD 05 0C 0B 0129       call get_move_type ; get the move type from arg2
+0B0C25 3C          0130       inc a ; TEMPORARY: sets draw effect to foreground color
+0B0C26 F5          0131       push af ; save it
+0B0C27 CD B0 0C 0B 0132       call get_plot_coords ; get the move coordinates from arg3 and arg4
+0B0C2B F1          0133       pop af ; restore the move type
+0B0C2C CD 68 0A 0B 0134       call vdu_plot ; move the gfx curor to the specified coordinates
+0B0C30 C3 99 0B 0B 0135       jp _main_end_ok
+0B0C34             0136   
+0B0C34             0137   ; --------- draw a filled rectangle from the current cursor position to the specified coordinates ---------
+0B0C34             0138   recf:
+0B0C34 18 05       0139       jr @start
+0B0C36 72 65 63 66 0140       asciz "recf"
        00          
-0B0C38             0138   @start:
-0B0C38 CD 02 0C 0B 0139       call get_move_type ; get the move type from arg2
-0B0C3C 3C          0140       inc a ; TEMPORARY: sets draw effect to foreground color
-0B0C3D C6 60       0141       add a,plot_rf ; TEMPORARY: plots a filled rectangle
-0B0C3F F5          0142       push af ; save it
-0B0C40 CD 85 0C 0B 0143       call get_plot_coords ; get the move coordinates from arg3 and arg4
-0B0C44 F1          0144       pop af ; restore the move type
-0B0C45 CD 68 0A 0B 0145       call vdu_plot ; move the gfx curor to the specified coordinates
-0B0C49 C3 99 0B 0B 0146       jp _main_end_ok
-0B0C4D             0147   
-0B0C4D             0148   ; --------- draw a circle outine centered on the current gfx cursor ---------
-0B0C4D             0149   ; --------- whose outline will intersect the specified coordinates  ---------
-0B0C4D             0150   ciro:
-0B0C4D 18 05       0151       jr @start
-0B0C4F 63 69 72 6F 0152       asciz "ciro"
+0B0C3B             0141   @start:
+0B0C3B CD 05 0C 0B 0142       call get_move_type ; get the move type from arg2
+0B0C3F 3C          0143       inc a ; TEMPORARY: sets draw effect to foreground color
+0B0C40 C6 60       0144       add a,plot_rf ; plots a filled rectangle
+0B0C42 F5          0145       push af ; save it
+0B0C43 CD B0 0C 0B 0146       call get_plot_coords ; get the move coordinates from arg3 and arg4
+0B0C47 F1          0147       pop af ; restore the move type
+0B0C48 CD 68 0A 0B 0148       call vdu_plot ; move the gfx curor to the specified coordinates
+0B0C4C C3 99 0B 0B 0149       jp _main_end_ok
+0B0C50             0150   
+0B0C50             0151   ; --------- draw a circle outine centered on the current gfx cursor ---------
+0B0C50             0152   ; --------- whose outline will intersect the specified coordinates  ---------
+0B0C50             0153   ciro:
+0B0C50 18 05       0154       jr @start
+0B0C52 63 69 72 6F 0155       asciz "ciro"
        00          
-0B0C54             0153   @start:
-0B0C54 CD 02 0C 0B 0154       call get_move_type ; get the move type from arg2
-0B0C58 3C          0155       inc a ; TEMPORARY: sets draw effect to foreground color
-0B0C59 C6 90       0156       add a,plot_co ; plots a circle outline
-0B0C5B F5          0157       push af ; save it
-0B0C5C CD 85 0C 0B 0158       call get_plot_coords ; get the move coordinates from arg3 and arg4
-0B0C60 F1          0159       pop af ; restore the move type
-0B0C61 CD 68 0A 0B 0160       call vdu_plot ; move the gfx curor to the specified coordinates
-0B0C65 C3 99 0B 0B 0161       jp _main_end_ok
-0B0C69             0162   
-0B0C69             0163   ; --------- draw a filled circle centered on the current gfx cursor ---------
-0B0C69             0164   ; --------- whose outline will intersect the specified coordinates  ---------
-0B0C69             0165   cirf:
-0B0C69 18 05       0166       jr @start
-0B0C6B 63 69 72 66 0167       asciz "cirf"
+0B0C57             0156   @start:
+0B0C57 CD 05 0C 0B 0157       call get_move_type ; get the move type from arg2
+0B0C5B 3C          0158       inc a ; TEMPORARY: sets draw effect to foreground color
+0B0C5C C6 90       0159       add a,plot_co ; plots a circle outline
+0B0C5E F5          0160       push af ; save it
+0B0C5F CD B0 0C 0B 0161       call get_plot_coords ; get the move coordinates from arg3 and arg4
+0B0C63 F1          0162       pop af ; restore the move type
+0B0C64 CD 68 0A 0B 0163       call vdu_plot ; move the gfx curor to the specified coordinates
+0B0C68 C3 99 0B 0B 0164       jp _main_end_ok
+0B0C6C             0165   
+0B0C6C             0166   ; --------- draw a filled circle centered on the current gfx cursor ---------
+0B0C6C             0167   ; --------- whose outline will intersect the specified coordinates  ---------
+0B0C6C             0168   cirf:
+0B0C6C 18 05       0169       jr @start
+0B0C6E 63 69 72 66 0170       asciz "cirf"
        00          
-0B0C70             0168   @start:
-0B0C70 CD 02 0C 0B 0169       call get_move_type ; get the move type from arg2
-0B0C74 3C          0170       inc a ; TEMPORARY: sets draw effect to foreground color
-0B0C75 C6 98       0171       add a,plot_cf ; plots a filled circle
-0B0C77 F5          0172       push af ; save it
-0B0C78 CD 85 0C 0B 0173       call get_plot_coords ; get the move coordinates from arg3 and arg4
-0B0C7C F1          0174       pop af ; restore the move type
-0B0C7D CD 68 0A 0B 0175       call vdu_plot ; move the gfx curor to the specified coordinates
-0B0C81 C3 99 0B 0B 0176       jp _main_end_ok
-0B0C85             0177   
-0B0C85             0178   ; ========== HELPER FUNCTIONS ==========
-0B0C85             0179   get_plot_coords:
-0B0C85             0180   ; get the move coordinates
-0B0C85 ED 32 03    0181       lea ix,ix+3 ; pointer to next argument address
-0B0C88 DD 27 00    0182       ld hl,(ix)  ; pointer to the x coordinate string
-0B0C8B CD E9 00 0B 0183       call ASC_TO_NUMBER ; de = x coordinate
-0B0C8F D5          0184       push de
-0B0C90 C1          0185       pop bc ; bc = x coordinate
-0B0C91 ED 32 03    0186       lea ix,ix+3 ; pointer to next argument address
-0B0C94 DD 27 00    0187       ld hl,(ix)  ; pointer to the y coordinate string
-0B0C97 CD E9 00 0B 0188       call ASC_TO_NUMBER ; de = y coordinate
-0B0C9B C9          0189       ret
-0B0C9C             0190   
-0B0C9C             0191   ; match the next argument after ix to the dispatch table at iy
-0B0C9C             0192   ;   - arguments and dispatch entries are zero-terminated, case-sensitive strings
-0B0C9C             0193   ;   - final entry of dispatch table must be a 3-byte zero or bad things will happen
-0B0C9C             0194   ; returns: NO MATCH: iy=dispatch list terminator a=1 and zero flag reset
-0B0C9C             0195   ;          ON MATCH: iy=dispatch address, a=0 and zero flag se
-0B0C9C             0196   ; destroys: a, hl, de, ix, iy, flags
-0B0C9C             0197   match_next:
-0B0C9C ED 32 03    0198       lea ix,ix+3         ; point to the next argument
-0B0C9F             0199   @loop:
-0B0C9F FD 27 00    0200       ld hl,(iy)          ; pointer argument dispatch record
-0B0CA2             0201       signHL              ; check for list terminator
-0B0CA2 19          0001M          add hl,de
-0B0CA3 B7          0002M          or a
-0B0CA4 ED 52       0003M          sbc hl,de
-0B0CA6 CA BE 0C 0B 0202       jp z,@no_match      ; if a=0, return error
-0B0CAA 23          0203       inc hl              ; skip over jp instruction
-0B0CAB 23          0204       inc hl
-0B0CAC DD 17 00    0205       ld de,(ix)          ; pointer to the argument string
-0B0CAF CD C4 0C 0B 0206       call str_equal      ; compare the argument to the dispatch table entry
-0B0CB3 CA C0 0C 0B 0207       jp z,@match         ; if equal, return success
-0B0CB7 ED 33 03    0208       lea iy,iy+3         ; if not equal, bump iy to next dispatch table entry
-0B0CBA C3 9F 0C 0B 0209       jp @loop            ; and loop
-0B0CBE             0210   @no_match:
-0B0CBE 3C          0211       inc a               ; no match so return a=1 and zero flag reset
-0B0CBF C9          0212       ret
-0B0CC0             0213   @match:
-0B0CC0 FD 37 00    0214       ld iy,(iy)          ; get the function pointer
-0B0CC3 C9          0215       ret                 ; return a=0 and zero flag set
-0B0CC4             0216   
-0B0CC4             0217   ; compare two zero-terminated strings for equality, case-sensitive
-0B0CC4             0218   ; hl: pointer to first string, de: pointer to second string
-0B0CC4             0219   ; returns: z if equal, nz if not equal
-0B0CC4             0220   ; destroys: a, hl, de
-0B0CC4             0221   str_equal:
-0B0CC4 1A          0222       ld a,(de)           ; get the first character
-0B0CC5 BE          0223       cp (hl)             ; compare to the second character
-0B0CC6 C0          0224       ret nz              ; if not equal, return
-0B0CC7 B7          0225       or a
-0B0CC8 C8          0226       ret z               ; if equal and zero, return
-0B0CC9 23          0227       inc hl              ; next character
-0B0CCA 13          0228       inc de
-0B0CCB C3 C4 0C 0B 0229       jp str_equal        ; loop until end of string
-0B0CCF             0230   
-0B0CCF             0231   ; print the parameter string pointed to by ix
-0B0CCF             0232   ; destroys: a, hl
-0B0CCF             0233   print_param:
-0B0CCF DD 27 00    0234       ld hl,(ix)          ; get the parameter pointer
-0B0CD2 CD 45 01 0B 0235       call printString    ; print the parameter string
-0B0CD6 3E 20       0236       ld a,' '            ; print a space separator
-0B0CD8 5B D7       0237       rst.lil $10
-0B0CDA C9          0238       ret
-0B0CDB             0239   
-0B0CDB             0240   ; print the parameters
-0B0CDB             0241   ; inputs: b = number of parameters, ix = pointer to the parameters
-0B0CDB             0242   ; destroys: a, hl, bc
-0B0CDB             0243   print_params:
-0B0CDB 41          0244       ld b,c              ; loop counter = number of parameters
-0B0CDC DD E5       0245       push ix             ; save the pointer to the parameters
-0B0CDE             0246   @loop:
-0B0CDE C5          0247       push bc             ; save the loop counter
-0B0CDF CD CF 0C 0B 0248       call print_param    ; print the parameter
-0B0CE3 ED 32 03    0249       lea ix,ix+3         ; next parameter pointer
-0B0CE6 C1          0250       pop bc              ; get back the loop counter
-0B0CE7 10 F5       0251       djnz @loop          ; loop until done
-0B0CE9 DD E1       0252       pop ix              ; restore the pointer to the parameters
-0B0CEB C9          0253       ret
-0B0CEC             0254   
-0B0CEC             0255   debug_print:
-0B0CEC CD 5A 01 0B 0256       call printNewLine   ; DEBUG
-0B0CF0 CD 58 04 0B 0257       call dumpFlags      ; DEBUG
-0B0CF4 CD CF 0C 0B 0258       call print_param    ; DEBUG
-0B0CF8 CD 5A 01 0B 0259       call printNewLine   ; DEBUG
-0B0CFC CD 5A 01 0B 0260       call printNewLine   ; DEBUG
-0B0D00 C9          0261       ret
+0B0C73             0171   @start:
+0B0C73 CD 05 0C 0B 0172       call get_move_type ; get the move type from arg2
+0B0C77 3C          0173       inc a ; TEMPORARY: sets draw effect to foreground color
+0B0C78 C6 98       0174       add a,plot_cf ; plots a filled circle
+0B0C7A F5          0175       push af ; save it
+0B0C7B CD B0 0C 0B 0176       call get_plot_coords ; get the move coordinates from arg3 and arg4
+0B0C7F F1          0177       pop af ; restore the move type
+0B0C80 CD 68 0A 0B 0178       call vdu_plot ; move the gfx curor to the specified coordinates
+0B0C84 C3 99 0B 0B 0179       jp _main_end_ok
+0B0C88             0180   
+0B0C88             0181   ; --------- draw a filled triangle centered on the current gfx cursor ---------
+0B0C88             0182   ; --------- whose outline will intersect the specified coordinates  ---------
+0B0C88             0183   trif:
+0B0C88 18 05       0184       jr @start
+0B0C8A 74 72 69 66 0185       asciz "trif"
+       00          
+0B0C8F             0186   @start:
+0B0C8F CD 05 0C 0B 0187       call get_move_type ; get the move type from arg2
+0B0C93 F5          0188       push af ; save it
+0B0C94 CD B0 0C 0B 0189       call get_plot_coords ; get the move coordinates from arg3 and arg4 for the first leg
+0B0C98 F1          0190       pop af ; restore the move type
+0B0C99 F5          0191       push af ; save it again
+0B0C9A CD 68 0A 0B 0192       call vdu_plot ; move the gfx curor to the specified coordinates
+0B0C9E F1          0193       pop af ; restore the move type
+0B0C9F 3C          0194       inc a ; TEMPORARY: sets draw effect to foreground color
+0B0CA0 C6 50       0195       add a,plot_tf ; plots a filled triangle
+0B0CA2 F5          0196       push af ; save it
+0B0CA3 CD B0 0C 0B 0197       call get_plot_coords ; get the move coordinates from arg3 and arg4
+0B0CA7 F1          0198       pop af ; restore the move type
+0B0CA8 CD 68 0A 0B 0199       call vdu_plot ; move the gfx curor to the specified coordinates
+0B0CAC C3 99 0B 0B 0200       jp _main_end_ok
+0B0CB0             0201   
+0B0CB0             0202   ; ========== HELPER FUNCTIONS ==========
+0B0CB0             0203   get_plot_coords:
+0B0CB0             0204   ; get the move coordinates
+0B0CB0 ED 32 03    0205       lea ix,ix+3 ; pointer to next argument address
+0B0CB3 DD 27 00    0206       ld hl,(ix)  ; pointer to the x coordinate string
+0B0CB6 CD E9 00 0B 0207       call ASC_TO_NUMBER ; de = x coordinate
+0B0CBA D5          0208       push de
+0B0CBB C1          0209       pop bc ; bc = x coordinate
+0B0CBC ED 32 03    0210       lea ix,ix+3 ; pointer to next argument address
+0B0CBF DD 27 00    0211       ld hl,(ix)  ; pointer to the y coordinate string
+0B0CC2 CD E9 00 0B 0212       call ASC_TO_NUMBER ; de = y coordinate
+0B0CC6 C9          0213       ret
+0B0CC7             0214   
+0B0CC7             0215   ; match the next argument after ix to the dispatch table at iy
+0B0CC7             0216   ;   - arguments and dispatch entries are zero-terminated, case-sensitive strings
+0B0CC7             0217   ;   - final entry of dispatch table must be a 3-byte zero or bad things will happen
+0B0CC7             0218   ; returns: NO MATCH: iy=dispatch list terminator a=1 and zero flag reset
+0B0CC7             0219   ;          ON MATCH: iy=dispatch address, a=0 and zero flag se
+0B0CC7             0220   ; destroys: a, hl, de, ix, iy, flags
+0B0CC7             0221   match_next:
+0B0CC7 ED 32 03    0222       lea ix,ix+3         ; point to the next argument
+0B0CCA             0223   @loop:
+0B0CCA FD 27 00    0224       ld hl,(iy)          ; pointer argument dispatch record
+0B0CCD             0225       signHL              ; check for list terminator
+0B0CCD 19          0001M          add hl,de
+0B0CCE B7          0002M          or a
+0B0CCF ED 52       0003M          sbc hl,de
+0B0CD1 CA E9 0C 0B 0226       jp z,@no_match      ; if a=0, return error
+0B0CD5 23          0227       inc hl              ; skip over jp instruction
+0B0CD6 23          0228       inc hl
+0B0CD7 DD 17 00    0229       ld de,(ix)          ; pointer to the argument string
+0B0CDA CD EF 0C 0B 0230       call str_equal      ; compare the argument to the dispatch table entry
+0B0CDE CA EB 0C 0B 0231       jp z,@match         ; if equal, return success
+0B0CE2 ED 33 03    0232       lea iy,iy+3         ; if not equal, bump iy to next dispatch table entry
+0B0CE5 C3 CA 0C 0B 0233       jp @loop            ; and loop
+0B0CE9             0234   @no_match:
+0B0CE9 3C          0235       inc a               ; no match so return a=1 and zero flag reset
+0B0CEA C9          0236       ret
+0B0CEB             0237   @match:
+0B0CEB FD 37 00    0238       ld iy,(iy)          ; get the function pointer
+0B0CEE C9          0239       ret                 ; return a=0 and zero flag set
+0B0CEF             0240   
+0B0CEF             0241   ; compare two zero-terminated strings for equality, case-sensitive
+0B0CEF             0242   ; hl: pointer to first string, de: pointer to second string
+0B0CEF             0243   ; returns: z if equal, nz if not equal
+0B0CEF             0244   ; destroys: a, hl, de
+0B0CEF             0245   str_equal:
+0B0CEF 1A          0246       ld a,(de)           ; get the first character
+0B0CF0 BE          0247       cp (hl)             ; compare to the second character
+0B0CF1 C0          0248       ret nz              ; if not equal, return
+0B0CF2 B7          0249       or a
+0B0CF3 C8          0250       ret z               ; if equal and zero, return
+0B0CF4 23          0251       inc hl              ; next character
+0B0CF5 13          0252       inc de
+0B0CF6 C3 EF 0C 0B 0253       jp str_equal        ; loop until end of string
+0B0CFA             0254   
+0B0CFA             0255   ; print the parameter string pointed to by ix
+0B0CFA             0256   ; destroys: a, hl
+0B0CFA             0257   print_param:
+0B0CFA DD 27 00    0258       ld hl,(ix)          ; get the parameter pointer
+0B0CFD CD 45 01 0B 0259       call printString    ; print the parameter string
+0B0D01 3E 20       0260       ld a,' '            ; print a space separator
+0B0D03 5B D7       0261       rst.lil $10
+0B0D05 C9          0262       ret
+0B0D06             0263   
+0B0D06             0264   ; print the parameters
+0B0D06             0265   ; inputs: b = number of parameters, ix = pointer to the parameters
+0B0D06             0266   ; destroys: a, hl, bc
+0B0D06             0267   print_params:
+0B0D06 41          0268       ld b,c              ; loop counter = number of parameters
+0B0D07 DD E5       0269       push ix             ; save the pointer to the parameters
+0B0D09             0270   @loop:
+0B0D09 C5          0271       push bc             ; save the loop counter
+0B0D0A CD FA 0C 0B 0272       call print_param    ; print the parameter
+0B0D0E ED 32 03    0273       lea ix,ix+3         ; next parameter pointer
+0B0D11 C1          0274       pop bc              ; get back the loop counter
+0B0D12 10 F5       0275       djnz @loop          ; loop until done
+0B0D14 DD E1       0276       pop ix              ; restore the pointer to the parameters
+0B0D16 C9          0277       ret
+0B0D17             0278   
+0B0D17             0279   debug_print:
+0B0D17 CD 5A 01 0B 0280       call printNewLine   ; DEBUG
+0B0D1B CD 58 04 0B 0281       call dumpFlags      ; DEBUG
+0B0D1F CD FA 0C 0B 0282       call print_param    ; DEBUG
+0B0D23 CD 5A 01 0B 0283       call printNewLine   ; DEBUG
+0B0D27 CD 5A 01 0B 0284       call printNewLine   ; DEBUG
+0B0D2B C9          0285       ret
