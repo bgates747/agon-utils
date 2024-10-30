@@ -76,23 +76,18 @@ main:
 ; --------- arg1 is the drawing operation to perform ---------
 arg1:
     dl move
+    dl line
     dl 0x000000 ; list terminator
 
+; --------- move the graphics cursor to the specified coordinates ---------
 move:
     jr @start
     asciz "move"
 @start:
-; get the move type from arg2
-    ld iy,move_type
-    call match_next
-    jp nz,_main_end_error
-    callIY ; a comes back with move type
+    call get_move_type ; get the move type from arg2
     push af ; save it
     call get_plot_coords ; get the move coordinates from arg3 and arg4
     pop af ; restore the move type
-    
-    call dumpRegistersHex ; DEBUG
-
     call vdu_plot ; move the gfx curor to the specified coordinates
     jp _main_end_ok
 
@@ -112,6 +107,26 @@ rel:
 @start:
     ld a,mv_rel
     ret
+
+get_move_type:
+    ld iy,move_type
+    call match_next
+    jp nz,_main_end_error
+    callIY ; a comes back with move type
+    ret
+
+; --------- draw a line from the current cursor position to the specified coordinates ---------
+line:
+    jr @start
+    asciz "line"
+@start:
+    call get_move_type ; get the move type from arg2
+    inc a ; TEMPORARY: sets draw effect to foreground color
+    push af ; save it
+    call get_plot_coords ; get the move coordinates from arg3 and arg4
+    pop af ; restore the move type
+    call vdu_plot ; move the gfx curor to the specified coordinates
+    jp _main_end_ok
 
 get_plot_coords:
 ; get the move coordinates
