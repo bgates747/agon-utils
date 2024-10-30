@@ -78,6 +78,8 @@ arg1:
     dl move
     dl line
     dl rect
+    dl ciro ; circle outline
+    dl cirf ; circle filled
     dl 0x000000 ; list terminator
 
 ; --------- move the graphics cursor to the specified coordinates ---------
@@ -143,6 +145,37 @@ rect:
     call vdu_plot ; move the gfx curor to the specified coordinates
     jp _main_end_ok
 
+; --------- draw a circle outine centered on the current gfx cursor ---------
+; --------- whose outline will intersect the specified coordinates  ---------
+ciro:
+    jr @start
+    asciz "ciro"
+@start:
+    call get_move_type ; get the move type from arg2
+    inc a ; TEMPORARY: sets draw effect to foreground color
+    add a,plot_co ; plots a circle outline
+    push af ; save it
+    call get_plot_coords ; get the move coordinates from arg3 and arg4
+    pop af ; restore the move type
+    call vdu_plot ; move the gfx curor to the specified coordinates
+    jp _main_end_ok
+
+; --------- draw a filled circle centered on the current gfx cursor ---------
+; --------- whose outline will intersect the specified coordinates  ---------
+cirf:
+    jr @start
+    asciz "cirf"
+@start:
+    call get_move_type ; get the move type from arg2
+    inc a ; TEMPORARY: sets draw effect to foreground color
+    add a,plot_cf ; plots a filled circle
+    push af ; save it
+    call get_plot_coords ; get the move coordinates from arg3 and arg4
+    pop af ; restore the move type
+    call vdu_plot ; move the gfx curor to the specified coordinates
+    jp _main_end_ok
+
+; ========== HELPER FUNCTIONS ==========
 get_plot_coords:
 ; get the move coordinates
     lea ix,ix+3 ; pointer to next argument address
