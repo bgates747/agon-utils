@@ -65,6 +65,18 @@ main:
     dec b               ; skip the program name and ..
     lea ix,ix+3         ; .. point to the real first argument
 ; --------- BEGIN CUSTOM MAIN LOOP ---------
+    ld iy,print_success ; pointer to a subroutine
+    callIY
+; --------- END CUSTOM MAIN LOOP ---------
+    JP _main_end         ; end of program
+; ========= END BOILERPLATE MAIN LOOP ========= 
+
+print_success:
+    ld hl,str_success
+    call printString
+    call printNewLine
+    ret
+
 ; read the numeric value in arg1, print it to decimal, and determine its sign
     ld hl,(ix)
     call ASC_TO_NUMBER
@@ -74,6 +86,3 @@ main:
     signHL
     call dumpFlags
     call printNewLine
-; --------- END CUSTOM MAIN LOOP ---------
-    JP _main_end         ; end of program
-; ========= END BOILERPLATE MAIN LOOP ========= 

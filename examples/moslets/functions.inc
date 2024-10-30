@@ -13,6 +13,36 @@
         sbc hl,de
     ENDMACRO
 
+; Simulated call to subroutine at HL
+; inputs: HL pointing to the subroutine address plus whatever the called function expects
+; outputs: whatever the subroutine does, including HL and BC
+; destroys: only what the subroutine does, but always BC
+    MACRO callHL
+        ld bc,$+7     ; Address of first instruction after the jump
+        push bc       ; which constitutes the return address
+        jp   (hl)     ; Jump to the address in HL
+    ENDMACRO
+
+; Simulated call to subroutine at IX
+; inputs: IX pointing to the subroutine address plus whatever the called function expects
+; outputs: whatever the subroutine does, including IX and BC
+; destroys: only what the subroutine does, but always BC
+    MACRO callIX
+        ld bc,$+7     ; Address of first instruction after the jump
+        push bc       ; which constitutes the return address
+        jp   (ix)     ; Jump to the address in IX
+    ENDMACRO
+
+; Simulated call to soubroutinte at IY
+; inputs: IY pointing to the subroutine address plus whatever the called function expects
+; outputs: whatever the subroutine does, including IY and BC
+; destroys: only what the subroutine does, but always BC
+    MACRO callIY
+        ld bc,$+7     ; Address of first instruction after the jump
+        push bc       ; which constitutes the return address
+        jp   (iy)     ; Jump to the address in IY
+    ENDMACRO
+
 ; https://github.com/envenomator/Agon/blob/master/ez80asm%20examples%20(annotated)/functions.s
 ; Print a zero-terminated string
 ; HL: Pointer to string

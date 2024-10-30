@@ -257,7 +257,7 @@ PC     Output      Line
 040000             0008       ORG 0x0B0000 ; Is a moslet
 0B0000             0009   
 0B0000             0010       MACRO PROGNAME
-0B0000             0011       ASCIZ "draw.bin"
+0B0000             0011       ASCIZ "test.bin"
 0B0000             0012       ENDMACRO
 0B0000             0013   
 0B0000             0014   ; STANDARD MOSLET INCLUDES
@@ -286,7 +286,7 @@ PC     Output      Line
 0B0004             0022*  
 0B0004             0023*  _exec_name:
 0B0004             0024*  			PROGNAME			; The executable name, only used in argv
-0B0004 64 72 61 77 0001*M     ASCIZ "draw.bin"
+0B0004 74 65 73 74 0001*M     ASCIZ "test.bin"
        2E 62 69 6E 
        00          
 0B000D             0025*  
@@ -326,7 +326,7 @@ PC     Output      Line
 0B0059 CD 70 00 0B 0046*  			CALL	_parse_params		; Parse the parameters
 0B005D DD E1       0047*  			POP	IX			; IX: argv
 0B005F 06 00       0048*  			LD	B, 0			;  C: argc
-0B0061 CD 7F 0B 0B 0049*  			CALL	_main			; Start user code
+0B0061 CD 9F 0B 0B 0049*  			CALL	_main			; Start user code
 0B0065             0050*  
 0B0065 F1          0051*  			POP 	AF
 0B0066 ED 6D       0052*  			LD	MB, A
@@ -2562,196 +2562,89 @@ PC     Output      Line
 0B0B55 C9          0259*      ret
 0B0B56             0025   
 0B0B56             0026   ; APPLICATION INCLUDES
-0B0B56 55 73 61 67 0027   str_usage: ASCIZ "Usage: draw <args>\r\n"
-       65 3A 20 64 
-       72 61 77 20 
+0B0B56             0027   
+0B0B56             0028   
+0B0B56             0029   ; This is a test program that may do nothing useful.
+0B0B56             0030   ; Parameters:
+0B0B56             0031   ;
+0B0B56             0032   
+0B0B56             0033   ; ========= BOILERPLATE MAIN LOOP =========
+0B0B56 55 73 61 67 0034   str_usage: ASCIZ "Usage: test <args>\r\n"
+       65 3A 20 74 
+       65 73 74 20 
        3C 61 72 67 
        73 3E 0D 0A 
        00          
-0B0B6B 45 72 72 6F 0028   str_error: ASCIZ "Error!\r\n"
-       72 21 0D 0A 
-       00          
-0B0B74 53 75 63 63 0029   str_success: ASCIZ "Success!\r\n"
-       65 73 73 21 
-       0D 0A 00    
-0B0B7F             0030   
-0B0B7F             0031   ; This is a toy program for basic graphics drawing from the the MOS CLI.
-0B0B7F             0032   ; Parameters:
-0B0B7F             0033   ;
-0B0B7F             0034   
-0B0B7F             0035   ; ========= BOILERPLATE MAIN LOOP =========
-0B0B7F             0036   ; The main routine
-0B0B7F             0037   ; IXU: argv - pointer to array of parameters
-0B0B7F             0038   ;   C: argc - number of parameters
-0B0B7F             0039   ; Returns:
-0B0B7F             0040   ;  HL: Error code, or 0 if OK
-0B0B7F             0041   
-0B0B7F             0042   min_args: equ 2
-0B0B7F             0043   
-0B0B7F             0044   _main:
-0B0B7F 79          0045       ld a,c              ; how many arguments?
-0B0B80 FE 02       0046       cp min_args         ; not enough?
-0B0B82 30 22       0047       jr nc,main          ; if enough, go to main loop
-0B0B84 21 56 0B 0B 0048       ld hl,str_usage     ; if not enough, print usage
-0B0B88 CD 45 01 0B 0049       call printString
-0B0B8C             0050                           ; fall through to _main_end_error
-0B0B8C             0051   
-0B0B8C             0052   _main_end_error:
-0B0B8C 21 6B 0B 0B 0053       ld hl,str_error     ; print error message
-0B0B90 CD 45 01 0B 0054       call printString
-0B0B94 21 13 00 00 0055       ld hl,19            ; return error code 19
-0B0B98 C9          0056       ret
-0B0B99             0057   
-0B0B99             0058   _main_end_ok:
-0B0B99 21 74 0B 0B 0059       ld hl,str_success   ; print success message
-0B0B9D CD 45 01 0B 0060       call printString
-0B0BA1 21 00 00 00 0061       ld hl,0             ; return 0 for success
-0B0BA5 C9          0062       ret
-0B0BA6             0063   
-0B0BA6             0064   ; ========= BEGIN CUSTOM MAIN LOOP =========
-0B0BA6             0065   main:
-0B0BA6 0D          0066       dec c               ; decrement the argument count to skip the program name
-0B0BA7             0067   
-0B0BA7             0068   ; get the first argument, which determines the drawing operation to perform
-0B0BA7 FD 21 BC 0B 0069       ld iy,arg1          ; pointer to first argument dispatch table
+0B0B6B 45 72 72 6F 0035   str_error: ASCIZ "Error: Args don't match\r\n"
+       72 3A 20 41 
+       72 67 73 20 
+       64 6F 6E 27 
+       74 20 6D 61 
+       74 63 68 0D 
+       0A 00       
+0B0B85 53 75 63 63 0036   str_success: ASCIZ "Success: Argument found\r\n"
+       65 73 73 3A 
+       20 41 72 67 
+       75 6D 65 6E 
+       74 20 66 6F 
+       75 6E 64 0D 
+       0A 00       
+0B0B9F             0037   
+0B0B9F             0038   ; The main routine
+0B0B9F             0039   ; IXU: argv - pointer to array of parameters
+0B0B9F             0040   ;   C: argc - number of parameters
+0B0B9F             0041   ; Returns:
+0B0B9F             0042   ;  HL: Error code, or 0 if OK
+0B0B9F             0043   ;
+0B0B9F             0044   min_args: equ 2
+0B0B9F             0045   
+0B0B9F             0046   _main:
+0B0B9F C5          0047       push bc             ; save the count
+0B0BA0 79          0048       ld a,c              ; how many arguments?
+0B0BA1 FE 02       0049       cp min_args         ; not enough?
+0B0BA3 30 13       0050       jr nc,main          ; if enough, go to main loop
+0B0BA5 21 56 0B 0B 0051       ld hl,str_usage     ; if not enough, print usage
+0B0BA9 CD 45 01 0B 0052       call printString
+0B0BAD C1          0053       pop bc              ; dummy pop to balance stack
+0B0BAE 21 13 00 00 0054       ld hl,19            ; return error code 19
+0B0BB2 C9          0055       ret
+0B0BB3             0056   
+0B0BB3             0057   _main_end:
+0B0BB3             0058   ; End with no error
+0B0BB3 21 00 00 00 0059       ld hl,0
+0B0BB7 C9          0060       ret
+0B0BB8             0061   
+0B0BB8             0062   main:
+0B0BB8 C1          0063       pop bc              ; restore the count
+0B0BB9 41          0064       ld b,C              ; b is the loop counter
+0B0BBA 05          0065       dec b               ; skip the program name and ..
+0B0BBB ED 32 03    0066       lea ix,ix+3         ; .. point to the real first argument
+0B0BBE             0067   ; --------- BEGIN CUSTOM MAIN LOOP ---------
+0B0BBE FD 21 CE 0B 0068       ld iy,print_success ; pointer to a subroutine
        0B          
-0B0BAC CD 21 0C 0B 0070       call match_next      ; look for a matching argument
-0B0BB0 C2 8C 0B 0B 0071       jp nz,_main_end_error; if no match, return error
-0B0BB4             0072       callIY              ; if match, call the function at IY
-0B0BB4 01 BB 0B 0B 0001M          ld bc,$+7     ; Address of first instruction after the jump
-0B0BB8 C5          0002M          push bc       ; which constitutes the return address
-0B0BB9 FD E9       0003M          jp   (iy)     ; Jump to the address in IY
-0B0BBB C9          0073       ret                 ; return to MOS with success or error code
-0B0BBC             0074   
-0B0BBC             0075   ; ========= BEGIN ARGUMENT-SPECIFIC FUNCTIONS =========
-0B0BBC             0076   ; --------- arg1 is the drawing operation to perform ---------
-0B0BBC             0077   arg1:
-0B0BBC C2 0B 0B    0078       dl move
-0B0BBF 00 00 00    0079       dl 0x000000 ; list terminator
-0B0BC2             0080   
-0B0BC2             0081   move:
-0B0BC2 18 05       0082       jr @start
-0B0BC4 6D 6F 76 65 0083       asciz "move"
-       00          
-0B0BC9             0084   @start:
-0B0BC9             0085   ; get the move type from arg2
-0B0BC9 FD 21 EF 0B 0086       ld iy,move_type
-       0B          
-0B0BCE CD 21 0C 0B 0087       call match_next
-0B0BD2 C2 8C 0B 0B 0088       jp nz,_main_end_error
-0B0BD6             0089       callIY ; a comes back with move type
-0B0BD6 01 DD 0B 0B 0001M          ld bc,$+7     ; Address of first instruction after the jump
-0B0BDA C5          0002M          push bc       ; which constitutes the return address
-0B0BDB FD E9       0003M          jp   (iy)     ; Jump to the address in IY
-0B0BDD F5          0090       push af ; save it
-0B0BDE CD 0A 0C 0B 0091       call get_plot_coords ; get the move coordinates from arg3 and arg4
-0B0BE2 F1          0092       pop af ; restore the move type
-0B0BE3             0093   
-0B0BE3 CD 25 03 0B 0094       call dumpRegistersHex ; DEBUG
-0B0BE7             0095   
-0B0BE7 CD 68 0A 0B 0096       call vdu_plot ; move the gfx curor to the specified coordinates
-0B0BEB C3 99 0B 0B 0097       jp _main_end_ok
-0B0BEF             0098   
-0B0BEF             0099   move_type:
-0B0BEF F8 0B 0B    0100       dl abs
-0B0BF2 01 0C 0B    0101       dl rel
-0B0BF5 00 00 00    0102       dl 0x000000 ; list terminator
-0B0BF8             0103   abs:
-0B0BF8 18 04       0104       jr @start
-0B0BFA 61 62 73 00 0105       asciz "abs"
-0B0BFE             0106   @start:
-0B0BFE 3E 04       0107       ld a,mv_abs
-0B0C00 C9          0108       ret
-0B0C01             0109   rel:
-0B0C01 18 04       0110       jr @start
-0B0C03 72 65 6C 00 0111       asciz "rel"
-0B0C07             0112   @start:
-0B0C07 3E 00       0113       ld a,mv_rel
-0B0C09 C9          0114       ret
-0B0C0A             0115   
-0B0C0A             0116   get_plot_coords:
-0B0C0A             0117   ; get the move coordinates
-0B0C0A ED 32 03    0118       lea ix,ix+3 ; pointer to next argument address
-0B0C0D DD 27 00    0119       ld hl,(ix)  ; pointer to the x coordinate string
-0B0C10 CD E9 00 0B 0120       call ASC_TO_NUMBER ; de = x coordinate
-0B0C14 D5          0121       push de
-0B0C15 C1          0122       pop bc ; bc = x coordinate
-0B0C16 ED 32 03    0123       lea ix,ix+3 ; pointer to next argument address
-0B0C19 DD 27 00    0124       ld hl,(ix)  ; pointer to the y coordinate string
-0B0C1C CD E9 00 0B 0125       call ASC_TO_NUMBER ; de = y coordinate
-0B0C20 C9          0126       ret
-0B0C21             0127   
-0B0C21             0128   ; match the next argument after ix to the dispatch table at iy
-0B0C21             0129   ;   - arguments and dispatch entries are zero-terminated, case-sensitive strings
-0B0C21             0130   ;   - final entry of dispatch table must be a 3-byte zero or bad things will happen
-0B0C21             0131   ; returns: NO MATCH: iy=dispatch list terminator a=1 and zero flag reset
-0B0C21             0132   ;          ON MATCH: iy=dispatch address, a=0 and zero flag se
-0B0C21             0133   ; destroys: a, hl, de, ix, iy, flags
-0B0C21             0134   match_next:
-0B0C21 ED 32 03    0135       lea ix,ix+3         ; point to the next argument
-0B0C24             0136   @loop:
-0B0C24 FD 27 00    0137       ld hl,(iy)          ; pointer argument dispatch record
-0B0C27             0138       signHL              ; check for list terminator
-0B0C27 19          0001M          add hl,de
-0B0C28 B7          0002M          or a
-0B0C29 ED 52       0003M          sbc hl,de
-0B0C2B CA 43 0C 0B 0139       jp z,@no_match      ; if a=0, return error
-0B0C2F 23          0140       inc hl              ; skip over jp instruction
-0B0C30 23          0141       inc hl
-0B0C31 DD 17 00    0142       ld de,(ix)          ; pointer to the argument string
-0B0C34 CD 49 0C 0B 0143       call str_equal      ; compare the argument to the dispatch table entry
-0B0C38 CA 45 0C 0B 0144       jp z,@match         ; if equal, return success
-0B0C3C ED 33 03    0145       lea iy,iy+3         ; if not equal, bump iy to next dispatch table entry
-0B0C3F C3 24 0C 0B 0146       jp @loop            ; and loop
-0B0C43             0147   @no_match:
-0B0C43 3C          0148       inc a               ; no match so return a=1 and zero flag reset
-0B0C44 C9          0149       ret
-0B0C45             0150   @match:
-0B0C45 FD 37 00    0151       ld iy,(iy)          ; get the function pointer
-0B0C48 C9          0152       ret                 ; return a=0 and zero flag set
-0B0C49             0153   
-0B0C49             0154   ; compare two zero-terminated strings for equality, case-sensitive
-0B0C49             0155   ; hl: pointer to first string, de: pointer to second string
-0B0C49             0156   ; returns: z if equal, nz if not equal
-0B0C49             0157   ; destroys: a, hl, de
-0B0C49             0158   str_equal:
-0B0C49 1A          0159       ld a,(de)           ; get the first character
-0B0C4A BE          0160       cp (hl)             ; compare to the second character
-0B0C4B C0          0161       ret nz              ; if not equal, return
-0B0C4C B7          0162       or a
-0B0C4D C8          0163       ret z               ; if equal and zero, return
-0B0C4E 23          0164       inc hl              ; next character
-0B0C4F 13          0165       inc de
-0B0C50 C3 49 0C 0B 0166       jp str_equal        ; loop until end of string
-0B0C54             0167   
-0B0C54             0168   ; print the parameter string pointed to by ix
-0B0C54             0169   ; destroys: a, hl
-0B0C54             0170   print_param:
-0B0C54 DD 27 00    0171       ld hl,(ix)          ; get the parameter pointer
-0B0C57 CD 45 01 0B 0172       call printString    ; print the parameter string
-0B0C5B 3E 20       0173       ld a,' '            ; print a space separator
-0B0C5D 5B D7       0174       rst.lil $10
-0B0C5F C9          0175       ret
-0B0C60             0176   
-0B0C60             0177   ; print the parameters
-0B0C60             0178   ; inputs: b = number of parameters, ix = pointer to the parameters
-0B0C60             0179   ; destroys: a, hl, bc
-0B0C60             0180   print_params:
-0B0C60 41          0181       ld b,c              ; loop counter = number of parameters
-0B0C61 DD E5       0182       push ix             ; save the pointer to the parameters
-0B0C63             0183   @loop:
-0B0C63 C5          0184       push bc             ; save the loop counter
-0B0C64 CD 54 0C 0B 0185       call print_param    ; print the parameter
-0B0C68 ED 32 03    0186       lea ix,ix+3         ; next parameter pointer
-0B0C6B C1          0187       pop bc              ; get back the loop counter
-0B0C6C 10 F5       0188       djnz @loop          ; loop until done
-0B0C6E DD E1       0189       pop ix              ; restore the pointer to the parameters
-0B0C70 C9          0190       ret
-0B0C71             0191   
-0B0C71             0192   debug_print:
-0B0C71 CD 5A 01 0B 0193       call printNewLine   ; DEBUG
-0B0C75 CD 58 04 0B 0194       call dumpFlags      ; DEBUG
-0B0C79 CD 54 0C 0B 0195       call print_param    ; DEBUG
-0B0C7D CD 5A 01 0B 0196       call printNewLine   ; DEBUG
-0B0C81 CD 5A 01 0B 0197       call printNewLine   ; DEBUG
-0B0C85 C9          0198       ret
+0B0BC3             0069       callIY
+0B0BC3 01 CA 0B 0B 0001M          ld bc,$+7     ; Address of first instruction after the jump
+0B0BC7 C5          0002M          push bc       ; which constitutes the return address
+0B0BC8 FD E9       0003M          jp   (iy)     ; Jump to the address in IY
+0B0BCA             0070   ; --------- END CUSTOM MAIN LOOP ---------
+0B0BCA C3 B3 0B 0B 0071       JP _main_end         ; end of program
+0B0BCE             0072   ; ========= END BOILERPLATE MAIN LOOP =========
+0B0BCE             0073   
+0B0BCE             0074   print_success:
+0B0BCE 21 85 0B 0B 0075       ld hl,str_success
+0B0BD2 CD 45 01 0B 0076       call printString
+0B0BD6 CD 5A 01 0B 0077       call printNewLine
+0B0BDA C9          0078       ret
+0B0BDB             0079   
+0B0BDB             0080   ; read the numeric value in arg1, print it to decimal, and determine its sign
+0B0BDB DD 27 00    0081       ld hl,(ix)
+0B0BDE CD E9 00 0B 0082       call ASC_TO_NUMBER
+0B0BE2 EB          0083       ex de,hl
+0B0BE3 CD 95 01 0B 0084       call printDec
+0B0BE7 CD 5A 01 0B 0085       call printNewLine
+0B0BEB             0086       signHL
+0B0BEB 19          0001M          add hl,de
+0B0BEC B7          0002M          or a
+0B0BED ED 52       0003M          sbc hl,de
+0B0BEF CD 58 04 0B 0087       call dumpFlags
+0B0BF3 CD 5A 01 0B 0088       call printNewLine
