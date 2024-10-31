@@ -178,7 +178,9 @@ signed_asc_to_168:
     ld (@sign),a ; store sign flag
     
     ld de, 0 ; initialise de
-    ld (@result), de ; clear result buffer
+    ld (@result), de ; clear low bytes of result buffer
+    ld (@scratch), de ; clear low bytes of scratch buffer
+
     call _skip_spaces ; skip whitespace
     
     ld a, (hl) ; read first character
@@ -246,46 +248,52 @@ signed_asc_to_168:
     ret
 
 @fractional_start:
-    ld (@result+1), de      ; Store integer part in result buffer (shifted up one byte)
-    ld b, 3                 ; Set loop counter to 3 for three fractional digits
-    ld ix, powers_of_10     ; Point IX to lookup table for powers of 10
-    inc hl                 ; Skip decimal point
+    ld (@result+1), de         ; Store integer part in result buffer (shifted up one byte)
+    ld b, 3                    ; Set loop counter to 3 for up to three fractional digits
+    ld de, 0                   ; Initialize DE as the fractional accumulator
+    ld ix, powers_of_10        ; Point IX to the lookup table for the scaling factor based on digits
+    inc hl                     ; Skip decimal point
 
 @fractional_loop:
-    ld a, (hl)              ; Load next character
-    sub '0'                 ; Normalize ASCII to decimal
-    jr c, @end_fraction     ; Exit if < '0'
+    ld a, (hl)                 ; Load next character
+    sub '0'                    ; Normalize ASCII to decimal
+    jr c, @end_fraction        ; Exit if < '0'
     cp 10
-    jr nc, @end_fraction    ; Exit if >= 10
+    jr nc, @end_fraction       ; Exit if >= 10
 
-    ; Load current digit into D for multiplication
-    ld d, a                 ; Set D to current digit
-
-    ; Load current power of 10 into E using IX as the pointer
-    ld e, (ix)              ; Load current power of 10 (scaled by 256) into E
-    mlt de                  ; Multiply DE by the current power of 10 in E
-
-    ; Add scaled digit to fractional accumulator in E
-    ld a, e                 ; Move E to A
-    add a, c                ; Add scaled digit
-    ld e, a                 ; Update E with the result
-
-    ; Advance to next power of 10 in lookup table
-    lea ix, ix+1            ; Move IX to the next table entry
-
-    ; Move to the next character in the string
-    inc hl
-    djnz @fractional_loop   ; Decrement B and loop if more digits remain
+    ; Multiply the current fractional accumulator by 10
+    push hl                    ; Save HL (used as pointer)
+    push af                    ; Save the digit
+    ld hl, 10                  ; Prepare to multiply by 10
+    call umul24                ; hl = de * 10
+    ld de, 0                   ; Clear DEU
+    pop af                     ; Restore the current digit
+    ld e, a                    ; Load the digit into E
+    add hl, de                 ; Add the digit to the accumulator
+    ex de, hl                  ; Result back to DE
+    lea ix,ix+3                ; Advance IX to the next scaling factor
+    pop hl                     ; Restore char pointer
+    inc hl                     ; Move to the next character
+    djnz @fractional_loop      ; Loop if more digits to process
 
 @end_fraction:
-    ld a,e ; Load fractional part into A
-    ld (@result),a ; Store fractional part in result buffer
-    jp @end ; do the final sign check and set flags for return
+; Final scaling based on number of fractional digits processed
+    ld (@scratch+1), de          ; Shift fractional part up a byte
+    ld hl,(@scratch)             ; Load the shifted fractional part into HL
 
-@result: ds 4 ; 32-bit result buffer so we can shift the integer part up one byte
-@sign: db 0 ; sign flag buffer
+    ld de, (ix)                ; Load final scaling factor from IX based on digit count
+    call udiv24                ; Perform 24-bit division to scale down
+    ld a, e                    ; Load the low byte (8-bit fractional part) into A
+    ld (@result), a            ; Store fractional part in result buffer
+    jp @end                    ; Final sign check and flag setup
+
+@result: ds 4                  ; 32-bit result buffer to shift integer part up one byte
+@scratch: ds 4                 ; 32-bit scratch buffer for intermediate calculations
+@sign: db 0                    ; Sign flag buffer
 
 powers_of_10:
-    db 25  ; 1/10 * 256 (rounded)
-    db 3   ; 1/100 * 256 (rounded)
-    db 1   ; 1/1000 * 256 (rounded)
+    dl 1                       ; 10^0
+    dl 10                      ; 10^1
+    dl 100                     ; 10^2
+    dl 1000                    ; 10^3
+    dl 10000                   ; 10^4

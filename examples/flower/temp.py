@@ -39,7 +39,10 @@ def parse_fixed_point(value_str):
         process_fractional_part(decimal_index)
 
     # Combine integer and fractional parts into a single fixed-point value
-    fixed_point_value = (integer_accum << 8) + (fractional_accum * (1 << 8) // scale_factor)
+    # fixed_point_value = (integer_accum << 8) + (fractional_accum * (1 << 8) // scale_factor)
+    fixed_point_value = integer_accum * 256 + fractional_accum * 256 // scale_factor
+    # fixed_point_value = (integer_accum * 256) + (fractional_accum * 256 / scale_factor)
+
 
     # Apply negative sign if necessary
     if is_negative:
@@ -48,6 +51,6 @@ def parse_fixed_point(value_str):
     return f"{fixed_point_value:06X}"
 
 # Example usage
-value_str = "-123.456"
+value_str = "1.5"
 result = parse_fixed_point(value_str)
 print(f"Fixed-point representation of {value_str}: {result}")
