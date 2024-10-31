@@ -1,0 +1,1443 @@
+PC     Output      Line
+040000             0001   ;------------------------------------------------------------------------
+040000             0002   ;
+040000             0003   ;  Agon light simple caclulator by Shawn Sijnstra
+040000             0004   ;  compiles natively using ez80asm
+040000             0005   ;  Copyright (c) 2024 Shawn Sijnstra, MIT license
+040000             0006   ;
+040000             0007   ;  Inspired by Kevin Boone's scalc for CP/M
+040000             0008   ;------------------------------------------------------------------------
+040000             0009   
+040000             0010   	ASSUME	ADL=1
+040000             0011   	ORG		0B0000h
+0B0000             0012   ;
+0B0000             0013   ; Start in mixed mode. Assumes MBASE is set to correct segment
+0B0000             0014   ;
+0B0000 C3 45 00 0B 0015   			JP		_start		; Jump to start
+0B0004 43 41 4C 43 0016   _exec_name:		db	"CALC24.BIN", 0		; The executable name, only used in argv
+       32 34 2E 42 
+       49 4E 00    
+0B000F             0017   ;
+0B000F             0018   ; The header stuff is from byte 64 onwards
+0B000F             0019   ;
+0B000F FF FF FF FF 0020   			ALIGN	64
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF          
+0B0040             0021   
+0B0040 4D 4F 53    0022   			db	"MOS"				; Flag for MOS - to confirm this is a valid MOS command
+0B0043 00          0023   			db	00h				; MOS header version 0
+0B0044 01          0024   			db	01h				; Flag for run mode (0: Z80, 1: ADL)
+0B0045             0025   
+0B0045             0026   
+0B0045             0027   
+0B0045             0028   ;
+0B0045             0029   ; And the code follows on immediately after the header
+0B0045             0030   ;
+0B0045             0031   _start:
+0B0045 F5          0032   			push	AF			; Preserve the registers
+0B0046 C5          0033   			push	BC
+0B0047 D5          0034   			push	DE
+0B0048 DD E5       0035   			push	IX
+0B004A FD E5       0036   			push	IY
+0B004C             0037   
+0B004C CD D6 09 0B 0038   			call		main			; Start user code
+0B0050 21 00 00 00 0039   			ld			HL,0		; successful exit
+0B0054             0040   
+0B0054 FD E1       0041   			pop	IY			; Restore registers
+0B0056 DD E1       0042   			pop	IX
+0B0058 D1          0043   			pop	DE
+0B0059 C1          0044   			pop	BC
+0B005A F1          0045   			pop	AF
+0B005B C9          0046   			ret
+0B005C             0047   
+0B005C             0048   	INCLUDE	"strings24.asm"
+0B005C             0001*  ;------------------------------------------------------------------------
+0B005C             0002*  ;  strings24.asm
+0B005C             0003*  ;
+0B005C             0004*  ; 24-bit native ez80 strings routines for numerical processing
+0B005C             0005*  ;  Copyright (c) Shawn Sijnstra 2024
+0B005C             0006*  ;  MIT license
+0B005C             0007*  ;------------------------------------------------------------------------
+0B005C             0008*  
+0B005C             0009*  ;------------------------------------------------------------------------
+0B005C             0010*  ;Full print and buffer routine so you can adjust behaviour
+0B005C             0011*  ; Double-Dabble AKA shift-and-add-3 algorithm
+0B005C             0012*  ; breakdown at https://en.wikipedia.org/wiki/Double_dabble
+0B005C             0013*  ;Print value in HLU in decimal with leading 0s removed
+0B005C             0014*  ; Uses HLU, DEU, BCU
+0B005C             0015*  ;------------------------------------------------------------------------
+0B005C             0016*  
+0B005C             0017*  print_HLU_u24:
+0B005C 22 39 01 0B 0018*  	ld	(hex_temp),hl
+0B0060 06 08       0019*  	ld	b,8	;8 digits max here with 24 bit unsigned
+0B0062 11 3C 01 0B 0020*  	ld	de,outbuf
+0B0066 D5          0021*  	push	de
+0B0067 21 07 00 00 0022*  	ld	hl,7
+0B006B 19          0023*  	add	hl,de
+0B006C E5          0024*  	push	hl
+0B006D D1          0025*  	pop	de	;copy HLU to DEU
+0B006E AF          0026*  	xor	a
+0B006F             0027*  _pde_u_zerobuf:
+0B006F 77          0028*  	ld	(hl),a	;zero out the output
+0B0070 2B          0029*  	dec	hl
+0B0071 10 FC       0030*  	djnz	_pde_u_zerobuf
+0B0073             0031*  
+0B0073 0E 18       0032*  	ld c,3 * 8	;4 * 8	; number of loops through NUM_SRC_BYTES * 8
+0B0075             0033*  _bcd_Convert:
+0B0075             0034*  
+0B0075 21 39 01 0B 0035*  	ld hl,hex_temp
+0B0079             0036*  ;
+0B0079 CB 26       0037*  	sla (hl)
+0B007B 23          0038*  	inc hl
+0B007C CB 16       0039*  	rl (hl)
+0B007E 23          0040*  	inc hl
+0B007F CB 16       0041*  	rl (hl)		;24 bits rolled right
+0B0081             0042*  
+0B0081             0043*  
+0B0081 06 08       0044*          ld	b,8	;8 digits max for 24 bit decimal output
+0B0083 D5          0045*  	push	de
+0B0084 E1          0046*  	pop	hl
+0B0085             0047*  
+0B0085             0048*  _bcd_Add3:
+0B0085 7E          0049*  	ld	a,(hl)
+0B0086 8F          0050*  	adc	a
+0B0087 27          0051*          daa		;this is add 3 after shifting left; i.e. add 6.
+0B0088 FE 10       0052*  	cp	10h	;did we roll over nibble?
+0B008A 3F          0053*  	ccf
+0B008B CB A7       0054*  	res	4,a
+0B008D             0055*  
+0B008D 77          0056*          ld (hl),a
+0B008E 2B          0057*  	dec	hl
+0B008F 10 F4       0058*          djnz	_bcd_Add3	;loop for decimal digits
+0B0091 0D          0059*          dec c
+0B0092 20 E1       0060*          jr nz, _bcd_Convert	;loop around
+0B0094             0061*  
+0B0094             0062*  
+0B0094 E1          0063*  	pop	hl
+0B0095 E5          0064*  	push	hl
+0B0096 06 07       0065*          ld	b,8-1		;one less than total in case output is '0'
+0B0098             0066*  _pde_u_make_ascii:
+0B0098 7E          0067*  	ld	a,(hl)
+0B0099 B7          0068*  	or	a
+0B009A 20 05       0069*  	jr	nz,_pde_u_make_ascii2
+0B009C 36 20       0070*  	ld	(hl),' '
+0B009E 23          0071*  	inc	hl
+0B009F 10 F7       0072*  	djnz	_pde_u_make_ascii
+0B00A1             0073*  _pde_u_make_ascii2:
+0B00A1 04          0074*  	inc	b
+0B00A2             0075*  _pde_u_make_ascii3:
+0B00A2 7E          0076*  	ld	a,(hl)
+0B00A3 F6 30       0077*  	or	30h
+0B00A5 77          0078*  	ld	(hl),a
+0B00A6 23          0079*  	inc	hl
+0B00A7 10 F9       0080*  	djnz	_pde_u_make_ascii3
+0B00A9             0081*  
+0B00A9 E1          0082*  	pop	hl
+0B00AA 06 08       0083*  	ld	b,8
+0B00AC             0084*  _pde_u_final_out:
+0B00AC 7E          0085*  	ld	a,(hl)
+0B00AD 23          0086*  	inc	hl
+0B00AE FE 20       0087*  	cp	' '
+0B00B0 28 02       0088*  	jr	z,_pde_u_final_out_strip
+0B00B2 5B D7       0089*  	rst.lil	10h
+0B00B4             0090*  _pde_u_final_out_strip:
+0B00B4 10 F6       0091*  	djnz	_pde_u_final_out
+0B00B6 C9          0092*  	ret
+0B00B7             0093*  
+0B00B7             0094*  ;------------------------------------------------------------------------
+0B00B7             0095*  ; is_digit
+0B00B7             0096*  ; C flag set if A is a digit
+0B00B7             0097*  ; preserves all registers
+0B00B7             0098*  ;------------------------------------------------------------------------
+0B00B7             0099*  is_digit:
+0B00B7 FE 30       0100*  	cp	'0'
+0B00B9 3F          0101*  	ccf
+0B00BA D0          0102*  	ret	nc	;less that '0'
+0B00BB FE 3A       0103*  	cp	'9' + 1
+0B00BD C9          0104*  	ret
+0B00BE             0105*  
+0B00BE             0106*  
+0B00BE             0107*  ;------------------------------------------------------------------------
+0B00BE             0108*  ; char2hex
+0B00BE             0109*  ; Input: ASCII nibble in A
+0B00BE             0110*  ; Returns: if valid nibble value in A; else 0FFh in A
+0B00BE             0111*  ;------------------------------------------------------------------------
+0B00BE             0112*  char2hex:
+0B00BE FE 30       0113*  	CP	'0'
+0B00C0 38 1D       0114*  	JR	C, char_not_hex
+0B00C2 FE 3A       0115*  	CP	'9' + 1
+0B00C4 30 03       0116*  	JR	NC, char_not_09
+0B00C6 D6 30       0117*  	sub	'0'
+0B00C8 C9          0118*  	ret
+0B00C9             0119*  
+0B00C9             0120*  char_not_09:
+0B00C9             0121*  	; char is not 0 to 9. Try upper case
+0B00C9 FE 41       0122*  	CP	'A'
+0B00CB 38 12       0123*  	JR	C, char_not_hex
+0B00CD FE 47       0124*  	CP	'F' + 1
+0B00CF 30 03       0125*  	JR	NC, char_not_AF
+0B00D1 D6 37       0126*  	sub	'A'-10
+0B00D3 C9          0127*  	ret
+0B00D4             0128*  
+0B00D4             0129*  char_not_AF:
+0B00D4             0130*  	; char is not upper case A-F. Try lower
+0B00D4 FE 61       0131*  	CP	'a'
+0B00D6 38 07       0132*  	JR	C, char_not_hex
+0B00D8 FE 67       0133*  	CP	'f' + 1
+0B00DA 30 03       0134*  	JR	NC, char_not_hex
+0B00DC D6 57       0135*  	sub	'a' - 10
+0B00DE C9          0136*  	RET
+0B00DF             0137*  
+0B00DF             0138*  char_not_hex:
+0B00DF 3E FF       0139*   	ld	a,0FFh	;return -1 for not a valid hex digit
+0B00E1 C9          0140*  	RET
+0B00E2             0141*  
+0B00E2             0142*  ;------------------------------------------------------------------------
+0B00E2             0143*  ;  newline
+0B00E2             0144*  ;  Output CR+LF; all registers preserved
+0B00E2             0145*  ;------------------------------------------------------------------------
+0B00E2             0146*  newline:
+0B00E2 F5          0147*         push   AF
+0B00E3 3E 0D       0148*         LD     A, 13
+0B00E5 5B D7       0149*         RST.LIL    10h
+0B00E7 3E 0A       0150*         LD     A, 10
+0B00E9 5B D7       0151*         RST.LIL    10h
+0B00EB F1          0152*         POP    AF
+0B00EC C9          0153*         RET
+0B00ED             0154*  
+0B00ED             0155*  ;------------------------------------------------------------------------
+0B00ED             0156*  ;  put_nibble
+0B00ED             0157*  ;  Output a single hex nibble in A
+0B00ED             0158*  ;  All registers preserved
+0B00ED             0159*  ;------------------------------------------------------------------------
+0B00ED             0160*  put_nibble:
+0B00ED F5          0161*  	push   AF
+0B00EE C6 90       0162*  	add    a,090h ;Neat trick to convert hex nibble in A to ASCII
+0B00F0 27          0163*  	daa
+0B00F1 CE 40       0164*  	adc    a,040h
+0B00F3 27          0165*  	daa
+0B00F4 5B D7       0166*  	RST.LIL    10h	;output character in A
+0B00F6 F1          0167*  	pop    AF
+0B00F7 C9          0168*  	ret
+0B00F8             0169*  
+0B00F8             0170*  ;------------------------------------------------------------------------
+0B00F8             0171*  ;  print_A
+0B00F8             0172*  ;  Output the 8-bit hex number A
+0B00F8             0173*  ;  All registers preserved
+0B00F8             0174*  ;------------------------------------------------------------------------
+0B00F8             0175*  print_A:
+0B00F8 F5          0176*  	push 	AF
+0B00F9 F5          0177*  	push 	AF	;save for second nibble
+0B00FA 0F          0178*  	rrca
+0B00FB 0F          0179*  	rrca
+0B00FC 0F          0180*  	rrca
+0B00FD 0F          0181*  	rrca
+0B00FE E6 0F       0182*  	and	0Fh	;first nibble
+0B0100 CD ED 00 0B 0183*  	call	put_nibble
+0B0104 F1          0184*  	pop 	AF
+0B0105 E6 0F       0185*  	and	0Fh	;second nibble
+0B0107 CD ED 00 0B 0186*  	call	put_nibble
+0B010B F1          0187*  	pop 	AF
+0B010C C9          0188*  	ret
+0B010D             0189*  
+0B010D             0190*  ;------------------------------------------------------------------------
+0B010D             0191*  ;  print_HLU_hex
+0B010D             0192*  ;  Output the 24-bit hex number HLU; other registers preserved
+0B010D             0193*  ;------------------------------------------------------------------------
+0B010D             0194*  print_HLU_hex:
+0B010D F5          0195*         push   AF
+0B010E 22 39 01 0B 0196*         ld     (hex_temp),hl
+0B0112 3A 3B 01 0B 0197*         ld     a,(hex_temp+2)
+0B0116 CD F8 00 0B 0198*         call   print_A
+0B011A 3A 3A 01 0B 0199*         ld     a,(hex_temp+1)
+0B011E CD F8 00 0B 0200*         call   print_A
+0B0122 3A 39 01 0B 0201*         ld     a,(hex_temp)
+0B0126 CD F8 00 0B 0202*         call   print_A
+0B012A F1          0203*         POP    AF
+0B012B C9          0204*         RET
+0B012C             0205*  
+0B012C             0206*  ;------------------------------------------------------------------------
+0B012C             0207*  ;  puts
+0B012C             0208*  ;  Output a zero-terminated string whose address is in HL; all
+0B012C             0209*  ;  registers preserved.
+0B012C             0210*  ;------------------------------------------------------------------------
+0B012C             0211*  puts:
+0B012C F5          0212*         push   AF
+0B012D C5          0213*         push   BC
+0B012E 01 00 00 00 0214*         ld     BC, 0                ; Set to 0, so length ignored...
+0B0132 3E 00       0215*         ld     A, 0                 ; Use character in A as delimiter
+0B0134 5B DF       0216*         RST.LIL    18h                  ; This calls a RST in the eZ80 address space
+0B0136 C1          0217*         pop    BC
+0B0137 F1          0218*         pop    AF
+0B0138 C9          0219*         ret
+0B0139             0220*  
+0B0139             0221*  ;------------------------------------------------------------------------
+0B0139             0222*  ; Data area
+0B0139             0223*  ; Storage for 24 bit conversion
+0B0139             0224*  ;------------------------------------------------------------------------
+0B0139             0225*  hex_temp:
+0B0139 00 00 00    0226*         dw24     0      ;3 bytes for HL used for both hex and decimal temp
+0B013C             0227*  
+0B013C             0228*  outbuf:
+0B013C 31 36 37 37 0229*  	db	"16777215 "	;largest number with an extra space
+       37 32 31 35 
+       20          
+0B0145             0049   	INCLUDE	"arith24.asm"
+0B0145             0001*  ;------------------------------------------------------------------------
+0B0145             0002*  ;  arith24.asm
+0B0145             0003*  ;  24-bit ez80 arithmetic routines
+0B0145             0004*  ;  Copyright (c) Shawn Sijnstra 2024
+0B0145             0005*  ;  MIT license
+0B0145             0006*  ;
+0B0145             0007*  ;  This library was created as a tool to help make ez80
+0B0145             0008*  ;  24-bit native assembly routines for simple mathematical problems
+0B0145             0009*  ;  more widely available.
+0B0145             0010*  ;
+0B0145             0011*  ;------------------------------------------------------------------------
+0B0145             0012*  
+0B0145             0013*  ;------------------------------------------------------------------------
+0B0145             0014*  ; umul24:	HL = HL*DE (unsigned)
+0B0145             0015*  ; Preserves AF, BC, DE
+0B0145             0016*  ; Uses a fast multiply routine.
+0B0145             0017*  ;------------------------------------------------------------------------
+0B0145             0018*  umul24:
+0B0145 D5          0019*  	push	DE
+0B0146 C5          0020*  	push	BC
+0B0147 F5          0021*  	push	AF
+0B0148 E5          0022*  	push	HL
+0B0149 C1          0023*  	pop		BC
+0B014A 3E 18       0024*      ld	 	a, 24 ; No. of bits to process
+0B014C 21 00 00 00 0025*      ld	 	hl, 0 ; Result
+0B0150             0026*  umul24_lp:
+0B0150 29          0027*  	add	hl,hl
+0B0151 EB          0028*  	ex	de,hl
+0B0152 29          0029*  	add	hl,hl
+0B0153 EB          0030*  	ex	de,hl
+0B0154 30 01       0031*  	jr	nc,umul24_nc
+0B0156 09          0032*  	add	hl,bc
+0B0157             0033*  umul24_nc:
+0B0157 3D          0034*  	dec	a
+0B0158 20 F6       0035*  	jr	nz,umul24_lp
+0B015A F1          0036*  	pop	af
+0B015B C1          0037*  	pop	bc
+0B015C D1          0038*  	pop	de
+0B015D C9          0039*  	ret
+0B015E             0040*  
+0B015E             0041*  
+0B015E             0042*  ;------------------------------------------------------------------------
+0B015E             0043*  ; udiv24
+0B015E             0044*  ; Unsigned 24-bit division
+0B015E             0045*  ; Divides HLU by DEU. Gives result in DEU (and BC), remainder in HLU.
+0B015E             0046*  ;
+0B015E             0047*  ; Uses AF BC DE HL
+0B015E             0048*  ; Uses Restoring Division algorithm
+0B015E             0049*  ;------------------------------------------------------------------------
+0B015E             0050*  
+0B015E             0051*  udiv24:
+0B015E E5          0052*  	push	hl
+0B015F C1          0053*  	pop		bc	;move dividend to BCU
+0B0160 21 00 00 00 0054*  	ld		hl,0	;result
+0B0164 A7          0055*  	and		a
+0B0165 ED 52       0056*  	sbc		hl,de	;test for div by 0
+0B0167 C8          0057*  	ret		z		;it's zero, carry flag is clear
+0B0168 19          0058*  	add		hl,de	;HL is 0 again
+0B0169 3E 18       0059*  	ld		a,24	;number of loops through.
+0B016B             0060*  udiv1:
+0B016B C5          0061*  	push	bc	;complicated way of doing this because of lack of access to top bits
+0B016C E3          0062*  	ex		(sp),hl
+0B016D 37          0063*  	scf
+0B016E ED 6A       0064*  	adc	hl,hl
+0B0170 E3          0065*  	ex	(sp),hl
+0B0171 C1          0066*  	pop	bc		;we now have bc = (bc * 2) + 1
+0B0172             0067*  
+0B0172 ED 6A       0068*  	adc	hl,hl
+0B0174 A7          0069*  	and	a		;is this the bug
+0B0175 ED 52       0070*  	sbc	hl,de
+0B0177 30 02       0071*  	jr	nc,udiv2
+0B0179 19          0072*  	add	hl,de
+0B017A             0073*  ;	dec	c
+0B017A 0B          0074*  	dec	bc
+0B017B             0075*  udiv2:
+0B017B 3D          0076*  	dec	a
+0B017C 20 ED       0077*  	jr	nz,udiv1
+0B017E 37          0078*  	scf		;flag used for div0 error
+0B017F C5          0079*  	push	bc
+0B0180 D1          0080*  	pop		de	;remainder
+0B0181 C9          0081*  	ret
+0B0182             0082*  
+0B0182             0083*  
+0B0182             0084*  
+0B0182             0085*  ;------------------------------------------------------------------------
+0B0182             0086*  ; neg24
+0B0182             0087*  ; Returns: HLU = 0-HLU
+0B0182             0088*  ; preserves all other registers
+0B0182             0089*  ;------------------------------------------------------------------------
+0B0182             0090*  neg24:
+0B0182 D5          0091*  	push	de
+0B0183 EB          0092*  	ex		de,hl
+0B0184 21 00 00 00 0093*  	ld		hl,0
+0B0188 B7          0094*  	or		a
+0B0189 ED 52       0095*  	sbc		hl,de
+0B018B D1          0096*  	pop		de
+0B018C C9          0097*  	ret
+0B018D             0098*  
+0B018D             0099*  ;------------------------------------------------------------------------
+0B018D             0100*  ; or_hlu_deu: 24 bit bitwise OR
+0B018D             0101*  ; Returns: hlu = hlu OR deu
+0B018D             0102*  ; preserves all other registers
+0B018D             0103*  ;------------------------------------------------------------------------
+0B018D             0104*  or_hlu_deu:
+0B018D 22 18 02 0B 0105*  	ld	(bitbuf1),hl
+0B0191 ED 53 1B 02 0106*  	ld	(bitbuf2),de
+       0B          
+0B0196 D5          0107*  	push	de	;preserve DEU
+0B0197 C5          0108*  	push	bc	;preserve BCU
+0B0198 06 03       0109*  	ld		b,3
+0B019A 21 18 02 0B 0110*  	ld	hl,bitbuf1
+0B019E 11 18 02 0B 0111*  	ld	de,bitbuf1
+0B01A2             0112*  orloop_24:
+0B01A2 1A          0113*  	ld	a,(de)
+0B01A3 B6          0114*  	or	(hl)
+0B01A4 12          0115*  	ld	(de),a
+0B01A5 13          0116*  	inc	de
+0B01A6 23          0117*  	inc	hl
+0B01A7 10 F9       0118*  	djnz	orloop_24
+0B01A9 2A 1B 02 0B 0119*  	ld	hl,(bitbuf2)
+0B01AD C1          0120*  	pop		bc	;restore BC
+0B01AE D1          0121*  	pop		de	;restore DE
+0B01AF             0122*  
+0B01AF             0123*  ;------------------------------------------------------------------------
+0B01AF             0124*  ; and_hlu_deu: 24 bit bitwise AND
+0B01AF             0125*  ; Returns: hlu = hlu AND deu
+0B01AF             0126*  ; preserves all other registers
+0B01AF             0127*  ;------------------------------------------------------------------------
+0B01AF             0128*  and_hlu_deu:
+0B01AF 22 18 02 0B 0129*  	ld	(bitbuf1),hl
+0B01B3 ED 53 1B 02 0130*  	ld	(bitbuf2),de
+       0B          
+0B01B8 D5          0131*  	push	de	;preserve DEU
+0B01B9 C5          0132*  	push	bc	;preserve BCU
+0B01BA 06 03       0133*  	ld		b,3
+0B01BC 21 18 02 0B 0134*  	ld	hl,bitbuf1
+0B01C0 11 18 02 0B 0135*  	ld	de,bitbuf1
+0B01C4             0136*  andloop_24:
+0B01C4 1A          0137*  	ld	a,(de)
+0B01C5 A6          0138*  	and	(hl)
+0B01C6 12          0139*  	ld	(de),a
+0B01C7 13          0140*  	inc	de
+0B01C8 23          0141*  	inc	hl
+0B01C9 10 F9       0142*  	djnz	andloop_24
+0B01CB 2A 1B 02 0B 0143*  	ld	hl,(bitbuf2)
+0B01CF C1          0144*  	pop		bc	;restore BC
+0B01D0 D1          0145*  	pop		de	;restore DE
+0B01D1             0146*  
+0B01D1             0147*  ;------------------------------------------------------------------------
+0B01D1             0148*  ; xor_hlu_deu: 24 bit bitwise XOR
+0B01D1             0149*  ; Returns: hlu = hlu XOR deu
+0B01D1             0150*  ; preserves all other registers
+0B01D1             0151*  ;------------------------------------------------------------------------
+0B01D1             0152*  xor_hlu_deu:
+0B01D1 22 18 02 0B 0153*  	ld	(bitbuf1),hl
+0B01D5 ED 53 1B 02 0154*  	ld	(bitbuf2),de
+       0B          
+0B01DA D5          0155*  	push	de	;preserve DEU
+0B01DB C5          0156*  	push	bc	;preserve BCU
+0B01DC 06 03       0157*  	ld		b,3
+0B01DE 21 18 02 0B 0158*  	ld	hl,bitbuf1
+0B01E2 11 18 02 0B 0159*  	ld	de,bitbuf1
+0B01E6             0160*  xorloop_24:
+0B01E6 1A          0161*  	ld	a,(de)
+0B01E7 AE          0162*  	xor	(hl)
+0B01E8 12          0163*  	ld	(de),a
+0B01E9 13          0164*  	inc	de
+0B01EA 23          0165*  	inc	hl
+0B01EB 10 F9       0166*  	djnz	xorloop_24
+0B01ED 2A 1B 02 0B 0167*  	ld	hl,(bitbuf2)
+0B01F1 C1          0168*  	pop		bc	;restore BC
+0B01F2 D1          0169*  	pop		de	;restore DE
+0B01F3             0170*  
+0B01F3             0171*  ;------------------------------------------------------------------------
+0B01F3             0172*  ; shl_hlu: 24 bit shift left hlu by deu positions
+0B01F3             0173*  ; Returns: hlu = hlu << deu
+0B01F3             0174*  ;		   de = 0
+0B01F3             0175*  ; NOTE: only considers deu up to 16 bits.
+0B01F3             0176*  ; preserves all other registers
+0B01F3             0177*  ;------------------------------------------------------------------------
+0B01F3             0178*  shl_hlu:
+0B01F3 7A          0179*  	ld		a,d		;up to 16 bit.
+0B01F4 B3          0180*  	or		e
+0B01F5 C8          0181*  	ret		z		;we're done
+0B01F6 29          0182*  	add		hl,hl	;shift HLU left
+0B01F7 1B          0183*  	dec		de
+0B01F8 18 F9       0184*  	jr		shl_hlu
+0B01FA             0185*  
+0B01FA             0186*  ;------------------------------------------------------------------------
+0B01FA             0187*  ; shr_hlu: 24 bit shift right hlu by deu positions
+0B01FA             0188*  ; Returns: hlu = hlu >> deu
+0B01FA             0189*  ;		   de = 0
+0B01FA             0190*  ; NOTE: only considers deu up to 16 bits.
+0B01FA             0191*  ; preserves all other registers
+0B01FA             0192*  ;------------------------------------------------------------------------
+0B01FA             0193*  shr_hlu:
+0B01FA 22 18 02 0B 0194*  	ld		(bitbuf1),hl
+0B01FE 21 1A 02 0B 0195*  	ld		hl,bitbuf1+2
+0B0202             0196*  shr_loop:
+0B0202 7A          0197*  	ld		a,d		;up to 16 bit.
+0B0203 B3          0198*  	or		e
+0B0204 28 0D       0199*  	jr		z,shr_done		;we're done
+0B0206             0200*  ;carry is clear from or instruction
+0B0206 CB 1E       0201*  	rr		(hl)
+0B0208 2B          0202*  	dec		hl
+0B0209 CB 1E       0203*  	rr		(hl)
+0B020B 2B          0204*  	dec		hl
+0B020C CB 1E       0205*  	rr		(hl)
+0B020E 23          0206*  	inc		hl
+0B020F 23          0207*  	inc		hl
+0B0210 1B          0208*  	dec		de
+0B0211 18 EF       0209*  	jr		shr_loop
+0B0213             0210*  shr_done:
+0B0213 2A 18 02 0B 0211*  	ld		hl,(bitbuf1)	;collect result
+0B0217 C9          0212*  	ret
+0B0218             0213*  
+0B0218             0214*  ;------------------------------------------------------------------------
+0B0218             0215*  ; Scratch area for calculations
+0B0218             0216*  ;------------------------------------------------------------------------
+0B0218 00 00 00    0217*  bitbuf1:	dw24	0	;bit manipulation buffer 1
+0B021B 00 00 00    0218*  bitbuf2:	dw24	0	;bit manipulation buffer 2
+0B021E             0050   
+0B021E             0051   
+0B021E             0052   ; General storage - should be neater and all collected
+0B021E             0053   
+0B021E             0054   
+0B021E             0055   ; Token type codes return by next_token()
+0B021E             0056   TOK_EOF: EQU    0
+0B021E             0057   TOK_NUM: EQU	1
+0B021E             0058   
+0B021E             0059   
+0B021E             0060   ;------------------------------------------------------------------------
+0B021E             0061   ;  Data area
+0B021E             0062   ;------------------------------------------------------------------------
+0B021E             0063   
+0B021E             0064   ; curpos and lastpos track the expression parsing. After
+0B021E             0065   ;   a successful token parse, lastpos is advanced to curpos.
+0B021E             0066   ;   If the parse fails part way, curpos can be rolled back.
+0B021E             0067   ;   this allows parse_term and parse_expr to roll back if needed.
+0B021E             0068   ; 24 bits are used for ease of coding when storing/retrieving.
+0B021E 00 00 00    0069   curpos:	dw24	0
+0B0221             0070   
+0B0221 00 00 00    0071   lastpos: dw24	0
+0B0224             0072   
+0B0224             0073   syntax_error_string:
+0B0224 11 09 53 79 0074   		db	17,9,"Syntax error",17,15,13,10,0
+       6E 74 61 78 
+       20 65 72 72 
+       6F 72 11 0F 
+       0D 0A 00    
+0B0237             0075   
+0B0237             0076   divide_by_0_string:
+0B0237 11 09 44 69 0077   		db	17,9,"Divide by zero",17,15,13,10,0
+       76 69 64 65 
+       20 62 79 20 
+       7A 65 72 6F 
+       11 0F 0D 0A 
+       00          
+0B024C             0078   
+0B024C             0079   prompt_string:
+0B024C 11 09 63 61 0080   		db	17,9,"calc24",17,15,"> ",0
+       6C 63 32 34 
+       11 0F 3E 20 
+       00          
+0B0259             0081   
+0B0259             0082   banner_string:
+0B0259 0D 0A 11 09 0083   		db	13,10,17,9,"calc24",17,15," v0.5 for Agon Light by Shawn Sijnstra (c)2024 - MIT licnese",13,10
+       63 61 6C 63 
+       32 34 11 0F 
+       20 76 30 2E 
+       35 20 66 6F 
+       72 20 41 67 
+       6F 6E 20 4C 
+       69 67 68 74 
+       20 62 79 20 
+       53 68 61 77 
+       6E 20 53 69 
+       6A 6E 73 74 
+       72 61 20 28 
+       63 29 32 30 
+       32 34 20 2D 
+       20 4D 49 54 
+       20 6C 69 63 
+       6E 65 73 65 
+       0D 0A       
+0B02A3 32 34 2D 62 0084   		db		"24-bit Agon super simple calculator. Interactive mode. Use '?' for help",13,10,0
+       69 74 20 41 
+       67 6F 6E 20 
+       73 75 70 65 
+       72 20 73 69 
+       6D 70 6C 65 
+       20 63 61 6C 
+       63 75 6C 61 
+       74 6F 72 2E 
+       20 49 6E 74 
+       65 72 61 63 
+       74 69 76 65 
+       20 6D 6F 64 
+       65 2E 20 55 
+       73 65 20 27 
+       3F 27 20 66 
+       6F 72 20 68 
+       65 6C 70 0D 
+       0A 00       
+0B02ED             0085   
+0B02ED             0086   help_text:
+0B02ED 0D 0A 11 09 0087   		db	13,10,17,9,"calc24",17,15," is a simple and algebraically correct calculator.",13,10,13,10
+       63 61 6C 63 
+       32 34 11 0F 
+       20 69 73 20 
+       61 20 73 69 
+       6D 70 6C 65 
+       20 61 6E 64 
+       20 61 6C 67 
+       65 62 72 61 
+       69 63 61 6C 
+       6C 79 20 63 
+       6F 72 72 65 
+       63 74 20 63 
+       61 6C 63 75 
+       6C 61 74 6F 
+       72 2E 0D 0A 
+       0D 0A       
+0B032F 45 6E 74 65 0088   		db		"Enter your calculation to be evaluated interactively. e.g. calc24> 7 * (2+3)",13,10
+       72 20 79 6F 
+       75 72 20 63 
+       61 6C 63 75 
+       6C 61 74 69 
+       6F 6E 20 74 
+       6F 20 62 65 
+       20 65 76 61 
+       6C 75 61 74 
+       65 64 20 69 
+       6E 74 65 72 
+       61 63 74 69 
+       76 65 6C 79 
+       2E 20 65 2E 
+       67 2E 20 63 
+       61 6C 63 32 
+       34 3E 20 37 
+       20 2A 20 28 
+       32 2B 33 29 
+       0D 0A       
+0B037D 54 68 65 20 0089   		db		"The calculations are done as 24-bit int (unsigned) ignoring overflow errors.",13,10
+       63 61 6C 63 
+       75 6C 61 74 
+       69 6F 6E 73 
+       20 61 72 65 
+       20 64 6F 6E 
+       65 20 61 73 
+       20 32 34 2D 
+       62 69 74 20 
+       69 6E 74 20 
+       28 75 6E 73 
+       69 67 6E 65 
+       64 29 20 69 
+       67 6E 6F 72 
+       69 6E 67 20 
+       6F 76 65 72 
+       66 6C 6F 77 
+       20 65 72 72 
+       6F 72 73 2E 
+       0D 0A       
+0B03CB 11 09 4F 70 0090   		db		17,9,"Operators:",17,15,13,10
+       65 72 61 74 
+       6F 72 73 3A 
+       11 0F 0D 0A 
+0B03DB 28 29 2C 20 0091   		db		"(), *, /, +, - have their usual meanings and are in order of precedence.",13,10
+       2A 2C 20 2F 
+       2C 20 2B 2C 
+       20 2D 20 68 
+       61 76 65 20 
+       74 68 65 69 
+       72 20 75 73 
+       75 61 6C 20 
+       6D 65 61 6E 
+       69 6E 67 73 
+       20 61 6E 64 
+       20 61 72 65 
+       20 69 6E 20 
+       6F 72 64 65 
+       72 20 6F 66 
+       20 70 72 65 
+       63 65 64 65 
+       6E 63 65 2E 
+       0D 0A       
+0B0425 25 09 6D 6F 0092   		db		"%	modulus (remainder after division; same precedence as /).",13,10
+       64 75 6C 75 
+       73 20 28 72 
+       65 6D 61 69 
+       6E 64 65 72 
+       20 61 66 74 
+       65 72 20 64 
+       69 76 69 73 
+       69 6F 6E 3B 
+       20 73 61 6D 
+       65 20 70 72 
+       65 63 65 64 
+       65 6E 63 65 
+       20 61 73 20 
+       2F 29 2E 0D 
+       0A          
+0B0462 7C 09 62 69 0093   		db		"|	bitwise OR",13,10
+       74 77 69 73 
+       65 20 4F 52 
+       0D 0A       
+0B0470 26 09 62 69 0094   		db		"&	bitwise AND",13,10
+       74 77 69 73 
+       65 20 41 4E 
+       44 0D 0A    
+0B047F 5E 09 62 69 0095   		db		"^	bitwise exclusive OR",13,10
+       74 77 69 73 
+       65 20 65 78 
+       63 6C 75 73 
+       69 76 65 20 
+       4F 52 0D 0A 
+0B0497 3C 3C 20 62 0096   		db		"<< bitwise shift left (up to 65535 places)",13,10
+       69 74 77 69 
+       73 65 20 73 
+       68 69 66 74 
+       20 6C 65 66 
+       74 20 28 75 
+       70 20 74 6F 
+       20 36 35 35 
+       33 35 20 70 
+       6C 61 63 65 
+       73 29 0D 0A 
+0B04C3 3E 3E 20 62 0097   		db		">> bitwise shift right (up to 65535 places)",13,10
+       69 74 77 69 
+       73 65 20 73 
+       68 69 66 74 
+       20 72 69 67 
+       68 74 20 28 
+       75 70 20 74 
+       6F 20 36 35 
+       35 33 35 20 
+       70 6C 61 63 
+       65 73 29 0D 
+       0A          
+0B04F0 11 09 4E 75 0098   		db		17,9,"Numbers:",17,15,13,10
+       6D 62 65 72 
+       73 3A 11 0F 
+       0D 0A       
+0B04FE 4E 75 6D 62 0099   		db		"Numbers are decimal unless prepended with '$' or '0x' for hex.",13,10
+       65 72 73 20 
+       61 72 65 20 
+       64 65 63 69 
+       6D 61 6C 20 
+       75 6E 6C 65 
+       73 73 20 70 
+       72 65 70 65 
+       6E 64 65 64 
+       20 77 69 74 
+       68 20 27 24 
+       27 20 6F 72 
+       20 27 30 78 
+       27 20 66 6F 
+       72 20 68 65 
+       78 2E 0D 0A 
+0B053E 65 2E 67 2E 0100   		db		"e.g. '256' is the same as '$100'.",13,10
+       20 27 32 35 
+       36 27 20 69 
+       73 20 74 68 
+       65 20 73 61 
+       6D 65 20 61 
+       73 20 27 24 
+       31 30 30 27 
+       2E 0D 0A    
+0B0561 40 20 72 65 0101   		db		"@ represents the previous result (interactive mode only)",13,10
+       70 72 65 73 
+       65 6E 74 73 
+       20 74 68 65 
+       20 70 72 65 
+       76 69 6F 75 
+       73 20 72 65 
+       73 75 6C 74 
+       20 28 69 6E 
+       74 65 72 61 
+       63 74 69 76 
+       65 20 6D 6F 
+       64 65 20 6F 
+       6E 6C 79 29 
+       0D 0A       
+0B059B 55 73 65 20 0102   		db		"Use a blank line to exit.",13,10,13,10,0
+       61 20 62 6C 
+       61 6E 6B 20 
+       6C 69 6E 65 
+       20 74 6F 20 
+       65 78 69 74 
+       2E 0D 0A 0D 
+       0A 00       
+0B05B9             0103   
+0B05B9             0104   ; error_done_flag is set to zero if parse_expr() has already produced an error
+0B05B9             0105   ;   message, so the caller should not.
+0B05B9 00          0106   error_done_flag: db 0
+0B05BA             0107   
+0B05BA 00 00 00    0108   cur_total:	dw24 	0	;this is the accumulator for current total
+0B05BD             0109   
+0B05BD 00 00 00    0110   lastval: 	dw24 	0	;this is for '@' i.e. previous result
+0B05C0             0111   
+0B05C0             0112   expr_buffer:		ds		127	;expression buffer
+0B063F 00          0113   			db		0	;terminator in case of exactly 127 character input
+0B0640             0114   
+0B0640             0115   ;------------------------------------------------------------------------
+0B0640             0116   ;  nextchar
+0B0640             0117   ;  Read the next character in the input expression into A and increments
+0B0640             0118   ;   (curpos).
+0B0640             0119   ;  Preserves all other registers.
+0B0640             0120   ;------------------------------------------------------------------------
+0B0640             0121   nextchar:
+0B0640 C5          0122   	push	BC
+0B0641 E5          0123   	push	HL
+0B0642 01 C0 05 0B 0124   	ld	BC,expr_buffer
+0B0646 2A 1E 02 0B 0125   	ld	HL, (curpos)
+0B064A 23          0126   	inc	hl
+0B064B 22 1E 02 0B 0127   	ld	(curpos),hl
+0B064F 2B          0128   	dec	hl
+0B0650 09          0129   	add	HL, BC
+0B0651 7E          0130   	ld	A, (HL)
+0B0652 E1          0131   	pop	HL
+0B0653 C1          0132   	pop	BC
+0B0654 C9          0133   	ret
+0B0655             0134   
+0B0655             0135   ;------------------------------------------------------------------------
+0B0655             0136   ;  moveback
+0B0655             0137   ;  Move the current parse position (curpos) back one.
+0B0655             0138   ;  Preserves all registers.
+0B0655             0139   ;------------------------------------------------------------------------
+0B0655             0140   moveback:
+0B0655 E5          0141   	push	HL
+0B0656 2A 1E 02 0B 0142   	ld	HL, (curpos)
+0B065A 2B          0143   	DEC	HL
+0B065B 22 1E 02 0B 0144   	ld	(curpos), HL
+0B065F E1          0145   	pop	HL
+0B0660 C9          0146   	ret
+0B0661             0147   
+0B0661             0148   ;------------------------------------------------------------------------
+0B0661             0149   ;  next_token
+0B0661             0150   ;  Gets the next token from the expression. The return value in A
+0B0661             0151   ;  is TOK_EOF if we are at the end of input, TOK_NUM if the token is a
+0B0661             0152   ;  number, and the actual token if anything else. If the token is a
+0B0661             0153   ;  number, it's value is returned in HL.
+0B0661             0154   ;------------------------------------------------------------------------
+0B0661             0155   next_token:
+0B0661 D5          0156   	push	DE
+0B0662             0157   	; Reset the ASCII-to-binary conversion accumulator
+0B0662 21 00 00 00 0158   	ld	HL, 0
+0B0666 22 BA 05 0B 0159   	ld 	(cur_total), HL
+0B066A CD 40 06 0B 0160   	call	nextchar
+0B066E             0161   next_token_next:
+0B066E             0162   ; A has next char
+0B066E B7          0163   	or	A
+0B066F 20 0A       0164   	jr	NZ, next_token_not_null
+0B0671 CD 55 06 0B 0165   	call	moveback	;stay on the terminator for the next fetch - don't overrun
+0B0675 3E 00       0166   	ld	A, TOK_EOF
+0B0677 C3 14 07 0B 0167   	JP	next_token_done		; End of input - we are done
+0B067B             0168   
+0B067B             0169   next_token_not_null:
+0B067B CD B7 00 0B 0170   	call	is_digit
+0B067F 30 3E       0171   	jr	nc, next_token_not_digit
+0B0681 FE 30       0172   	cp	'0'	;was it a zero as the first digit?
+0B0683 20 0E       0173   	jr	nz,next_token_dec_lp	;no, so proceed
+0B0685 CD 40 06 0B 0174   	call	nextchar
+0B0689 FE 78       0175   	cp	'x'	;lower case x means the lead-in was '0x' so it's hex
+0B068B 28 36       0176   	jr z,next_token_longhex
+0B068D CD 55 06 0B 0177   	call moveback	;move the pointer back and
+0B0691 3E 30       0178       ld	a,'0'	;we know we read ascii '0' to get here so we don't need to re-read
+0B0693             0179   	; If we get here, the character is a digit
+0B0693             0180   	; Loop around, converting decimal digits to binary
+0B0693             0181   next_token_dec_lp:
+0B0693 2A BA 05 0B 0182   	ld	HL, (cur_total)
+0B0697             0183   ;Fast purpose-built times 10 routine. Burns BC
+0B0697 29          0184   	add 	hl,hl	;HLU*2
+0B0698 E5          0185   	push	hl		;save it
+0B0699 29          0186   	add 	hl,hl	;HLU*4
+0B069A 29          0187   	add		hl,hl	;HLU*8
+0B069B C1          0188   	pop		bc		;HLU*2
+0B069C 09          0189   	add		hl,bc	;HLU*10
+0B069D             0190   
+0B069D D6 30       0191   	sub	'0'
+0B069F 01 00 00 00 0192   	ld	bc, 0		;make sure BCU = 0
+0B06A3 4F          0193   	ld	C, A
+0B06A4 09          0194   	add	HL, BC
+0B06A5 22 BA 05 0B 0195   	ld	(cur_total), HL
+0B06A9 CD 40 06 0B 0196    	call	nextchar
+0B06AD CD B7 00 0B 0197   	call	is_digit
+0B06B1 38 E0       0198   	jr	c, next_token_dec_lp
+0B06B3 CD 55 06 0B 0199   	call	moveback
+0B06B7 2A BA 05 0B 0200   	ld	HL, (cur_total)
+0B06BB 3E 01       0201   	ld	A, TOK_NUM
+0B06BD 18 55       0202   	jr	next_token_done;
+0B06BF             0203   
+0B06BF             0204   next_token_not_digit:
+0B06BF             0205   	; If we get here, the character is not a number or EOF
+0B06BF FE 24       0206   	cp	'$'		;check for hex lead-in
+0B06C1 20 39       0207   	jr	NZ, next_token_not_hex
+0B06C3             0208   
+0B06C3             0209   ; either '$' or '0x' lead-in will arrive here to process as hex
+0B06C3             0210   ;
+0B06C3             0211   next_token_longhex:
+0B06C3 CD 40 06 0B 0212   	call	nextchar
+0B06C7 CD BE 00 0B 0213   	call	char2hex	;try converting from ASCII to hex nibble
+0B06CB 3C          0214   	inc		a
+0B06CC 20 04       0215   	jr		nz, next_token_hex_lp
+0B06CE 3E 78       0216   	ld		a, 'x'			;return invalid character for error
+0B06D0 18 42       0217   	jr      next_token_done
+0B06D2             0218   
+0B06D2             0219   	; Loop to read hex digits into (cur_total)
+0B06D2             0220   next_token_hex_lp:
+0B06D2 2A BA 05 0B 0221   	ld		HL, (cur_total)
+0B06D6 29          0222   	add		HL,HL	;shift 1 nibble
+0B06D7 29          0223   	add		HL,HL
+0B06D8 29          0224   	add		HL,HL
+0B06D9 29          0225   	add		HL,HL
+0B06DA 3D          0226   	dec		a		;A is already char2hex value + 1
+0B06DB 01 00 00 00 0227   	ld		BC,0		;So we know that BCU is 0
+0B06DF 4F          0228   	ld		C, A
+0B06E0 09          0229   	add		HL, BC
+0B06E1 22 BA 05 0B 0230   	ld		(cur_total), HL		;store the new result
+0B06E5 CD 40 06 0B 0231    	call	nextchar
+0B06E9 CD BE 00 0B 0232   	call	char2hex
+0B06ED 3C          0233   	inc		a
+0B06EE 20 E2       0234   	jr		nz, next_token_hex_lp	;it's another hex value returned so keep processing
+0B06F0 CD 55 06 0B 0235   	call	moveback		;move back so we can process again
+0B06F4 2A BA 05 0B 0236   	ld	HL, (cur_total)		;retrieve the generated number
+0B06F8 3E 01       0237   	ld	A, TOK_NUM			;confirm we have a number at this point
+0B06FA 18 18       0238   	jr	next_token_done
+0B06FC             0239   
+0B06FC             0240   	; Character is not EOF or any kind of number that we understand
+0B06FC             0241   next_token_not_hex:
+0B06FC FE 20       0242   	cp	' '
+0B06FE 20 08       0243   	jr	NZ, next_token_not_spc
+0B0700             0244   
+0B0700 CD 40 06 0B 0245   	call	nextchar	; Swallow the space and loop
+0B0704 C3 6E 06 0B 0246   	JP	next_token_next
+0B0708             0247   
+0B0708             0248   next_token_not_spc:
+0B0708 FE 40       0249   	cp	'@'
+0B070A 20 08       0250   	jr	NZ, next_token_not_at
+0B070C             0251   
+0B070C 2A BD 05 0B 0252   	ld	HL, (lastval)
+0B0710 3E 01       0253   	ld	A, TOK_NUM
+0B0712 18 00       0254   	jr	next_token_done
+0B0714             0255   
+0B0714             0256   next_token_not_at:
+0B0714             0257   	; The token should now be in A
+0B0714             0258   next_token_done:
+0B0714 D1          0259   	pop	DE
+0B0715 C9          0260   	ret
+0B0716             0261   
+0B0716             0262   ;------------------------------------------------------------------------
+0B0716             0263   ;  save_pos
+0B0716             0264   ;  Save the value of (curpos) in case a parse fails, and we need to
+0B0716             0265   ;    wind it back.
+0B0716             0266   ;------------------------------------------------------------------------
+0B0716             0267   save_pos:
+0B0716 E5          0268   	push	HL
+0B0717 2A 1E 02 0B 0269   	ld	HL, (curpos)
+0B071B 22 21 02 0B 0270   	ld	(lastpos), HL
+0B071F E1          0271   	pop	HL
+0B0720 C9          0272   	ret
+0B0721             0273   
+0B0721             0274   ;------------------------------------------------------------------------
+0B0721             0275   ;  restpos
+0B0721             0276   ;  Wind back (curpos) to (lastpos); used when a parse operation consumes
+0B0721             0277   ;    a token that it cannot parse
+0B0721             0278   ;------------------------------------------------------------------------
+0B0721             0279   restpos:
+0B0721 E5          0280   	push	HL
+0B0722 2A 21 02 0B 0281   	ld	HL, (lastpos)
+0B0726 22 1E 02 0B 0282   	ld	(curpos), HL
+0B072A E1          0283   	pop	HL
+0B072B C9          0284   	ret
+0B072C             0285   
+0B072C             0286   ;------------------------------------------------------------------------
+0B072C             0287   ; syntax_error
+0B072C             0288   ; Output:	displays the syntax error message string
+0B072C             0289   ; 			displays the contents of the expr_buffer
+0B072C             0290   ; 			points to the current position being evaluated
+0B072C             0291   ; All registers preserved.
+0B072C             0292   ;------------------------------------------------------------------------
+0B072C             0293   syntax_error:
+0B072C F5          0294   	push	AF
+0B072D E5          0295   	push	HL
+0B072E 21 24 02 0B 0296   	ld		HL, syntax_error_string	;has built-in newline
+0B0732 CD 2C 01 0B 0297   	call	puts
+0B0736 21 C0 05 0B 0298   	ld		HL, expr_buffer
+0B073A CD 2C 01 0B 0299   	call	puts
+0B073E CD E2 00 0B 0300   	call	newline
+0B0742 2A 1E 02 0B 0301   	ld		HL, (curpos)
+0B0746             0302   
+0B0746             0303   syntax_error_spc:
+0B0746 7D          0304   	ld		a,l
+0B0747 B4          0305   	or		h
+0B0748 28 07       0306   	jr		z, syntax_error_here
+0B074A 2B          0307   	dec		HL
+0B074B 3E 20       0308   	ld		a,' '
+0B074D 5B D7       0309   	rst.LIL	10h	;print a space
+0B074F 18 F5       0310   	jr		syntax_error_spc
+0B0751             0311   
+0B0751             0312   syntax_error_here:
+0B0751 3E 5E       0313   	ld		a, '^'		;show location
+0B0753 5B D7       0314   	rst.LIL	10h
+0B0755 CD E2 00 0B 0315   	call	newline
+0B0759 E1          0316   	pop		HL
+0B075A F1          0317   	pop		AF
+0B075B C9          0318   	ret
+0B075C             0319   
+0B075C             0320   ;------------------------------------------------------------------------
+0B075C             0321   ; divide_by_0 error
+0B075C             0322   ; Print the divide-by-zero error message string
+0B075C             0323   ; flag that error was returned
+0B075C             0324   ; preserves all registers
+0B075C             0325   ;------------------------------------------------------------------------
+0B075C             0326   divide_by_0:
+0B075C E5          0327   	push	HL
+0B075D F5          0328   	push	AF
+0B075E 21 37 02 0B 0329   	ld	HL, divide_by_0_string
+0B0762 3E 01       0330   	ld	A, 1
+0B0764 32 B9 05 0B 0331   	ld	(error_done_flag), A
+0B0768 CD 2C 01 0B 0332   	call	puts
+0B076C F1          0333   	pop	AF
+0B076D E1          0334   	pop	HL
+0B076E C9          0335   	ret
+0B076F             0336   
+0B076F             0337   ;------------------------------------------------------------------------
+0B076F             0338   ;  parse_num
+0B076F             0339   ;  Returns:
+0B076F             0340   ;  A: 1 if number parsed, 0 otherwise
+0B076F             0341   ;  HLU: number result
+0B076F             0342   ;------------------------------------------------------------------------
+0B076F             0343   parse_num:
+0B076F CD 61 06 0B 0344   	call	next_token
+0B0773 FE 01       0345   	cp	TOK_NUM
+0B0775 28 02       0346   	jr	Z, parse_num_ret1
+0B0777 AF          0347   	xor	a
+0B0778 C9          0348   	ret
+0B0779             0349   parse_num_ret1:
+0B0779 3E 01       0350   	ld	A, 1
+0B077B C9          0351   	ret
+0B077C             0352   
+0B077C             0353   ;------------------------------------------------------------------------
+0B077C             0354   ;  parse_expr
+0B077C             0355   ;  Returns:
+0B077C             0356   ;  A: 1 if expression parsed, 0 otherwise
+0B077C             0357   ;  HLU: expression result
+0B077C             0358   ;------------------------------------------------------------------------
+0B077C             0359   parse_expr:
+0B077C D5          0360   	push	DE
+0B077D CD 16 07 0B 0361   	call	save_pos
+0B0781 CD 92 08 0B 0362   	call	parse_term
+0B0785 B7          0363   	or	A
+0B0786 CA 69 08 0B 0364   	JP	Z, parse_expr_none
+0B078A             0365   ; Move current result if any from HL to DE
+0B078A             0366   parse_expr_lp:
+0B078A E5          0367   	push	hl
+0B078B D1          0368   	pop		de	;24 bit transfer
+0B078C CD 16 07 0B 0369   	call	save_pos
+0B0790 CD 61 06 0B 0370   	call	next_token
+0B0794             0371   
+0B0794 E5          0372   	push	hl
+0B0795 21 72 08 0B 0373   	ld	hl,parse_exp_sym
+0B0799 0E 00       0374   	ld	c,0
+0B079B 06 08       0375   	ld	b,parse_exp_table - parse_exp_sym
+0B079D             0376   parse_exp_loop:
+0B079D BE          0377   	cp	(hl)		;could use CPIR but then need to calculate c manually
+0B079E 28 09       0378   	jr	z,parse_exp_jump
+0B07A0 0C          0379   	inc	c
+0B07A1 23          0380   	inc	hl
+0B07A2 10 F9       0381   	djnz	parse_exp_loop
+0B07A4 E1          0382   	pop		hl
+0B07A5 C3 61 08 0B 0383   	jp	parse_nomatch
+0B07A9             0384   parse_exp_jump:
+0B07A9 79          0385   	ld	a,c
+0B07AA 87          0386   	add	a,a	;*2
+0B07AB 81          0387   	add	a,c	;*3
+0B07AC 01 00 00 00 0388   	ld	bc,0
+0B07B0 4F          0389   	ld	c,a
+0B07B1 21 7A 08 0B 0390   	ld	hl,parse_exp_table
+0B07B5 09          0391   	add	hl,bc
+0B07B6 ED 27       0392   	ld	hl,(hl)
+0B07B8 E3          0393   	ex	(sp),hl	;restore HL and push the address on the stack
+0B07B9 C9          0394   	ret			;jump to the location calculated above
+0B07BA             0395   
+0B07BA             0396   do_plus:
+0B07BA CD 92 08 0B 0397   	call	parse_term
+0B07BE B7          0398   	or	A
+0B07BF CA 6F 08 0B 0399   	jp	Z, parse_expr_syntax_err
+0B07C3 19          0400   	add	HL, DE
+0B07C4 CD 16 07 0B 0401   	call	save_pos
+0B07C8 18 C0       0402   	jr	parse_expr_lp
+0B07CA             0403   
+0B07CA             0404   do_minus:
+0B07CA CD 92 08 0B 0405   	call	parse_term
+0B07CE B7          0406   	or	A
+0B07CF CA 6F 08 0B 0407   	jp	Z, parse_expr_syntax_err
+0B07D3 EB          0408   	EX	DE,HL
+0B07D4 ED 52       0409   	SBC	HL, DE
+0B07D6 CD 16 07 0B 0410   	call	save_pos
+0B07DA 18 AE       0411   	jr	parse_expr_lp
+0B07DC             0412   
+0B07DC             0413   do_tok_eof:
+0B07DC 3E 01       0414   	ld	A, 1
+0B07DE C3 6F 08 0B 0415   	jp	parse_expr_done
+0B07E2             0416   
+0B07E2             0417   do_or:
+0B07E2 CD 92 08 0B 0418   	call	parse_term
+0B07E6 B7          0419   	or	A
+0B07E7 CA 6F 08 0B 0420   	jp	Z, parse_expr_syntax_err
+0B07EB CD 8D 01 0B 0421   	call	or_hlu_deu	;perform OR
+0B07EF CD 16 07 0B 0422   	call	save_pos
+0B07F3 C3 8A 07 0B 0423   	jp	parse_expr_lp
+0B07F7             0424   
+0B07F7             0425   do_and:
+0B07F7 CD 92 08 0B 0426   	call	parse_term
+0B07FB B7          0427   	or	A
+0B07FC CA 6F 08 0B 0428   	jp	z, parse_expr_syntax_err
+0B0800 CD AF 01 0B 0429   	call	and_hlu_deu	;perform AND
+0B0804 CD 16 07 0B 0430   	call	save_pos
+0B0808 C3 8A 07 0B 0431   	jp	parse_expr_lp
+0B080C             0432   
+0B080C             0433   do_xor:
+0B080C CD 92 08 0B 0434   	call	parse_term
+0B0810 B7          0435   	or	A
+0B0811 CA 6F 08 0B 0436   	jp	z, parse_expr_syntax_err
+0B0815 CD D1 01 0B 0437   	call	xor_hlu_deu	;perform XOR
+0B0819 CD 16 07 0B 0438   	call	save_pos
+0B081D C3 8A 07 0B 0439   	jp		parse_expr_lp
+0B0821             0440   
+0B0821             0441   do_shl:
+0B0821 CD 40 06 0B 0442   	call	nextchar
+0B0825 FE 3C       0443   	cp		'<'			;check for second '<'
+0B0827 C2 6F 08 0B 0444   	jp		nz,parse_expr_syntax_err
+0B082B CD 92 08 0B 0445   	call	parse_term
+0B082F B7          0446   	or		a
+0B0830 CA 6F 08 0B 0447   	jp		z, parse_expr_syntax_err
+0B0834 EB          0448   	ex		de,hl	;de now has RHS
+0B0835 CD F3 01 0B 0449   	call	shl_hlu	;hlu << deu
+0B0839 CD 16 07 0B 0450   	call	save_pos
+0B083D C3 8A 07 0B 0451   	jp		parse_expr_lp
+0B0841             0452   
+0B0841             0453   do_shr:
+0B0841 CD 40 06 0B 0454   	call	nextchar
+0B0845 FE 3E       0455   	cp		'>'			;check for second '>'
+0B0847 C2 6F 08 0B 0456   	jp		nz,parse_expr_syntax_err
+0B084B CD 92 08 0B 0457   	call	parse_term
+0B084F B7          0458   	or		a
+0B0850 CA 6F 08 0B 0459   	jp		z, parse_expr_syntax_err
+0B0854 EB          0460   	ex		de,hl	;de now has RHS
+0B0855 CD FA 01 0B 0461   	call	shr_hlu	;hlu >> deu
+0B0859 CD 16 07 0B 0462   	call	save_pos
+0B085D C3 8A 07 0B 0463   	jp		parse_expr_lp
+0B0861             0464   
+0B0861             0465   parse_nomatch:
+0B0861 CD 21 07 0B 0466   	call	restpos
+0B0865 3E 01       0467   	ld	A, 1
+0B0867 18 06       0468   	jr	parse_expr_done
+0B0869             0469   
+0B0869             0470   parse_expr_none:	;no expression to parse
+0B0869 CD 21 07 0B 0471   	call	restpos
+0B086D 3E 00       0472   	ld	A, 0
+0B086F             0473   parse_expr_syntax_err:	;syntax error encountered
+0B086F             0474   parse_expr_done:	;expression parsing complete
+0B086F EB          0475   	EX	de,hl
+0B0870 D1          0476   	pop	DE
+0B0871 C9          0477   	ret
+0B0872             0478   
+0B0872             0479   parse_exp_sym:
+0B0872 2B 2D 00 7C 0480   	db		"+-",TOK_EOF,"|&^<>"
+       26 5E 3C 3E 
+0B087A             0481   parse_exp_table:
+0B087A BA 07 0B CA 0482   	dw24	do_plus,do_minus,do_tok_eof,do_or,do_and,do_xor,do_shl,do_shr
+       07 0B DC 07 
+       0B E2 07 0B 
+       F7 07 0B 0C 
+       08 0B 21 08 
+       0B 41 08 0B 
+0B0892             0483   
+0B0892             0484   ;------------------------------------------------------------------------
+0B0892             0485   ;  parse_term
+0B0892             0486   ;  Returns:
+0B0892             0487   ;  A: 1 if term parsed, 0 otherwise
+0B0892             0488   ;  HLU: term result
+0B0892             0489   ;------------------------------------------------------------------------
+0B0892             0490   parse_term:
+0B0892 D5          0491   	push	DE
+0B0893 CD 16 07 0B 0492   	call	save_pos
+0B0897 CD 0D 09 0B 0493   	call	parse_factor
+0B089B B7          0494   	or		a
+0B089C 28 60       0495   	jr		Z, parse_term_none
+0B089E             0496   ; There is a term
+0B089E             0497   ; Move any current result from HL to DE
+0B089E             0498   parse_term_lp:
+0B089E E5          0499   	push	hl
+0B089F D1          0500   	pop		de
+0B08A0 CD 16 07 0B 0501   	call	save_pos
+0B08A4 CD 61 06 0B 0502   	call	next_token
+0B08A8 FE 2A       0503   	cp	'*'
+0B08AA 20 11       0504   	jr	NZ, parse_term_not_mult
+0B08AC             0505   
+0B08AC CD 0D 09 0B 0506   	call	parse_factor
+0B08B0 B7          0507   	or	A
+0B08B1 28 51       0508   	jr	Z, parse_term_synerr
+0B08B3 CD 45 01 0B 0509   	call	umul24
+0B08B7 CD 16 07 0B 0510   	call	save_pos
+0B08BB 18 E1       0511   	jr	parse_term_lp
+0B08BD             0512   
+0B08BD             0513   parse_term_not_mult:
+0B08BD FE 2F       0514   	cp	'/'
+0B08BF 20 15       0515   	jr	NZ, parse_term_not_div
+0B08C1             0516   
+0B08C1 CD 0D 09 0B 0517   	call	parse_factor
+0B08C5 B7          0518   	or	A
+0B08C6 28 3C       0519   	jr	Z, parse_term_synerr
+0B08C8 EB          0520   	EX	DE,HL
+0B08C9 CD 5E 01 0B 0521   	call	udiv24
+0B08CD 30 38       0522   	jr	nc, parse_term_div0	;carry clear on divide by 0
+0B08CF             0523   	;Result is in HLU, remainder in DEU WRONG
+0B08CF EB          0524   	ex	de,hl	;remainder now in HLU WRONG
+0B08D0 CD 16 07 0B 0525   	call	save_pos
+0B08D4 18 C8       0526   	jr	parse_term_lp
+0B08D6             0527   
+0B08D6             0528   parse_term_not_div:
+0B08D6 FE 25       0529   	cp	'%'
+0B08D8 20 14       0530   	jr	NZ, parse_term_not_mod
+0B08DA             0531   
+0B08DA CD 0D 09 0B 0532   	call	parse_factor
+0B08DE B7          0533   	or	A
+0B08DF 28 23       0534   	jr	Z, parse_term_synerr
+0B08E1 EB          0535   	EX	DE,HL
+0B08E2 CD 5E 01 0B 0536   	call	udiv24
+0B08E6 30 1F       0537   	jr	nc, parse_term_div0	;carry clear on divide by 0
+0B08E8             0538   	;Result is in HLU, remainder in DEU WRONG
+0B08E8             0539   
+0B08E8 CD 16 07 0B 0540   	call	save_pos
+0B08EC 18 B0       0541   	jr	parse_term_lp
+0B08EE             0542   
+0B08EE             0543   parse_term_not_mod:
+0B08EE FE 00       0544   	cp	TOK_EOF
+0B08F0 20 04       0545   	jr	NZ, parse_term_not_eof
+0B08F2 3E 01       0546   	ld	A, 1
+0B08F4 18 0E       0547   	jr	parse_term_done
+0B08F6             0548   
+0B08F6             0549   parse_term_not_eof:
+0B08F6 CD 21 07 0B 0550   	call	restpos
+0B08FA 3E 01       0551   	ld	A, 1
+0B08FC 18 06       0552   	jr	parse_term_done
+0B08FE             0553   
+0B08FE             0554   parse_term_none:
+0B08FE CD 21 07 0B 0555   	call	restpos
+0B0902 3E 00       0556   	ld	A, 0
+0B0904             0557   parse_term_synerr:
+0B0904             0558   parse_term_done:
+0B0904 EB          0559   	EX	DE,HL
+0B0905 D1          0560   	pop	DE
+0B0906 C9          0561   	ret
+0B0907             0562   
+0B0907             0563   parse_term_div0:
+0B0907 CD 5C 07 0B 0564   	call	divide_by_0
+0B090B 18 F7       0565   	jr	parse_term_done
+0B090D             0566   
+0B090D             0567   ;------------------------------------------------------------------------
+0B090D             0568   ;  parse_factor
+0B090D             0569   ;  Returns:
+0B090D             0570   ;  A: 1 if factor parsed, 0 otherwise
+0B090D             0571   ;  HLU: factor result
+0B090D             0572   ;------------------------------------------------------------------------
+0B090D             0573   parse_factor:
+0B090D D5          0574   	push	DE
+0B090E CD 61 06 0B 0575   	call	next_token
+0B0912 FE 01       0576   	cp	TOK_NUM
+0B0914 20 04       0577   	jr	NZ, parse_nonum
+0B0916 3E 01       0578   	ld	A, 1
+0B0918 18 2F       0579   	jr	parse_factor_done
+0B091A             0580   parse_nonum:
+0B091A             0581   	; If we get here, the last token was not a number
+0B091A FE 28       0582   	cp	'('
+0B091C 20 17       0583   	jr	NZ, parse_n_paren
+0B091E CD 7C 07 0B 0584   	call	parse_expr
+0B0922 B7          0585   	or	A
+0B0923 28 23       0586   	jr	Z, parse_factor_err
+0B0925             0587   ; We got an expression, and the result is in HL
+0B0925             0588   ; Check that the next is a ")"
+0B0925 E5          0589   	push	hl
+0B0926 D1          0590   	pop		de
+0B0927 CD 61 06 0B 0591   	call	next_token
+0B092B FE 29       0592   	cp		')'
+0B092D 20 19       0593   	jr		NZ, parse_factor_err
+0B092F D5          0594   	push	de
+0B0930 E1          0595   	pop		hl
+0B0931 3E 01       0596   	ld		A, 1
+0B0933 18 14       0597   	jr		parse_factor_done
+0B0935             0598   
+0B0935             0599   parse_n_paren:
+0B0935 FE 2D       0600   	cp		'-'
+0B0937 20 0F       0601   	jr		NZ, parse_not_neg
+0B0939 CD 0D 09 0B 0602   	call	parse_factor
+0B093D B7          0603   	or		A
+0B093E 28 08       0604   	jr		Z, parse_factor_err
+0B0940 CD 82 01 0B 0605   	call	neg24
+0B0944 3E 01       0606   	ld		A, 1
+0B0946 18 01       0607   	jr		parse_factor_done
+0B0948             0608   
+0B0948             0609   parse_not_neg:
+0B0948             0610   parse_factor_err:
+0B0948 AF          0611   	xor		a
+0B0949             0612   parse_factor_done:
+0B0949 D1          0613   	pop		DE
+0B094A C9          0614   	ret
+0B094B             0615   
+0B094B             0616   ;------------------------------------------------------------------------
+0B094B             0617   ; print_result
+0B094B             0618   ; Print the value in HLU in decimal and hex
+0B094B             0619   ;------------------------------------------------------------------------
+0B094B             0620   print_result:
+0B094B D5          0621   	push	DE
+0B094C E5          0622   	push	HL
+0B094D CD 5C 00 0B 0623   	call	print_HLU_u24
+0B0951 3E 20       0624   	ld	a,' '
+0B0953 5B D7       0625   	rst.LIL	10h
+0B0955 3E 30       0626   	ld	a, '0'
+0B0957 5B D7       0627   	rst.LIL	10h
+0B0959 3E 78       0628   	ld	a,'x'
+0B095B 5B D7       0629   	rst.LIL	10h
+0B095D E1          0630   	pop	HL
+0B095E CD 0D 01 0B 0631   	call	print_HLU_hex
+0B0962 CD E2 00 0B 0632   	call	newline
+0B0966 D1          0633   	pop	DE
+0B0967 C9          0634   	ret
+0B0968             0635   
+0B0968             0636   ;------------------------------------------------------------------------
+0B0968             0637   ; reset_eval
+0B0968             0638   ; Reset (curpos), (lastpos), error_done_flag for next evaluation.
+0B0968             0639   ;------------------------------------------------------------------------
+0B0968             0640   reset_eval:
+0B0968 AF          0641   	XOR	A
+0B0969 32 1E 02 0B 0642   	ld	(curpos), A
+0B096D 32 21 02 0B 0643   	ld	(lastpos), A
+0B0971 32 B9 05 0B 0644   	ld	(error_done_flag), A
+0B0975 C9          0645   	ret
+0B0976             0646   
+0B0976             0647   ;------------------------------------------------------------------------
+0B0976             0648   ; eval
+0B0976             0649   ; evaluate the expression at expr_buffer
+0B0976             0650   ; and print the result
+0B0976             0651   ;
+0B0976             0652   ;------------------------------------------------------------------------
+0B0976             0653   eval:
+0B0976 CD 68 09 0B 0654   	call	reset_eval
+0B097A 21 C0 05 0B 0655   	ld		HL,expr_buffer
+0B097E 7E          0656   	ld		A, (HL)		; first char
+0B097F B7          0657   	or		a
+0B0980 C8          0658   	ret		z	;done - no input was provided
+0B0981             0659   
+0B0981 CD 7C 07 0B 0660   	call	parse_expr
+0B0985 B7          0661   	or		a
+0B0986 28 10       0662   	jr		Z, eval_syntax_error
+0B0988             0663   
+0B0988             0664   ; After evaluation is finished, if the current character is not the null
+0B0988             0665   ; terminator, there was an error. This is why we back up one character
+0B0988             0666   ; after parsing the string.
+0B0988 CD 40 06 0B 0667   	call	nextchar
+0B098C B7          0668   	or		a
+0B098D 20 09       0669   	jr		nz,eval_syntax_error
+0B098F 22 BD 05 0B 0670   	ld		(lastval), HL	;store for '@' function
+0B0993 C3 4B 09 0B 0671   	jp		print_result	; Print result
+0B0997             0672   
+0B0997 C9          0673   	ret			;done
+0B0998             0674   
+0B0998             0675   eval_syntax_error:
+0B0998 3A B9 05 0B 0676   	ld		a, (error_done_flag)	; Don't print error if we already did
+0B099C B7          0677   	or		a
+0B099D C0          0678   	ret		nz
+0B099E C3 2C 07 0B 0679   	jp		syntax_error		;print syntax error and return.
+0B09A2             0680   
+0B09A2             0681   ;------------------------------------------------------------------------
+0B09A2             0682   ;  loop
+0B09A2             0683   ;  Prompt for an expression, and evaluate it, in a loop.
+0B09A2             0684   ;    Stop when the user enters and empty line
+0B09A2             0685   ;------------------------------------------------------------------------
+0B09A2             0686   loop:
+0B09A2 21 4C 02 0B 0687   	ld	HL, prompt_string	; print the prompt
+0B09A6 CD 2C 01 0B 0688   	call	puts
+0B09AA             0689   ; Read the line
+0B09AA             0690   ;	0x09: mos_editline
+0B09AA             0691   ;Invoke the line editor
+0B09AA             0692   
+0B09AA             0693   ;Parameters:
+0B09AA             0694   ;HL(U): Address of the buffer
+0B09AA             0695   ;BC(U): Buffer length
+0B09AA             0696   ;E: 0 to not clear buffer, 1 to clear
+0B09AA             0697   ;Returns:
+0B09AA             0698   ;A: Key that was used to exit the input loop (CR=13, ESC=27)
+0B09AA             0699   
+0B09AA 21 C0 05 0B 0700   	ld 	hl, expr_buffer
+0B09AE 01 7F 00 00 0701   	ld	BC,127
+0B09B2 1E 01       0702   	ld	E,1			; Clear the line input buffer.
+0B09B4 3E 09       0703   	ld	A,9			; mos_editline
+0B09B6 5B CF       0704   	rst.lil	08h		; call API with readline
+0B09B8             0705   
+0B09B8             0706   	; Check whether anything was entered. If it was, evaluate and
+0B09B8             0707   	;   go around again.
+0B09B8 3A C0 05 0B 0708   	ld	A, (expr_buffer)
+0B09BC B7          0709   	or	A
+0B09BD C8          0710   	ret	Z			;No input provided so return from input loop
+0B09BE FE 3F       0711   	cp	'?'
+0B09C0 28 0A       0712   	jr	z,show_help
+0B09C2 CD E2 00 0B 0713   	call	newline
+0B09C6 CD 76 09 0B 0714   	call 	eval
+0B09CA 18 D6       0715   	jr	loop
+0B09CC             0716   show_help:
+0B09CC 21 ED 02 0B 0717   	ld	HL,help_text
+0B09D0 CD 2C 01 0B 0718   	call	puts
+0B09D4 18 CC       0719   	jr	loop
+0B09D6             0720   
+0B09D6             0721   
+0B09D6             0722   
+0B09D6             0723   ;------------------------------------------------------------------------
+0B09D6             0724   ;  Main loop routine
+0B09D6             0725   ; uses a recursive descent parser, defined by the following grammar:
+0B09D6             0726   ;
+0B09D6             0727   ;  expression = term {'+'|'-'|'|'|'&'|'^'|'<<'|'>>' term}...
+0B09D6             0728   ;  term = factor {'*'|'/'|'%' factor}...
+0B09D6             0729   ;  factor = number | '(' expression ')' | '-' factor
+0B09D6             0730   ;
+0B09D6             0731   ; As this is recursive, there may be stack constraints for very large
+0B09D6             0732   ; expressions. Currently limited to 127 characters below.
+0B09D6             0733   ;
+0B09D6             0734   ; For a recursive descent parser primer, see:
+0B09D6             0735   ; https://en.wikipedia.org/wiki/Recursive_descent_parser
+0B09D6             0736   ;------------------------------------------------------------------------
+0B09D6             0737   main:
+0B09D6             0738   
+0B09D6 7E          0739   	ld	A,(HL)		;test if there was a command-line expression
+0B09D7 B7          0740   	or	A
+0B09D8 28 12       0741   	jr	Z, noargs	;nothing was on the command-line, go interactive
+0B09DA 11 C0 05 0B 0742   	ld	DE, expr_buffer
+0B09DE 01 7F 00 00 0743   	ld	BC,127
+0B09E2 ED B0       0744   	ldIR			;move the line input into the place to be evaluated
+0B09E4             0745   
+0B09E4 CD 76 09 0B 0746   	call	eval
+0B09E8 C3 E2 00 0B 0747   	jp		newline	;print newline and return to MOS wrapper
+0B09EC             0748   
+0B09EC             0749   noargs:
+0B09EC 21 59 02 0B 0750   	ld	HL, banner_string
+0B09F0 CD 2C 01 0B 0751   	call	puts
+0B09F4 CD A2 09 0B 0752   	call	loop
+0B09F8 C3 E2 00 0B 0753   	jp		newline	;print newline and return to MOS wrapper
