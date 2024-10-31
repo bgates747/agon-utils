@@ -262,10 +262,15 @@ signed_asc_to_168:
     jr nc, @end_fraction       ; Exit if >= 10
 
     ; Multiply the current fractional accumulator by 10
-    push hl                    ; Save HL (used as pointer)
+    push hl                    ; Save char pointer
     push af                    ; Save the digit
-    ld hl, 10                  ; Prepare to multiply by 10
-    call umul24                ; hl = de * 10
+    ex de, hl
+    push hl
+    add hl,hl ; * 2
+    add hl,hl ; * 4
+    pop de 
+    add hl,de ; * 5
+    add hl,hl ; * 10
     ld de, 0                   ; Clear DEU
     pop af                     ; Restore the current digit
     ld e, a                    ; Load the digit into E
