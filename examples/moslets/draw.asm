@@ -23,7 +23,12 @@
     ; include "vdu_fonts.inc"
     include "vdu_plot.inc"
 
+; SHAWN'S INCLUDES
+	INCLUDE	"strings24.asm"
+	INCLUDE	"arith24.asm"
+
 ; APPLICATION INCLUDES
+
 str_usage: ASCIZ "Usage: draw <args>\r\n"
 str_error: ASCIZ "Error!\r\n"
 str_success: ASCIZ "Success!\r\n"
@@ -242,19 +247,19 @@ trif:
 get_numeric_arg:
     lea ix,ix+3 ; point to the next argument
     ld hl,(ix)  ; get the argument string
-    call ASC_TO_NUMBER ; convert the string to a number
+    call signed_asc_to_int ; convert the string to a number
     ret ; return with the value in DE
 
 get_plot_coords:
 ; get the move coordinates
     lea ix,ix+3 ; pointer to next argument address
     ld hl,(ix)  ; pointer to the x coordinate string
-    call ASC_TO_NUMBER ; de = x coordinate
+    call signed_asc_to_int ; de = x coordinate
     push de
     pop bc ; bc = x coordinate
     lea ix,ix+3 ; pointer to next argument address
     ld hl,(ix)  ; pointer to the y coordinate string
-    call ASC_TO_NUMBER ; de = y coordinate
+    call signed_asc_to_int ; de = y coordinate
     ret
 
 ; match the next argument after ix to the dispatch table at iy
