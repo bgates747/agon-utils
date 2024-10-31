@@ -102,14 +102,14 @@ def flower(petals, vectors, depth, periods, shrink, clock_prime, clock_petal,
     return coords
 
 if __name__ == "__main__":
-    petals = 2.97
-    vectors = 1
-    depth = 0.0
-    periods = 75
-    shrink = 1.0
-    clock_prime = -1.0
+    petals = 3.03
+    vectors = 1.98
+    depth = 0.6
+    periods = 66
+    shrink = 0.8
+    clock_prime = 1.0
     clock_petal = 1.0
-    theta_prime = 240
+    theta_prime = 0.0
     theta_petal = 0.0
     radius_scale = 480
     center_x = 640
