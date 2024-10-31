@@ -89,3 +89,203 @@ UPPRC:  		AND     	7FH
 			RET     	C
 			AND     	5FH			; Convert to upper case
 			RET
+
+
+;------------------------------------------------------------------------
+; Read a number and convert to binary (decimal only)
+; Inputs: hl: Pointer in string buffer
+; Outputs: hl: Updated text pointer
+;         de: Value
+;         a: Terminator (spaces skipped)
+;         f: Carry set if valid number, otherwise reset
+; Destroys: a, d, e, h, l, f
+;------------------------------------------------------------------------
+signed_asc_to_int: 
+    ld a,1 ; set sign flag
+    ld (@sign),a ; store sign flag
+    
+    ld de, 0 ; initialise de
+    call _skip_spaces ; skip whitespace
+    
+    ld a, (hl) ; read first character
+    or a ; check for end of string
+    ret z ; return with no carry if not
+
+    push bc ; preserve bc
+
+    cp '-' ; check for negative number
+    jp nz,@loop ; number is positive, nothing more to do
+    xor a ; sign flag to zero
+    ld (@sign),a ; store sign flag
+    inc hl ; skip '-'
+
+@loop: 
+    ld a, (hl)
+    sub '0' ; normalise to 0
+    jr c, @integer_end ; return if < ascii '0'
+    cp 10 ; check if >= 10
+    jr nc, @integer_end ; return if >= 10
+    push hl ; stack hl
+    push de ; ld hl, de
+    pop hl
+    push hl ; ld bc, hl
+    pop bc
+    add hl, hl ; x 2 
+    add hl, hl ; x 4
+    add hl, bc ; x 5
+    add hl, hl ; x 10
+    ld bc, 0
+    ld c, a ; ld bcu, a
+    add hl, bc ; add bcu to hl
+    push hl ; ld de, hl
+    pop de
+    pop hl ; restore hl
+    inc hl
+    jr @loop
+
+@integer_end: 
+    pop bc ; send bc back how she came in
+    ld a, (@sign) ; get sign flag
+    dec a ; check if negative    
+    jp p,@pos ; positive number
+
+; Negate de
+    push hl ; save text pointer
+    ld hl, 0
+    xor a ; clear carry
+    sbc hl, de ; subtract DE from HL
+    ex de, hl ; DE = 0-HL
+    pop hl ; restore text pointer
+
+@pos:
+    scf ; we have a valid number so set carry
+    ret
+
+@sign: db 0 ; sign flag buffer
+
+
+;------------------------------------------------------------------------
+; Read a number and convert to binary (decimal only)
+; Inputs: hl: Pointer in string buffer
+; Outputs: hl: Updated text pointer
+;         de: Value
+;         a: Terminator (spaces skipped)
+;         f: Carry set if valid number, otherwise reset
+; Destroys: a, d, e, h, l, f
+;------------------------------------------------------------------------
+signed_asc_to_168: 
+    ld a,1 ; set sign flag
+    ld (@sign),a ; store sign flag
+    
+    ld de, 0 ; initialise de
+    ld (@result), de ; clear result buffer
+    call _skip_spaces ; skip whitespace
+    
+    ld a, (hl) ; read first character
+    or a ; check for end of string
+    ret z ; return with no carry if not
+
+    push bc ; preserve bc
+
+    cp '-' ; check for negative number
+    jp nz,@loop ; number is positive, nothing more to do
+    xor a ; sign flag to zero
+    ld (@sign),a ; store sign flag
+    inc hl ; skip '-'
+
+@loop: 
+    ld a, (hl)
+
+; chcek for decimal point
+    cp '.' ; check for decimal point
+    jp z,@fractional_start ; jump to fractional part
+
+; process integer part
+    sub '0' ; normalise to 0
+    jr c, @integer_end ; return if < ascii '0'
+    cp 10 ; check if >= 10
+    jr nc, @integer_end ; return if >= 10
+    push hl ; stack hl
+    push de ; ld hl, de
+    pop hl
+    push hl ; ld bc, hl
+    pop bc
+    add hl, hl ; x 2 
+    add hl, hl ; x 4
+    add hl, bc ; x 5
+    add hl, hl ; x 10
+    ld bc, 0
+    ld c, a ; ld bcu, a
+    add hl, bc ; add bcu to hl
+    push hl ; ld de, hl
+    pop de
+    pop hl ; restore hl
+    inc hl
+    jr @loop
+
+@integer_end:
+    ld (@result+1), de      ; Store integer part in result buffer (shifted up one byte)
+
+@end: 
+    pop bc ; send bc back how she came in
+    ld de,(@result) ; will contain shifted integer part combined with any fractional value
+    ld a, (@sign) ; get sign flag
+    dec a ; check if negative    
+    jp p,@pos ; positive number
+
+; Negate de
+    push hl ; save text pointer
+    ld hl, 0
+    xor a ; clear carry
+    sbc hl, de ; subtract DE from HL
+    ex de, hl ; DE = 0-HL
+    pop hl ; restore text pointer
+
+@pos:
+    scf ; we have a valid number so set carry
+    ret
+
+@fractional_start:
+    ld (@result+1), de      ; Store integer part in result buffer (shifted up one byte)
+    ld b, 3                 ; Set loop counter to 3 for three fractional digits
+    ld ix, powers_of_10     ; Point IX to lookup table for powers of 10
+    inc hl                 ; Skip decimal point
+
+@fractional_loop:
+    ld a, (hl)              ; Load next character
+    sub '0'                 ; Normalize ASCII to decimal
+    jr c, @end_fraction     ; Exit if < '0'
+    cp 10
+    jr nc, @end_fraction    ; Exit if >= 10
+
+    ; Load current digit into D for multiplication
+    ld d, a                 ; Set D to current digit
+
+    ; Load current power of 10 into E using IX as the pointer
+    ld e, (ix)              ; Load current power of 10 (scaled by 256) into E
+    mlt de                  ; Multiply DE by the current power of 10 in E
+
+    ; Add scaled digit to fractional accumulator in E
+    ld a, e                 ; Move E to A
+    add a, c                ; Add scaled digit
+    ld e, a                 ; Update E with the result
+
+    ; Advance to next power of 10 in lookup table
+    lea ix, ix+1            ; Move IX to the next table entry
+
+    ; Move to the next character in the string
+    inc hl
+    djnz @fractional_loop   ; Decrement B and loop if more digits remain
+
+@end_fraction:
+    ld a,e ; Load fractional part into A
+    ld (@result),a ; Store fractional part in result buffer
+    jp @end ; do the final sign check and set flags for return
+
+@result: ds 4 ; 32-bit result buffer so we can shift the integer part up one byte
+@sign: db 0 ; sign flag buffer
+
+powers_of_10:
+    db 25  ; 1/10 * 256 (rounded)
+    db 3   ; 1/100 * 256 (rounded)
+    db 1   ; 1/1000 * 256 (rounded)

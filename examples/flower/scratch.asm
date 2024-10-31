@@ -71,8 +71,10 @@ main:
 
 ; assume the first argument is numeric
     call get_numeric_arg ; de contains the numeric value of the first argument
+    ex de,hl            ; move result in de to hl
     call dumpRegistersHex ; print the registers
-    call printNewLine
+    call printDec       ; print the number
+    call printNewLine   ; print a newline
     jp _main_end_ok
     
 
@@ -80,19 +82,19 @@ main:
 get_numeric_arg:
     lea ix,ix+3 ; point to the next argument
     ld hl,(ix)  ; get the argument string
-    call ASC_TO_NUMBER ; convert the string to a number
+    call signed_asc_to_168 ; convert the string to a number
     ret ; return with the value in DE
 
 get_plot_coords:
 ; get the move coordinates
     lea ix,ix+3 ; pointer to next argument address
     ld hl,(ix)  ; pointer to the x coordinate string
-    call ASC_TO_NUMBER ; de = x coordinate
+    call signed_asc_to_168 ; de = x coordinate
     push de
     pop bc ; bc = x coordinate
     lea ix,ix+3 ; pointer to next argument address
     ld hl,(ix)  ; pointer to the y coordinate string
-    call ASC_TO_NUMBER ; de = y coordinate
+    call signed_asc_to_168 ; de = y coordinate
     ret
 
 ; match the next argument after ix to the dispatch table at iy
