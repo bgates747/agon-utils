@@ -97,7 +97,7 @@ def flower(petals, vectors, depth, periods, shrink, clock_prime, clock_petal,
     img = img.transpose(Image.FLIP_TOP_BOTTOM)
 
     # Save the image
-    img.save("examples/moslets/flower.png")
+    img.save("examples/flower/flower.png")
 
     return coords
 
@@ -121,8 +121,9 @@ if __name__ == "__main__":
     # Define the file header
     header = [
         "SET KEYBOARD 1",
-        "vdu 22 19",
-        "# vdu 23 1 0",
+        "fontld",
+        "fontctl 5",
+        "mc 0",
         f"# petals: {petals}",
         f"# vectors: {vectors}",
         f"# depth: {depth}",

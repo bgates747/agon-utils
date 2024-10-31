@@ -199,14 +199,14 @@ if __name__ == '__main__':
     asm_src_dir = 'examples/moslets'
     tgt_bin_filename = f'{app_name}.bin'
     copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
-    # autoexec_text = [
-    #     'SET KEYBOARD 1',
-    #     'fontld',
-    #     'fontctl 10',
-    #     'mc',
-    #     ' '
-    # ]
-    autoexec_text = []
+    autoexec_text = [
+        'SET KEYBOARD 1',
+        'fontld',
+        'fontctl 5',
+        'mc',
+        ' '
+    ]
+    # autoexec_text = []
     assemble = True
     copy_sdcard = True
     run_emulator = True
