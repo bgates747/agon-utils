@@ -8,7 +8,7 @@
     ORG 0x0B0000 ; Is a moslet
 
     MACRO PROGNAME
-    ASCIZ "scratch.bin"
+    ASCIZ "flower.bin"
     ENDMACRO
 
 ; STANDARD MOSLET INCLUDES
@@ -28,13 +28,30 @@
 	INCLUDE	"arith24.asm"
 
 ; APPLICATION INCLUDES
-str_usage: ASCIZ "Usage: scratch <args>\r\n"
+str_usage: ASCIZ "Usage: flower <args>\r\n"
 str_error: ASCIZ "Error!\r\n"
 str_success: ASCIZ "Success!\r\n"
 
-; This is a scratch moslet for testing new features
-; Parameters:
-;
+; This program draws 2D curves related to the hypotrochoid / epitrochoid family (i.e. Spirographs),
+; more generally known as roulettes. While it is possible to construct curves fitting the precise
+; definitions of such curves, the program is not limited to them as slipping of the outer circle
+; is allowable. In addition, continually plotting the curve insribed by the outer circle is not required.
+; This allows rotating polygonal shapes remniscent of string art, as well as daisy-like curves.
+; Hence the name "flower" even though the program is not limited to such shapes.
+; Another key difference is that cumulative shrinking can be applied to the radii of the rotating circles,
+; thus allowing curves which form true spirals in contrast to the Spirograph toy, which does not.
+; 
+; Parameters with example values:
+; petals      = 3.03  : 
+; vectors     = 1.98  : 
+; depth       = 0.6   : 
+; periods     = 66    : 
+; shrink      = 0.8   : 
+; clock_prime = 1.0   : 
+; clock_petal = 1.0   : 
+; theta_prime = 0.0   : 
+; theta_petal = 0.0   : 
+; radius_scale= 480   : 
 
 ; ========= BOILERPLATE MAIN LOOP ========= 
 ; The main routine
@@ -65,45 +82,77 @@ _main_end_ok:
     ld hl,0             ; return 0 for success
     ret
 
+; GLOBAL VARIABLES / DEFAULTS
+; ---- input arguments (16.8 fixed) ----
+input_params_num: equ 10
+input_params:               ; label so we can traverse the table in loops
+petals: 	    dl 0x000307	; 3.03
+vectors: 	    dl 0x0001FA	; 1.98
+depth: 	        dl 0x000099	; 0.6
+periods: 	    dl 0x004200	; 66
+shrink: 	    dl 0x0000CC	; 0.8
+clock_prime: 	dl 0x000100	; 1
+clock_petal: 	dl 0x000100	; 1
+theta_prime: 	dl 0x000000	; 0
+theta_petal: 	dl 0x000000	; 0
+radius_scale: 	dl 0x01E000	; 480
+
+; ---- main loop parameters (16.8 fixed) ----
+step_theta_prime:   dl 0x000000  ; Step increment for theta_prime in each loop iteration
+step_theta_petal:   dl 0x000000  ; Step increment for theta_petal in each loop iteration
+total_steps:        dl 0x000000  ; Total number of iterations based on periods and step_theta_prime
+shrink_step:        dl 0x000000  ; Step decrement applied to radius in each iteration
+
+; ---- main loop state variables (16.8 fixed) ----
+prime_radius:       dl 0x000000  ; Initial radius before shrink factor is applied
+
+
+main_loop:
+; --- convert input thetas to 8.8 fixed point degrees255
+; --- compute the main loop parameters ---
+    
+
+@loop:
+
+        jp @loop
+        ret
+
+
+
 ; ========= BEGIN CUSTOM MAIN LOOP =========
 main:
     dec c               ; decrement the argument count to skip the program name
+    call load_input     ; load the input arguments
+    call main_loop      ; run the main loop
+    jp _main_end_ok     ; exit with success
 
-test_deg_360_to_255:
-    call get_numeric_arg ; de contains the numeric value of the first argument
-    ex de,hl             ; 
-    call deg_360_to_255
-    call dumpRegistersHex ; print the registers
-    call printDec       ; print the number
-    call printNewLine   ; print a newline
-    jp _main_end_ok
+; --- Load arguments ---
+; --------------------------------
+load_input:
+    ld a,c ; put the number of entered arguments in a
+    ld b,input_params_num ; loop counter = number of arguments
+    cp b ; compare the number of arguments to the number of arguments
+    call nz,args_count_off ; handle discrepancies
+    ; TODO: we may want to branch here according to the result
+    ld iy,input_params  ; point to the arguments table
+@loop:
+        call get_numeric_arg ; get the next argument
+        ld (iy),de ; store the argument in the table
+        lea iy,iy+3  ; point to the next parameter
+        djnz @loop ; loop until done
+        ret
 
-test_udiv168:
-; get dividend
-    call get_numeric_arg 
-    ld (@dividend),de
-    ; call dumpRegistersHex ; print the registers
-; get divisor
-    call get_numeric_arg 
-    ; call dumpRegistersHex ; print the registers
-; do the division
-    ld hl,(@dividend)
-    call udiv24
-    ex de,hl ; result to hl for printing
-    call dumpRegistersHex ; print the registers
-    call printDec       ; print the number
-    call printNewLine   ; print a newline
-    jp _main_end_ok
-@dividend: dl 0
 
-test_ascii_to_s168:
-; assume the first argument is numeric
-    call get_numeric_arg ; de contains the numeric value of the first argument
-    ex de,hl            ; move result in de to hl
-    call dumpRegistersHex ; print the registers
-    call printDec       ; print the number
-    call printNewLine   ; print a newline
-    jp _main_end_ok
+
+
+
+; --- Specific parameter processing functions ---
+args_count_off:
+    ld hl,@str_args_count_off
+    call printString
+    ret ; TODO: implement this
+@str_args_count_off: db "Argument counts mismatch!\r\n",0
+
 
 ; ========== HELPER FUNCTIONS ==========
 get_numeric_arg:
