@@ -69,6 +69,17 @@ _main_end_ok:
 main:
     dec c               ; decrement the argument count to skip the program name
 
+test_s168_to_ascii:
+    call get_numeric_arg ; de contains the numeric value of the first argument
+    ex de,hl            ; parameter to hl
+    ld de,@buffer       ; point to the buffer
+    call s168_to_ascii  ; convert the number to ASCII
+    ld hl,@buffer       ; point to the buffer
+    call printString    ; print the number
+    call printNewLine   ; print a newline
+    jp _main_end_ok
+@buffer: blkb 11,0
+
 test_u168_to_ascii:
     call get_numeric_arg ; de contains the numeric value of the first argument
     ex de,hl            ; parameter to hl

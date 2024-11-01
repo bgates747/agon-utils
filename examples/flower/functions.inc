@@ -259,7 +259,11 @@ u24_to_ascii:
 ; HL : Value to convert to string (integer part in H, fractional part in L)
 ; DE : Pointer to buffer, requires at least 11 bytes (8 digits, sign, decimal point, and null terminator)
 u168_to_ascii:
-    ; Convert integer part
+; add a leading space to make room for sign flag if needed
+    ld a,' '
+    ld (de),a
+    inc de
+; Convert integer part
     push hl               ; Save HL (we’ll need the fractional part later)
     call shift_hlu_r1b    ; Shift to get integer portion in HL
     ld   bc, -10000
@@ -303,7 +307,18 @@ u168_to_ascii:
     ld   (de), a
     ret
 
-
+; signed version of u168_to_ascii
+s168_to_ascii:
+    push de ; save starting address of buffer
+    call abs_hlu
+    push af ; save sign flag
+    call u168_to_ascii
+    pop af ; restore sign flag
+    pop de ; restore starting address of buffer
+    ret p ; hlu was positive so nothing to do
+    ld a,'-'
+    ld (de),a
+    ret
 
 ; #### new functions added by Brandon R. Gates ####
 
