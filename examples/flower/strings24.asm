@@ -6,6 +6,19 @@
 ;  MIT license
 ;------------------------------------------------------------------------
 
+;Print signed value in HLU in decimal with leading 0s removed
+; and postpended with a minus sign if was negative
+; Uses HLU, DEU, BCU
+print_HLU_s24:
+	call abs_hlu
+	push af ; save the sign and zero flags
+	call print_HLU_u24
+	pop af
+	ret p ; HLU was positive so nothig more to do
+	ld a,'-'
+	rst.lil 10h
+	ret
+
 ;------------------------------------------------------------------------
 ;Full print and buffer routine so you can adjust behaviour
 ; Double-Dabble AKA shift-and-add-3 algorithm

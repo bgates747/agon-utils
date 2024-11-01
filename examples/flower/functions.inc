@@ -152,6 +152,40 @@ DisplayHexPrefix:
 ; Prints the right justified decimal value in HL without leading zeroes
 ; HL : Value to print
 ; preserves all registers and flags
+printDecFrac:
+; back up all the things
+    push af
+    push bc
+    push de
+    push hl
+	LD	 DE, _printDecFracBuffer
+	CALL u24_to_ascii
+; replace leading zeroes with spaces
+    LD	 HL, _printDecFracBuffer
+    ld   B, 7 ; if HL was 0, we want to keep the final zero 
+@loop:
+    LD	 A, (HL)
+    CP	 '0'
+    JP	 NZ, @done
+    LD   A, ' '
+    LD	 (HL), A
+    INC	 HL
+    DJNZ @loop
+@done:
+	CALL printString
+; restore all the things
+    pop hl
+    pop de
+    pop bc
+    pop af
+; END MY CODE
+	RET
+_printDecFracBuffer: blkb 11,0 ; 11 bytes full of zeroes
+
+
+; Prints the right justified decimal value in HL without leading zeroes
+; HL : Value to print
+; preserves all registers and flags
 printDec:
 ; BEGIN MY CODE
 ; back up all the things
@@ -161,7 +195,7 @@ printDec:
     push hl
 ; END MY CODE
 	LD	 DE, _printDecBuffer
-	CALL Num2String
+	CALL u24_to_ascii
 ; BEGIN MY CODE
 ; replace leading zeroes with spaces
     LD	 HL, _printDecBuffer
@@ -189,37 +223,86 @@ printDec:
 	RET
 _printDecBuffer: blkb 9,0 ; nine bytes full of zeroes
 
-; This routine converts the value from HL into it's ASCII representation, 
+; This routine converts the unsigned 24-bit value in HLU into it's ASCII representation, 
 ; starting to memory location pointing by DE, in decimal form and with leading zeroes 
 ; so it will allways be 8 characters length
 ; HL : Value to convert to string
 ; DE : pointer to buffer, at least 8 byte + 0
-Num2String:
+u24_to_ascii:
 	LD	 BC,-10000000
-	CALL OneDigit
+	CALL @one_digit
 	LD	 BC,-1000000
-	CALL OneDigit
+	CALL @one_digit
 	LD	 BC,-100000
-	CALL OneDigit
+	CALL @one_digit
 	LD   BC,-10000
-	CALL OneDigit
+	CALL @one_digit
 	LD   BC,-1000
-	CALL OneDigit
+	CALL @one_digit
 	LD   BC,-100
-	CALL OneDigit
+	CALL @one_digit
 	LD   C,-10
-	CALL OneDigit
+	CALL @one_digit
 	LD   C,B
-OneDigit:
+@one_digit:
 	LD   A,'0'-1
-DivideMe:
+@divide_me:
 	INC  A
 	ADD  HL,BC
-	JR   C,DivideMe
+	JR   C,@divide_me
 	SBC  HL,BC
 	LD   (DE),A
 	INC  DE
 	RET
+
+; u168_to_ascii: Converts an unsigned 16.8 fixed-point value in HL to an ASCII string.
+; HL : Value to convert to string (integer part in H, fractional part in L)
+; DE : Pointer to buffer, requires at least 11 bytes (8 digits, sign, decimal point, and null terminator)
+u168_to_ascii:
+    ; Convert integer part
+    push hl               ; Save HL (we’ll need the fractional part later)
+    call shift_hlu_r1b    ; Shift to get integer portion in HL
+    ld   bc, -10000
+    call @one_int
+    ld   bc, -1000
+    call @one_int
+    ld   bc, -100
+    call @one_int
+    ld   c, -10
+    call @one_int
+    ld   c, b
+    call @one_int
+    jp   @frac            ; Jump to fractional part conversion
+@one_int:
+    ld   a, '0' - 1       ; Start ASCII character at '0'
+@divide_me:
+    inc  a
+    add  hl, bc           ; Accumulate until overflow
+    jr   c, @divide_me
+    sbc  hl, bc           ; Remove excess after overflow
+    ld   (de), a          ; Store ASCII digit
+    inc  de
+    ret
+; Convert fractional part
+@frac:
+    ld   a, '.'           ; Decimal point
+    ld   (de), a
+    inc  de
+    pop  hl               ; Restore HL with original fraction
+    ld   b, 3             ; Loop counter for 3 fractional digits
+@frac_loop:
+    ld   h, 10            ; Load multiplier for fractional part
+    mlt  hl               ; Multiply by 10, result in HL (H holds the integer part)
+    ld   a, '0'
+    add  a, h             ; Convert integer part to ASCII
+    ld   (de), a
+    inc  de
+    djnz @frac_loop       ; Repeat for each fractional digit
+; Add null terminator
+    xor  a                ; Null terminator
+    ld   (de), a
+    ret
+
 
 
 ; #### new functions added by Brandon R. Gates ####

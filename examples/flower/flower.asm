@@ -158,19 +158,19 @@ args_count_off:
 get_numeric_arg:
     lea ix,ix+3 ; point to the next argument
     ld hl,(ix)  ; get the argument string
-    call signed_asc_to_168 ; convert the string to a number
+    call asc_to_s168 ; convert the string to a number
     ret ; return with the value in DE
 
 get_plot_coords:
 ; get the move coordinates
     lea ix,ix+3 ; pointer to next argument address
     ld hl,(ix)  ; pointer to the x coordinate string
-    call signed_asc_to_168 ; de = x coordinate
+    call asc_to_s168 ; de = x coordinate
     push de
     pop bc ; bc = x coordinate
     lea ix,ix+3 ; pointer to next argument address
     ld hl,(ix)  ; pointer to the y coordinate string
-    call signed_asc_to_168 ; de = y coordinate
+    call asc_to_s168 ; de = y coordinate
     ret
 
 ; match the next argument after ix to the dispatch table at iy

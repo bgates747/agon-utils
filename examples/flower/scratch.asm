@@ -60,8 +60,8 @@ _main_end_error:
     ret
 
 _main_end_ok:
-    ld hl,str_success   ; print success message
-    call printString
+    ; ld hl,str_success   ; print success message
+    ; call printString
     ld hl,0             ; return 0 for success
     ret
 
@@ -69,12 +69,47 @@ _main_end_ok:
 main:
     dec c               ; decrement the argument count to skip the program name
 
+test_u168_to_ascii:
+    call get_numeric_arg ; de contains the numeric value of the first argument
+    ex de,hl            ; parameter to hl
+    ld de,@buffer       ; point to the buffer
+    call u168_to_ascii  ; convert the number to ASCII
+    ld hl,@buffer       ; point to the buffer
+    call printString    ; print the number
+    call printNewLine   ; print a newline
+    jp _main_end_ok
+@buffer: blkb 11,0
+
+test_printDecFrac:
+    call get_numeric_arg ; de contains the numeric value of the first argument
+    ex de,hl            ; move de to hl
+    call printDecFrac   ; print the number
+    ; call printNewLine   ; print a newline
+    halt 
+    jp _main_end_ok
+
+test_print_A:
+    call get_numeric_arg ; de contains the numeric value of the first argument
+    ld a,d              ; low byte of integer portion
+    call print_A        ; print the number
+    call printNewLine   ; print a newline
+    jp _main_end_ok
+
+test_print_HLU_s24:
+    call get_numeric_arg ; de contains the numeric value of the first argument
+    ex de,hl            ; parameter to hl
+    call dumpRegistersHex ; print the registers
+    call print_HLU_s24  ; print the number
+    call printNewLine   ; print a newline
+    jp _main_end_ok
+
 test_deg_360_to_255:
     call get_numeric_arg ; de contains the numeric value of the first argument
     ex de,hl             ; 
     call deg_360_to_255
     call dumpRegistersHex ; print the registers
-    call printDec       ; print the number
+    ; call printDec       ; print the number
+    call print_HLU_s24
     call printNewLine   ; print a newline
     jp _main_end_ok
 
@@ -82,10 +117,8 @@ test_udiv168:
 ; get dividend
     call get_numeric_arg 
     ld (@dividend),de
-    ; call dumpRegistersHex ; print the registers
 ; get divisor
     call get_numeric_arg 
-    ; call dumpRegistersHex ; print the registers
 ; do the division
     ld hl,(@dividend)
     call udiv24
@@ -99,7 +132,7 @@ test_udiv168:
 test_ascii_to_s168:
 ; assume the first argument is numeric
     call get_numeric_arg ; de contains the numeric value of the first argument
-    ex de,hl            ; move result in de to hl
+    ex de,hl            ; parameter to hl
     call dumpRegistersHex ; print the registers
     call printDec       ; print the number
     call printNewLine   ; print a newline
@@ -109,19 +142,20 @@ test_ascii_to_s168:
 get_numeric_arg:
     lea ix,ix+3 ; point to the next argument
     ld hl,(ix)  ; get the argument string
-    call signed_asc_to_168 ; convert the string to a number
+    call asc_to_s168 ; convert the string to a number
+    ; call asc_to_sint ; DEBUG
     ret ; return with the value in DE
 
 get_plot_coords:
 ; get the move coordinates
     lea ix,ix+3 ; pointer to next argument address
     ld hl,(ix)  ; pointer to the x coordinate string
-    call signed_asc_to_168 ; de = x coordinate
+    call asc_to_s168 ; de = x coordinate
     push de
     pop bc ; bc = x coordinate
     lea ix,ix+3 ; pointer to next argument address
     ld hl,(ix)  ; pointer to the y coordinate string
-    call signed_asc_to_168 ; de = y coordinate
+    call asc_to_s168 ; de = y coordinate
     ret
 
 ; match the next argument after ix to the dispatch table at iy

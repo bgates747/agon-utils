@@ -100,7 +100,7 @@ UPPRC:  		AND     	7FH
 ;         f: Carry set if valid number, otherwise reset
 ; Destroys: a, d, e, h, l, f
 ;------------------------------------------------------------------------
-signed_asc_to_int: 
+asc_to_sint: 
     ld a,1 ; set sign flag
     ld (@sign),a ; store sign flag
     
@@ -173,7 +173,7 @@ signed_asc_to_int:
 ;         f: Carry set if valid number, otherwise reset
 ; Destroys: a, d, e, h, l, f
 ;------------------------------------------------------------------------
-signed_asc_to_168: 
+asc_to_s168: 
     ld a,1 ; set sign flag
     ld (@sign),a ; store sign flag
     

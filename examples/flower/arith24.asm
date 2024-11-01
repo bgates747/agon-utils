@@ -8,6 +8,18 @@ arith24uiy: ds 6
 arith24usp: ds 6
 arith24upc: ds 6
 
+; hlu 1 byte right shift
+; returns: hlu / 256, fractional portion in a
+; destroys: af
+shift_hlu_r1b:
+	xor a
+	ld (@buffer+3),a
+	ld a,l ; save the fractional portion
+	ld (@buffer),hl
+	ld hl,(@buffer+1)
+	ret
+@buffer: ds 4
+
 ;------------------------------------------------------------------------
 ;  arith24.asm 
 ;  24-bit ez80 arithmetic routines
@@ -288,7 +300,6 @@ deg_360_to_255:
 ; get integer portion
 	call udiv24 ; DEU AND BCU = HLU / DEU, remainder in HLU
 	ld (@output+1),de ; shift result up one byte
-	call dumpRegistersHex
 ; get fractional portion
 	ld (@scratch+1),hl ; shift remainder up one byte
 	ld hl,(@scratch)
@@ -296,7 +307,6 @@ deg_360_to_255:
 	call udiv24 ; DEU AND BCU = HLU / DEU, remainder in HLU
 	ld a,e ; lowest byte is all we need
 	ld (@output),a
-	call dumpRegistersHex
 ; we want the low 3 bytes for 16.8 output
 	ld hl,(@output)
 	ret
