@@ -1,4 +1,51 @@
 
+
+; unsigned multiplication of a 24-bit and 8-bit number giving a 32-bit result
+; uses EZ80 MLT instruction for speed
+; operation: BHL * A --> ABHL
+umul24x8:
+	push de ; preserve de
+; low byte
+	ld e,l
+	ld d,a
+	mlt de
+	ld l,e ; product low byte
+	ex af,af' ; save multiplier
+	ld a,d ; carry
+	ex af,af' ; save carry, restore multiplier
+; high byte
+	ld e,h
+	ld d,a
+	mlt de
+	ex af,af' ; save multiplier, restore carry
+	add a,e ; add carry
+	ld h,a ; product middle byte
+	ld a,d ; carry
+	ex af,af' ; save carry, restore multiplier
+; upper byte
+	ld e,b
+	ld d,a
+	mlt de
+	ex af,af' ; restore carry
+	adc a,e ; add carry
+	ld b,a ; product upper byte
+; highest byte
+	ld a,0 ; preserve carry flag
+	adc a,d ; product highest byte
+	pop de ; restore de
+	ret
+
+
+
+; unsigned multiplication of two 24-bit numbers giving a 48-bit result
+; uses EZ80 MLT instruction and shadow registers for speed
+; operation: BHL * CDE --> BHLCDE
+; destroys: everything including shadow registers but not index registers
+umul2424:
+; put HLU and DEU into B and C respectively
+
+umul2448out: ds 6 ; output buffer
+
 arith24uaf: ds 6
 arith24uhl: ds 6
 arith24ubc: ds 6
@@ -102,19 +149,10 @@ udiv2:
 	ret
 
 
-; UH.L=UB.C*UD.E
+; umul24:	UH.L = UH.L*UD.E (unsigned)
+; Preserves AF, BC, DE
 umul168:
-    call umul2448
-; UDEU.HL is the 32.16 fixed result
-; we want UH.L to be the 16.8 fixed result
-; so we divide by 256 by shiftng down a byte
-; easiest way is to write deu and hlu to scratch
-    ld (umul168out+3),de
-    ld (umul168out),hl
-; then load hlu from scratch shfited forward a byte
-    ld hl,(umul168out+1)
-    ld a,(umul168out+5) ; send a back with any overflow
-    ret
+
 umul168out: ds 6
 
 ; perform signed multiplication of 16.8 fixed place values

@@ -69,6 +69,33 @@ _main_end_ok:
 main:
     dec c               ; decrement the argument count to skip the program name
 
+test_umul824:
+; 24-bit argument to BHL
+    call get_arg_s24
+    ex de,hl
+    HLU_TO_A
+    ld b,a ; b = high 8-bits
+    push hl ; store low 16-bits, b will be fine
+
+; 8-bit argument to A TODO: write an 8-bit argument parser for performance
+    call get_arg_s24
+    ld a,e ; 8-bit argument
+    pop hl ; bhl is the 24-bit argument
+
+; do the multiplication
+    call umul24x8
+    call printHexABHL
+    call printNewLine
+    jp _main_end_ok
+
+test_scratch:
+    call get_arg_s24
+    ex de,hl
+    HLU_TO_A
+    call dumpRegistersHex
+    call printNewLine
+    jp _main_end_ok
+
 test_udiv24:
 ; get dividend
     call get_arg_s24 
@@ -80,21 +107,6 @@ test_udiv24:
 ; do the division
     call udiv24 ; ude = uhl / ude rem uhl
     ex de,hl    ; uhl = uhl / ude rem de
-    call dumpRegistersHex
-    call print_u24
-    call printNewLine
-    jp _main_end_ok
-
-test_div_24:
-; get dividend
-    call get_arg_s24 
-    push de
-; get divisor
-    call get_arg_s24 
-    pop bc ; dividend to bc (was de)
-    call dumpRegistersHex
-; do the division
-    call div_24 ; uh.l = ub.c / ud.e
     call dumpRegistersHex
     call print_u24
     call printNewLine
@@ -127,12 +139,19 @@ test_deg_360_to_255:
     jp _main_end_ok
 
 ; ========== HELPER FUNCTIONS ==========
+; get the next argument after ix as a signed 16.8 fixed point number
+; inputs: ix = pointer to the argument string
+; outputs: ude = signed 16.8 fixed point number
+; destroys: a, d, e, h, l, f
 get_arg_s168:
     lea ix,ix+3 ; point to the next argument
     ld hl,(ix)  ; get the argument string
     call asc_to_s168 ; convert the string to a number
     ret ; return with the value in DE
 
+; Inputs: ix = pointer to the argument string
+; Outputs: ude = signed 24-bit integer
+; Destroys: a, d, e, h, l, f
 get_arg_s24:
     lea ix,ix+3 ; point to the next argument
     ld hl,(ix)  ; get the argument string

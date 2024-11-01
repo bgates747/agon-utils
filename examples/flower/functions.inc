@@ -43,6 +43,13 @@
         jp   (iy)     ; Jump to the address in IY
     ENDMACRO
 
+    MACRO HLU_TO_A
+        push hl
+        inc sp
+        pop af
+        dec sp
+    ENDMACRO
+
 ; https://github.com/envenomator/Agon/blob/master/ez80asm%20examples%20(annotated)/functions.s
 ; Print a zero-terminated string
 ; HL: Pointer to string
@@ -71,6 +78,7 @@ printNewLine:
 	RST.LIL 10h
     pop af
 	RET
+
 ; Print a 24-bit HEX number
 ; HLU: Number to print
 printHex24:
@@ -104,6 +112,74 @@ printHex8:
 	DAA
 	RST.LIL	10h
 	RET
+
+printHexA:
+    push af
+    push bc
+    call printHex8
+    pop bc
+    pop af
+    ret
+
+printHexHL:
+    push af
+    push bc
+    call printHex16
+    pop bc
+    pop af
+
+printHexUHL:
+    push af
+    push bc
+    call printHex24
+    pop bc
+    pop af
+
+printHexABHL:
+; preserve registers
+    push bc ; b will be ok c will not
+    push af ; will get totally destroyed
+; print a
+    call printHex8 
+; print b
+    ld a,b
+    call printHex8
+; print hl
+    call printHex16
+; restore registers
+    pop af
+    pop bc
+    ret
+
+printHexBHL:
+; preserve registers
+    push bc ; b will be ok c will not
+    push af ; will get totally destroyed
+; print b
+    ld a,b
+    call printHex8
+; print hl
+    call printHex16
+; restore registers
+    pop af
+    pop bc
+    ret
+
+printHexCDE:
+; preserve registers
+    push bc ; b will be ok c will not
+    push af ; will get totally destroyed
+; print c
+    ld a,c
+    call printHex8
+; print de
+    ex de,hl
+    call printHex16
+    ex de,hl
+; restore registers
+    pop af
+    pop bc
+    ret
 
 ; Print a 0x HEX prefix
 DisplayHexPrefix:
@@ -148,39 +224,6 @@ DisplayHexPrefix:
         call printDec
         pop hl
     ENDMACRO
-
-; Prints the right justified decimal value in HL without leading zeroes
-; HL : Value to print
-; preserves all registers and flags
-printDecFrac:
-; back up all the things
-    push af
-    push bc
-    push de
-    push hl
-	LD	 DE, _printDecFracBuffer
-	CALL u24_to_ascii
-; replace leading zeroes with spaces
-    LD	 HL, _printDecFracBuffer
-    ld   B, 7 ; if HL was 0, we want to keep the final zero 
-@loop:
-    LD	 A, (HL)
-    CP	 '0'
-    JP	 NZ, @done
-    LD   A, ' '
-    LD	 (HL), A
-    INC	 HL
-    DJNZ @loop
-@done:
-	CALL printString
-; restore all the things
-    pop hl
-    pop de
-    pop bc
-    pop af
-; END MY CODE
-	RET
-_printDecFracBuffer: blkb 11,0 ; 11 bytes full of zeroes
 
 
 ; Prints the right justified decimal value in HL without leading zeroes
