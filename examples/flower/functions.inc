@@ -221,7 +221,7 @@ printDec:
     pop af
 ; END MY CODE
 	RET
-_printDecBuffer: blkb 9,0 ; nine bytes full of zeroes
+_printDecBuffer: blkb 16,0 ; a few bytes extra just to be sure
 
 ; This routine converts the unsigned 24-bit value in HLU into it's ASCII representation, 
 ; starting to memory location pointing by DE, in decimal form and with leading zeroes 
@@ -254,6 +254,13 @@ u24_to_ascii:
 	LD   (DE),A
 	INC  DE
 	RET
+
+print_u24:
+    ld de,_printDecBuffer
+    call u24_to_ascii
+    ld hl,_printDecBuffer
+    call printString
+    ret
 
 ; u168_to_ascii: Converts an unsigned 16.8 fixed-point value in HL to an ASCII string.
 ; HL : Value to convert to string (integer part in H, fractional part in L)
@@ -307,6 +314,13 @@ u168_to_ascii:
     ld   (de), a
     ret
 
+print_u168:
+    ld de,_printDecBuffer
+    call u168_to_ascii
+    ld hl,_printDecBuffer
+    call printString
+    ret
+
 ; signed version of u168_to_ascii
 s168_to_ascii:
     push de ; save starting address of buffer
@@ -318,6 +332,13 @@ s168_to_ascii:
     ret p ; hlu was positive so nothing to do
     ld a,'-'
     ld (de),a
+    ret
+
+print_s168:
+    ld de,_printDecBuffer
+    call s168_to_ascii
+    ld hl,_printDecBuffer
+    call printString
     ret
 
 ; #### new functions added by Brandon R. Gates ####

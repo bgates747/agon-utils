@@ -65,7 +65,7 @@ min_args: equ 2
 _main:
     ld a,c              ; how many arguments?
     cp min_args         ; not enough?
-    jr nc,main          ; if enough, go to main loop
+    jp nc,main          ; if enough, go to main loop
     ld hl,str_usage     ; if not enough, print usage
     call printString
                         ; fall through to _main_end_error
@@ -108,13 +108,38 @@ prime_radius:       dl 0x000000  ; Initial radius before shrink factor is applie
 
 
 main_loop:
-; --- convert input thetas to 8.8 fixed point degrees255
+; --- convert input thetas to 16.8 fixed point degrees255
+    ld hl,(theta_prime) ; get the theta_prime value
+    call deg_360_to_255 ; convert to 16.8 fixed point
+    ld (theta_prime),hl ; store the result
+
+    ld hl,(theta_petal) ; get the theta_petal value
+    call deg_360_to_255 ; convert to 16.8 fixed point
+    ld (theta_petal),hl ; store the result
+
 ; --- compute the main loop parameters ---
+    ; step_theta_prime = 2 * math.pi / (petals * vectors)
+    ld bc,(petals) ; ub.c = petals
+    ld de,(vectors) ; ud.e = vectors
+    call umul168 ; uh.l = petals * vectors
+    ex de,hl ; de = petals * vectors
+    ld bc,256 ; 360 degrees
+    call udiv168
+
+    call dumpRegistersHex
+    call print_u168
+    call printNewLine
+
+    ; step_theta_petal = 2 * math.pi / vectors
+    ; total_steps = int(2 * math.pi / step_theta_prime * periods)
+    ; step_theta_prime *= clock_prime
+    ; step_theta_petal *= clock_petal
+
     
 
 @loop:
 
-        jp @loop
+        ; jp @loop
         ret
 
 
@@ -136,7 +161,7 @@ load_input:
     ; TODO: we may want to branch here according to the result
     ld iy,input_params  ; point to the arguments table
 @loop:
-        call get_numeric_arg ; get the next argument
+        call get_arg_s168 ; get the next argument
         ld (iy),de ; store the argument in the table
         lea iy,iy+3  ; point to the next parameter
         djnz @loop ; loop until done
@@ -155,7 +180,7 @@ args_count_off:
 
 
 ; ========== HELPER FUNCTIONS ==========
-get_numeric_arg:
+get_arg_s168:
     lea ix,ix+3 ; point to the next argument
     ld hl,(ix)  ; get the argument string
     call asc_to_s168 ; convert the string to a number

@@ -69,92 +69,74 @@ _main_end_ok:
 main:
     dec c               ; decrement the argument count to skip the program name
 
-test_s168_to_ascii:
-    call get_numeric_arg ; de contains the numeric value of the first argument
-    ex de,hl            ; parameter to hl
-    ld de,@buffer       ; point to the buffer
-    call s168_to_ascii  ; convert the number to ASCII
-    ld hl,@buffer       ; point to the buffer
-    call printString    ; print the number
-    call printNewLine   ; print a newline
-    jp _main_end_ok
-@buffer: blkb 11,0
-
-test_u168_to_ascii:
-    call get_numeric_arg ; de contains the numeric value of the first argument
-    ex de,hl            ; parameter to hl
-    ld de,@buffer       ; point to the buffer
-    call u168_to_ascii  ; convert the number to ASCII
-    ld hl,@buffer       ; point to the buffer
-    call printString    ; print the number
-    call printNewLine   ; print a newline
-    jp _main_end_ok
-@buffer: blkb 11,0
-
-test_printDecFrac:
-    call get_numeric_arg ; de contains the numeric value of the first argument
-    ex de,hl            ; move de to hl
-    call printDecFrac   ; print the number
-    ; call printNewLine   ; print a newline
-    halt 
+test_udiv24:
+; get dividend
+    call get_arg_s24 
+    push de
+; get divisor
+    call get_arg_s24 
+    pop hl ; dividend (was de)
+    call dumpRegistersHex
+; do the division
+    call udiv24 ; ude = uhl / ude rem uhl
+    ex de,hl    ; uhl = uhl / ude rem de
+    call dumpRegistersHex
+    call print_u24
+    call printNewLine
     jp _main_end_ok
 
-test_print_A:
-    call get_numeric_arg ; de contains the numeric value of the first argument
-    ld a,d              ; low byte of integer portion
-    call print_A        ; print the number
-    call printNewLine   ; print a newline
+test_div_24:
+; get dividend
+    call get_arg_s24 
+    push de
+; get divisor
+    call get_arg_s24 
+    pop bc ; dividend to bc (was de)
+    call dumpRegistersHex
+; do the division
+    call div_24 ; uh.l = ub.c / ud.e
+    call dumpRegistersHex
+    call print_u24
+    call printNewLine
     jp _main_end_ok
 
-test_print_HLU_s24:
-    call get_numeric_arg ; de contains the numeric value of the first argument
-    ex de,hl            ; parameter to hl
-    call dumpRegistersHex ; print the registers
-    call print_HLU_s24  ; print the number
-    call printNewLine   ; print a newline
+; inputs: b.c is 8.8 dividend, ud.e is 16.8 divisor
+; outputs: uh.l is the 16.8 quotient ub.c is the 16.8 remainder
+; destroys: a,bc
+test_sdiv168:
+; get dividend
+    call get_arg_s168 
+    push de
+; get divisor
+    call get_arg_s168 
+    pop bc ; dividend to bc (was de)
+; do the division
+    call sdiv168 ; uh.l = ub.c / ud.e
+    call dumpRegistersHex
+    call print_s168
+    call printNewLine
     jp _main_end_ok
 
 test_deg_360_to_255:
-    call get_numeric_arg ; de contains the numeric value of the first argument
-    ex de,hl             ; 
+    call get_arg_s168 ; argument value to de
+    ex de,hl             ; argument to hl for function call
     call deg_360_to_255
-    call dumpRegistersHex ; print the registers
-    ; call printDec       ; print the number
-    call print_HLU_s24
-    call printNewLine   ; print a newline
-    jp _main_end_ok
-
-test_udiv168:
-; get dividend
-    call get_numeric_arg 
-    ld (@dividend),de
-; get divisor
-    call get_numeric_arg 
-; do the division
-    ld hl,(@dividend)
-    call udiv24
-    ex de,hl ; result to hl for printing
-    call dumpRegistersHex ; print the registers
-    call printDec       ; print the number
-    call printNewLine   ; print a newline
-    jp _main_end_ok
-@dividend: dl 0
-
-test_ascii_to_s168:
-; assume the first argument is numeric
-    call get_numeric_arg ; de contains the numeric value of the first argument
-    ex de,hl            ; parameter to hl
-    call dumpRegistersHex ; print the registers
-    call printDec       ; print the number
-    call printNewLine   ; print a newline
+    call dumpRegistersHex
+    call print_s168
+    call printNewLine
     jp _main_end_ok
 
 ; ========== HELPER FUNCTIONS ==========
-get_numeric_arg:
+get_arg_s168:
     lea ix,ix+3 ; point to the next argument
     ld hl,(ix)  ; get the argument string
     call asc_to_s168 ; convert the string to a number
-    ; call asc_to_sint ; DEBUG
+    ret ; return with the value in DE
+
+get_arg_s24:
+    lea ix,ix+3 ; point to the next argument
+    ld hl,(ix)  ; get the argument string
+    call asc_to_s24 ; convert the string to a number
     ret ; return with the value in DE
 
 get_plot_coords:

@@ -1,0 +1,5 @@
+DTABLE:
+    blkb 27,0
+RTABLE:
+
+    LD A,RTABLE-DTABLE/3
