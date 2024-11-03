@@ -609,41 +609,35 @@ dumpRegistersHex:
     call printHex24
     ; call printNewLine
 
-    ld hl,str_deu
-    call printString
-    ld hl,(ude)
-    call printHex24
-    ; call printNewLine
-
     ld hl,str_hlu
     call printString
     ld hl,(uhl)
     call printHex24
     ; call printNewLine
 
-    ; ld hl,str_bcu
-    ; call printString
-    ; ld hl,(ubc)
-    ; call printHex24
-    ; ; call printNewLine
+    ld hl,str_bcu
+    call printString
+    ld hl,(ubc)
+    call printHex24
+    ; call printNewLine
 
-    ; ld hl,str_deu
-    ; call printString
-    ; ld hl,(ude)
-    ; call printHex24
-    ; ; call printNewLine
+    ld hl,str_deu
+    call printString
+    ld hl,(ude)
+    call printHex24
+    ; call printNewLine
 
-    ; ld hl,str_ixu
-    ; call printString
-    ; ld hl,(uix)
-    ; call printHex24
-    ; ; call printNewLine
+    ld hl,str_ixu
+    call printString
+    ld hl,(uix)
+    call printHex24
+    ; call printNewLine
 
-    ; ld hl,str_iyu
-    ; call printString
-    ; ld hl,(uiy)
-    ; call printHex24
-    ; ; call printNewLine
+    ld hl,str_iyu
+    call printString
+    ld hl,(uiy)
+    call printHex24
+    ; call printNewLine
 
     call vdu_vblank
 
