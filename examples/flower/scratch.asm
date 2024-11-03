@@ -69,7 +69,25 @@ _main_end_ok:
 main:
     dec c               ; decrement the argument count to skip the program name
 
-test_umul824:
+test_umul24x24:
+    call get_arg_s24
+    push de
+    call get_arg_s24
+    pop hl
+
+    call dumpRegistersHex
+    call umul24x24
+
+    ld hl,(umul24x24out+3)
+    call printHexUHL
+
+    ld hl,(umul24x24out+0)
+    call printHexUHL
+    call printNewLine
+
+    jp _main_end_ok
+
+test_umul24x8:
 ; 24-bit argument to BHL
     call get_arg_s24
     ex de,hl

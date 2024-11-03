@@ -43,11 +43,32 @@
         jp   (iy)     ; Jump to the address in IY
     ENDMACRO
 
+; put the value in HLU into the accumulator
+; destroys: af
     MACRO HLU_TO_A
-        push hl
+        push hl ; 4 cycles
+        inc sp ; 1 cycle
+        pop af  ; 4 cycles
+        dec sp ; 1 cycle
+               ; 10 cycles total
+    ENDMACRO
+
+A_TO_HLU:
+    ; call is 7 cycles
+    ld (@scratch),hl ; 7 cycles
+    ld (@scratch+2),a ; 5 cycles
+    ld hl,(@scratch) ; 7 cycles
+    ret ; 6 cycles
+        ; 25 cycles total
+@scratch: dl 0
+
+    MACRO A_TO_HLU
+        push.s af
         inc sp
-        pop af
-        dec sp
+        push.s hl
+        pop hl
+        inc sp
+        inc sp
     ENDMACRO
 
 ; https://github.com/envenomator/Agon/blob/master/ez80asm%20examples%20(annotated)/functions.s
@@ -82,11 +103,17 @@ printNewLine:
 ; Print a 24-bit HEX number
 ; HLU: Number to print
 printHex24:
-	PUSH	HL
-	LD		HL, 2
-	ADD		HL, SP
-	LD		A, (HL)
-	POP		HL
+	; PUSH	HL      ; 4 cycles
+	; LD		HL, 2   ; 4 cycles
+	; ADD		HL, SP  ; 1 cycle
+	; LD		A, (HL) ; 2 cycles
+	; POP		HL      ; 4 cycles
+    ;                 ; 15 cycles total
+    push hl ; 4 cycles
+    inc sp ; 1 cycle
+    pop af  ; 4 cycles
+    dec sp ; 1 cycle
+            ; 10 cycles total
 	CALL	printHex8
 ; Print a 16-bit HEX number
 ; HL: Number to print
@@ -117,6 +144,8 @@ printHexA:
     push af
     push bc
     call printHex8
+    ld a,' '
+    rst.lil 10h
     pop bc
     pop af
     ret
@@ -125,15 +154,34 @@ printHexHL:
     push af
     push bc
     call printHex16
+    ld a,' '
+    rst.lil 10h
     pop bc
     pop af
+    ret
 
 printHexUHL:
     push af
     push bc
     call printHex24
+    ld a,' '
+    rst.lil 10h
     pop bc
     pop af
+    ret
+
+printHexAUHL:
+    push af
+    push bc
+    call printHex8
+    ld a,'.'
+    rst.lil 10h
+    call printHex24
+    ld a,' '
+    rst.lil 10h
+    pop bc
+    pop af
+    ret
 
 printHexABHL:
 ; preserve registers

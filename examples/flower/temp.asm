@@ -42,17 +42,40 @@ exit:
 	INCLUDE	"arith24.asm"
 
 main:
-    ld hl,0xFFFFFF
-    HLU_TO_A
-    ld b,a
-    call printHexBHL
-    call printNewLine
 
-    ld a,0xFF
+    call test_umul24x24
+    ; call test_umul24x8
+
+    ret
+
+test_umul24x24:
+    ld hl,2
+    ld de,3
+    call printHexUHL
+    call printNewLine
+    ex de,hl
+    call printHexUHL
+    call printNewLine
+    call printNewLine
+    ex de,hl
+
+    call umul24x24
+    ld hl,(umul24x24out+3)
+    call printHexUHL
+    ld hl,(umul24x24out)
+    call printHexUHL
+    call printNewLine
+    ret
+
+test_umul24x8:
+    ld hl,2
+    ld a,3
+    call printHexUHL
+    call printNewLine
     call printHexA
     call printNewLine
-
     call umul24x8
-    call printHexABHL
+    call printHexA
+    call printHexUHL
     call printNewLine
     ret

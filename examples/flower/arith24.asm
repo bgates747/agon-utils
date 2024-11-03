@@ -1,8 +1,8 @@
 
-
 ; unsigned multiplication of a 24-bit and 8-bit number giving a 32-bit result
 ; uses EZ80 MLT instruction for speed
-; operation: BHL * A --> ABHL
+; operation: UHL * A --> AUHL
+; destroys: AF, HL
 umul24x8:
 	push de ; preserve de
 ; low byte
@@ -23,28 +23,83 @@ umul24x8:
 	ld a,d ; carry
 	ex af,af' ; save carry, restore multiplier
 ; upper byte
-	ld e,b
-	ld d,a
+	push hl
+	inc sp
+	pop de ; d = hlu
+	dec sp
+	ld e,a
 	mlt de
 	ex af,af' ; restore carry
 	adc a,e ; add carry
-	ld b,a ; product upper byte
 ; highest byte
+    ld (@scratch),hl ; 7 cycles
+    ld (@scratch+2),a ; 5 cycles
+    ld hl,(@scratch) ; 7 cycles
 	ld a,0 ; preserve carry flag
 	adc a,d ; product highest byte
 	pop de ; restore de
 	ret
-
-
+@scratch: ds 3
 
 ; unsigned multiplication of two 24-bit numbers giving a 48-bit result
-; uses EZ80 MLT instruction and shadow registers for speed
-; operation: BHL * CDE --> BHLCDE
-; destroys: everything including shadow registers but not index registers
-umul2424:
-; put HLU and DEU into B and C respectively
+; operation: UHL * UDE --> umul24x24out
+umul24x24:
+	ld iy,umul24x24out ; point to output buffer
+	push bc
+	ld bc,0
+	ld (iy),bc
+	ld (iy+3),bc
+	pop bc
 
-umul2448out: ds 6 ; output buffer
+; STEP 1: UHL * E
+	ld a,e
+	push hl
+	call umul24x8
+	ld (iy+0),hl
+	ld (iy+3),a
+
+; STEP 2: UHL * D
+	pop hl
+	push hl
+	ld a,d
+	call umul24x8
+	call @accumulate
+
+; STEP 3: UHL * DEU
+	pop hl
+	push de
+	inc sp
+	pop af
+	dec sp
+	call umul24x8
+
+@accumulate:
+	inc iy
+; highest byte of product to carry
+	ld (iy+3),a
+; low byte of product
+	ld a,l
+	add a,(iy+0)
+	ld (iy+0),a
+; high byte of product
+	ld a,h
+	adc a,(iy+1)
+	ld (iy+1),a
+; uppper byte of product
+	push hl
+	inc sp
+	pop hl
+	dec sp
+	ld a,h
+	adc a,(iy+2)
+	ld (iy+2),a
+; carry
+	ld a,0 ; preserve flags
+	adc a,(iy+3)
+	ld (iy+3),a
+	ret
+
+umul24x24out: ds 6 ; output buffer
 
 arith24uaf: ds 6
 arith24uhl: ds 6
