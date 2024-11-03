@@ -299,7 +299,7 @@ printDec:
     LD   A, ' '
     LD	 (HL), A
     INC	 HL
-    CALL vdu_cursor_forward
+    ; CALL vdu_cursor_forward
     DJNZ @loop
 @done:
 ; END MY CODE
@@ -516,7 +516,7 @@ stepRegistersHex:
     push af ; dammit
 
 ; home the cursor
-    call vdu_home_cursor
+    ; call vdu_home_cursor
 
 ; print each register
     ld hl,str_afu
@@ -639,7 +639,7 @@ dumpRegistersHex:
     call printHex24
     ; call printNewLine
 
-    call vdu_vblank
+    ; call vdu_vblank
 
     call printNewLine
 ; restore everything
