@@ -72,25 +72,36 @@ main:
     dec c               ; decrement the argument count to skip the program name
 
 test_sdiv168:
-    call get_arg_s168 ; de first argument
+; get first numeric argument
+    call get_arg_s168 ; de = first numeric argument
     push de
     ex de,hl
     call print_s168
 
-    call get_arg_text ; hl points to the operator string
-    call print_param
-    lea ix,ix-3 
-    ld iy,operator
-    call match_next
+; match on single number functions
+    ld iy,function
+    call match_next_and_print ; iy = function pointer, zero flag set if match
     push af ; save zero flag
     push iy ; save the function pointer
+    jp z,@execute
 
-    call get_arg_s168 ; de second argument
+; match on two-number operators
+    pop iy ; dummy pops
+    pop af ; to balance stack
+    lea ix,ix-3
+    ld iy,operator
+    call match_next_and_print ; iy = operator pointer, zero flag set if match
+    push af ; save zero flag
+    push iy ; save the operator pointer
+
+; get second numeric argument if needed
+    call get_arg_s168 ; de = second argument
     ex de,hl
     call print_s168 
     ex de,hl
 
-    pop iy ; restore the function pointer
+@execute:
+    pop iy ; restore the function/operator pointer
     pop af ; restore zero flag
     pop hl ; restore first argument
 
@@ -99,15 +110,18 @@ test_sdiv168:
     callIY ; call the function
     call print_s168
     call printNewLine
+    call printNewLine
 
     jp _main_end_ok
 
-; ========== DISPATCH TABLE ==========
+; ========== DISPATCH TABLES ==========
 operator:
     dl addition
     dl subtract
     dl multiply
     dl divide
+    dl tan
+    dl atan2
     dl 0x000000 ; list terminator
 addition:
     jr @start
@@ -134,6 +148,42 @@ divide:
 @start:
     call sdiv168
     ex de,hl
+    ret
+tan:
+    jr @start
+    asciz "tan"
+@start:
+    ; call tan168
+    ret
+atan2:
+    jr @start
+    asciz "atan2"
+@start:
+    ; call atan2_168
+    ret
+
+function:
+    dl sin
+    dl cos
+    dl sqrt
+    dl 0x000000 ; list terminator
+sin:
+    jr @start
+    asciz "sin"
+@start:
+    call sin168
+    ret
+cos:
+    jr @start
+    asciz "cos"
+@start:
+    call cos168
+    ret
+sqrt:
+    jr @start
+    asciz "sqrt"
+@start:
+    call sqrt168
     ret
 
 ; ========== HELPER FUNCTIONS ==========
@@ -198,6 +248,15 @@ match_next:
 @match:
     ld iy,(iy)          ; get the function pointer
     ret                 ; return a=0 and zero flag set
+
+; same as match_next, but prints the parameter if a match is found
+match_next_and_print:
+    call match_next
+    ret nz ; no match found
+    lea ix,ix-3 
+    call get_arg_text ; hl points to the operator string
+    call print_param
+    ret
 
 ; compare two zero-terminated strings for equality, case-sensitive
 ; hl: pointer to first string, de: pointer to second string

@@ -5018,182 +5018,244 @@ PC     Output      Line
 0B1A18 0D          0072       dec c               ; decrement the argument count to skip the program name
 0B1A19             0073   
 0B1A19             0074   test_sdiv168:
-0B1A19 CD 8F 1A 0B 0075       call get_arg_s168 ; de first argument
-0B1A1D D5          0076       push de
-0B1A1E EB          0077       ex de,hl
-0B1A1F CD 34 04 0B 0078       call print_s168
-0B1A23             0079   
-0B1A23 CD BC 1A 0B 0080       call get_arg_text ; hl points to the operator string
-0B1A27 CD F6 1A 0B 0081       call print_param
-0B1A2B ED 32 FD    0082       lea ix,ix-3
-0B1A2E FD 21 5F 1A 0083       ld iy,operator
+0B1A19             0075   ; get first numeric argument
+0B1A19 CD E2 1A 0B 0076       call get_arg_s168 ; de = first numeric argument
+0B1A1D D5          0077       push de
+0B1A1E EB          0078       ex de,hl
+0B1A1F CD 34 04 0B 0079       call print_s168
+0B1A23             0080   
+0B1A23             0081   ; match on single number functions
+0B1A23 FD 21 B4 1A 0082       ld iy,function
        0B          
-0B1A33 CD C3 1A 0B 0084       call match_next
-0B1A37 F5          0085       push af ; save zero flag
-0B1A38 FD E5       0086       push iy ; save the function pointer
-0B1A3A             0087   
-0B1A3A CD 8F 1A 0B 0088       call get_arg_s168 ; de second argument
-0B1A3E EB          0089       ex de,hl
-0B1A3F CD 34 04 0B 0090       call print_s168
-0B1A43 EB          0091       ex de,hl
-0B1A44             0092   
-0B1A44 FD E1       0093       pop iy ; restore the function pointer
-0B1A46 F1          0094       pop af ; restore zero flag
-0B1A47 E1          0095       pop hl ; restore first argument
-0B1A48             0096   
-0B1A48 C2 06 1A 0B 0097       jp nz,_main_end_error
-0B1A4C             0098   
-0B1A4C             0099       callIY ; call the function
-0B1A4C 01 53 1A 0B 0001M          ld bc,$+7     ; Address of first instruction after the jump
-0B1A50 C5          0002M          push bc       ; which constitutes the return address
-0B1A51 FD E9       0003M          jp   (iy)     ; Jump to the address in IY
-0B1A53 CD 34 04 0B 0100       call print_s168
-0B1A57 CD 88 02 0B 0101       call printNewLine
-0B1A5B             0102   
-0B1A5B C3 13 1A 0B 0103       jp _main_end_ok
-0B1A5F             0104   
-0B1A5F             0105   ; ========== DISPATCH TABLE ==========
-0B1A5F             0106   operator:
-0B1A5F 6E 1A 0B    0107       dl addition
-0B1A62 74 1A 0B    0108       dl subtract
-0B1A65 7C 1A 0B    0109       dl multiply
-0B1A68 85 1A 0B    0110       dl divide
-0B1A6B 00 00 00    0111       dl 0x000000 ; list terminator
-0B1A6E             0112   addition:
-0B1A6E 18 02       0113       jr @start
-0B1A70 2B 00       0114       asciz "+"
-0B1A72             0115   @start:
-0B1A72 19          0116       add hl,de
-0B1A73 C9          0117       ret
-0B1A74             0118   subtract:
-0B1A74 18 02       0119       jr @start
-0B1A76 2D 00       0120       asciz "-"
-0B1A78             0121   @start:
-0B1A78 AF          0122       xor a ; clear carry
-0B1A79 ED 52       0123       sbc hl,de
-0B1A7B C9          0124       ret
-0B1A7C             0125   multiply:
-0B1A7C 18 02       0126       jr @start
-0B1A7E 2A 00       0127       asciz "*"
-0B1A80             0128   @start:
-0B1A80 CD C1 08 0B 0129       call smul168
-0B1A84 C9          0130       ret
-0B1A85             0131   divide:
-0B1A85 18 02       0132       jr @start
-0B1A87 2F 00       0133       asciz "/"
-0B1A89             0134   @start:
-0B1A89 CD 58 09 0B 0135       call sdiv168
-0B1A8D EB          0136       ex de,hl
-0B1A8E C9          0137       ret
-0B1A8F             0138   
-0B1A8F             0139   ; ========== HELPER FUNCTIONS ==========
-0B1A8F             0140   ; get the next argument after ix as a signed 16.8 fixed point number
-0B1A8F             0141   ; inputs: ix = pointer to the argument string
-0B1A8F             0142   ; outputs: ude = signed 16.8 fixed point number
-0B1A8F             0143   ; destroys: a, d, e, h, l, f
-0B1A8F             0144   get_arg_s168:
-0B1A8F ED 32 03    0145       lea ix,ix+3 ; point to the next argument
-0B1A92 DD 27 00    0146       ld hl,(ix)  ; get the argument string
-0B1A95 CD 94 01 0B 0147       call asc_to_s168 ; convert the string to a number
-0B1A99 C9          0148       ret ; return with the value in DE
-0B1A9A             0149   
-0B1A9A             0150   ; Inputs: ix = pointer to the argument string
-0B1A9A             0151   ; Outputs: ude = signed 24-bit integer
-0B1A9A             0152   ; Destroys: a, d, e, h, l, f
-0B1A9A             0153   get_arg_s24:
-0B1A9A ED 32 03    0154       lea ix,ix+3 ; point to the next argument
-0B1A9D DD 27 00    0155       ld hl,(ix)  ; get the argument string
-0B1AA0 CD 45 01 0B 0156       call asc_to_s24 ; convert the string to a number
-0B1AA4 C9          0157       ret ; return with the value in DE
-0B1AA5             0158   
-0B1AA5             0159   get_plot_coords:
-0B1AA5             0160   ; get the move coordinates
-0B1AA5 ED 32 03    0161       lea ix,ix+3 ; pointer to next argument address
-0B1AA8 DD 27 00    0162       ld hl,(ix)  ; pointer to the x coordinate string
-0B1AAB CD 94 01 0B 0163       call asc_to_s168 ; de = x coordinate
-0B1AAF D5          0164       push de
-0B1AB0 C1          0165       pop bc ; bc = x coordinate
-0B1AB1 ED 32 03    0166       lea ix,ix+3 ; pointer to next argument address
-0B1AB4 DD 27 00    0167       ld hl,(ix)  ; pointer to the y coordinate string
-0B1AB7 CD 94 01 0B 0168       call asc_to_s168 ; de = y coordinate
-0B1ABB C9          0169       ret
-0B1ABC             0170   
-0B1ABC             0171   get_arg_text:
-0B1ABC ED 32 03    0172       lea ix,ix+3 ; point to the next argument
-0B1ABF DD 27 00    0173       ld hl,(ix)  ; get the argument string
-0B1AC2 C9          0174       ret
-0B1AC3             0175   
-0B1AC3             0176   ; match the next argument after ix to the dispatch table at iy
-0B1AC3             0177   ;   - arguments and dispatch entries are zero-terminated, case-sensitive strings
-0B1AC3             0178   ;   - final entry of dispatch table must be a 3-byte zero or bad things will happen
-0B1AC3             0179   ; returns: NO MATCH: iy=dispatch list terminator a=1 and zero flag reset
-0B1AC3             0180   ;          ON MATCH: iy=dispatch address, a=0 and zero flag set
-0B1AC3             0181   ; destroys: a, hl, de, ix, iy, flags
-0B1AC3             0182   match_next:
-0B1AC3 ED 32 03    0183       lea ix,ix+3         ; point to the next argument
-0B1AC6             0184   @loop:
-0B1AC6 FD 27 00    0185       ld hl,(iy)          ; pointer argument dispatch record
-0B1AC9             0186       sign_hlu            ; check for list terminator
-0B1AC9 19          0001M          add hl,de
-0B1ACA B7          0002M          or a
-0B1ACB ED 52       0003M          sbc hl,de
-0B1ACD CA E5 1A 0B 0187       jp z,@no_match      ; if a=0, return error
-0B1AD1 23          0188       inc hl              ; skip over jp instruction
-0B1AD2 23          0189       inc hl
-0B1AD3 DD 17 00    0190       ld de,(ix)          ; pointer to the argument string
-0B1AD6 CD EB 1A 0B 0191       call str_equal      ; compare the argument to the dispatch table entry
-0B1ADA CA E7 1A 0B 0192       jp z,@match         ; if equal, return success
-0B1ADE ED 33 03    0193       lea iy,iy+3         ; if not equal, bump iy to next dispatch table entry
-0B1AE1 C3 C6 1A 0B 0194       jp @loop            ; and loop
-0B1AE5             0195   @no_match:
-0B1AE5 3C          0196       inc a               ; no match so return a=1 and zero flag reset
-0B1AE6 C9          0197       ret
-0B1AE7             0198   @match:
-0B1AE7 FD 37 00    0199       ld iy,(iy)          ; get the function pointer
-0B1AEA C9          0200       ret                 ; return a=0 and zero flag set
-0B1AEB             0201   
-0B1AEB             0202   ; compare two zero-terminated strings for equality, case-sensitive
-0B1AEB             0203   ; hl: pointer to first string, de: pointer to second string
-0B1AEB             0204   ; returns: z if equal, nz if not equal
-0B1AEB             0205   ; destroys: a, hl, de
-0B1AEB             0206   str_equal:
-0B1AEB 1A          0207       ld a,(de)           ; get the first character
-0B1AEC BE          0208       cp (hl)             ; compare to the second character
-0B1AED C0          0209       ret nz              ; if not equal, return
-0B1AEE B7          0210       or a
-0B1AEF C8          0211       ret z               ; if equal and zero, return
-0B1AF0 23          0212       inc hl              ; next character
-0B1AF1 13          0213       inc de
-0B1AF2 C3 EB 1A 0B 0214       jp str_equal        ; loop until end of string
-0B1AF6             0215   
-0B1AF6             0216   ; print the parameter string pointed to by ix
-0B1AF6             0217   ; destroys: a, hl
-0B1AF6             0218   print_param:
-0B1AF6 DD 27 00    0219       ld hl,(ix)          ; get the parameter pointer
-0B1AF9 CD 73 02 0B 0220       call printString    ; print the parameter string
-0B1AFD 3E 20       0221       ld a,' '            ; print a space separator
-0B1AFF 5B D7       0222       rst.lil $10
-0B1B01 C9          0223       ret
-0B1B02             0224   
-0B1B02             0225   ; print the parameters
-0B1B02             0226   ; inputs: b = number of parameters, ix = pointer to the parameters
-0B1B02             0227   ; destroys: a, hl, bc
-0B1B02             0228   print_params:
-0B1B02 41          0229       ld b,c              ; loop counter = number of parameters
-0B1B03 DD E5       0230       push ix             ; save the pointer to the parameters
-0B1B05             0231   @loop:
-0B1B05 C5          0232       push bc             ; save the loop counter
-0B1B06 CD F6 1A 0B 0233       call print_param    ; print the parameter
-0B1B0A ED 32 03    0234       lea ix,ix+3         ; next parameter pointer
-0B1B0D C1          0235       pop bc              ; get back the loop counter
-0B1B0E 10 F5       0236       djnz @loop          ; loop until done
-0B1B10 DD E1       0237       pop ix              ; restore the pointer to the parameters
-0B1B12 C9          0238       ret
-0B1B13             0239   
-0B1B13             0240   debug_print:
-0B1B13 CD 88 02 0B 0241       call printNewLine   ; DEBUG
-0B1B17 CD 8D 06 0B 0242       call dumpFlags      ; DEBUG
-0B1B1B CD F6 1A 0B 0243       call print_param    ; DEBUG
-0B1B1F CD 88 02 0B 0244       call printNewLine   ; DEBUG
-0B1B23 CD 88 02 0B 0245       call printNewLine   ; DEBUG
-0B1B27 C9          0246       ret
+0B1A28 CD 3E 1B 0B 0083       call match_next_and_print ; iy = function pointer, zero flag set if match
+0B1A2C F5          0084       push af ; save zero flag
+0B1A2D FD E5       0085       push iy ; save the function pointer
+0B1A2F CA 4F 1A 0B 0086       jp z,@execute
+0B1A33             0087   
+0B1A33             0088   ; match on two-number operators
+0B1A33 FD E1       0089       pop iy ; dummy pops
+0B1A35 F1          0090       pop af ; to balance stack
+0B1A36 ED 32 FD    0091       lea ix,ix-3
+0B1A39 FD 21 6E 1A 0092       ld iy,operator
+       0B          
+0B1A3E CD 3E 1B 0B 0093       call match_next_and_print ; iy = operator pointer, zero flag set if match
+0B1A42 F5          0094       push af ; save zero flag
+0B1A43 FD E5       0095       push iy ; save the operator pointer
+0B1A45             0096   
+0B1A45             0097   ; get second numeric argument if needed
+0B1A45 CD E2 1A 0B 0098       call get_arg_s168 ; de = second argument
+0B1A49 EB          0099       ex de,hl
+0B1A4A CD 34 04 0B 0100       call print_s168
+0B1A4E EB          0101       ex de,hl
+0B1A4F             0102   
+0B1A4F             0103   @execute:
+0B1A4F FD E1       0104       pop iy ; restore the function/operator pointer
+0B1A51 F1          0105       pop af ; restore zero flag
+0B1A52 E1          0106       pop hl ; restore first argument
+0B1A53             0107   
+0B1A53 C2 06 1A 0B 0108       jp nz,_main_end_error
+0B1A57             0109   
+0B1A57             0110       callIY ; call the function
+0B1A57 01 5E 1A 0B 0001M          ld bc,$+7     ; Address of first instruction after the jump
+0B1A5B C5          0002M          push bc       ; which constitutes the return address
+0B1A5C FD E9       0003M          jp   (iy)     ; Jump to the address in IY
+0B1A5E CD 34 04 0B 0111       call print_s168
+0B1A62 CD 88 02 0B 0112       call printNewLine
+0B1A66 CD 88 02 0B 0113       call printNewLine
+0B1A6A             0114   
+0B1A6A C3 13 1A 0B 0115       jp _main_end_ok
+0B1A6E             0116   
+0B1A6E             0117   ; ========== DISPATCH TABLES ==========
+0B1A6E             0118   operator:
+0B1A6E 83 1A 0B    0119       dl addition
+0B1A71 89 1A 0B    0120       dl subtract
+0B1A74 91 1A 0B    0121       dl multiply
+0B1A77 9A 1A 0B    0122       dl divide
+0B1A7A A4 1A 0B    0123       dl tan
+0B1A7D AB 1A 0B    0124       dl atan2
+0B1A80 00 00 00    0125       dl 0x000000 ; list terminator
+0B1A83             0126   addition:
+0B1A83 18 02       0127       jr @start
+0B1A85 2B 00       0128       asciz "+"
+0B1A87             0129   @start:
+0B1A87 19          0130       add hl,de
+0B1A88 C9          0131       ret
+0B1A89             0132   subtract:
+0B1A89 18 02       0133       jr @start
+0B1A8B 2D 00       0134       asciz "-"
+0B1A8D             0135   @start:
+0B1A8D AF          0136       xor a ; clear carry
+0B1A8E ED 52       0137       sbc hl,de
+0B1A90 C9          0138       ret
+0B1A91             0139   multiply:
+0B1A91 18 02       0140       jr @start
+0B1A93 2A 00       0141       asciz "*"
+0B1A95             0142   @start:
+0B1A95 CD C1 08 0B 0143       call smul168
+0B1A99 C9          0144       ret
+0B1A9A             0145   divide:
+0B1A9A 18 02       0146       jr @start
+0B1A9C 2F 00       0147       asciz "/"
+0B1A9E             0148   @start:
+0B1A9E CD 58 09 0B 0149       call sdiv168
+0B1AA2 EB          0150       ex de,hl
+0B1AA3 C9          0151       ret
+0B1AA4             0152   tan:
+0B1AA4 18 04       0153       jr @start
+0B1AA6 74 61 6E 00 0154       asciz "tan"
+0B1AAA             0155   @start:
+0B1AAA             0156       ; call tan168
+0B1AAA C9          0157       ret
+0B1AAB             0158   atan2:
+0B1AAB 18 06       0159       jr @start
+0B1AAD 61 74 61 6E 0160       asciz "atan2"
+       32 00       
+0B1AB3             0161   @start:
+0B1AB3             0162       ; call atan2_168
+0B1AB3 C9          0163       ret
+0B1AB4             0164   
+0B1AB4             0165   function:
+0B1AB4 C0 1A 0B    0166       dl sin
+0B1AB7 CB 1A 0B    0167       dl cos
+0B1ABA D6 1A 0B    0168       dl sqrt
+0B1ABD 00 00 00    0169       dl 0x000000 ; list terminator
+0B1AC0             0170   sin:
+0B1AC0 18 04       0171       jr @start
+0B1AC2 73 69 6E 00 0172       asciz "sin"
+0B1AC6             0173   @start:
+0B1AC6 CD 8D 0B 0B 0174       call sin168
+0B1ACA C9          0175       ret
+0B1ACB             0176   cos:
+0B1ACB 18 04       0177       jr @start
+0B1ACD 63 6F 73 00 0178       asciz "cos"
+0B1AD1             0179   @start:
+0B1AD1 CD 88 0B 0B 0180       call cos168
+0B1AD5 C9          0181       ret
+0B1AD6             0182   sqrt:
+0B1AD6 18 05       0183       jr @start
+0B1AD8 73 71 72 74 0184       asciz "sqrt"
+       00          
+0B1ADD             0185   @start:
+0B1ADD CD 2E 0A 0B 0186       call sqrt168
+0B1AE1 C9          0187       ret
+0B1AE2             0188   
+0B1AE2             0189   ; ========== HELPER FUNCTIONS ==========
+0B1AE2             0190   ; get the next argument after ix as a signed 16.8 fixed point number
+0B1AE2             0191   ; inputs: ix = pointer to the argument string
+0B1AE2             0192   ; outputs: ude = signed 16.8 fixed point number
+0B1AE2             0193   ; destroys: a, d, e, h, l, f
+0B1AE2             0194   get_arg_s168:
+0B1AE2 ED 32 03    0195       lea ix,ix+3 ; point to the next argument
+0B1AE5 DD 27 00    0196       ld hl,(ix)  ; get the argument string
+0B1AE8 CD 94 01 0B 0197       call asc_to_s168 ; convert the string to a number
+0B1AEC C9          0198       ret ; return with the value in DE
+0B1AED             0199   
+0B1AED             0200   ; Inputs: ix = pointer to the argument string
+0B1AED             0201   ; Outputs: ude = signed 24-bit integer
+0B1AED             0202   ; Destroys: a, d, e, h, l, f
+0B1AED             0203   get_arg_s24:
+0B1AED ED 32 03    0204       lea ix,ix+3 ; point to the next argument
+0B1AF0 DD 27 00    0205       ld hl,(ix)  ; get the argument string
+0B1AF3 CD 45 01 0B 0206       call asc_to_s24 ; convert the string to a number
+0B1AF7 C9          0207       ret ; return with the value in DE
+0B1AF8             0208   
+0B1AF8             0209   get_plot_coords:
+0B1AF8             0210   ; get the move coordinates
+0B1AF8 ED 32 03    0211       lea ix,ix+3 ; pointer to next argument address
+0B1AFB DD 27 00    0212       ld hl,(ix)  ; pointer to the x coordinate string
+0B1AFE CD 94 01 0B 0213       call asc_to_s168 ; de = x coordinate
+0B1B02 D5          0214       push de
+0B1B03 C1          0215       pop bc ; bc = x coordinate
+0B1B04 ED 32 03    0216       lea ix,ix+3 ; pointer to next argument address
+0B1B07 DD 27 00    0217       ld hl,(ix)  ; pointer to the y coordinate string
+0B1B0A CD 94 01 0B 0218       call asc_to_s168 ; de = y coordinate
+0B1B0E C9          0219       ret
+0B1B0F             0220   
+0B1B0F             0221   get_arg_text:
+0B1B0F ED 32 03    0222       lea ix,ix+3 ; point to the next argument
+0B1B12 DD 27 00    0223       ld hl,(ix)  ; get the argument string
+0B1B15 C9          0224       ret
+0B1B16             0225   
+0B1B16             0226   ; match the next argument after ix to the dispatch table at iy
+0B1B16             0227   ;   - arguments and dispatch entries are zero-terminated, case-sensitive strings
+0B1B16             0228   ;   - final entry of dispatch table must be a 3-byte zero or bad things will happen
+0B1B16             0229   ; returns: NO MATCH: iy=dispatch list terminator a=1 and zero flag reset
+0B1B16             0230   ;          ON MATCH: iy=dispatch address, a=0 and zero flag set
+0B1B16             0231   ; destroys: a, hl, de, ix, iy, flags
+0B1B16             0232   match_next:
+0B1B16 ED 32 03    0233       lea ix,ix+3         ; point to the next argument
+0B1B19             0234   @loop:
+0B1B19 FD 27 00    0235       ld hl,(iy)          ; pointer argument dispatch record
+0B1B1C             0236       sign_hlu            ; check for list terminator
+0B1B1C 19          0001M          add hl,de
+0B1B1D B7          0002M          or a
+0B1B1E ED 52       0003M          sbc hl,de
+0B1B20 CA 38 1B 0B 0237       jp z,@no_match      ; if a=0, return error
+0B1B24 23          0238       inc hl              ; skip over jp instruction
+0B1B25 23          0239       inc hl
+0B1B26 DD 17 00    0240       ld de,(ix)          ; pointer to the argument string
+0B1B29 CD 4F 1B 0B 0241       call str_equal      ; compare the argument to the dispatch table entry
+0B1B2D CA 3A 1B 0B 0242       jp z,@match         ; if equal, return success
+0B1B31 ED 33 03    0243       lea iy,iy+3         ; if not equal, bump iy to next dispatch table entry
+0B1B34 C3 19 1B 0B 0244       jp @loop            ; and loop
+0B1B38             0245   @no_match:
+0B1B38 3C          0246       inc a               ; no match so return a=1 and zero flag reset
+0B1B39 C9          0247       ret
+0B1B3A             0248   @match:
+0B1B3A FD 37 00    0249       ld iy,(iy)          ; get the function pointer
+0B1B3D C9          0250       ret                 ; return a=0 and zero flag set
+0B1B3E             0251   
+0B1B3E             0252   ; same as match_next, but prints the parameter if a match is found
+0B1B3E             0253   match_next_and_print:
+0B1B3E CD 16 1B 0B 0254       call match_next
+0B1B42 C0          0255       ret nz ; no match found
+0B1B43 ED 32 FD    0256       lea ix,ix-3
+0B1B46 CD 0F 1B 0B 0257       call get_arg_text ; hl points to the operator string
+0B1B4A CD 5A 1B 0B 0258       call print_param
+0B1B4E C9          0259       ret
+0B1B4F             0260   
+0B1B4F             0261   ; compare two zero-terminated strings for equality, case-sensitive
+0B1B4F             0262   ; hl: pointer to first string, de: pointer to second string
+0B1B4F             0263   ; returns: z if equal, nz if not equal
+0B1B4F             0264   ; destroys: a, hl, de
+0B1B4F             0265   str_equal:
+0B1B4F 1A          0266       ld a,(de)           ; get the first character
+0B1B50 BE          0267       cp (hl)             ; compare to the second character
+0B1B51 C0          0268       ret nz              ; if not equal, return
+0B1B52 B7          0269       or a
+0B1B53 C8          0270       ret z               ; if equal and zero, return
+0B1B54 23          0271       inc hl              ; next character
+0B1B55 13          0272       inc de
+0B1B56 C3 4F 1B 0B 0273       jp str_equal        ; loop until end of string
+0B1B5A             0274   
+0B1B5A             0275   ; print the parameter string pointed to by ix
+0B1B5A             0276   ; destroys: a, hl
+0B1B5A             0277   print_param:
+0B1B5A DD 27 00    0278       ld hl,(ix)          ; get the parameter pointer
+0B1B5D CD 73 02 0B 0279       call printString    ; print the parameter string
+0B1B61 3E 20       0280       ld a,' '            ; print a space separator
+0B1B63 5B D7       0281       rst.lil $10
+0B1B65 C9          0282       ret
+0B1B66             0283   
+0B1B66             0284   ; print the parameters
+0B1B66             0285   ; inputs: b = number of parameters, ix = pointer to the parameters
+0B1B66             0286   ; destroys: a, hl, bc
+0B1B66             0287   print_params:
+0B1B66 41          0288       ld b,c              ; loop counter = number of parameters
+0B1B67 DD E5       0289       push ix             ; save the pointer to the parameters
+0B1B69             0290   @loop:
+0B1B69 C5          0291       push bc             ; save the loop counter
+0B1B6A CD 5A 1B 0B 0292       call print_param    ; print the parameter
+0B1B6E ED 32 03    0293       lea ix,ix+3         ; next parameter pointer
+0B1B71 C1          0294       pop bc              ; get back the loop counter
+0B1B72 10 F5       0295       djnz @loop          ; loop until done
+0B1B74 DD E1       0296       pop ix              ; restore the pointer to the parameters
+0B1B76 C9          0297       ret
+0B1B77             0298   
+0B1B77             0299   debug_print:
+0B1B77 CD 88 02 0B 0300       call printNewLine   ; DEBUG
+0B1B7B CD 8D 06 0B 0301       call dumpFlags      ; DEBUG
+0B1B7F CD 5A 1B 0B 0302       call print_param    ; DEBUG
+0B1B83 CD 88 02 0B 0303       call printNewLine   ; DEBUG
+0B1B87 CD 88 02 0B 0304       call printNewLine   ; DEBUG
+0B1B8B C9          0305       ret
