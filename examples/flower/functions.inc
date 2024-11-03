@@ -62,14 +62,15 @@ A_TO_HLU:
         ; 25 cycles total
 @scratch: dl 0
 
-    MACRO A_TO_HLU
-        push.s af
-        inc sp
-        push.s hl
-        pop hl
-        inc sp
-        inc sp
-    ENDMACRO
+    ; TODO: implement this
+    ; MACRO A_TO_HLU
+    ;     push.s af
+    ;     inc sp
+    ;     push.s hl
+    ;     pop hl
+    ;     inc sp
+    ;     inc sp
+    ; ENDMACRO
 
 ; https://github.com/envenomator/Agon/blob/master/ez80asm%20examples%20(annotated)/functions.s
 ; Print a zero-terminated string
@@ -347,10 +348,16 @@ u24_to_ascii:
 	RET
 
 print_u24:
+    push de
+    push hl
     ld de,_printDecBuffer
     call u24_to_ascii
     ld hl,_printDecBuffer
     call printString
+    ld a,' '
+    rst.lil 10h
+    pop hl
+    pop de
     ret
 
 ; u168_to_ascii: Converts an unsigned 16.8 fixed-point value in HL to an ASCII string.
@@ -363,7 +370,7 @@ u168_to_ascii:
     inc de
 ; Convert integer part
     push hl               ; Save HL (we’ll need the fractional part later)
-    call shift_hlu_r1b    ; Shift to get integer portion in HL
+    call div_hlu_256    ; Shift to get integer portion in HL
     ld   bc, -10000
     call @one_int
     ld   bc, -1000
@@ -406,10 +413,14 @@ u168_to_ascii:
     ret
 
 print_u168:
+    push de
+    push hl
     ld de,_printDecBuffer
     call u168_to_ascii
     ld hl,_printDecBuffer
     call printString
+    pop hl
+    pop de
     ret
 
 ; signed version of u168_to_ascii
@@ -426,10 +437,14 @@ s168_to_ascii:
     ret
 
 print_s168:
+    push de
+    push hl
     ld de,_printDecBuffer
     call s168_to_ascii
     ld hl,_printDecBuffer
     call printString
+    pop hl
+    pop de
     ret
 
 ; #### new functions added by Brandon R. Gates ####
@@ -594,35 +609,41 @@ dumpRegistersHex:
     call printHex24
     ; call printNewLine
 
-    ld hl,str_hlu
-    call printString
-    ld hl,(uhl)
-    call printHex24
-    ; call printNewLine
-
-    ld hl,str_bcu
-    call printString
-    ld hl,(ubc)
-    call printHex24
-    ; call printNewLine
-
     ld hl,str_deu
     call printString
     ld hl,(ude)
     call printHex24
     ; call printNewLine
 
-    ld hl,str_ixu
+    ld hl,str_hlu
     call printString
-    ld hl,(uix)
+    ld hl,(uhl)
     call printHex24
     ; call printNewLine
 
-    ld hl,str_iyu
-    call printString
-    ld hl,(uiy)
-    call printHex24
-    ; call printNewLine
+    ; ld hl,str_bcu
+    ; call printString
+    ; ld hl,(ubc)
+    ; call printHex24
+    ; ; call printNewLine
+
+    ; ld hl,str_deu
+    ; call printString
+    ; ld hl,(ude)
+    ; call printHex24
+    ; ; call printNewLine
+
+    ; ld hl,str_ixu
+    ; call printString
+    ; ld hl,(uix)
+    ; call printHex24
+    ; ; call printNewLine
+
+    ; ld hl,str_iyu
+    ; call printString
+    ; ld hl,(uiy)
+    ; call printHex24
+    ; ; call printNewLine
 
     call vdu_vblank
 

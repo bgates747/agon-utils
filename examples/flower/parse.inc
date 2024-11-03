@@ -105,7 +105,7 @@ asc_to_s24:
     ld (@sign),a ; store sign flag
     
     ld de, 0 ; initialise de
-    call _skip_spaces ; skip whitespace
+    ; call _skip_spaces ; skip whitespace
     
     ld a, (hl) ; read first character
     or a ; check for end of string

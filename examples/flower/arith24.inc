@@ -179,8 +179,7 @@ umul24_nc:
 ;------------------------------------------------------------------------
 ; udiv24
 ; Unsigned 24-bit division
-; Divides HLU by DEU. Gives result in DEU (and BC), remainder in HLU.
-; 
+; HLU / DEU --> DEU rem HLU
 ; Uses AF BC DE HL
 ; Uses Restoring Division algorithm
 ;------------------------------------------------------------------------
@@ -217,27 +216,44 @@ udiv2:
 	pop		de	;remainder
 	ret
 
-; perform unsigned division of fixed place values
-; with an unsigned 16.8 fixed place result
-; inputs: b.c is 8.8 dividend, ud.e is 16.8 divisor
-; outputs: uh.l is the 16.8 quotient ub.c is the 16.8 remainder
-; destroys: a,bc
-udiv168:
-; shift dividend left 8 bits
-    ld (arith24ubc+1),bc
-    xor a
-    ld (arith24ubc),a
-    ld bc,(arith24ubc)
-    call udiv24
-; flip-flop outptuts to satisfy downstream consumers
-; TODO: this is a hack and should be fixed
-; (so says copilot ... but it's not wrong)
-    push hl 
-    push bc
-    pop hl 
-    pop bc 
-    ret
 
+; UH.L / UD.E --> UD.E rem UHL (unsigned)
+; perform unsigned division of 16.8 fixed place values
+; with an unsigned 16.8 fixed place result and 24-bit remainder
+udiv168:
+; back up divisor
+    push de
+; get the 16-bit integer part of the quotient
+    call udiv24 ; de = quotient, hl = remainder
+; load quotient to upper three bytes of output
+    ld (div168_out+1),de
+@div256:
+; divide divisor by 256
+    ex de,hl ; hl = quotient, de = remainder
+    pop hl ; hl = divisor (was de), de = remainder
+    call div_hlu_256 ; hl = divisor / 256, de = remainder
+    ex de,hl ; hl = remainder, de = divisor / 256
+; skip fractional computation if remainder is zero
+    sign_hlu
+    jr nz,@div_frac
+    xor a
+    jr @write_frac
+; now divide the remainder by the shifted divisor
+@div_frac:
+    call udiv24 ; de = quotient, hl = remainder
+; load low byte of quotient to low byte of output
+    ld a,e
+@write_frac:
+    ld (div168_out),a
+; load de with return value
+    ld de,(div168_out)
+; load a with any overflow
+    ld a,(div168_out+3)
+    ret ; ud.e is the 16.8 result
+@ude: ds 6
+div168_out: ds 4 ; the extra byte is for overflow
+
+; UB.C / UD.E --> UH.L (signed)
 ; perform signed division of 16.8 fixed place values
 ; with an signed 16.8 fixed place result
 ; inputs: ub.c is dividend,ud.e is divisor
@@ -438,7 +454,7 @@ bitbuf2:	dw24	0	;bit manipulation buffer 2
 ; hlu 1 byte right shift
 ; returns: hlu / 256, fractional portion in a
 ; destroys: af
-shift_hlu_r1b:
+div_hlu_256:
 	xor a
 	ld (@buffer+3),a
 	ld a,l ; save the fractional portion

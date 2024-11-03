@@ -71,11 +71,77 @@ _main_end_ok:
 main:
     dec c               ; decrement the argument count to skip the program name
 
-    ; call get_arg_s168
-    ; ex de,hl
-    ; call print_s168
-    ; call printNewLine
-    ; jp _main_end_ok
+test_udiv168:
+    call get_arg_s168 ; get the dividend
+    push de
+    ex de,hl
+    call print_s168
+
+    call get_arg_s168 ; get the divisor
+    ex de,hl
+    call print_s168
+    call printNewLine
+    ex de,hl ; de = divisor
+    pop hl ; hl = dividend
+
+    call udiv168 ; de = quotient, hl = remainder
+    ex de,hl ; hl = quotient, de = remainder
+    call print_s168
+    ex de,hl ; de = quotient, hl = remainder
+    call print_s168
+    call printNewLine
+
+    jp _main_end_ok
+
+test_udiv24:
+; get dividend
+    call get_arg_s24
+    push de
+    ex de,hl
+    call print_u24
+; get divisor
+    call get_arg_s24
+    ex de,hl
+    call print_u24
+    ex de,hl
+    call printNewLine
+    pop hl
+
+; do the division
+    call udiv24 ; de = quotient, hl = remainder
+    ex de,hl ; hl = quotient, de = remainder
+    call dumpRegistersHex
+    call print_u24
+    ex de,hl ; de = quotient, hl = remainder
+    call print_u24
+
+    jp _main_end_ok
+@scratch: ds 4
+
+test_sdiv168:
+    call get_arg_s168
+    push de
+    ex de,hl
+    call print_s168
+
+    call get_arg_s168
+    push de
+    ex de,hl
+    call print_s168
+
+    pop de
+    pop bc
+
+    call printNewLine
+    ; call dumpRegistersHex
+    call sdiv168
+    ; call dumpRegistersHex
+
+    call print_s168
+    call printNewLine
+
+    jp _main_end_ok
+
 
 test_umul168:
     call get_arg_s168
@@ -102,7 +168,7 @@ test_umul24x24:
     call get_arg_s24
     pop hl
 
-    call dumpRegistersHex
+    ; call dumpRegistersHex
     call umul24x24
 
     ld hl,(umul24x24out+3)
@@ -137,40 +203,7 @@ test_scratch:
     call get_arg_s24
     ex de,hl
     HLU_TO_A
-    call dumpRegistersHex
-    call printNewLine
-    jp _main_end_ok
-
-test_udiv24:
-; get dividend
-    call get_arg_s24 
-    push de
-; get divisor
-    call get_arg_s24 
-    pop hl ; dividend (was de)
-    call dumpRegistersHex
-; do the division
-    call udiv24 ; ude = uhl / ude rem uhl
-    ex de,hl    ; uhl = uhl / ude rem de
-    call dumpRegistersHex
-    call print_u24
-    call printNewLine
-    jp _main_end_ok
-
-; inputs: b.c is 8.8 dividend, ud.e is 16.8 divisor
-; outputs: uh.l is the 16.8 quotient ub.c is the 16.8 remainder
-; destroys: a,bc
-test_sdiv168:
-; get dividend
-    call get_arg_s168 
-    push de
-; get divisor
-    call get_arg_s168 
-    pop bc ; dividend to bc (was de)
-; do the division
-    call sdiv168 ; uh.l = ub.c / ud.e
-    call dumpRegistersHex
-    call print_s168
+    ; call dumpRegistersHex
     call printNewLine
     jp _main_end_ok
 
@@ -178,7 +211,7 @@ test_deg_360_to_255:
     call get_arg_s168 ; argument value to de
     ex de,hl             ; argument to hl for function call
     call deg_360_to_255
-    call dumpRegistersHex
+    ; call dumpRegistersHex
     call print_s168
     call printNewLine
     jp _main_end_ok
