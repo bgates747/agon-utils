@@ -1,3 +1,11 @@
+; arith24uaf: ds 6
+; arith24uhl: ds 6
+; arith24ubc: ds 6
+; arith24ude: ds 6
+; arith24uix: ds 6
+; arith24uiy: ds 6
+; arith24usp: ds 6
+; arith24upc: ds 6
 
 ; unsigned multiplication of a 24-bit and 8-bit number giving a 32-bit result
 ; uses EZ80 MLT instruction for speed
@@ -31,10 +39,10 @@ umul24x8:
 	mlt de
 	ex af,af' ; restore carry
 	adc a,e ; add carry
-; highest byte
     ld (@scratch),hl ; 7 cycles
     ld (@scratch+2),a ; 5 cycles
     ld hl,(@scratch) ; 7 cycles
+; highest byte
 	ld a,0 ; preserve carry flag
 	adc a,d ; product highest byte
 	pop de ; restore de
@@ -98,29 +106,35 @@ umul24x24:
 	adc a,(iy+3)
 	ld (iy+3),a
 	ret
-
 umul24x24out: ds 6 ; output buffer
 
-arith24uaf: ds 6
-arith24uhl: ds 6
-arith24ubc: ds 6
-arith24ude: ds 6
-arith24uix: ds 6
-arith24uiy: ds 6
-arith24usp: ds 6
-arith24upc: ds 6
-
-; hlu 1 byte right shift
-; returns: hlu / 256, fractional portion in a
-; destroys: af
-shift_hlu_r1b:
-	xor a
-	ld (@buffer+3),a
-	ld a,l ; save the fractional portion
-	ld (@buffer),hl
-	ld hl,(@buffer+1)
+; umul168:	UH.L = UH.L*UD.E (unsigned)
+umul168:
+	call umul24x24
+	ld hl,(iy-1)
 	ret
-@buffer: ds 4
+
+; smul168:	UH.L = UH.L*UD.E (signed)
+smul168:
+; make everything positive and store sign flags
+	call abs_hlu
+	push af
+	ex de,hl
+	call abs_hlu
+	ex de,hl
+	push af
+; do the multiplication
+	call umul168
+; adjust sign of result
+	pop af
+	jp m,@de_neg
+	pop af
+	ret p ; both positive, nothing to do
+@de_neg:
+	pop af
+	ret m ; both negative, nothing to do
+	call neg_hlu ; result is negative
+	ret
 
 ;------------------------------------------------------------------------
 ;  arith24.asm 
@@ -202,99 +216,6 @@ udiv2:
 	push	bc
 	pop		de	;remainder
 	ret
-
-
-; umul24:	UH.L = UH.L*UD.E (unsigned)
-; Preserves AF, BC, DE
-umul168:
-	call umul24x24
-	; ld hl,(iy)
-	ld hl,(umul24x24out+1)
-	ret
-
-; perform signed multiplication of 16.8 fixed place values
-; with an signed 16.8 fixed place result
-; inputs: ub.c and ud.e are the operands
-; outputs: uh.l is the product
-; destroys: a,bc
-; TODO: make flags appropriate to the sign of the result
-smul168:
-; make everything positive and save signs
-    push bc         ; get bc to hl
-    pop hl          ; for the next call
-    call abs_hlu    ; sets sign flag if ubc was negative, zero if zero
-
-    ; call dumpFlags ; passes
-
-    jp z,@is_zero   ; if bc is zero, answer is zero and we're done
-    push af         ; save sign of bc
-    push hl         ; now put abs(hl)
-    pop bc          ; back into bc = abs(bc)
-    ex de,hl        ; now we do de same way
-    call abs_hlu    ; sets sign flag if ude was negative, zero if zero
-
-    ; call dumpFlags ; passes
-
-    jp z,@is_zero  ; if de was zero, answer is zero and we're done
-    ex de,hl        ; hl back to de = abs(de)
-; determine sign of result
-    jp p,@de_pos    ; sign positive,de is positive
-
-    ; call dumpFlags ; correctly doesnt make it here
-
-    pop af          ; get back sign of bc
-
-    ; call dumpFlags ; correctly doesn't make it here
-
-    jp m,@result_pos  ; bc and de negative, result is positive
-
-    ; call dumpFlags  ; corectly doesn't make it here
-
-    jr @result_neg
-@de_pos:
-    pop af          ; get back sign of bc
-
-    ; call dumpFlags  ; passes
-
-    jp p,@result_pos   ; bc and de are both positive so result is positive
-
-    ; call dumpFlags ; correctly makes it here
-
-                    ; fall through to result_neg
-@result_neg:
-    xor a           ; zero a and clear carry 
-    dec a           ; set sign flag to negative
-
-    ; call dumpFlags ; passes
-
-    jr @do_mul      
-@result_pos:
-    xor a           ; zero a and clear carry 
-    inc a           ; set sign flag to positive
-                    ; fall through to do_mul
-
-    ; call dumpFlags ; correctly doesn't make it here
-
-@do_mul:
-    push af         ; save sign of result
-    call umul168
-    pop af          ; get back sign of result
-
-    ; call dumpFlags ; passes
-
-    ret p           ; result is positive so nothing to do
-
-    ; call dumpRegistersHex ; passes
-
-    call neg_hlu    ; result is negative so negate it
-
-    ; call dumpRegistersHex ; passes
-    ret
-@is_zero:           ; result is zero
-    xor a           ; sets zero flag, which we want, 
-                    ; sets pv flag which we might not (zero is parity even)
-                    ; resets all others which is okay
-    ret
 
 ; perform unsigned division of fixed place values
 ; with an unsigned 16.8 fixed place result
