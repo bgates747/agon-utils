@@ -1,11 +1,11 @@
-; arith24uaf: ds 6
-; arith24uhl: ds 6
-; arith24ubc: ds 6
-; arith24ude: ds 6
-; arith24uix: ds 6
-; arith24uiy: ds 6
-; arith24usp: ds 6
-; arith24upc: ds 6
+arith24uaf: ds 6
+arith24uhl: ds 6
+arith24ubc: ds 6
+arith24ude: ds 6
+arith24uix: ds 6
+arith24uiy: ds 6
+arith24usp: ds 6
+arith24upc: ds 6
 
 ; unsigned multiplication of a 24-bit and 8-bit number giving a 32-bit result
 ; uses EZ80 MLT instruction for speed
@@ -434,6 +434,18 @@ bitbuf1:	dw24	0	;bit manipulation buffer 1
 bitbuf2:	dw24	0	;bit manipulation buffer 2
 
 ; ========== FROM maths24.inc ==========
+
+; hlu 1 byte right shift
+; returns: hlu / 256, fractional portion in a
+; destroys: af
+shift_hlu_r1b:
+	xor a
+	ld (@buffer+3),a
+	ld a,l ; save the fractional portion
+	ld (@buffer),hl
+	ld hl,(@buffer+1)
+	ret
+@buffer: ds 4
 
 ; http://www.z80.info/pseudo-random.txt
 rand_8:
