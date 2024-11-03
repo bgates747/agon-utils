@@ -181,7 +181,7 @@ asc_to_s168:
     ld (@result), de ; clear low bytes of result buffer
     ld (@scratch), de ; clear low bytes of scratch buffer
 
-    call _skip_spaces ; skip whitespace
+    ; call _skip_spaces ; skip whitespace
     
     ld a, (hl) ; read first character
     or a ; check for end of string
@@ -248,6 +248,7 @@ asc_to_s168:
     ret
 
 @fractional_start:
+    push ix                    ; preserve ix
     ld (@result+1), de         ; Store integer part in result buffer (shifted up one byte)
     ld b, 3                    ; Set loop counter to 3 for up to three fractional digits
     ld de, 0                   ; Initialize DE as the fractional accumulator
@@ -290,6 +291,7 @@ asc_to_s168:
     call udiv24                ; Perform 24-bit division to scale down
     ld a, e                    ; Load the low byte (8-bit fractional part) into A
     ld (@result), a            ; Store fractional part in result buffer
+    pop ix                     ; Restore ix
     jp @end                    ; Final sign check and flag setup
 
 @result: ds 4                  ; 32-bit result buffer to shift integer part up one byte

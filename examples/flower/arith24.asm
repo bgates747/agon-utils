@@ -207,8 +207,10 @@ udiv2:
 ; umul24:	UH.L = UH.L*UD.E (unsigned)
 ; Preserves AF, BC, DE
 umul168:
-
-umul168out: ds 6
+	call umul24x24
+	; ld hl,(iy)
+	ld hl,(umul24x24out+1)
+	ret
 
 ; perform signed multiplication of 16.8 fixed place values
 ; with an signed 16.8 fixed place result

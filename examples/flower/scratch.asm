@@ -69,6 +69,31 @@ _main_end_ok:
 main:
     dec c               ; decrement the argument count to skip the program name
 
+    ; call get_arg_s168
+    ; ex de,hl
+    ; call print_s168
+    ; call printNewLine
+    ; jp _main_end_ok
+
+test_umul168:
+    call get_arg_s168
+    push de
+    ex de,hl
+    call print_s168
+
+    call get_arg_s168
+    push de
+    ex de,hl
+    call print_s168
+
+    pop hl
+    pop de
+    call umul168
+    call print_s168
+    call printNewLine
+
+    jp _main_end_ok
+
 test_umul24x24:
     call get_arg_s24
     push de
