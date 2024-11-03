@@ -231,18 +231,16 @@ udiv168:
 ; load quotient to upper three bytes of output
     ld (div168_out+1),de
 @div256:
-; divide divisor by 256
-    ex de,hl ; hl = quotient, de = remainder
-    pop hl ; hl = divisor (was de), de = remainder
-    call div_hlu_256 ; hl = divisor / 256, de = remainder
-    ex de,hl ; hl = remainder, de = divisor / 256
+; multiply remainder by 256
+	hlu_mul256
 ; skip fractional computation if remainder is zero
     sign_hlu
     jr nz,@div_frac
     xor a
     jr @write_frac
-; now divide the remainder by the shifted divisor
+; now divide the shifted remainder by the divisor
 @div_frac:
+	pop de ; get back divisor
     call udiv24 ; de = quotient, hl = remainder
 ; load low byte of quotient to low byte of output
     ld a,e
@@ -423,18 +421,6 @@ bitbuf1:	dw24	0	;bit manipulation buffer 1
 bitbuf2:	dw24	0	;bit manipulation buffer 2
 
 ; ========== FROM maths24.inc ==========
-
-; hlu 1 byte right shift
-; returns: hlu / 256, fractional portion in a
-; destroys: af
-div_hlu_256:
-	xor a
-	ld (@buffer+3),a
-	ld a,l ; save the fractional portion
-	ld (@buffer),hl
-	ld hl,(@buffer+1)
-	ret
-@buffer: ds 4
 
 ; Expects  ADL mode
 ; Inputs:  UH.L

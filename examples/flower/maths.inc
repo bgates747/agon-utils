@@ -65,6 +65,28 @@ hlu_div16:
     ret
 @scratch: ds 4
 
+; hlu 1 byte right shift
+; returns: hlu / 256, fractional portion in a
+; destroys: af
+hlu_div256:
+	xor a
+	ld (@buffer+3),a
+	ld a,l ; save the fractional portion
+	ld (@buffer),hl
+	ld hl,(@buffer+1)
+	ret
+@buffer: ds 4
+
+    MACRO hlu_mul256
+        add hl,hl ; * 2
+        add hl,hl ; * 4
+        add hl,hl ; * 8
+        add hl,hl ; * 16 
+        add hl,hl ; * 32
+        add hl,hl ; * 64
+        add hl,hl ; * 128
+        add hl,hl ; * 256
+    ENDMACRO
 
 add_bcd_arg1: db #00,#00,#00,#00
 add_bcd_arg2: db #00,#00,#00,#00
