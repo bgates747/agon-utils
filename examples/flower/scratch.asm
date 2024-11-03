@@ -71,6 +71,51 @@ _main_end_ok:
 main:
     dec c               ; decrement the argument count to skip the program name
 
+    jp test_smul168
+
+test_sdiv168:
+    call get_arg_s168 ; get the dividend
+    push de
+    ex de,hl
+    call print_s168
+
+    call get_arg_s168 ; get the divisor
+    ex de,hl
+    call print_s168
+    call printNewLine
+    ex de,hl ; de = divisor
+    pop hl ; hl = dividend
+
+    call sdiv168 ; de = quotient, hl = remainder
+    ex de,hl ; hl = quotient, de = remainder
+    call print_s168
+    ex de,hl ; de = quotient, hl = remainder
+    call print_s168
+    call printNewLine
+    call printNewLine
+
+    jp _main_end_ok
+
+test_smul168:
+    call get_arg_s168 ; get the dividend
+    push de
+    ex de,hl
+    call print_s168
+
+    call get_arg_s168 ; get the divisor
+    ex de,hl
+    call print_s168
+    call printNewLine
+    ex de,hl ; de = divisor
+    pop hl ; hl = dividend
+
+    call smul168 ; hl = product
+    call print_s168
+    call printNewLine
+    call printNewLine
+
+    jp _main_end_ok
+
 test_udiv168:
     call get_arg_s168 ; get the dividend
     push de
@@ -118,31 +163,6 @@ test_udiv24:
     jp _main_end_ok
 @scratch: ds 4
 
-test_sdiv168:
-    call get_arg_s168
-    push de
-    ex de,hl
-    call print_s168
-
-    call get_arg_s168
-    push de
-    ex de,hl
-    call print_s168
-
-    pop de
-    pop bc
-
-    call printNewLine
-    ; call dumpRegistersHex
-    call sdiv168
-    ; call dumpRegistersHex
-
-    call print_s168
-    call printNewLine
-
-    jp _main_end_ok
-
-
 test_umul168:
     call get_arg_s168
     push de
@@ -158,6 +178,7 @@ test_umul168:
     pop de
     call umul168
     call print_s168
+    call printNewLine
     call printNewLine
 
     jp _main_end_ok

@@ -114,7 +114,7 @@ umul168:
 	ld hl,(iy-1)
 	ret
 
-; smul168:	UH.L = UH.L*UD.E (signed)
+; smul168:	UH.L * UD.E --> UH.L (signed)
 smul168:
 ; make everything positive and store sign flags
 	call abs_hlu
@@ -123,13 +123,16 @@ smul168:
 	call abs_hlu
 	ex de,hl
 	push af
-; do the multiplication
-	call umul168
+; do the division
+    call umul168 ; hl = product
 ; adjust sign of result
-	pop af
+	pop af ; sign de
 	jp m,@de_neg
-	pop af
+	pop af ; sign hl
 	ret p ; both positive, nothing to do
+@hl_neg:
+    call neg_hlu ; de pos, hl neg, result is negative
+    ret
 @de_neg:
 	pop af
 	ret m ; both negative, nothing to do
@@ -253,66 +256,36 @@ udiv168:
 @ude: ds 6
 div168_out: ds 4 ; the extra byte is for overflow
 
-; UB.C / UD.E --> UH.L (signed)
+; UH.L / UD.E --> UD.E (signed) rem UHL (unsigned)
 ; perform signed division of 16.8 fixed place values
-; with an signed 16.8 fixed place result
-; inputs: ub.c is dividend,ud.e is divisor
-; outputs: uh.l is quotient
-; destroys: a,bc
-; note: uses carry flag to test for sign of operands and result
-;       which can be confusing and should perhaps be changed
-; note2: helper functions abs_hlu and neg_hlu have been modified
-;       to return accurate flags according to the origional signs 
-;       (or zero) of this function's inputs
+; with a signed 16.8 fixed place result and unsigned 24-bit remainder
 sdiv168:
-; make everything positive and save signs
-    push bc         ; get bc to hl
-    pop hl          ; for the next call
-    call abs_hlu    ; sets sign flag if hlu was negative, zero if zero
-    jp z,@is_zero   ; if bc is zero, answer is zero and we're done
-    push af         ; save sign of bc
-    push hl         ; now put abs(hl)
-    pop bc          ; back into bc = abs(bc)
-    ex de,hl        ; now we do de same way
-    call abs_hlu
-    jp z,@div_by_zero  ; if de was zero, answer is undefined and we're done
-    ex de,hl        ; hl back to de = abs(de)
-; determine sign of result
-    jp p,@de_pos    ; sign positive,de is positive
-    pop af          ; get back sign of bc
-    jp m,@result_pos  ; bc and de negative, result is positive
-    jr @result_neg
-@de_pos:
-    pop af          ; get back sign of bc
-    jp p,@result_pos   ; bc and de are both positive so result is positive
-                    ; fall through to result_neg
-@result_neg:
-    xor a           ; zero a and clear carry 
-    dec a           ; set sign flag to negative
-    jr @do_div      
-@result_pos:
-    xor a           ; zero a and clear carry 
-    inc a           ; set sign flag to negative
-                    ; fall through to do_div
-@do_div:
-    push af         ; save sign of result
-    call udiv168
-    pop af          ; get back sign of result
-    ret p           ; result is positive so nothing to do
-    call neg_hlu    ; result is negative so negate it
+; make everything positive and store sign flags
+	call abs_hlu
+	push af
+	ex de,hl
+	call abs_hlu
+	ex de,hl
+	push af
+; do the division
+    call udiv168 ; de = quotient, hl = remainder
+; adjust sign of result
+	pop af ; sign de
+	jp m,@de_neg
+	pop af ; sign hl
+	ret p ; both positive, nothing to do
+@hl_neg:
+    ex de,hl ; hl = quotient, de = remainder
+    call neg_hlu ; de pos, hl neg, result is negative
+    ex de,hl ; de = negated quotient, hl = remainder
     ret
-@is_zero:           ; result is zero
-    xor a           ; sets zero flag, which we want, 
-                    ; sets pv flag which we might not (zero is parity even)
-                    ; resets all others which is okay
-    ret
-@div_by_zero:       ; result is undefined, which isn't defined in binary
-                    ; so we'll just return zero until i can think of something better
-    pop af          ; dummy pop
-    xor a           ; sets zero flag, which is ok, 
-                    ; sets pv flag which could be interpreted as overflow, which is good
-                    ; resets all others which is okay
-    ret
+@de_neg:
+	pop af
+	ret m ; both negative, nothing to do
+    ex de,hl ; hl = quotient, de = remainder
+	call neg_hlu ; result is negative
+    ex de,hl ; de = negated quotient, hl = remainder
+	ret
 
 ;------------------------------------------------------------------------
 ; neg24
