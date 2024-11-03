@@ -17,6 +17,9 @@
 
 ; API INCLUDES
     include "functions.inc"
+    include "maths.inc"
+	INCLUDE	"arith24.inc"
+    include "trig24.inc"
     include "files.inc"
     include "timer.inc"
     include "vdu.inc"
@@ -25,7 +28,6 @@
 
 ; SHAWN'S INCLUDES
 	INCLUDE	"strings24.asm"
-	INCLUDE	"arith24.asm"
 
 ; APPLICATION INCLUDES
 str_usage: ASCIZ "Usage: scratch <args>\r\n"
@@ -223,7 +225,7 @@ match_next:
     lea ix,ix+3         ; point to the next argument
 @loop:
     ld hl,(iy)          ; pointer argument dispatch record
-    signHL              ; check for list terminator
+    sign_hlu            ; check for list terminator
     jp z,@no_match      ; if a=0, return error
     inc hl              ; skip over jp instruction
     inc hl

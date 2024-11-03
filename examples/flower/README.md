@@ -9,7 +9,7 @@ The included routines are designed to be both compact and understandable.
 This has the main parser, and calls routines from the two included libraries for string and arithmetic functions.
 ## strings24.asm
 This has the routines that can print out 24-bit values in either hex or decimal
-## arith24.asm
+## arith24.inc
 This has the routines for multiply, divide (and remainder), shift left, shift right. 
 
 # Usage

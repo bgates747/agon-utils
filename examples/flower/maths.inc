@@ -1,3 +1,71 @@
+; absolute value of hlu
+; returns: abs(hlu), flags set according to the incoming sign of hlu:
+;         s1,z0,pv0,n1,c0 if hlu was negative
+;         s0,z1,pv0,n1,c0 if hlu was zero
+;         s0,z0,pv0,n1,c0 if hlu was positive
+; destroys: a
+abs_hlu:
+    add hl,de
+    or a
+    sbc hl,de 
+    jp m,@is_neg
+    ret         ; hlu is positive or zero so we're done
+@is_neg:
+    push af     ; otherwise, save current flags for return
+    call neg_hlu ; negate hlu
+    pop af      ; get back flags
+    ret
+
+; flip the sign of hlu
+; inputs: hlu
+; returns: 0-hlu, flags set appropriately for the result:
+;         s1,z0,pv0,n1,c1 if result is negative
+;         s0,z1,pv0,n1,c0 if result is zero
+;         s0,z0,pv0,n1,c1 if result is positive
+; destroys a
+neg_hlu:
+    push de     ; save de
+    ex de,hl    ; put hl into de
+    ld hl,0     ; clear hl
+    xor a       ; clear carry
+    sbc hl,de   ; 0-hlu = -hlu
+    pop de      ; get de back
+    ret         ; easy peasy
+
+;------------------------------------------------------------------------
+; divide hlu by 2, inspired by above
+;------------------------------------------------------------------------
+hlu_div2:
+	ld		(bitbuf1),hl
+	ld		hl,bitbuf1+2
+	rr		(hl)
+	dec		hl
+	rr		(hl)
+	dec		hl
+	rr		(hl)
+	inc		hl
+	inc		hl
+    ld hl,(bitbuf1)
+    ret
+
+; this is my little hack to divide by 16
+hlu_div16:
+    xor a
+    add hl,hl
+    rla
+    add hl,hl
+    rla
+    add hl,hl
+    rla
+    add hl,hl
+    rla
+    ld (@scratch),hl
+    ld (@scratch+3),a
+    ld hl,(@scratch+1) 
+    ret
+@scratch: ds 4
+
+
 add_bcd_arg1: db #00,#00,#00,#00
 add_bcd_arg2: db #00,#00,#00,#00
 
@@ -82,3 +150,5 @@ rand_8:
     pop bc
     ret
 r_seed: defb $50
+
+

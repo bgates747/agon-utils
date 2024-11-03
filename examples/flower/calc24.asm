@@ -46,7 +46,7 @@ _start:
 			ret
 
 	INCLUDE	"strings24.asm"
-	INCLUDE	"arith24.asm"
+	INCLUDE	"arith24.inc"
 
 
 ; General storage - should be neater and all collected

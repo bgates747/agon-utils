@@ -31,6 +31,9 @@ exit:
     
 ; API INCLUDES
     include "functions.inc"
+    include "maths.inc"
+	INCLUDE	"arith24.inc"
+    include "trig24.inc"
     include "files.inc"
     include "timer.inc"
     include "vdu.inc"
@@ -39,7 +42,6 @@ exit:
 
 ; SHAWN'S INCLUDES
 	INCLUDE	"strings24.asm"
-	INCLUDE	"arith24.asm"
 
 main:
 
