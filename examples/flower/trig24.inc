@@ -10,13 +10,10 @@ deg_360_to_256:
 	push af
 ; multiply by 256 first to keep precision
 	hlu_mul256 ; uh.l = uh.l * 256
-	call printNewLine
-	call dumpRegistersHex
 ; divide uh.l by 360
 	ld de,360
 	call udiv24 ; ud.e = degrees / 360
 	ex de,hl    ; uh.l = degrees / 360
-	call dumpRegistersHex
 ; restore sign flag and adjust output accordingly
 	pop af
 	jp p,@pos ; positive number
@@ -43,7 +40,6 @@ cos168:
 ; destroys: de
 sin168:
 	call printNewLine
-	; call dumpRegistersHex
 ; get the lookup value for the integer portion of the angle
 	ld a,l ; save fractional part of the angle
 	ld l,3 ; multiply by 3 to get our lookup index
@@ -61,16 +57,11 @@ sin168:
 	inc hl
 	inc hl
 	inc hl ; hl = lut address of next value in table
-	; call dumpRegistersHex
 	ld hl,(hl) ; hl = sin(int(angle+1))
-	call dumpRegistersHex
 	sbc hl,de ; hl = sin(int(angle+1)0 - sin(int(angle)), de = sin(int(angle))
-	call dumpRegistersHex
 	call smul24x8 ; hl = interpolation factor * (sin(int(angle+1)) - sin(int(angle))) * 256
 	call hlu_sdiv256 ; hl = interpolation factor * (sin(int(angle+1)) - sin(int(angle)))
-	call dumpRegistersHex
 	add hl,de ; hl = sin(int(angle)) + interpolation factor * (sin(int(angle+1)) - sin(int(angle)))
-	call dumpRegistersHex
     ret ; and out
 
 ; ; 16.8 fixed inputs / outputs

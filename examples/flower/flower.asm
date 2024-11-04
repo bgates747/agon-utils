@@ -109,11 +109,11 @@ prime_radius:       dl 0x000000  ; Initial radius before shrink factor is applie
 main_loop:
 ; --- convert input thetas to 16.8 fixed point degrees255
     ld hl,(theta_prime) ; get the theta_prime value
-    call deg_360_to_255 ; convert to 16.8 fixed point
+    call deg_360_to_256 ; convert to 16.8 fixed point
     ld (theta_prime),hl ; store the result
 
     ld hl,(theta_petal) ; get the theta_petal value
-    call deg_360_to_255 ; convert to 16.8 fixed point
+    call deg_360_to_256 ; convert to 16.8 fixed point
     ld (theta_petal),hl ; store the result
 
 ; --- compute the main loop parameters ---
@@ -133,26 +133,55 @@ main_loop:
     ld (step_theta_petal),de ; store the result
 
 ; total_steps = int(2 * math.pi / step_theta_prime * periods)
+    ld hl,256*256 ; 360 degrees in 16.8 fixed point
+    ld de,(step_theta_prime)
+    call udiv168 ; ud.e = 256 / step_theta_prime
+    ld hl,(periods)
+    call umul168 ; uh.l = periods * 256 / step_theta_prime
+    ld (total_steps),hl ; store the result
 
-
-; step_theta_prime *= clock_prime
-
-
-; step_theta_petal *= clock_petal
+; set initial point and move graphics cursor to it
+    call calc_point ; ub.c = x, ud.e = y
+    ld a,plot_pt+mv_abs ; plot mode
+    call vdu_plot_168
+    ; fall through to main loop
 
     call dumpRegistersHex
-    ; call print_u168
-    ; ex de,hl
-    ; call print_u168
-    ; ex de,hl
-    ; call printNewLine
+    call print_u168
+    ex de,hl
+    call print_u168
+    ex de,hl
+    call printNewLine
 
 @loop:
 
         ; jp @loop
         ret
 
+; compute the Cartesian coordinates of the next point on the curve
+; inputs: theta_prime, theta_petal, prime_radius, depth
+; outputs: ub.c = x, ud.e = y
+calc_point:
+; Calculate the petal radius and total radius (unit circle)
+    ; petal_radius = math.cos(theta_petal) * depth
+    ld hl,(theta_petal)
+    call cos168 ; uh.l = cos(theta_petal)
+    ld de,(depth)
+    call smul168 ; uh.l = petal_radius
 
+    ; radius = prime_radius + petal_radius * prime_radius
+    ld de,(prime_radius)
+    call smul168 ; uh.l = petal_radius * prime_radius
+    add hl,de ; uh.l = prime_radius + petal_radius * prime_radius
+    ex de,hl ; de = radius
+
+; Convert polar to Cartesian coordinates
+    ; x, y = polar_to_cartesian(radius, theta_prime)
+    ld hl,(theta_prime)
+    call polar_to_cartesian ; ub.c = x, ud.e = y
+
+; all done
+    ret
 
 ; ========= BEGIN CUSTOM MAIN LOOP =========
 main:

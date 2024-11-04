@@ -228,10 +228,10 @@ test_scratch:
     call printNewLine
     jp _main_end_ok
 
-test_deg_360_to_255:
+test_deg_360_to_256:
     call get_arg_s168 ; argument value to de
     ex de,hl             ; argument to hl for function call
-    call deg_360_to_255
+    call deg_360_to_256
     ; call dumpRegistersHex
     call print_s168
     call printNewLine

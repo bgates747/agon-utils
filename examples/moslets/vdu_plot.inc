@@ -141,6 +141,23 @@ vdu_plot:
 @y0: 	dw 0
 @end:   db 0 ; extra byte to soak up deu
 
+; VDU 25, mode, x; y;: PLOT command
+; USING 16.8 FIXED POINT COORDINATES
+; inputs: a=mode, ub.c=x0, ud.e=y0
+vdu_plot_168:
+    ld (@x0-1),bc ; integer portion only
+    ld (@y0-1),de ; ibid
+    ld (@mode),a  ; load this order b/c we shifted bc right
+	ld hl,@cmd
+	ld bc,@end-@cmd
+	rst.lil $18
+	ret
+@cmd:   db 25
+@mode:  db 0
+@x0: 	dw 0
+@y0: 	dw 0
+@end:  ; no padding required b/c we shifted de right
+
 ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
 ; &E8-&EF 	232-239 	Bitmap plot §
 ; VDU 25, mode, x; y;: PLOT command

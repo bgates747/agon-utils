@@ -108,10 +108,7 @@ test_sdiv168:
     jp nz,_main_end_error
 
     callIY ; call the function
-    call print_s168
     call printNewLine
-    call printNewLine
-
     jp _main_end_ok
 
 ; ========== DISPATCH TABLES ==========
@@ -122,12 +119,15 @@ operator:
     dl divide
     dl tan
     dl atan2
+    dl polar2cart
+    dl cart2polar
     dl 0x000000 ; list terminator
 addition:
     jr @start
     asciz "+"
 @start:
     add hl,de
+    call print_s168_hl
     ret
 subtract:
     jr @start
@@ -135,19 +135,21 @@ subtract:
 @start:
     xor a ; clear carry
     sbc hl,de
+    call print_s168_hl
     ret
 multiply:
     jr @start
     asciz "*"
 @start:
     call smul168
+    call print_s168_hl
     ret
 divide:
     jr @start
     asciz "/"
 @start:
     call sdiv168
-    ex de,hl
+    call print_s168_de
     ret
 tan:
     jr @start
@@ -161,31 +163,56 @@ atan2:
 @start:
     ; call atan2_168
     ret
+polar2cart:
+    jr @start
+    asciz "polar2cart"
+@start:
+    call deg_360_to_256
+    call polar_to_cartesian
+    call print_s168_bc_de
+    ret
+cart2polar:
+    jr @start
+    asciz "cart2polar"
+@start:
+    ; call cartesian_to_polar
+    ret
 
 function:
     dl sin
     dl cos
     dl sqrt
+    dl deg256
     dl 0x000000 ; list terminator
 sin:
     jr @start
     asciz "sin"
 @start:
-    call deg_360_to_255
+    call deg_360_to_256
     call sin168
+    call print_s168_hl
     ret
 cos:
     jr @start
     asciz "cos"
 @start:
-    call deg_360_to_255
+    call deg_360_to_256
     call cos168
+    call print_s168_hl
     ret
 sqrt:
     jr @start
     asciz "sqrt"
 @start:
     call sqrt168
+    call print_s168_hl
+    ret
+deg256:
+    jr @start
+    asciz "deg256"
+@start:
+    call deg_360_to_256
+    call print_s168_hl
     ret
 
 ; ========== HELPER FUNCTIONS ==========

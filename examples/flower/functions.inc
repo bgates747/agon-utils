@@ -447,6 +447,85 @@ print_s168:
     pop de
     ret
 
+print_s168_hl:
+    push af
+    push hl
+    call print_s168
+    ld a,' '
+    rst.lil 10h
+    pop hl
+    pop af
+    ret
+
+print_s168_bc:
+    push af
+    push bc
+    push hl
+    push bc
+    pop hl
+    call print_s168
+    ld a,' '
+    rst.lil 10h
+    pop hl
+    pop bc
+    pop af
+    ret
+
+print_s168_de:
+    push af
+    push de
+    push hl
+    ex de,hl
+    call print_s168
+    ld a,' '
+    rst.lil 10h
+    pop hl
+    pop de
+    pop af
+    ret
+
+print_s168_hl_bc_de:
+    push af
+    push bc
+    push de
+    push hl
+    call print_s168
+    ld a,' '
+    rst.lil 10h
+    push bc
+    pop hl
+    call print_s168
+    ld a,' '
+    rst.lil 10h
+    ex de,hl
+    call print_s168
+    ld a,' '
+    rst.lil 10h
+    pop hl
+    pop de
+    pop bc
+    pop af
+    ret
+
+print_s168_bc_de:
+    push af
+    push bc
+    push de
+    push bc
+    pop hl
+    call print_s168
+    ld a,' '
+    rst.lil 10h
+    ex de,hl
+    call print_s168
+    ld a,' '
+    rst.lil 10h
+    pop hl
+    pop de
+    pop bc
+    pop af
+    ret
+
 ; #### new functions added by Brandon R. Gates ####
 
 ; print the binary representation of the 8-bit value in a
