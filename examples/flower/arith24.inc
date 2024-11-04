@@ -240,6 +240,8 @@ udiv2:
 ; perform unsigned division of 16.8 fixed place values
 ; with an unsigned 16.8 fixed place result and 24-bit remainder
 udiv168:
+	; call udiv24
+	; ret
 ; back up divisor
     push de
 ; get the 16-bit integer part of the quotient
@@ -261,6 +263,7 @@ udiv168:
 ; load low byte of quotient to low byte of output
     ld a,e
 @write_frac:
+	pop de ; dummy pop to balance stack
     ld (div168_out),a
 ; load de with return value
     ld de,(div168_out)
@@ -274,6 +277,8 @@ div168_out: ds 4 ; the extra byte is for overflow
 ; perform signed division of 16.8 fixed place values
 ; with a signed 16.8 fixed place result and unsigned 24-bit remainder
 sdiv168:
+	; call udiv168
+	; ret
 ; make everything positive and store sign flags
 	call abs_hlu
 	push af
