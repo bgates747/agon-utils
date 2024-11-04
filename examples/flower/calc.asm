@@ -171,12 +171,14 @@ sin:
     jr @start
     asciz "sin"
 @start:
+    call deg_360_to_255
     call sin168
     ret
 cos:
     jr @start
     asciz "cos"
 @start:
+    call deg_360_to_255
     call cos168
     ret
 sqrt:

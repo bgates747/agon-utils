@@ -65,10 +65,25 @@ hlu_div16:
     ret
 @scratch: ds 4
 
-; hlu 1 byte right shift
+; hlu signed division by 256
+; returns: hlu / 256
+; destroys: af
+hlu_sdiv256:
+    xor a ; assume hl is positive
+    ld (@buffer),hl
+    sign_hlu
+    jp p,@hl_pos
+    dec a
+@hl_pos:
+    ld (@buffer+3),a
+    ld hl,(@buffer+1)
+    ret
+@buffer: ds 4
+
+; hlu 1 byte right shift, unsigned
 ; returns: hlu / 256, fractional portion in a
 ; destroys: af
-hlu_div256:
+hlu_udiv256:
 	xor a
 	ld (@buffer+3),a
 	ld a,l ; save the fractional portion
@@ -173,4 +188,17 @@ rand_8:
     ret
 r_seed: defb $50
 
-
+; linear interpolation between two 24-bit numbers
+; may be signed or unsigned, and treated as integers or fractional
+; inputs: bc = start value, de = end value, a = interpolation factor
+; outputs: hl = interpolated value, a = multiply overflow to 32 bits (0 if no overflow)
+; destroys: af, hl, de
+interpolate24:
+    push bc ; save start value
+    ex de,hl ; end value to hl
+    or a ; clear carry
+    sbc hl,bc ; hl = end - start
+    call umul24x8 ; hl = (end - start) * interpolation factor
+    pop bc ; get back start value (was hl)
+    add hl,bc ; hl = start + (end - start) * interpolation factor
+    ret

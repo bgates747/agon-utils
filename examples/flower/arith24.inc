@@ -7,6 +7,22 @@ arith24uiy: ds 6
 arith24usp: ds 6
 arith24upc: ds 6
 
+; multiply a signed 24-bit number by an unsigned 8-bit number giving a signed 24-bit result
+; uses EZ80 MLT instruction for speed
+; operation: UHL * A --> UHL
+; destroys: AF, HL
+smul24x8:
+; make hl positive and store sign flag
+	call abs_hlu
+	push af
+; do the division
+    call umul24x8 ; hl = product
+; adjust sign of result
+	pop af ; sign de
+	ret p ; hl was positive, nothing to do
+	call neg_hlu ; result is negative
+	ret
+
 ; unsigned multiplication of a 24-bit and 8-bit number giving a 32-bit result
 ; uses EZ80 MLT instruction for speed
 ; operation: UHL * A --> AUHL

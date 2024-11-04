@@ -6,6 +6,8 @@
 ; note: even though the inputs and outputs are 16.8 fixed format
 ;       precision is effectively limited to 8.8 fixed format
 deg_360_to_255:
+	; call printNewLine
+	; call dumpRegistersHex
 ; clear scratch buffer
 	ld de,0
 	ld (@scratch),de
@@ -23,9 +25,57 @@ deg_360_to_255:
 	ld (@output),a
 ; we want the low 3 bytes for 16.8 output
 	ld hl,(@output)
+	; call dumpRegistersHex
 	ret
 @scratch: ds 6 ; scratch buffer for shifting bytes
 @output: ds 6 ; scratch buffer to accumulate output
+
+; fixed 16.8 routine
+; cos(uh.l) --> uh.l
+; destroys: de
+cos168:
+; for cos we simply increment the angle by 90 degrees
+; or 0x004000 in 16.8 degrees256
+; which makes it a sin problem
+    ld de,0x004000
+    add hl,de ; modulo 256 happens below
+; fall through to sin168
+
+; ---------------------
+; fixed 16.8 routine
+; sin(uh.l) --> uh.l
+; destroys: de
+sin168:
+	call printNewLine
+	; call dumpRegistersHex
+; get the lookup value for the integer portion of the angle
+	ld a,l ; save fractional part of the angle
+	ld l,3 ; multiply by 3 to get our lookup index
+	mlt hl ; gosh that is handy
+    ld de,sin_lut_168 ; grab the lut address
+    add hl,de ; bump hl by the index
+	push hl
+	pop de ; de also has the lut address
+    ld hl,(hl) ; hl = sin(int(angle))
+
+; interpolate the fractional part of the angle
+	or a  ; check for zero and clear carry
+	ret z ; return if no fractional part
+	ex de,hl ; hl = lut address, de = sin(int(angle))
+	inc hl
+	inc hl
+	inc hl ; hl = lut address of next value in table
+	; call dumpRegistersHex
+	ld hl,(hl) ; hl = sin(int(angle+1))
+	call dumpRegistersHex
+	sbc hl,de ; hl = sin(int(angle+1)0 - sin(int(angle)), de = sin(int(angle))
+	call dumpRegistersHex
+	call smul24x8 ; hl = interpolation factor * (sin(int(angle+1)) - sin(int(angle))) * 256
+	call hlu_sdiv256 ; hl = interpolation factor * (sin(int(angle+1)) - sin(int(angle)))
+	call dumpRegistersHex
+	add hl,de ; hl = sin(int(angle)) + interpolation factor * (sin(int(angle+1)) - sin(int(angle)))
+	call dumpRegistersHex
+    ret ; and out
 
 ; 16.8 fixed inputs / outputs
 ; takes: uh.l as angle in degrees 256
@@ -56,33 +106,6 @@ polar_to_cartesian:
     pop bc          ; bc = dx for output
 ; and out
     ret
-
-; fixed 16.8 routine
-; cos(uh.l) --> uh.l
-; destroys: de
-cos168:
-; for cos we simply increment the angle by 90 degrees
-; or 0x004000 in 16.8 degrees256
-; which makes it a sin problem
-    ld de,0x004000
-    add hl,de ; modulo 256 happens below
-; fall through to sin168
-; ---------------------
-; fixed 16.8 routine
-; sin(uh.l) --> uh.l
-; destroys: de
-sin168:
-; h contains the integer portion of our angle
-; we multiply it by three to get our lookup table index
-    ld l,3
-    mlt hl ; gosh that is handy
-    ld de,0 ; clear deu
-    ld d,h ; copy hl to de
-    ld e,l ; de contains our index
-    ld hl,sin_lut_168 ; grab the lut address
-    add hl,de ; bump hl by the index
-    ld hl,(hl) ; don't try this on a z80!
-    ret ; and out
 
 ; inputs: ub.c and ud.e are x0 and y0 in 16.8 fixed format
 ;         ui.x and ui.y are x1 and y1 in 16.8 fixed format
@@ -625,6 +648,7 @@ sin_lut_168:
 	dl 0xFFFFEE ; 355.781 FD, -0.074
 	dl 0xFFFFF4 ; 357.188 FE, -0.049
 	dl 0xFFFFFA ; 358.594 FF, -0.025
+	dl 0x000000 ; 0.000 00, 0.000 for interpolation
 
 atan_lut_168:
 	dl 0x000000 ; 000000, 0.000
