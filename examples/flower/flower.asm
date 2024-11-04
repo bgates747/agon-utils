@@ -17,6 +17,9 @@
 
 ; API INCLUDES
     include "functions.inc"
+    include "maths.inc"
+	INCLUDE	"arith24.inc"
+    include "trig24.inc"
     include "files.inc"
     include "timer.inc"
     include "vdu.inc"
@@ -25,7 +28,6 @@
 
 ; SHAWN'S INCLUDES
 	INCLUDE	"strings24.asm"
-	INCLUDE	"arith24.inc"
 
 ; APPLICATION INCLUDES
 str_usage: ASCIZ "Usage: flower <args>\r\n"
@@ -47,10 +49,7 @@ str_success: ASCIZ "Success!\r\n"
 ; depth       = 0.6   : 
 ; periods     = 66    : 
 ; shrink      = 0.8   : 
-; clock_prime = 1.0   : 
-; clock_petal = 1.0   : 
 ; theta_prime = 0.0   : 
-; theta_petal = 0.0   : 
 ; radius_scale= 480   : 
 
 ; ========= BOILERPLATE MAIN LOOP ========= 
@@ -77,14 +76,14 @@ _main_end_error:
     ret
 
 _main_end_ok:
-    ld hl,str_success   ; print success message
-    call printString
+    ; ld hl,str_success   ; print success message
+    ; call printString
     ld hl,0             ; return 0 for success
     ret
 
 ; GLOBAL VARIABLES / DEFAULTS
 ; ---- input arguments (16.8 fixed) ----
-input_params_num: equ 10
+input_params_num: equ 5
 input_params:               ; label so we can traverse the table in loops
 petals: 	    dl 0x000307	; 3.03
 vectors: 	    dl 0x0001FA	; 1.98
@@ -118,24 +117,35 @@ main_loop:
     ld (theta_petal),hl ; store the result
 
 ; --- compute the main loop parameters ---
-    ; step_theta_prime = 2 * math.pi / (petals * vectors)
-    ld bc,(petals) ; ub.c = petals
-    ld de,(vectors) ; ud.e = vectors
+; step_theta_prime = 2 * math.pi / (petals * vectors)
+    ld hl,(petals) 
+    ld de,(vectors)
     call umul168 ; uh.l = petals * vectors
     ex de,hl ; de = petals * vectors
-    ld bc,256 ; 360 degrees
-    call udiv168
+    ld hl,256*256 ; 360 degrees in 16.8 fixed point
+    call udiv168 ; ud.e = 256 / (petals * vectors)
+    ld (step_theta_prime),de ; store the result
+
+; ; step_theta_petal = 2 * math.pi / vectors
+    ld hl,256*256 ; 360 degrees in 16.8 fixed point
+    ld de,(vectors)
+    call udiv168 ; ud.e = 256 / vectors
+    ld (step_theta_petal),de ; store the result
+
+; total_steps = int(2 * math.pi / step_theta_prime * periods)
+
+
+; step_theta_prime *= clock_prime
+
+
+; step_theta_petal *= clock_petal
 
     call dumpRegistersHex
-    call print_u168
-    call printNewLine
-
-    ; step_theta_petal = 2 * math.pi / vectors
-    ; total_steps = int(2 * math.pi / step_theta_prime * periods)
-    ; step_theta_prime *= clock_prime
-    ; step_theta_petal *= clock_petal
-
-    
+    ; call print_u168
+    ; ex de,hl
+    ; call print_u168
+    ; ex de,hl
+    ; call printNewLine
 
 @loop:
 
@@ -180,10 +190,23 @@ args_count_off:
 
 
 ; ========== HELPER FUNCTIONS ==========
+; get the next argument after ix as a signed 16.8 fixed point number
+; inputs: ix = pointer to the argument string
+; outputs: ude = signed 16.8 fixed point number
+; destroys: a, d, e, h, l, f
 get_arg_s168:
     lea ix,ix+3 ; point to the next argument
     ld hl,(ix)  ; get the argument string
     call asc_to_s168 ; convert the string to a number
+    ret ; return with the value in DE
+
+; Inputs: ix = pointer to the argument string
+; Outputs: ude = signed 24-bit integer
+; Destroys: a, d, e, h, l, f
+get_arg_s24:
+    lea ix,ix+3 ; point to the next argument
+    ld hl,(ix)  ; get the argument string
+    call asc_to_s24 ; convert the string to a number
     ret ; return with the value in DE
 
 get_plot_coords:
@@ -198,11 +221,16 @@ get_plot_coords:
     call asc_to_s168 ; de = y coordinate
     ret
 
+get_arg_text:
+    lea ix,ix+3 ; point to the next argument
+    ld hl,(ix)  ; get the argument string
+    ret
+
 ; match the next argument after ix to the dispatch table at iy
 ;   - arguments and dispatch entries are zero-terminated, case-sensitive strings
 ;   - final entry of dispatch table must be a 3-byte zero or bad things will happen
 ; returns: NO MATCH: iy=dispatch list terminator a=1 and zero flag reset
-;          ON MATCH: iy=dispatch address, a=0 and zero flag se
+;          ON MATCH: iy=dispatch address, a=0 and zero flag set
 ; destroys: a, hl, de, ix, iy, flags
 match_next:
     lea ix,ix+3         ; point to the next argument
@@ -223,6 +251,15 @@ match_next:
 @match:
     ld iy,(iy)          ; get the function pointer
     ret                 ; return a=0 and zero flag set
+
+; same as match_next, but prints the parameter if a match is found
+match_next_and_print:
+    call match_next
+    ret nz ; no match found
+    lea ix,ix-3 
+    call get_arg_text ; hl points to the operator string
+    call print_param
+    ret
 
 ; compare two zero-terminated strings for equality, case-sensitive
 ; hl: pointer to first string, de: pointer to second string
