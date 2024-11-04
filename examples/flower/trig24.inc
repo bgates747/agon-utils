@@ -1,34 +1,30 @@
 
-; convert unsigned angles from a 360 to 255 degree circle
+; convert signed angles from a 360 to 256 degree circle
 ; inputs: uh.l is the angle360 in 16.8 fixed format
-; outputs: uh.l is the angle255 in 16.8 fixed format
+; outputs: uh.l is the angle256 in 16.8 fixed format
 ; destroys: TODO
-; note: even though the inputs and outputs are 16.8 fixed format
-;       precision is effectively limited to 8.8 fixed format
-deg_360_to_255:
-	; call printNewLine
-	; call dumpRegistersHex
-; clear scratch buffer
-	ld de,0
-	ld (@scratch),de
+deg_360_to_256:
+	push de ; preserve de
+; make angle positive and store sign flag
+	call abs_hlu
+	push af
+; multiply by 256 first to keep precision
+	hlu_mul256 ; uh.l = uh.l * 256
+	call printNewLine
+	call dumpRegistersHex
 ; divide uh.l by 360
 	ld de,360
-; get integer portion
-	call udiv24 ; DEU AND BCU = HLU / DEU, remainder in HLU
-	ld (@output+1),de ; shift result up one byte
-; get fractional portion
-	ld (@scratch+1),hl ; shift remainder up one byte
-	ld hl,(@scratch)
-	ld de,360
-	call udiv24 ; DEU AND BCU = HLU / DEU, remainder in HLU
-	ld a,e ; lowest byte is all we need
-	ld (@output),a
-; we want the low 3 bytes for 16.8 output
-	ld hl,(@output)
-	; call dumpRegistersHex
+	call udiv24 ; ud.e = degrees / 360
+	ex de,hl    ; uh.l = degrees / 360
+	call dumpRegistersHex
+; restore sign flag and adjust output accordingly
+	pop af
+	jp p,@pos ; positive number
+	call neg_hlu
+@pos:
+; restore de and return uh.l as the result
+	pop de
 	ret
-@scratch: ds 6 ; scratch buffer for shifting bytes
-@output: ds 6 ; scratch buffer to accumulate output
 
 ; fixed 16.8 routine
 ; cos(uh.l) --> uh.l
@@ -77,35 +73,62 @@ sin168:
 	call dumpRegistersHex
     ret ; and out
 
+; ; 16.8 fixed inputs / outputs
+; ; takes: uh.l as angle in degrees 256
+; ;        ud.e as radius
+; ; returns ub.c as dx, ud.e as dy 
+; ;        displacements from origin (0,0)
+; ; destroys: everything except indexes
+; polar_to_cartesian:
+; ; back up input parameters
+;     ld (arith24uhl), hl
+;     ld (arith24ude), de
+; ; compute dx = sin(uh.l) * ud.e
+;     call sin168
+;     push hl
+;     pop bc          ; ub.c = sin(uh.l)
+; 	ld de, (arith24ude)   ; get radius back
+; 	call smul168    ; uh.l = ub.c * ud.e = dx
+;     push hl         ; store dx for output
+; ; compute dy = -cos(uh.l) * ud.e
+;     ld hl, (arith24uhl)
+;     call cos168 
+; 	call neg_hlu    ; invert dy for screen coords convention
+;     push hl 
+;     pop bc          ; ub.c = -cos(uh.l)
+;     ld de, (arith24ude)   ; get radius back
+;     call smul168    ; uh.l = ub.c * ud.e = dy
+;     ex de, hl       ; de = dy for output
+;     pop bc          ; bc = dx for output
+; ; and out
+;     ret
+
 ; 16.8 fixed inputs / outputs
 ; takes: uh.l as angle in degrees 256
 ;        ud.e as radius
-; returns ub.c as dx, ud.e as dy 
+; returns ub.c as dx, ud.e as dy, uh.l as radius
 ;        displacements from origin (0,0)
 ; destroys: everything except indexes
 polar_to_cartesian:
 ; back up input parameters
-    ld (arith24uhl), hl
-    ld (arith24ude), de
-; compute dx = sin(uh.l) * ud.e
-    call sin168
-    push hl
-    pop bc          ; ub.c = sin(uh.l)
-	ld de, (arith24ude)   ; get radius back
-	call smul168    ; uh.l = ub.c * ud.e = dx
-    push hl         ; store dx for output
-; compute dy = -cos(uh.l) * ud.e
-    ld hl, (arith24uhl)
-    call cos168 
-	call neg_hlu    ; invert dy for screen coords convention
-    push hl 
-    pop bc          ; ub.c = -cos(uh.l)
-    ld de, (arith24ude)   ; get radius back
-    call smul168    ; uh.l = ub.c * ud.e = dy
-    ex de, hl       ; de = dy for output
+    ld (@angle), hl
+    ld (@radius), de
+; compute dx = cos(uh.l) * ud.e
+    call cos168 ; uh.l = cos(uh.l)
+	ld de,(@radius)
+	call smul168 ; uh.l = dx
+    push hl      
+; compute dy = sin(uh.l) * ud.e
+    ld hl,(@angle)
+    call sin168 ; uh.l = sin(uh.l)
+    ld de,(@radius)
+    call smul168    ; uh.l = dy
+    ex de,hl       ; de = dy for output
     pop bc          ; bc = dx for output
 ; and out
     ret
+@angle: ds 3
+@radius: ds 3
 
 ; inputs: ub.c and ud.e are x0 and y0 in 16.8 fixed format
 ;         ui.x and ui.y are x1 and y1 in 16.8 fixed format
