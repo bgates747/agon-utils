@@ -126,7 +126,7 @@ main_loop:
     call udiv168 ; ud.e = 256 / (petals * vectors)
     ld (step_theta_prime),de ; store the result
 
-; ; step_theta_petal = 2 * math.pi / vectors
+; step_theta_petal = 2 * math.pi / vectors
     ld hl,256*256 ; 360 degrees in 16.8 fixed point
     ld de,(vectors)
     call udiv168 ; ud.e = 256 / vectors
