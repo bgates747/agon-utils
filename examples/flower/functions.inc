@@ -743,6 +743,61 @@ dumpRegistersHex:
 ; all done
     ret
 
+; print hlu to screen in hexidecimal format
+; inputs: none
+; destroys: nothing
+print_hex_hl:
+    push af
+    push hl
+    ld hl,str_hlu
+    call printString
+    pop hl
+    push hl
+    call printHex24
+    ld a,' '
+    rst.lil 10h
+    pop hl
+    pop af
+    ret
+
+; print bcu to screen in hexidecimal format
+; inputs: none
+; destroys: nothing
+print_hex_bc:
+    push af
+    push hl
+    push bc
+    ld hl,str_bcu
+    call printString
+    pop hl
+    push hl
+    call printHex24
+    ld a,' '
+    rst.lil 10h
+    pop bc
+    pop hl
+    pop af
+    ret
+
+; print deu to screen in hexidecimal format
+; inputs: none
+; destroys: nothing
+print_hex_de:
+    push af
+    push hl
+    push de
+    ld hl,str_deu
+    call printString
+    pop hl
+    push hl
+    call printHex24
+    ld a,' '
+    rst.lil 10h
+    pop de
+    pop hl
+    pop af
+    ret
+
 str_afu: db " af=",0
 str_hlu: db " hl=",0
 str_bcu: db " bc=",0

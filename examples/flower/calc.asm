@@ -75,6 +75,9 @@ test_sdiv168:
 ; get first numeric argument
     call get_arg_s168 ; de = first numeric argument
     push de
+    ex de,hl
+    call print_hex_hl
+    ex de,hl
     call print_s168_de
 
 ; match on single number functions
@@ -95,6 +98,7 @@ test_sdiv168:
 
 ; get second numeric argument if needed
     call get_arg_s168 ; de = second argument
+    call print_hex_de
     call print_s168_de
 
 @execute:
@@ -127,6 +131,7 @@ addition:
     asciz "+"
 @start:
     add hl,de
+    call print_hex_hl
     call print_s168_hl
     ret
 subtract:
@@ -135,6 +140,7 @@ subtract:
 @start:
     xor a ; clear carry
     sbc hl,de
+    call print_hex_hl
     call print_s168_hl
     ret
 multiply:
@@ -142,6 +148,7 @@ multiply:
     asciz "*"
 @start:
     call smul168
+    call print_hex_hl
     call print_s168_hl
     ret
 divide:
@@ -149,7 +156,10 @@ divide:
     asciz "/"
 @start:
     call sdiv168
+    call print_hex_de
     call print_s168_de
+    call print_hex_hl ; remainder
+    call print_s168_hl ; remainder
     ret
 tan:
     jr @start
@@ -168,8 +178,14 @@ polar2cart:
     asciz "polar2cart"
 @start:
     call deg_360_to_256
+    call print_hex_hl
+    call print_s168_hl
     call polar_to_cartesian
-    call print_s168_bc_de
+    call printNewLine
+    call print_hex_bc
+    call print_s168_bc
+    call print_hex_de
+    call print_s168_de
     ret
 cart2polar:
     jr @start
