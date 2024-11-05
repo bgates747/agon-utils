@@ -145,12 +145,16 @@ vdu_plot:
 ; USING 16.8 FIXED POINT COORDINATES
 ; inputs: a=mode, ub.c=x0, ud.e=y0
 vdu_plot_168:
+    ld (@y0-1),de ; load in reverse order to avoid stomping on inputs
     ld (@x0-1),bc ; integer portion only
-    ld (@y0-1),de ; ibid
     ld (@mode),a  ; load this order b/c we shifted bc right
 	ld hl,@cmd
 	ld bc,@end-@cmd
 	rst.lil $18
+    ; ld hl,@cmd
+    ; ld a,6
+    ; call dumpMemoryHex
+    ; call printNewLine
 	ret
 @cmd:   db 25
 @mode:  db 0

@@ -78,6 +78,7 @@ _main_end_error:
 _main_end_ok:
     ; ld hl,str_success   ; print success message
     ; call printString
+    call printNewLine
     ld hl,0             ; return 0 for success
     ret
 
@@ -94,7 +95,8 @@ clock_prime: 	dl 0x000100	; 1
 clock_petal: 	dl 0x000100	; 1
 theta_prime: 	dl 0x000000	; 0
 theta_petal: 	dl 0x000000	; 0
-radius_scale: 	dl 0x01E000	; 480
+; radius_scale: 	dl 0x01E000	; 480
+radius_scale: 	dl 0x010000 ; 256
 
 ; ---- main loop parameters (16.8 fixed) ----
 step_theta_prime:   dl 0x000000  ; Step increment for theta_prime in each loop iteration
@@ -103,10 +105,14 @@ total_steps:        dl 0x000000  ; Total number of iterations based on periods a
 shrink_step:        dl 0x000000  ; Step decrement applied to radius in each iteration
 
 ; ---- main loop state variables (16.8 fixed) ----
-prime_radius:       dl 0x000000  ; Initial radius before shrink factor is applied
-
+radius_prime:       dl 0x000000  ; Initial radius before shrink factor is applied
+x_prev:             dl 0x000000  ; Previous x coordinate
+y_prev:             dl 0x000000  ; Previous y coordinate
 
 main_loop:
+; --- clear the screen ---
+    call vdu_cls
+
 ; --- convert input thetas to 16.8 fixed point degrees255
     ld hl,(theta_prime) ; get the theta_prime value
     call deg_360_to_256 ; convert to 16.8 fixed point
@@ -117,7 +123,7 @@ main_loop:
     ld (theta_petal),hl ; store the result
 
 ; --- compute the main loop parameters ---
-; step_theta_prime = 2 * math.pi / (petals * vectors)
+; step_theta_prime = 256 degrees / (petals * vectors)
     ld hl,(petals) 
     ld de,(vectors)
     call umul168 ; uh.l = petals * vectors
@@ -125,20 +131,64 @@ main_loop:
     ld hl,256*256 ; 360 degrees in 16.8 fixed point
     call udiv168 ; ud.e = 256 / (petals * vectors)
     ld (step_theta_prime),de ; store the result
+;    call print_hex_de
+;    call print_s168_de
+;    call printNewLine
 
-; step_theta_petal = 2 * math.pi / vectors
+; step_theta_petal = 256 degrees / vectors
     ld hl,256*256 ; 360 degrees in 16.8 fixed point
     ld de,(vectors)
     call udiv168 ; ud.e = 256 / vectors
     ld (step_theta_petal),de ; store the result
+;    call print_hex_de
+;    call print_s168_de
+;    call printNewLine
 
-; total_steps = int(2 * math.pi / step_theta_prime * periods)
+; total_steps = int(256 degrees / step_theta_prime * periods)
     ld hl,256*256 ; 360 degrees in 16.8 fixed point
     ld de,(step_theta_prime)
     call udiv168 ; ud.e = 256 / step_theta_prime
     ld hl,(periods)
     call umul168 ; uh.l = periods * 256 / step_theta_prime
+    call hlu_udiv256 ; we only want the integer part
     ld (total_steps),hl ; store the result
+    ; call print_hex_hl
+    ; call printDec
+    ; call printNewLine
+
+; Calculate shrink per step (linear)
+    ; shrink_step = -shrink / total_steps
+    ex de,hl ; de = total_steps
+    ld hl,(shrink)
+    call neg_hlu
+    call sdiv168 ; ud.e = -shrink / total_steps
+    ld (shrink_step),de ; store the result
+;    call print_hex_de
+;    call print_s168_de
+;    call printNewLine
+
+; ; Initialize radius_prime
+;     ; radius_prime = (1 - (depth / 2)) * radius_scale
+;     ld hl,(depth)
+;     ld de,1
+;     call shr_hlu ; uh.l = depth / 2
+;     ex de,hl ; de = depth / 2
+;     ld hl,1*256 ; 1 in 16.8 fixed point
+;     or a ; clear carry
+;     sbc hl,de ; uh.l = 1 - depth / 2
+;     ld de,(radius_scale)
+;     call smul168 ; uh.l = (1 - depth / 2) * radius_scale
+;     ld (radius_prime),hl ; store the result
+;     ; call print_hex_hl
+;     ; call print_s168_hl
+;     ; call printNewLine
+    ld hl,(radius_scale)
+    ld (radius_prime),hl
+
+; Set screen origin to the center
+    ld bc,1280/2 ; x
+    ld de,1024/2 ; y
+    call vdu_set_gfx_origin
 
 ; set initial point and move graphics cursor to it
     call calc_point ; ub.c = x, ud.e = y
@@ -146,39 +196,65 @@ main_loop:
     call vdu_plot_168
     ; fall through to main loop
 
-    call dumpRegistersHex
-    call print_u168
-    ex de,hl
-    call print_u168
-    ex de,hl
-    call printNewLine
-
 @loop:
+    ; Advance theta values
+        ; theta_prime += step_theta_prime
+        ld hl,(theta_prime)
+        ld de,(step_theta_prime)
+        add hl,de
+        ld (theta_prime),hl
+        ; theta_petal += step_theta_petal
+        ld hl,(theta_petal)
+        ld de,(step_theta_petal)
+        add hl,de
+        ld (theta_petal),hl
 
-        ; jp @loop
-        ret
+    ; Update radius_prime
+        ; radius_prime += shrink_step
+        ld hl,(radius_prime)
+        ld de,(shrink_step)
+        add hl,de
+        ld (radius_prime),hl
+
+    ; Calculate new coordinates and draw a line from the previous point
+        call calc_point ; ub.c = x, ud.e = y
+        ld a,plot_sl_both+dr_abs_fg ; plot mode
+        call vdu_plot_168
+
+    ; Decrement the loop counter
+        ld hl,total_steps
+        dec (hl)
+        jp nz,@loop
+    ret
 
 ; compute the Cartesian coordinates of the next point on the curve
-; inputs: theta_prime, theta_petal, prime_radius, depth
+; inputs: theta_prime, theta_petal, radius_prime, depth
 ; outputs: ub.c = x, ud.e = y
 calc_point:
-; Calculate the petal radius and total radius (unit circle)
-    ; petal_radius = math.cos(theta_petal) * depth
+; Calculate the petal radius and total radius 
+    ; radius_petal = math.cos(theta_petal) * depth
     ld hl,(theta_petal)
     call cos168 ; uh.l = cos(theta_petal)
     ld de,(depth)
-    call smul168 ; uh.l = petal_radius
+    call smul168 ; uh.l = radius_petal
 
-    ; radius = prime_radius + petal_radius * prime_radius
-    ld de,(prime_radius)
-    call smul168 ; uh.l = petal_radius * prime_radius
-    add hl,de ; uh.l = prime_radius + petal_radius * prime_radius
+    ; radius = radius_prime + radius_petal * radius_prime
+    ld de,(radius_prime)
+    call smul168 ; uh.l = radius_petal * radius_prime
+    add hl,de ; uh.l = radius_prime + radius_petal * radius_prime
     ex de,hl ; de = radius
 
 ; Convert polar to Cartesian coordinates
     ; x, y = polar_to_cartesian(radius, theta_prime)
     ld hl,(theta_prime)
     call polar_to_cartesian ; ub.c = x, ud.e = y
+
+; ; Debug print
+;     call print_hex_bc
+;     call print_s168_bc
+;     call print_hex_de
+;     call print_s168_de
+;     ; call printNewLine
 
 ; all done
     ret
@@ -205,10 +281,6 @@ load_input:
         lea iy,iy+3  ; point to the next parameter
         djnz @loop ; loop until done
         ret
-
-
-
-
 
 ; --- Specific parameter processing functions ---
 args_count_off:

@@ -128,6 +128,24 @@ vdu_vblank:
     POP	IX
     RET
 
+; VDU 29, x; y;: Set graphics origin
+; This command sets the graphics origin. 
+; The origin is the point on the screen where the coordinates (0,0) are located.
+; inputs: bc=x0,de=y0
+; outputs; nothing
+; destroys: a might make it out alive
+vdu_set_gfx_origin:
+    ld (@x0),bc
+    ld (@y0),de
+    ld hl,@cmd
+    ld bc,@end-@cmd
+    rst.lil $18
+    ret
+@cmd:   db 29 ; set graphics origin command
+@x0: 	dw 0x0000 ; set by bc
+@y0: 	dw 0x0000 ; set by de
+@end:   db 0x00	  ; padding
+
 ; VDU 24, left; bottom; right; top;: Set graphics viewport 
 ; NOTE: the order of the y-coordinate parameters are inverted
 ; 	because we have turned off logical screen scaling

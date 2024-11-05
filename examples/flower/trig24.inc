@@ -106,22 +106,22 @@ sin168:
 ;        displacements from origin (0,0)
 ; destroys: everything except indexes
 polar_to_cartesian:
-	call printNewLine ; DEBUG
+	; call printNewLine ; DEBUG
 ; back up input parameters
     ld (@angle), hl
     ld (@radius), de
 ; compute dx = cos(uh.l) * ud.e
     call cos168 ; uh.l = cos(uh.l)
-	call print_hex_hl ; DEBUG
-	call print_s168_hl ; DEBUG
+	; call print_hex_hl ; DEBUG
+	; call print_s168_hl ; DEBUG
 	ld de,(@radius)
 	call smul168 ; uh.l = dx
     push hl      
 ; compute dy = sin(uh.l) * ud.e
     ld hl,(@angle)
     call sin168 ; uh.l = sin(uh.l)
-	call print_hex_hl ; DEBUG
-	call print_s168_hl ; DEBUG
+	; call print_hex_hl ; DEBUG
+	; call print_s168_hl ; DEBUG
     ld de,(@radius)
     call smul168    ; uh.l = dy
     ex de,hl       ; de = dy for output

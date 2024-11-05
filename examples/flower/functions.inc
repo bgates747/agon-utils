@@ -303,7 +303,7 @@ printDec:
     DJNZ @loop
 @done:
 ; END MY CODE
-	; LD	 HL, _printDecBuffer
+	LD	 HL, _printDecBuffer
 	CALL printString
 ; BEGIN MY CODE
 ; restore all the things
