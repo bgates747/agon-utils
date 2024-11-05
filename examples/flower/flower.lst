@@ -6076,7 +6076,7 @@ PC     Output      Line
 0B245F             0064   _main:
 0B245F 79          0065       ld a,c              ; how many arguments?
 0B2460 FE 02       0066       cp min_args         ; not enough?
-0B2462 D2 4E 27 0B 0067       jp nc,main          ; if enough, go to main loop
+0B2462 D2 F5 25 0B 0067       jp nc,main          ; if enough, go to main loop
 0B2466 21 34 24 0B 0068       ld hl,str_usage     ; if not enough, print usage
 0B246A CD 73 02 0B 0069       call printString
 0B246E             0070                           ; fall through to _main_end_error
@@ -6123,510 +6123,503 @@ PC     Output      Line
 0B24B7 00 00 00    0111   x_prev:             dl 0x000000  ; Previous x coordinate
 0B24BA 00 00 00    0112   y_prev:             dl 0x000000  ; Previous y coordinate
 0B24BD             0113   
-0B24BD             0114   ; ---- text strings ----
-0B24BD 73 74 65 70 0115   str_step_theta_prime: ASCIZ "step_theta_prime: "
-       5F 74 68 65 
-       74 61 5F 70 
-       72 69 6D 65 
-       3A 20 00    
-0B24D0 73 74 65 70 0116   str_step_theta_petal: ASCIZ "step_theta_petal: "
-       5F 74 68 65 
-       74 61 5F 70 
-       65 74 61 6C 
-       3A 20 00    
-0B24E3 74 6F 74 61 0117   str_total_steps: ASCIZ "total_steps: "
-       6C 5F 73 74 
-       65 70 73 3A 
-       20 00       
-0B24F1 73 74 65 70 0118   str_step_shrink: ASCIZ "step_shrink: "
-       5F 73 68 72 
-       69 6E 6B 3A 
-       20 00       
-0B24FF             0119   
-0B24FF 74 68 65 74 0120   str_theta_prime: ASCIZ "theta_prime: "
-       61 5F 70 72 
-       69 6D 65 3A 
-       20 00       
-0B250D 72 61 64 69 0121   str_radius_prime: ASCIZ "radius_prime: "
-       75 73 5F 70 
-       72 69 6D 65 
-       3A 20 00    
-0B251C 72 61 64 69 0122   str_radius_petal: ASCIZ "radius_petal: "
-       75 73 5F 70 
-       65 74 61 6C 
-       3A 20 00    
-0B252B 74 68 65 74 0123   str_theta_petal: ASCIZ "theta_petal: "
-       61 5F 70 65 
-       74 61 6C 3A 
-       20 00       
-0B2539             0124   
-0B2539 72 61 64 69 0125   str_radius: ASCIZ "radius: "
-       75 73 3A 20 
-       00          
-0B2542 78 2C 79 3A 0126   str_xy: ASCIZ "x,y: "
-       20 00       
-0B2548             0127   
-0B2548             0128   print_step_theta_prime:
-0B2548 E5          0129       push hl
-0B2549 21 BD 24 0B 0130       ld hl,str_step_theta_prime
-0B254D CD 73 02 0B 0131       call printString
-0B2551 2A 9C 24 0B 0132       ld hl,(step_theta_prime)
-0B2555             0133       ; call print_hex_hl
-0B2555 CD 4D 04 0B 0134       call print_s168_hl
-0B2559             0135       ; call printNewLine
-0B2559 E1          0136       pop hl
-0B255A C9          0137       ret
-0B255B             0138   
-0B255B             0139   print_step_theta_petal:
-0B255B E5          0140       push hl
-0B255C 21 D0 24 0B 0141       ld hl,str_step_theta_petal
-0B2560 CD 73 02 0B 0142       call printString
-0B2564 2A 9F 24 0B 0143       ld hl,(step_theta_petal)
-0B2568             0144       ; call print_hex_hl
-0B2568 CD 4D 04 0B 0145       call print_s168_hl
-0B256C             0146       ; call printNewLine
-0B256C E1          0147       pop hl
-0B256D C9          0148       ret
-0B256E             0149   
-0B256E             0150   print_total_steps:
-0B256E E5          0151       push hl
-0B256F 21 E3 24 0B 0152       ld hl,str_total_steps
-0B2573 CD 73 02 0B 0153       call printString
-0B2577 2A A2 24 0B 0154       ld hl,(total_steps)
-0B257B             0155       hlu_mul256 ; uh.l = total_steps 16.8 fixed
-0B257B 29          0001M          add hl,hl ; * 2
-0B257C 29          0002M          add hl,hl ; * 4
-0B257D 29          0003M          add hl,hl ; * 8
-0B257E 29          0004M          add hl,hl ; * 16
-0B257F 29          0005M          add hl,hl ; * 32
-0B2580 29          0006M          add hl,hl ; * 64
-0B2581 29          0007M          add hl,hl ; * 128
-0B2582 29          0008M          add hl,hl ; * 256
-0B2583             0156       ; call print_hex_hl
-0B2583 CD 4D 04 0B 0157       call print_s168_hl
-0B2587             0158       ; call printNewLine
-0B2587 E1          0159       pop hl
-0B2588 C9          0160       ret
-0B2589             0161   
-0B2589             0162   print_step_shrink:
-0B2589 E5          0163       push hl
-0B258A 21 F1 24 0B 0164       ld hl,str_step_shrink
-0B258E CD 73 02 0B 0165       call printString
-0B2592 2A A5 24 0B 0166       ld hl,(step_shrink)
-0B2596             0167       ; call print_hex_hl
-0B2596 CD 4D 04 0B 0168       call print_s168_hl
-0B259A             0169       ; call printNewLine
-0B259A E1          0170       pop hl
-0B259B C9          0171       ret
-0B259C             0172   
-0B259C             0173   print_theta_prime:
-0B259C E5          0174       push hl
-0B259D 21 FF 24 0B 0175       ld hl,str_theta_prime
-0B25A1 CD 73 02 0B 0176       call printString
-0B25A5 2A A8 24 0B 0177       ld hl,(theta_prime)
-0B25A9             0178       ; call print_hex_hl
-0B25A9 CD 4D 04 0B 0179       call print_s168_hl
-0B25AD             0180       ; call printNewLine
-0B25AD E1          0181       pop hl
-0B25AE C9          0182       ret
-0B25AF             0183   
-0B25AF             0184   print_radius_prime:
-0B25AF E5          0185       push hl
-0B25B0 21 0D 25 0B 0186       ld hl,str_radius_prime
-0B25B4 CD 73 02 0B 0187       call printString
-0B25B8 2A AE 24 0B 0188       ld hl,(radius_prime)
-0B25BC             0189       ; call print_hex_hl
-0B25BC CD 4D 04 0B 0190       call print_s168_hl
-0B25C0             0191       ; call printNewLine
-0B25C0 E1          0192       pop hl
-0B25C1 C9          0193       ret
-0B25C2             0194   
-0B25C2             0195   print_theta_petal:
-0B25C2 E5          0196       push hl
-0B25C3 21 2B 25 0B 0197       ld hl,str_theta_petal
-0B25C7 CD 73 02 0B 0198       call printString
-0B25CB 2A AB 24 0B 0199       ld hl,(theta_petal)
-0B25CF             0200       ; call print_hex_hl
-0B25CF CD 4D 04 0B 0201       call print_s168_hl
-0B25D3             0202       ; call printNewLine
-0B25D3 E1          0203       pop hl
-0B25D4 C9          0204       ret
-0B25D5             0205   
-0B25D5             0206   print_radius_petal:
-0B25D5 E5          0207       push hl
-0B25D6 21 1C 25 0B 0208       ld hl,str_radius_petal
-0B25DA CD 73 02 0B 0209       call printString
-0B25DE 2A B1 24 0B 0210       ld hl,(radius_petal)
-0B25E2             0211       ; call print_hex_hl
-0B25E2 CD 4D 04 0B 0212       call print_s168_hl
-0B25E6             0213       ; call printNewLine
-0B25E6 E1          0214       pop hl
-0B25E7 C9          0215       ret
-0B25E8             0216   
-0B25E8             0217   print_radius:
-0B25E8 E5          0218       push hl
-0B25E9 21 39 25 0B 0219       ld hl,str_radius
-0B25ED CD 73 02 0B 0220       call printString
-0B25F1 2A B4 24 0B 0221       ld hl,(radius)
-0B25F5             0222       ; call print_hex_hl
-0B25F5 CD 4D 04 0B 0223       call print_s168_hl
-0B25F9             0224       ; call printNewLine
-0B25F9 E1          0225       pop hl
-0B25FA C9          0226       ret
-0B25FB             0227   
-0B25FB             0228   print_xy:
-0B25FB E5          0229       push hl
-0B25FC 21 42 25 0B 0230       ld hl,str_xy
-0B2600 CD 73 02 0B 0231       call printString
-0B2604 2A B7 24 0B 0232       ld hl,(x_prev)
-0B2608 CD 4D 04 0B 0233       call print_s168_hl
-0B260C 2A BA 24 0B 0234       ld hl,(y_prev)
-0B2610 CD 4D 04 0B 0235       call print_s168_hl
-0B2614             0236       ; call printNewLine
-0B2614 E1          0237       pop hl
-0B2615 C9          0238       ret
-0B2616             0239   
-0B2616             0240   main_loop:
-0B2616             0241   ; --- clear the screen ---
-0B2616 CD B1 1E 0B 0242       call vdu_cls
-0B261A             0243   
-0B261A             0244   ; --- convert input thetas to 16.8 fixed point degrees255
-0B261A 2A A8 24 0B 0245       ld hl,(theta_prime) ; get the theta_prime value
-0B261E CD 31 0C 0B 0246       call deg_360_to_256 ; convert to 16.8 fixed point
-0B2622 22 A8 24 0B 0247       ld (theta_prime),hl ; store the result
-0B2626             0248   
-0B2626 2A AB 24 0B 0249       ld hl,(theta_petal) ; get the theta_petal value
-0B262A CD 31 0C 0B 0250       call deg_360_to_256 ; convert to 16.8 fixed point
-0B262E 22 AB 24 0B 0251       ld (theta_petal),hl ; store the result
-0B2632             0252   
-0B2632             0253   ; --- compute the main loop parameters ---
-0B2632             0254   ; step_theta_prime = 256 degrees / (petals * vectors)
-0B2632 2A 84 24 0B 0255       ld hl,(petals)
-0B2636 ED 5B 87 24 0256       ld de,(vectors)
+0B24BD             0114   main_loop:
+0B24BD             0115   ; --- clear the screen ---
+0B24BD CD B1 1E 0B 0116       call vdu_cls
+0B24C1             0117   
+0B24C1             0118   ; --- convert input thetas to 16.8 fixed point degrees255
+0B24C1 2A A8 24 0B 0119       ld hl,(theta_prime) ; get the theta_prime value
+0B24C5 CD 31 0C 0B 0120       call deg_360_to_256 ; convert to 16.8 fixed point
+0B24C9 22 A8 24 0B 0121       ld (theta_prime),hl ; store the result
+0B24CD             0122   
+0B24CD 2A AB 24 0B 0123       ld hl,(theta_petal) ; get the theta_petal value
+0B24D1 CD 31 0C 0B 0124       call deg_360_to_256 ; convert to 16.8 fixed point
+0B24D5 22 AB 24 0B 0125       ld (theta_petal),hl ; store the result
+0B24D9             0126   
+0B24D9             0127   ; --- compute the main loop parameters ---
+0B24D9             0128   ; step_theta_prime = 256 degrees / (petals * vectors)
+0B24D9 2A 84 24 0B 0129       ld hl,(petals)
+0B24DD ED 5B 87 24 0130       ld de,(vectors)
        0B          
-0B263B CD DA 09 0B 0257       call umul168 ; uh.l = petals * vectors
-0B263F EB          0258       ex de,hl ; de = petals * vectors
-0B2640 21 00 00 01 0259       ld hl,256*256 ; 360 degrees in 16.8 fixed point
-0B2644 CD 42 0A 0B 0260       call udiv168 ; ud.e = 256 / (petals * vectors)
-0B2648 ED 53 9C 24 0261       ld (step_theta_prime),de ; store the result
+0B24E2 CD DA 09 0B 0131       call umul168 ; uh.l = petals * vectors
+0B24E6 EB          0132       ex de,hl ; de = petals * vectors
+0B24E7 21 00 00 01 0133       ld hl,256*256 ; 360 degrees in 16.8 fixed point
+0B24EB CD 42 0A 0B 0134       call udiv168 ; ud.e = 256 / (petals * vectors)
+0B24EF ED 53 9C 24 0135       ld (step_theta_prime),de ; store the result
        0B          
-0B264D CD 48 25 0B 0262       call print_step_theta_prime
-0B2651             0263   
-0B2651             0264   ; step_theta_petal = 256 degrees / vectors
-0B2651 21 00 00 01 0265       ld hl,256*256 ; 360 degrees in 16.8 fixed point
-0B2655 ED 5B 87 24 0266       ld de,(vectors)
+0B24F4 CD CC 26 0B 0136       call print_step_theta_prime
+0B24F8             0137   
+0B24F8             0138   ; step_theta_petal = 256 degrees / vectors
+0B24F8 21 00 00 01 0139       ld hl,256*256 ; 360 degrees in 16.8 fixed point
+0B24FC ED 5B 87 24 0140       ld de,(vectors)
        0B          
-0B265A CD 42 0A 0B 0267       call udiv168 ; ud.e = 256 / vectors
-0B265E ED 53 9F 24 0268       ld (step_theta_petal),de ; store the result
+0B2501 CD 42 0A 0B 0141       call udiv168 ; ud.e = 256 / vectors
+0B2505 ED 53 9F 24 0142       ld (step_theta_petal),de ; store the result
        0B          
-0B2663 CD 5B 25 0B 0269       call print_step_theta_petal
-0B2667             0270   
-0B2667             0271   ; total_steps = int(petals * vectors * periods)
-0B2667 2A 84 24 0B 0272       ld hl,(petals)
-0B266B ED 5B 87 24 0273       ld de,(vectors)
+0B250A CD DF 26 0B 0143       call print_step_theta_petal
+0B250E             0144   
+0B250E             0145   ; total_steps = int(petals * vectors * periods)
+0B250E 2A 84 24 0B 0146       ld hl,(petals)
+0B2512 ED 5B 87 24 0147       ld de,(vectors)
        0B          
-0B2670 CD DA 09 0B 0274       call umul168 ; uh.l = petals * vectors
-0B2674 CD 9E 08 0B 0275       call hlu_udiv256 ; uh.l = int(petals * vectors)
-0B2678 EB          0276       ex de,hl ; de = petals * vectors
-0B2679 2A 8D 24 0B 0277       ld hl,(periods)
-0B267D CD 9E 08 0B 0278       call hlu_udiv256 ; uh.l = int(periods)
-0B2681 CD 05 0A 0B 0279       call umul24 ; uh.l = int(petals * vectors * periods)
-0B2685 22 A2 24 0B 0280       ld (total_steps),hl ; store the result
-0B2689 CD 6E 25 0B 0281       call print_total_steps
-0B268D             0282   
-0B268D             0283   ; Calculate shrink per step (linear)
-0B268D             0284       ; step_shrink = -shrink * radius_scale / total_steps
-0B268D 2A 90 24 0B 0285       ld hl,(shrink)
-0B2691 ED 5B 99 24 0286       ld de,(radius_scale)
+0B2517 CD DA 09 0B 0148       call umul168 ; uh.l = petals * vectors
+0B251B CD 9E 08 0B 0149       call hlu_udiv256 ; uh.l = int(petals * vectors)
+0B251F EB          0150       ex de,hl ; de = petals * vectors
+0B2520 2A 8D 24 0B 0151       ld hl,(periods)
+0B2524 CD 9E 08 0B 0152       call hlu_udiv256 ; uh.l = int(periods)
+0B2528 CD 05 0A 0B 0153       call umul24 ; uh.l = int(petals * vectors * periods)
+0B252C 22 A2 24 0B 0154       ld (total_steps),hl ; store the result
+0B2530 CD F2 26 0B 0155       call print_total_steps
+0B2534             0156   
+0B2534             0157   ; Calculate shrink per step (linear)
+0B2534             0158       ; step_shrink = -shrink * radius_scale / total_steps
+0B2534 2A 90 24 0B 0159       ld hl,(shrink)
+0B2538 ED 5B 99 24 0160       ld de,(radius_scale)
        0B          
-0B2696 CD DA 09 0B 0287       call umul168 ; uh.l = shrink * radius_scale
-0B269A ED 5B A2 24 0288       ld de,(total_steps)
+0B253D CD DA 09 0B 0161       call umul168 ; uh.l = shrink * radius_scale
+0B2541 ED 5B A2 24 0162       ld de,(total_steps)
        0B          
-0B269F EB          0289       ex de,hl
-0B26A0             0290       hlu_mul256 ; total steps in 16.8 fixed point
-0B26A0 29          0001M          add hl,hl ; * 2
-0B26A1 29          0002M          add hl,hl ; * 4
-0B26A2 29          0003M          add hl,hl ; * 8
-0B26A3 29          0004M          add hl,hl ; * 16
-0B26A4 29          0005M          add hl,hl ; * 32
-0B26A5 29          0006M          add hl,hl ; * 64
-0B26A6 29          0007M          add hl,hl ; * 128
-0B26A7 29          0008M          add hl,hl ; * 256
-0B26A8 EB          0291       ex de,hl ; flip back again for the division
-0B26A9 CD 42 0A 0B 0292       call udiv168 ; ud.e = shrink * radius_scale / total_steps
-0B26AD EB          0293       ex de,hl ; hl = -shrink * radius_scale / total_steps
-0B26AE CD 47 08 0B 0294       call neg_hlu ; uh.l = -shrink / total_steps
-0B26B2 22 A5 24 0B 0295       ld (step_shrink),hl ; store the result
-0B26B6 CD 89 25 0B 0296       call print_step_shrink
-0B26BA             0297   
-0B26BA             0298   ; ; Initialize radius_prime
-0B26BA             0299   ;     ; radius_prime = (1 - (depth / 2)) * radius_scale
-0B26BA             0300   ;     ld hl,(depth)
-0B26BA             0301   ;     ld de,1
-0B26BA             0302   ;     call shr_hlu ; uh.l = depth / 2
-0B26BA             0303   ;     ex de,hl ; de = depth / 2
-0B26BA             0304   ;     ld hl,1*256 ; 1 in 16.8 fixed point
-0B26BA             0305   ;     or a ; clear carry
-0B26BA             0306   ;     sbc hl,de ; uh.l = 1 - depth / 2
-0B26BA             0307   ;     ld de,(radius_scale)
-0B26BA             0308   ;     call smul168 ; uh.l = (1 - depth / 2) * radius_scale
-0B26BA             0309   ;     ld (radius_prime),hl ; store the result
-0B26BA             0310   ;     ; call print_hex_hl
-0B26BA             0311   ;     ; call print_s168_hl
-0B26BA             0312   ;     ; call printNewLine
-0B26BA 2A 99 24 0B 0313       ld hl,(radius_scale)
-0B26BE 22 AE 24 0B 0314       ld (radius_prime),hl
-0B26C2             0315   
-0B26C2             0316   ; Set screen origin to the center
-0B26C2 01 80 02 00 0317       ld bc,1280/2 ; x
-0B26C6 11 00 02 00 0318       ld de,1024/2 ; y
-0B26CA CD 1D 1F 0B 0319       call vdu_set_gfx_origin
-0B26CE             0320   
-0B26CE             0321   ; set initial point and move graphics cursor to it
-0B26CE CD 16 27 0B 0322       call calc_point ; ub.c = x, ud.e = y
-0B26D2 3E 44       0323       ld a,plot_pt+mv_abs ; plot mode
-0B26D4 CD 4E 22 0B 0324       call vdu_plot_168
-0B26D8             0325       ; fall through to main loop
-0B26D8             0326   
-0B26D8             0327   @loop:
-0B26D8             0328       ; Advance theta values
-0B26D8             0329           ; theta_prime += step_theta_prime
-0B26D8 2A A8 24 0B 0330           ld hl,(theta_prime)
-0B26DC ED 5B 9C 24 0331           ld de,(step_theta_prime)
+0B2546 EB          0163       ex de,hl
+0B2547             0164       hlu_mul256 ; total steps in 16.8 fixed point
+0B2547 29          0001M          add hl,hl ; * 2
+0B2548 29          0002M          add hl,hl ; * 4
+0B2549 29          0003M          add hl,hl ; * 8
+0B254A 29          0004M          add hl,hl ; * 16
+0B254B 29          0005M          add hl,hl ; * 32
+0B254C 29          0006M          add hl,hl ; * 64
+0B254D 29          0007M          add hl,hl ; * 128
+0B254E 29          0008M          add hl,hl ; * 256
+0B254F EB          0165       ex de,hl ; flip back again for the division
+0B2550 CD 42 0A 0B 0166       call udiv168 ; ud.e = shrink * radius_scale / total_steps
+0B2554 EB          0167       ex de,hl ; hl = -shrink * radius_scale / total_steps
+0B2555 CD 47 08 0B 0168       call neg_hlu ; uh.l = -shrink / total_steps
+0B2559 22 A5 24 0B 0169       ld (step_shrink),hl ; store the result
+0B255D CD 0D 27 0B 0170       call print_step_shrink
+0B2561             0171   
+0B2561             0172   ; ; Initialize radius_prime
+0B2561             0173   ;     ; radius_prime = (1 - (depth / 2)) * radius_scale
+0B2561             0174   ;     ld hl,(depth)
+0B2561             0175   ;     ld de,1
+0B2561             0176   ;     call shr_hlu ; uh.l = depth / 2
+0B2561             0177   ;     ex de,hl ; de = depth / 2
+0B2561             0178   ;     ld hl,1*256 ; 1 in 16.8 fixed point
+0B2561             0179   ;     or a ; clear carry
+0B2561             0180   ;     sbc hl,de ; uh.l = 1 - depth / 2
+0B2561             0181   ;     ld de,(radius_scale)
+0B2561             0182   ;     call smul168 ; uh.l = (1 - depth / 2) * radius_scale
+0B2561             0183   ;     ld (radius_prime),hl ; store the result
+0B2561             0184   ;     ; call print_hex_hl
+0B2561             0185   ;     ; call print_s168_hl
+0B2561             0186   ;     ; call printNewLine
+0B2561 2A 99 24 0B 0187       ld hl,(radius_scale)
+0B2565 22 AE 24 0B 0188       ld (radius_prime),hl
+0B2569             0189   
+0B2569             0190   ; Set screen origin to the center
+0B2569 01 80 02 00 0191       ld bc,1280/2 ; x
+0B256D 11 00 02 00 0192       ld de,1024/2 ; y
+0B2571 CD 1D 1F 0B 0193       call vdu_set_gfx_origin
+0B2575             0194   
+0B2575             0195   ; set initial point and move graphics cursor to it
+0B2575 CD BD 25 0B 0196       call calc_point ; ub.c = x, ud.e = y
+0B2579 3E 44       0197       ld a,plot_pt+mv_abs ; plot mode
+0B257B CD 4E 22 0B 0198       call vdu_plot_168
+0B257F             0199       ; fall through to main loop
+0B257F             0200   
+0B257F             0201   @loop:
+0B257F             0202       ; Advance theta values
+0B257F             0203           ; theta_prime += step_theta_prime
+0B257F 2A A8 24 0B 0204           ld hl,(theta_prime)
+0B2583 ED 5B 9C 24 0205           ld de,(step_theta_prime)
        0B          
-0B26E1 19          0332           add hl,de
-0B26E2 22 A8 24 0B 0333           ld (theta_prime),hl
-0B26E6             0334   
-0B26E6             0335           ; theta_petal += step_theta_petal
-0B26E6 2A AB 24 0B 0336           ld hl,(theta_petal)
-0B26EA ED 5B 9F 24 0337           ld de,(step_theta_petal)
+0B2588 19          0206           add hl,de
+0B2589 22 A8 24 0B 0207           ld (theta_prime),hl
+0B258D             0208   
+0B258D             0209           ; theta_petal += step_theta_petal
+0B258D 2A AB 24 0B 0210           ld hl,(theta_petal)
+0B2591 ED 5B 9F 24 0211           ld de,(step_theta_petal)
        0B          
-0B26EF 19          0338           add hl,de
-0B26F0 22 AB 24 0B 0339           ld (theta_petal),hl
-0B26F4             0340   
-0B26F4             0341       ; Update radius_prime
-0B26F4             0342           ; radius_prime += step_shrink
-0B26F4 2A AE 24 0B 0343           ld hl,(radius_prime)
-0B26F8 ED 5B A5 24 0344           ld de,(step_shrink)
+0B2596 19          0212           add hl,de
+0B2597 22 AB 24 0B 0213           ld (theta_petal),hl
+0B259B             0214   
+0B259B             0215       ; Update radius_prime
+0B259B             0216           ; radius_prime += step_shrink
+0B259B 2A AE 24 0B 0217           ld hl,(radius_prime)
+0B259F ED 5B A5 24 0218           ld de,(step_shrink)
        0B          
-0B26FD 19          0345           add hl,de
-0B26FE 22 AE 24 0B 0346           ld (radius_prime),hl
-0B2702             0347   
-0B2702             0348       ; Calculate new coordinates and draw a line from the previous point
-0B2702 CD 16 27 0B 0349           call calc_point ; ub.c = x, ud.e = y
-0B2706 3E 05       0350           ld a,plot_sl_both+dr_abs_fg ; plot mode
-0B2708 CD 4E 22 0B 0351           call vdu_plot_168
-0B270C             0352   
-0B270C             0353           ; call printNewLine
-0B270C             0354           ; call print_theta_prime
-0B270C             0355           ; call print_theta_petal
-0B270C             0356           ; ; call print_radius_prime
-0B270C             0357           ; ; call print_radius_petal
-0B270C             0358           ; call print_radius
-0B270C             0359           ; call print_xy
-0B270C             0360   
-0B270C             0361       ; Decrement the loop counter
-0B270C 21 A2 24 0B 0362           ld hl,total_steps
-0B2710 35          0363           dec (hl)
-0B2711 C2 D8 26 0B 0364           jp nz,@loop
-0B2715 C9          0365       ret
-0B2716             0366   
-0B2716             0367   ; compute the Cartesian coordinates of the next point on the curve
-0B2716             0368   ; inputs: theta_prime, theta_petal, radius_prime, depth
-0B2716             0369   ; outputs: ub.c = x, ud.e = y
-0B2716             0370   calc_point:
-0B2716             0371   ; Calculate the petal radius and total radius
-0B2716             0372       ; radius_petal = math.cos(theta_petal) * depth
-0B2716 2A AB 24 0B 0373       ld hl,(theta_petal)
-0B271A CD 53 0C 0B 0374       call cos168 ; uh.l = cos(theta_petal)
-0B271E ED 5B 8A 24 0375       ld de,(depth)
+0B25A4 19          0219           add hl,de
+0B25A5 22 AE 24 0B 0220           ld (radius_prime),hl
+0B25A9             0221   
+0B25A9             0222       ; Calculate new coordinates and draw a line from the previous point
+0B25A9 CD BD 25 0B 0223           call calc_point ; ub.c = x, ud.e = y
+0B25AD 3E 05       0224           ld a,plot_sl_both+dr_abs_fg ; plot mode
+0B25AF CD 4E 22 0B 0225           call vdu_plot_168
+0B25B3             0226   
+0B25B3             0227           ; call printNewLine
+0B25B3             0228           ; call print_theta_prime
+0B25B3             0229           ; call print_theta_petal
+0B25B3             0230           ; ; call print_radius_prime
+0B25B3             0231           ; ; call print_radius_petal
+0B25B3             0232           ; call print_radius
+0B25B3             0233           ; call print_xy
+0B25B3             0234   
+0B25B3             0235       ; Decrement the loop counter
+0B25B3 21 A2 24 0B 0236           ld hl,total_steps
+0B25B7 35          0237           dec (hl)
+0B25B8 C2 7F 25 0B 0238           jp nz,@loop
+0B25BC C9          0239       ret
+0B25BD             0240   
+0B25BD             0241   ; compute the Cartesian coordinates of the next point on the curve
+0B25BD             0242   ; inputs: theta_prime, theta_petal, radius_prime, depth
+0B25BD             0243   ; outputs: ub.c = x, ud.e = y
+0B25BD             0244   calc_point:
+0B25BD             0245   ; Calculate the petal radius and total radius
+0B25BD             0246       ; radius_petal = math.cos(theta_petal) * depth
+0B25BD 2A AB 24 0B 0247       ld hl,(theta_petal)
+0B25C1 CD 53 0C 0B 0248       call cos168 ; uh.l = cos(theta_petal)
+0B25C5 ED 5B 8A 24 0249       ld de,(depth)
        0B          
-0B2723 CD E2 09 0B 0376       call smul168 ; uh.l = radius_petal
-0B2727 22 B1 24 0B 0377       ld (radius_petal),hl
-0B272B             0378   
-0B272B             0379       ; radius = radius_prime + radius_petal * radius_prime
-0B272B ED 5B AE 24 0380       ld de,(radius_prime)
+0B25CA CD E2 09 0B 0250       call smul168 ; uh.l = radius_petal
+0B25CE 22 B1 24 0B 0251       ld (radius_petal),hl
+0B25D2             0252   
+0B25D2             0253       ; radius = radius_prime + radius_petal * radius_prime
+0B25D2 ED 5B AE 24 0254       ld de,(radius_prime)
        0B          
-0B2730 CD E2 09 0B 0381       call smul168 ; uh.l = radius_petal * radius_prime
-0B2734 19          0382       add hl,de ; uh.l = radius_prime + radius_petal * radius_prime
-0B2735 EB          0383       ex de,hl ; de = radius
-0B2736 ED 53 B4 24 0384       ld (radius),de
+0B25D7 CD E2 09 0B 0255       call smul168 ; uh.l = radius_petal * radius_prime
+0B25DB 19          0256       add hl,de ; uh.l = radius_prime + radius_petal * radius_prime
+0B25DC EB          0257       ex de,hl ; de = radius
+0B25DD ED 53 B4 24 0258       ld (radius),de
        0B          
-0B273B             0385   
-0B273B             0386   ; Convert polar to Cartesian coordinates
-0B273B             0387       ; x, y = polar_to_cartesian(radius, theta_prime)
-0B273B 2A A8 24 0B 0388       ld hl,(theta_prime)
-0B273F CD 92 0C 0B 0389       call polar_to_cartesian ; ub.c = x, ud.e = y
-0B2743 ED 43 B7 24 0390       ld (x_prev),bc
+0B25E2             0259   
+0B25E2             0260   ; Convert polar to Cartesian coordinates
+0B25E2             0261       ; x, y = polar_to_cartesian(radius, theta_prime)
+0B25E2 2A A8 24 0B 0262       ld hl,(theta_prime)
+0B25E6 CD 92 0C 0B 0263       call polar_to_cartesian ; ub.c = x, ud.e = y
+0B25EA ED 43 B7 24 0264       ld (x_prev),bc
        0B          
-0B2748 ED 53 BA 24 0391       ld (y_prev),de
+0B25EF ED 53 BA 24 0265       ld (y_prev),de
        0B          
-0B274D             0392   
-0B274D             0393   ; ; Debug print
-0B274D             0394   ;     call print_hex_bc
-0B274D             0395   ;     call print_s168_bc
-0B274D             0396   ;     call print_hex_de
-0B274D             0397   ;     call print_s168_de
-0B274D             0398   ;     ; call printNewLine
-0B274D             0399   
-0B274D             0400   ; all done
-0B274D C9          0401       ret
-0B274E             0402   
-0B274E             0403   ; ========= BEGIN CUSTOM MAIN LOOP =========
-0B274E             0404   main:
-0B274E 0D          0405       dec c               ; decrement the argument count to skip the program name
-0B274F CD 5B 27 0B 0406       call load_input     ; load the input arguments
-0B2753 CD 16 26 0B 0407       call main_loop      ; run the main loop
-0B2757 C3 7B 24 0B 0408       jp _main_end_ok     ; exit with success
-0B275B             0409   
-0B275B             0410   ; --- Load arguments ---
-0B275B             0411   ; --------------------------------
-0B275B             0412   load_input:
-0B275B 79          0413       ld a,c ; put the number of entered arguments in a
-0B275C 06 05       0414       ld b,input_params_num ; loop counter = number of arguments
-0B275E B8          0415       cp b ; compare the number of arguments to the number of arguments
-0B275F C4 75 27 0B 0416       call nz,args_count_off ; handle discrepancies
-0B2763             0417       ; TODO: we may want to branch here according to the result
-0B2763 FD 21 84 24 0418       ld iy,input_params  ; point to the arguments table
+0B25F4             0266   
+0B25F4             0267   ; ; Debug print
+0B25F4             0268   ;     call print_hex_bc
+0B25F4             0269   ;     call print_s168_bc
+0B25F4             0270   ;     call print_hex_de
+0B25F4             0271   ;     call print_s168_de
+0B25F4             0272   ;     ; call printNewLine
+0B25F4             0273   
+0B25F4             0274   ; all done
+0B25F4 C9          0275       ret
+0B25F5             0276   
+0B25F5             0277   
+0B25F5             0278   
+0B25F5             0279   ; ========= BEGIN CUSTOM MAIN LOOP =========
+0B25F5             0280   main:
+0B25F5 0D          0281       dec c               ; decrement the argument count to skip the program name
+0B25F6 CD 02 26 0B 0282       call load_input     ; load the input arguments
+0B25FA CD BD 24 0B 0283       call main_loop      ; run the main loop
+0B25FE C3 7B 24 0B 0284       jp _main_end_ok     ; exit with success
+0B2602             0285   
+0B2602             0286   ; --- Load arguments ---
+0B2602             0287   ; --------------------------------
+0B2602             0288   load_input:
+0B2602 79          0289       ld a,c ; put the number of entered arguments in a
+0B2603 06 05       0290       ld b,input_params_num ; loop counter = number of arguments
+0B2605 B8          0291       cp b ; compare the number of arguments to the number of arguments
+0B2606 C4 1C 26 0B 0292       call nz,args_count_off ; handle discrepancies
+0B260A             0293       ; TODO: we may want to branch here according to the result
+0B260A FD 21 84 24 0294       ld iy,input_params  ; point to the arguments table
        0B          
-0B2768             0419   @loop:
-0B2768 CD 9A 27 0B 0420           call get_arg_s168 ; get the next argument
-0B276C FD 1F 00    0421           ld (iy),de ; store the argument in the table
-0B276F ED 33 03    0422           lea iy,iy+3  ; point to the next parameter
-0B2772 10 F4       0423           djnz @loop ; loop until done
-0B2774 C9          0424           ret
-0B2775             0425   
-0B2775             0426   ; --- Specific parameter processing functions ---
-0B2775             0427   args_count_off:
-0B2775 21 7E 27 0B 0428       ld hl,@str_args_count_off
-0B2779 CD 73 02 0B 0429       call printString
-0B277D C9          0430       ret ; TODO: implement this
-0B277E 41 72 67 75 0431   @str_args_count_off: db "Argument counts mismatch!\r\n",0
+0B260F             0295   @loop:
+0B260F CD 9A 27 0B 0296           call get_arg_s168 ; get the next argument
+0B2613 FD 1F 00    0297           ld (iy),de ; store the argument in the table
+0B2616 ED 33 03    0298           lea iy,iy+3  ; point to the next parameter
+0B2619 10 F4       0299           djnz @loop ; loop until done
+0B261B C9          0300           ret
+0B261C             0301   
+0B261C             0302   ; --- Specific parameter processing functions ---
+0B261C             0303   args_count_off:
+0B261C 21 25 26 0B 0304       ld hl,@str_args_count_off
+0B2620 CD 73 02 0B 0305       call printString
+0B2624 C9          0306       ret ; TODO: implement this
+0B2625 41 72 67 75 0307   @str_args_count_off: db "Argument counts mismatch!\r\n",0
        6D 65 6E 74 
        20 63 6F 75 
        6E 74 73 20 
        6D 69 73 6D 
        61 74 63 68 
        21 0D 0A 00 
-0B279A             0432   
-0B279A             0433   
-0B279A             0434   ; ========== HELPER FUNCTIONS ==========
-0B279A             0435   ; get the next argument after ix as a signed 16.8 fixed point number
-0B279A             0436   ; inputs: ix = pointer to the argument string
-0B279A             0437   ; outputs: ude = signed 16.8 fixed point number
-0B279A             0438   ; destroys: a, d, e, h, l, f
-0B279A             0439   get_arg_s168:
-0B279A ED 32 03    0440       lea ix,ix+3 ; point to the next argument
-0B279D DD 27 00    0441       ld hl,(ix)  ; get the argument string
-0B27A0 CD 94 01 0B 0442       call asc_to_s168 ; convert the string to a number
-0B27A4 C9          0443       ret ; return with the value in DE
-0B27A5             0444   
-0B27A5             0445   ; Inputs: ix = pointer to the argument string
-0B27A5             0446   ; Outputs: ude = signed 24-bit integer
-0B27A5             0447   ; Destroys: a, d, e, h, l, f
-0B27A5             0448   get_arg_s24:
-0B27A5 ED 32 03    0449       lea ix,ix+3 ; point to the next argument
-0B27A8 DD 27 00    0450       ld hl,(ix)  ; get the argument string
-0B27AB CD 45 01 0B 0451       call asc_to_s24 ; convert the string to a number
-0B27AF C9          0452       ret ; return with the value in DE
-0B27B0             0453   
-0B27B0             0454   get_plot_coords:
-0B27B0             0455   ; get the move coordinates
-0B27B0 ED 32 03    0456       lea ix,ix+3 ; pointer to next argument address
-0B27B3 DD 27 00    0457       ld hl,(ix)  ; pointer to the x coordinate string
-0B27B6 CD 94 01 0B 0458       call asc_to_s168 ; de = x coordinate
-0B27BA D5          0459       push de
-0B27BB C1          0460       pop bc ; bc = x coordinate
-0B27BC ED 32 03    0461       lea ix,ix+3 ; pointer to next argument address
-0B27BF DD 27 00    0462       ld hl,(ix)  ; pointer to the y coordinate string
-0B27C2 CD 94 01 0B 0463       call asc_to_s168 ; de = y coordinate
-0B27C6 C9          0464       ret
-0B27C7             0465   
-0B27C7             0466   get_arg_text:
-0B27C7 ED 32 03    0467       lea ix,ix+3 ; point to the next argument
-0B27CA DD 27 00    0468       ld hl,(ix)  ; get the argument string
-0B27CD C9          0469       ret
-0B27CE             0470   
-0B27CE             0471   ; match the next argument after ix to the dispatch table at iy
-0B27CE             0472   ;   - arguments and dispatch entries are zero-terminated, case-sensitive strings
-0B27CE             0473   ;   - final entry of dispatch table must be a 3-byte zero or bad things will happen
-0B27CE             0474   ; returns: NO MATCH: iy=dispatch list terminator a=1 and zero flag reset
-0B27CE             0475   ;          ON MATCH: iy=dispatch address, a=0 and zero flag set
-0B27CE             0476   ; destroys: a, hl, de, ix, iy, flags
-0B27CE             0477   match_next:
-0B27CE ED 32 03    0478       lea ix,ix+3         ; point to the next argument
-0B27D1             0479   @loop:
-0B27D1 FD 27 00    0480       ld hl,(iy)          ; pointer argument dispatch record
-0B27D4             0481       sign_hlu            ; check for list terminator
+0B2641             0308   
+0B2641             0309   ; ---- text strings ----
+0B2641 73 74 65 70 0310   str_step_theta_prime: ASCIZ "step_theta_prime: "
+       5F 74 68 65 
+       74 61 5F 70 
+       72 69 6D 65 
+       3A 20 00    
+0B2654 73 74 65 70 0311   str_step_theta_petal: ASCIZ "step_theta_petal: "
+       5F 74 68 65 
+       74 61 5F 70 
+       65 74 61 6C 
+       3A 20 00    
+0B2667 74 6F 74 61 0312   str_total_steps: ASCIZ "total_steps: "
+       6C 5F 73 74 
+       65 70 73 3A 
+       20 00       
+0B2675 73 74 65 70 0313   str_step_shrink: ASCIZ "step_shrink: "
+       5F 73 68 72 
+       69 6E 6B 3A 
+       20 00       
+0B2683             0314   
+0B2683 74 68 65 74 0315   str_theta_prime: ASCIZ "theta_prime: "
+       61 5F 70 72 
+       69 6D 65 3A 
+       20 00       
+0B2691 72 61 64 69 0316   str_radius_prime: ASCIZ "radius_prime: "
+       75 73 5F 70 
+       72 69 6D 65 
+       3A 20 00    
+0B26A0 72 61 64 69 0317   str_radius_petal: ASCIZ "radius_petal: "
+       75 73 5F 70 
+       65 74 61 6C 
+       3A 20 00    
+0B26AF 74 68 65 74 0318   str_theta_petal: ASCIZ "theta_petal: "
+       61 5F 70 65 
+       74 61 6C 3A 
+       20 00       
+0B26BD             0319   
+0B26BD 72 61 64 69 0320   str_radius: ASCIZ "radius: "
+       75 73 3A 20 
+       00          
+0B26C6 78 2C 79 3A 0321   str_xy: ASCIZ "x,y: "
+       20 00       
+0B26CC             0322   
+0B26CC             0323   print_step_theta_prime:
+0B26CC E5          0324       push hl
+0B26CD 21 41 26 0B 0325       ld hl,str_step_theta_prime
+0B26D1 CD 73 02 0B 0326       call printString
+0B26D5 2A 9C 24 0B 0327       ld hl,(step_theta_prime)
+0B26D9             0328       ; call print_hex_hl
+0B26D9 CD 4D 04 0B 0329       call print_s168_hl
+0B26DD             0330       ; call printNewLine
+0B26DD E1          0331       pop hl
+0B26DE C9          0332       ret
+0B26DF             0333   
+0B26DF             0334   print_step_theta_petal:
+0B26DF E5          0335       push hl
+0B26E0 21 54 26 0B 0336       ld hl,str_step_theta_petal
+0B26E4 CD 73 02 0B 0337       call printString
+0B26E8 2A 9F 24 0B 0338       ld hl,(step_theta_petal)
+0B26EC             0339       ; call print_hex_hl
+0B26EC CD 4D 04 0B 0340       call print_s168_hl
+0B26F0             0341       ; call printNewLine
+0B26F0 E1          0342       pop hl
+0B26F1 C9          0343       ret
+0B26F2             0344   
+0B26F2             0345   print_total_steps:
+0B26F2 E5          0346       push hl
+0B26F3 21 67 26 0B 0347       ld hl,str_total_steps
+0B26F7 CD 73 02 0B 0348       call printString
+0B26FB 2A A2 24 0B 0349       ld hl,(total_steps)
+0B26FF             0350       hlu_mul256 ; uh.l = total_steps 16.8 fixed
+0B26FF 29          0001M          add hl,hl ; * 2
+0B2700 29          0002M          add hl,hl ; * 4
+0B2701 29          0003M          add hl,hl ; * 8
+0B2702 29          0004M          add hl,hl ; * 16
+0B2703 29          0005M          add hl,hl ; * 32
+0B2704 29          0006M          add hl,hl ; * 64
+0B2705 29          0007M          add hl,hl ; * 128
+0B2706 29          0008M          add hl,hl ; * 256
+0B2707             0351       ; call print_hex_hl
+0B2707 CD 4D 04 0B 0352       call print_s168_hl
+0B270B             0353       ; call printNewLine
+0B270B E1          0354       pop hl
+0B270C C9          0355       ret
+0B270D             0356   
+0B270D             0357   print_step_shrink:
+0B270D E5          0358       push hl
+0B270E 21 75 26 0B 0359       ld hl,str_step_shrink
+0B2712 CD 73 02 0B 0360       call printString
+0B2716 2A A5 24 0B 0361       ld hl,(step_shrink)
+0B271A             0362       ; call print_hex_hl
+0B271A CD 4D 04 0B 0363       call print_s168_hl
+0B271E             0364       ; call printNewLine
+0B271E E1          0365       pop hl
+0B271F C9          0366       ret
+0B2720             0367   
+0B2720             0368   print_theta_prime:
+0B2720 E5          0369       push hl
+0B2721 21 83 26 0B 0370       ld hl,str_theta_prime
+0B2725 CD 73 02 0B 0371       call printString
+0B2729 2A A8 24 0B 0372       ld hl,(theta_prime)
+0B272D             0373       ; call print_hex_hl
+0B272D CD 4D 04 0B 0374       call print_s168_hl
+0B2731             0375       ; call printNewLine
+0B2731 E1          0376       pop hl
+0B2732 C9          0377       ret
+0B2733             0378   
+0B2733             0379   print_radius_prime:
+0B2733 E5          0380       push hl
+0B2734 21 91 26 0B 0381       ld hl,str_radius_prime
+0B2738 CD 73 02 0B 0382       call printString
+0B273C 2A AE 24 0B 0383       ld hl,(radius_prime)
+0B2740             0384       ; call print_hex_hl
+0B2740 CD 4D 04 0B 0385       call print_s168_hl
+0B2744             0386       ; call printNewLine
+0B2744 E1          0387       pop hl
+0B2745 C9          0388       ret
+0B2746             0389   
+0B2746             0390   print_theta_petal:
+0B2746 E5          0391       push hl
+0B2747 21 AF 26 0B 0392       ld hl,str_theta_petal
+0B274B CD 73 02 0B 0393       call printString
+0B274F 2A AB 24 0B 0394       ld hl,(theta_petal)
+0B2753             0395       ; call print_hex_hl
+0B2753 CD 4D 04 0B 0396       call print_s168_hl
+0B2757             0397       ; call printNewLine
+0B2757 E1          0398       pop hl
+0B2758 C9          0399       ret
+0B2759             0400   
+0B2759             0401   print_radius_petal:
+0B2759 E5          0402       push hl
+0B275A 21 A0 26 0B 0403       ld hl,str_radius_petal
+0B275E CD 73 02 0B 0404       call printString
+0B2762 2A B1 24 0B 0405       ld hl,(radius_petal)
+0B2766             0406       ; call print_hex_hl
+0B2766 CD 4D 04 0B 0407       call print_s168_hl
+0B276A             0408       ; call printNewLine
+0B276A E1          0409       pop hl
+0B276B C9          0410       ret
+0B276C             0411   
+0B276C             0412   print_radius:
+0B276C E5          0413       push hl
+0B276D 21 BD 26 0B 0414       ld hl,str_radius
+0B2771 CD 73 02 0B 0415       call printString
+0B2775 2A B4 24 0B 0416       ld hl,(radius)
+0B2779             0417       ; call print_hex_hl
+0B2779 CD 4D 04 0B 0418       call print_s168_hl
+0B277D             0419       ; call printNewLine
+0B277D E1          0420       pop hl
+0B277E C9          0421       ret
+0B277F             0422   
+0B277F             0423   print_xy:
+0B277F E5          0424       push hl
+0B2780 21 C6 26 0B 0425       ld hl,str_xy
+0B2784 CD 73 02 0B 0426       call printString
+0B2788 2A B7 24 0B 0427       ld hl,(x_prev)
+0B278C CD 4D 04 0B 0428       call print_s168_hl
+0B2790 2A BA 24 0B 0429       ld hl,(y_prev)
+0B2794 CD 4D 04 0B 0430       call print_s168_hl
+0B2798             0431       ; call printNewLine
+0B2798 E1          0432       pop hl
+0B2799 C9          0433       ret
+0B279A             0434   
+0B279A             0435   ; ========== HELPER FUNCTIONS ==========
+0B279A             0436   ; get the next argument after ix as a signed 16.8 fixed point number
+0B279A             0437   ; inputs: ix = pointer to the argument string
+0B279A             0438   ; outputs: ude = signed 16.8 fixed point number
+0B279A             0439   ; destroys: a, d, e, h, l, f
+0B279A             0440   get_arg_s168:
+0B279A ED 32 03    0441       lea ix,ix+3 ; point to the next argument
+0B279D DD 27 00    0442       ld hl,(ix)  ; get the argument string
+0B27A0 CD 94 01 0B 0443       call asc_to_s168 ; convert the string to a number
+0B27A4 C9          0444       ret ; return with the value in DE
+0B27A5             0445   
+0B27A5             0446   ; Inputs: ix = pointer to the argument string
+0B27A5             0447   ; Outputs: ude = signed 24-bit integer
+0B27A5             0448   ; Destroys: a, d, e, h, l, f
+0B27A5             0449   get_arg_s24:
+0B27A5 ED 32 03    0450       lea ix,ix+3 ; point to the next argument
+0B27A8 DD 27 00    0451       ld hl,(ix)  ; get the argument string
+0B27AB CD 45 01 0B 0452       call asc_to_s24 ; convert the string to a number
+0B27AF C9          0453       ret ; return with the value in DE
+0B27B0             0454   
+0B27B0             0455   get_plot_coords:
+0B27B0             0456   ; get the move coordinates
+0B27B0 ED 32 03    0457       lea ix,ix+3 ; pointer to next argument address
+0B27B3 DD 27 00    0458       ld hl,(ix)  ; pointer to the x coordinate string
+0B27B6 CD 94 01 0B 0459       call asc_to_s168 ; de = x coordinate
+0B27BA D5          0460       push de
+0B27BB C1          0461       pop bc ; bc = x coordinate
+0B27BC ED 32 03    0462       lea ix,ix+3 ; pointer to next argument address
+0B27BF DD 27 00    0463       ld hl,(ix)  ; pointer to the y coordinate string
+0B27C2 CD 94 01 0B 0464       call asc_to_s168 ; de = y coordinate
+0B27C6 C9          0465       ret
+0B27C7             0466   
+0B27C7             0467   get_arg_text:
+0B27C7 ED 32 03    0468       lea ix,ix+3 ; point to the next argument
+0B27CA DD 27 00    0469       ld hl,(ix)  ; get the argument string
+0B27CD C9          0470       ret
+0B27CE             0471   
+0B27CE             0472   ; match the next argument after ix to the dispatch table at iy
+0B27CE             0473   ;   - arguments and dispatch entries are zero-terminated, case-sensitive strings
+0B27CE             0474   ;   - final entry of dispatch table must be a 3-byte zero or bad things will happen
+0B27CE             0475   ; returns: NO MATCH: iy=dispatch list terminator a=1 and zero flag reset
+0B27CE             0476   ;          ON MATCH: iy=dispatch address, a=0 and zero flag set
+0B27CE             0477   ; destroys: a, hl, de, ix, iy, flags
+0B27CE             0478   match_next:
+0B27CE ED 32 03    0479       lea ix,ix+3         ; point to the next argument
+0B27D1             0480   @loop:
+0B27D1 FD 27 00    0481       ld hl,(iy)          ; pointer argument dispatch record
+0B27D4             0482       sign_hlu            ; check for list terminator
 0B27D4 19          0001M          add hl,de
 0B27D5 B7          0002M          or a
 0B27D6 ED 52       0003M          sbc hl,de
-0B27D8 CA F0 27 0B 0482       jp z,@no_match      ; if a=0, return error
-0B27DC 23          0483       inc hl              ; skip over jp instruction
-0B27DD 23          0484       inc hl
-0B27DE DD 17 00    0485       ld de,(ix)          ; pointer to the argument string
-0B27E1 CD 07 28 0B 0486       call str_equal      ; compare the argument to the dispatch table entry
-0B27E5 CA F2 27 0B 0487       jp z,@match         ; if equal, return success
-0B27E9 ED 33 03    0488       lea iy,iy+3         ; if not equal, bump iy to next dispatch table entry
-0B27EC C3 D1 27 0B 0489       jp @loop            ; and loop
-0B27F0             0490   @no_match:
-0B27F0 3C          0491       inc a               ; no match so return a=1 and zero flag reset
-0B27F1 C9          0492       ret
-0B27F2             0493   @match:
-0B27F2 FD 37 00    0494       ld iy,(iy)          ; get the function pointer
-0B27F5 C9          0495       ret                 ; return a=0 and zero flag set
-0B27F6             0496   
-0B27F6             0497   ; same as match_next, but prints the parameter if a match is found
-0B27F6             0498   match_next_and_print:
-0B27F6 CD CE 27 0B 0499       call match_next
-0B27FA C0          0500       ret nz ; no match found
-0B27FB ED 32 FD    0501       lea ix,ix-3
-0B27FE CD C7 27 0B 0502       call get_arg_text ; hl points to the operator string
-0B2802 CD 12 28 0B 0503       call print_param
-0B2806 C9          0504       ret
-0B2807             0505   
-0B2807             0506   ; compare two zero-terminated strings for equality, case-sensitive
-0B2807             0507   ; hl: pointer to first string, de: pointer to second string
-0B2807             0508   ; returns: z if equal, nz if not equal
-0B2807             0509   ; destroys: a, hl, de
-0B2807             0510   str_equal:
-0B2807 1A          0511       ld a,(de)           ; get the first character
-0B2808 BE          0512       cp (hl)             ; compare to the second character
-0B2809 C0          0513       ret nz              ; if not equal, return
-0B280A B7          0514       or a
-0B280B C8          0515       ret z               ; if equal and zero, return
-0B280C 23          0516       inc hl              ; next character
-0B280D 13          0517       inc de
-0B280E C3 07 28 0B 0518       jp str_equal        ; loop until end of string
-0B2812             0519   
-0B2812             0520   ; print the parameter string pointed to by ix
-0B2812             0521   ; destroys: a, hl
-0B2812             0522   print_param:
-0B2812 DD 27 00    0523       ld hl,(ix)          ; get the parameter pointer
-0B2815 CD 73 02 0B 0524       call printString    ; print the parameter string
-0B2819 3E 20       0525       ld a,' '            ; print a space separator
-0B281B 5B D7       0526       rst.lil $10
-0B281D C9          0527       ret
-0B281E             0528   
-0B281E             0529   ; print the parameters
-0B281E             0530   ; inputs: b = number of parameters, ix = pointer to the parameters
-0B281E             0531   ; destroys: a, hl, bc
-0B281E             0532   print_params:
-0B281E 41          0533       ld b,c              ; loop counter = number of parameters
-0B281F DD E5       0534       push ix             ; save the pointer to the parameters
-0B2821             0535   @loop:
-0B2821 C5          0536       push bc             ; save the loop counter
-0B2822 CD 12 28 0B 0537       call print_param    ; print the parameter
-0B2826 ED 32 03    0538       lea ix,ix+3         ; next parameter pointer
-0B2829 C1          0539       pop bc              ; get back the loop counter
-0B282A 10 F5       0540       djnz @loop          ; loop until done
-0B282C DD E1       0541       pop ix              ; restore the pointer to the parameters
-0B282E C9          0542       ret
-0B282F             0543   
-0B282F             0544   debug_print:
-0B282F CD 88 02 0B 0545       call printNewLine   ; DEBUG
-0B2833 CD 57 07 0B 0546       call dumpFlags      ; DEBUG
-0B2837 CD 12 28 0B 0547       call print_param    ; DEBUG
-0B283B CD 88 02 0B 0548       call printNewLine   ; DEBUG
-0B283F CD 88 02 0B 0549       call printNewLine   ; DEBUG
-0B2843 C9          0550       ret
+0B27D8 CA F0 27 0B 0483       jp z,@no_match      ; if a=0, return error
+0B27DC 23          0484       inc hl              ; skip over jp instruction
+0B27DD 23          0485       inc hl
+0B27DE DD 17 00    0486       ld de,(ix)          ; pointer to the argument string
+0B27E1 CD 07 28 0B 0487       call str_equal      ; compare the argument to the dispatch table entry
+0B27E5 CA F2 27 0B 0488       jp z,@match         ; if equal, return success
+0B27E9 ED 33 03    0489       lea iy,iy+3         ; if not equal, bump iy to next dispatch table entry
+0B27EC C3 D1 27 0B 0490       jp @loop            ; and loop
+0B27F0             0491   @no_match:
+0B27F0 3C          0492       inc a               ; no match so return a=1 and zero flag reset
+0B27F1 C9          0493       ret
+0B27F2             0494   @match:
+0B27F2 FD 37 00    0495       ld iy,(iy)          ; get the function pointer
+0B27F5 C9          0496       ret                 ; return a=0 and zero flag set
+0B27F6             0497   
+0B27F6             0498   ; same as match_next, but prints the parameter if a match is found
+0B27F6             0499   match_next_and_print:
+0B27F6 CD CE 27 0B 0500       call match_next
+0B27FA C0          0501       ret nz ; no match found
+0B27FB ED 32 FD    0502       lea ix,ix-3
+0B27FE CD C7 27 0B 0503       call get_arg_text ; hl points to the operator string
+0B2802 CD 12 28 0B 0504       call print_param
+0B2806 C9          0505       ret
+0B2807             0506   
+0B2807             0507   ; compare two zero-terminated strings for equality, case-sensitive
+0B2807             0508   ; hl: pointer to first string, de: pointer to second string
+0B2807             0509   ; returns: z if equal, nz if not equal
+0B2807             0510   ; destroys: a, hl, de
+0B2807             0511   str_equal:
+0B2807 1A          0512       ld a,(de)           ; get the first character
+0B2808 BE          0513       cp (hl)             ; compare to the second character
+0B2809 C0          0514       ret nz              ; if not equal, return
+0B280A B7          0515       or a
+0B280B C8          0516       ret z               ; if equal and zero, return
+0B280C 23          0517       inc hl              ; next character
+0B280D 13          0518       inc de
+0B280E C3 07 28 0B 0519       jp str_equal        ; loop until end of string
+0B2812             0520   
+0B2812             0521   ; print the parameter string pointed to by ix
+0B2812             0522   ; destroys: a, hl
+0B2812             0523   print_param:
+0B2812 DD 27 00    0524       ld hl,(ix)          ; get the parameter pointer
+0B2815 CD 73 02 0B 0525       call printString    ; print the parameter string
+0B2819 3E 20       0526       ld a,' '            ; print a space separator
+0B281B 5B D7       0527       rst.lil $10
+0B281D C9          0528       ret
+0B281E             0529   
+0B281E             0530   ; print the parameters
+0B281E             0531   ; inputs: b = number of parameters, ix = pointer to the parameters
+0B281E             0532   ; destroys: a, hl, bc
+0B281E             0533   print_params:
+0B281E 41          0534       ld b,c              ; loop counter = number of parameters
+0B281F DD E5       0535       push ix             ; save the pointer to the parameters
+0B2821             0536   @loop:
+0B2821 C5          0537       push bc             ; save the loop counter
+0B2822 CD 12 28 0B 0538       call print_param    ; print the parameter
+0B2826 ED 32 03    0539       lea ix,ix+3         ; next parameter pointer
+0B2829 C1          0540       pop bc              ; get back the loop counter
+0B282A 10 F5       0541       djnz @loop          ; loop until done
+0B282C DD E1       0542       pop ix              ; restore the pointer to the parameters
+0B282E C9          0543       ret

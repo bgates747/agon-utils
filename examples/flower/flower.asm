@@ -111,132 +111,6 @@ radius:             dl 0x000000  ; Total radius of the curve
 x_prev:             dl 0x000000  ; Previous x coordinate
 y_prev:             dl 0x000000  ; Previous y coordinate
 
-; ---- text strings ----
-str_step_theta_prime: ASCIZ "step_theta_prime: "
-str_step_theta_petal: ASCIZ "step_theta_petal: "
-str_total_steps: ASCIZ "total_steps: "
-str_step_shrink: ASCIZ "step_shrink: "
-
-str_theta_prime: ASCIZ "theta_prime: "
-str_radius_prime: ASCIZ "radius_prime: "
-str_radius_petal: ASCIZ "radius_petal: "
-str_theta_petal: ASCIZ "theta_petal: "
-
-str_radius: ASCIZ "radius: "
-str_xy: ASCIZ "x,y: "
-
-print_step_theta_prime:
-    push hl
-    ld hl,str_step_theta_prime
-    call printString
-    ld hl,(step_theta_prime)
-    ; call print_hex_hl
-    call print_s168_hl
-    ; call printNewLine
-    pop hl
-    ret
-
-print_step_theta_petal:
-    push hl
-    ld hl,str_step_theta_petal
-    call printString
-    ld hl,(step_theta_petal)
-    ; call print_hex_hl
-    call print_s168_hl
-    ; call printNewLine
-    pop hl
-    ret
-
-print_total_steps:
-    push hl
-    ld hl,str_total_steps
-    call printString
-    ld hl,(total_steps)
-    hlu_mul256 ; uh.l = total_steps 16.8 fixed
-    ; call print_hex_hl
-    call print_s168_hl
-    ; call printNewLine
-    pop hl
-    ret
-
-print_step_shrink:
-    push hl
-    ld hl,str_step_shrink
-    call printString
-    ld hl,(step_shrink)
-    ; call print_hex_hl
-    call print_s168_hl
-    ; call printNewLine
-    pop hl
-    ret
-
-print_theta_prime:
-    push hl
-    ld hl,str_theta_prime
-    call printString
-    ld hl,(theta_prime)
-    ; call print_hex_hl
-    call print_s168_hl
-    ; call printNewLine
-    pop hl
-    ret
-
-print_radius_prime:
-    push hl
-    ld hl,str_radius_prime
-    call printString
-    ld hl,(radius_prime)
-    ; call print_hex_hl
-    call print_s168_hl
-    ; call printNewLine
-    pop hl
-    ret
-
-print_theta_petal:
-    push hl
-    ld hl,str_theta_petal
-    call printString
-    ld hl,(theta_petal)
-    ; call print_hex_hl
-    call print_s168_hl
-    ; call printNewLine
-    pop hl
-    ret
-
-print_radius_petal:
-    push hl
-    ld hl,str_radius_petal
-    call printString
-    ld hl,(radius_petal)
-    ; call print_hex_hl
-    call print_s168_hl
-    ; call printNewLine
-    pop hl
-    ret
-
-print_radius:
-    push hl
-    ld hl,str_radius
-    call printString
-    ld hl,(radius)
-    ; call print_hex_hl
-    call print_s168_hl
-    ; call printNewLine
-    pop hl
-    ret
-
-print_xy:
-    push hl
-    ld hl,str_xy
-    call printString
-    ld hl,(x_prev)
-    call print_s168_hl
-    ld hl,(y_prev)
-    call print_s168_hl
-    ; call printNewLine
-    pop hl
-    ret
-
 main_loop:
 ; --- clear the screen ---
     call vdu_cls
@@ -400,6 +274,8 @@ calc_point:
 ; all done
     ret
 
+
+
 ; ========= BEGIN CUSTOM MAIN LOOP =========
 main:
     dec c               ; decrement the argument count to skip the program name
@@ -430,6 +306,131 @@ args_count_off:
     ret ; TODO: implement this
 @str_args_count_off: db "Argument counts mismatch!\r\n",0
 
+; ---- text strings ----
+str_step_theta_prime: ASCIZ "step_theta_prime: "
+str_step_theta_petal: ASCIZ "step_theta_petal: "
+str_total_steps: ASCIZ "total_steps: "
+str_step_shrink: ASCIZ "step_shrink: "
+
+str_theta_prime: ASCIZ "theta_prime: "
+str_radius_prime: ASCIZ "radius_prime: "
+str_radius_petal: ASCIZ "radius_petal: "
+str_theta_petal: ASCIZ "theta_petal: "
+
+str_radius: ASCIZ "radius: "
+str_xy: ASCIZ "x,y: "
+
+print_step_theta_prime:
+    push hl
+    ld hl,str_step_theta_prime
+    call printString
+    ld hl,(step_theta_prime)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_step_theta_petal:
+    push hl
+    ld hl,str_step_theta_petal
+    call printString
+    ld hl,(step_theta_petal)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_total_steps:
+    push hl
+    ld hl,str_total_steps
+    call printString
+    ld hl,(total_steps)
+    hlu_mul256 ; uh.l = total_steps 16.8 fixed
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_step_shrink:
+    push hl
+    ld hl,str_step_shrink
+    call printString
+    ld hl,(step_shrink)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_theta_prime:
+    push hl
+    ld hl,str_theta_prime
+    call printString
+    ld hl,(theta_prime)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_radius_prime:
+    push hl
+    ld hl,str_radius_prime
+    call printString
+    ld hl,(radius_prime)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_theta_petal:
+    push hl
+    ld hl,str_theta_petal
+    call printString
+    ld hl,(theta_petal)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_radius_petal:
+    push hl
+    ld hl,str_radius_petal
+    call printString
+    ld hl,(radius_petal)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_radius:
+    push hl
+    ld hl,str_radius
+    call printString
+    ld hl,(radius)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_xy:
+    push hl
+    ld hl,str_xy
+    call printString
+    ld hl,(x_prev)
+    call print_s168_hl
+    ld hl,(y_prev)
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
 
 ; ========== HELPER FUNCTIONS ==========
 ; get the next argument after ix as a signed 16.8 fixed point number
@@ -539,12 +540,4 @@ print_params:
     pop bc              ; get back the loop counter
     djnz @loop          ; loop until done
     pop ix              ; restore the pointer to the parameters
-    ret
-
-debug_print:
-    call printNewLine   ; DEBUG
-    call dumpFlags      ; DEBUG
-    call print_param    ; DEBUG
-    call printNewLine   ; DEBUG
-    call printNewLine   ; DEBUG
     ret
