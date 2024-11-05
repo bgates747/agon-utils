@@ -1,4 +1,28 @@
 
+; ; convert signed angles from a 360 to 256 degree circle
+; ; inputs: uh.l is the angle360 in 16.8 fixed format
+; ; outputs: uh.l is the angle256 in 16.8 fixed format
+; ; destroys: TODO
+; deg_360_to_256:
+; 	push de ; preserve de
+; ; make angle positive and store sign flag
+; 	call abs_hlu
+; 	push af
+; ; multiply by 256 first to keep precision
+; 	hlu_mul256 ; uh.l = uh.l * 256
+; ; divide uh.l by 360
+; 	ld de,360
+; 	call udiv24 ; ud.e = degrees / 360
+; 	ex de,hl    ; uh.l = degrees / 360
+; ; restore sign flag and adjust output accordingly
+; 	pop af
+; 	jp p,@pos ; positive number
+; 	call neg_hlu
+; @pos:
+; ; restore de and return uh.l as the result
+; 	pop de
+; 	ret
+
 ; convert signed angles from a 360 to 256 degree circle
 ; inputs: uh.l is the angle360 in 16.8 fixed format
 ; outputs: uh.l is the angle256 in 16.8 fixed format
@@ -8,6 +32,9 @@ deg_360_to_256:
 ; make angle positive and store sign flag
 	call abs_hlu
 	push af
+; modulo uh by 360*256 (360 degrees in 16.8 fixed format)
+	ld de,360*256
+	call hlu_mod
 ; multiply by 256 first to keep precision
 	hlu_mul256 ; uh.l = uh.l * 256
 ; divide uh.l by 360
@@ -98,17 +125,22 @@ sin168:
 ;        displacements from origin (0,0)
 ; destroys: everything except indexes
 polar_to_cartesian:
+	call printNewLine ; DEBUG
 ; back up input parameters
     ld (@angle), hl
     ld (@radius), de
 ; compute dx = cos(uh.l) * ud.e
     call cos168 ; uh.l = cos(uh.l)
+	call print_hex_hl ; DEBUG
+	call print_s168_hl ; DEBUG
 	ld de,(@radius)
 	call smul168 ; uh.l = dx
     push hl      
 ; compute dy = sin(uh.l) * ud.e
     ld hl,(@angle)
     call sin168 ; uh.l = sin(uh.l)
+	call print_hex_hl ; DEBUG
+	call print_s168_hl ; DEBUG
     ld de,(@radius)
     call smul168    ; uh.l = dy
     ex de,hl       ; de = dy for output
