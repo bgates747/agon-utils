@@ -39,65 +39,35 @@ cos168:
 ; sin(uh.l) --> uh.l
 ; destroys: af
 sin168:
-	; push de ; to be nice
+	push de
+	push ix
 ; handle negative angles appropriately
 	call hlu_abs
-	jp p,@hlu_pos
-	ld de,-256
+	jp p,@f
+	ld de,-256*256
 	add hl,de
-@hlu_pos:
+@@:
 ; get the lookup value for the integer portion of the angle
 	ld a,l ; save fractional part of the angle
-	ld l,3 ; multiply by 3 to get our lookup index
-	mlt hl ; gosh that is handy
-    ld de,sin_lut_168 ; grab the lut address
-    add hl,de ; bump hl by the index
-	push hl
-	pop de ; save lut address to de
-    ld hl,(hl) ; hl = sin(int(angle))
+	ld l,6 ; multiply by 6 to get our lookup index
+	ex de,hl ; can't add ix,hl
+	mlt de ; gosh that is handy
+    ld ix,sin_lut_816 ; grab the lut address
+    add ix,de ; bump hl by the index
+    ld hl,(ix) ; hl = sin(int(angle))
+	or a  ; check fractional part of the angle for zero
+	jp z,@f ; no fractional part so skip interpolation
 ; interpolate the fractional part of the angle
-	or a  ; check for zero and clear carry
-	ret z ; return if no fractional part
-	ex de,hl ; hl = lut address, de = sin(int(angle))
-	inc hl
-	inc hl
-	inc hl ; hl = lut address of next value in table
-	ld hl,(hl) ; hl = sin(int(angle+1))
-	sbc hl,de ; hl = sin(int(angle+1)0 - sin(int(angle)), de = sin(int(angle))
-	call smul168 ; hl = interpolation factor * (sin(int(angle+1)) - sin(int(angle)))
-	add hl,de ; hl = sin(int(angle)) + interpolation factor * (sin(int(angle+1)) - sin(int(angle)))
-	; pop de ; send her home unmolested
+	ld de,(ix+3)
+	ex de,hl
+	call smul24x8
+	call hlu_sdiv256
+	add hl,de ; hl = sin(int(angle)) + interpolation factor * (sin(int(angle+1)) - sin(int(angle))
+@@:
+	call hlu_sdiv256
+	pop ix
+	pop de
     ret ; and out
-
-; ; 16.8 fixed inputs / outputs
-; ; takes: uh.l as angle in degrees 256
-; ;        ud.e as radius
-; ; returns ub.c as dx, ud.e as dy 
-; ;        displacements from origin (0,0)
-; ; destroys: everything except indexes
-; polar_to_cartesian:
-; ; back up input parameters
-;     ld (arith24uhl), hl
-;     ld (arith24ude), de
-; ; compute dx = sin(uh.l) * ud.e
-;     call sin168
-;     push hl
-;     pop bc          ; ub.c = sin(uh.l)
-; 	ld de, (arith24ude)   ; get radius back
-; 	call smul168    ; uh.l = ub.c * ud.e = dx
-;     push hl         ; store dx for output
-; ; compute dy = -cos(uh.l) * ud.e
-;     ld hl, (arith24uhl)
-;     call cos168 
-; 	call neg_hlu    ; invert dy for screen coords convention
-;     push hl 
-;     pop bc          ; ub.c = -cos(uh.l)
-;     ld de, (arith24ude)   ; get radius back
-;     call smul168    ; uh.l = ub.c * ud.e = dy
-;     ex de, hl       ; de = dy for output
-;     pop bc          ; bc = dx for output
-; ; and out
-;     ret
 
 ; 16.8 fixed inputs / outputs
 ; takes: uh.l as angle in degrees 256
@@ -672,6 +642,265 @@ sin_lut_168:
 	dl 0xFFFFF4 ; 357.188 FE, -0.049
 	dl 0xFFFFFA ; 358.594 FF, -0.025
 	dl 0x000000 ; 0.000 00, 0.000 for interpolation
+
+sin_lut_816:
+    dl 0x000000,0x000648 ; 00 000.000 0.000
+    dl 0x000648,0x000648 ; 01 001.406 0.025
+    dl 0x000C90,0x000645 ; 02 002.813 0.049
+    dl 0x0012D5,0x000642 ; 03 004.219 0.074
+    dl 0x001917,0x00063E ; 04 005.625 0.098
+    dl 0x001F56,0x00063A ; 05 007.031 0.122
+    dl 0x002590,0x000633 ; 06 008.438 0.147
+    dl 0x002BC4,0x00062C ; 07 009.844 0.171
+    dl 0x0031F1,0x000625 ; 08 011.250 0.195
+    dl 0x003816,0x00061D ; 09 012.656 0.219
+    dl 0x003E34,0x000613 ; 0A 014.063 0.243
+    dl 0x004447,0x000608 ; 0B 015.469 0.267
+    dl 0x004A50,0x0005FD ; 0C 016.875 0.290
+    dl 0x00504D,0x0005F1 ; 0D 018.281 0.314
+    dl 0x00563E,0x0005E3 ; 0E 019.688 0.337
+    dl 0x005C22,0x0005D5 ; 0F 021.094 0.360
+    dl 0x0061F7,0x0005C6 ; 10 022.500 0.383
+    dl 0x0067BD,0x0005B7 ; 11 023.906 0.405
+    dl 0x006D74,0x0005A5 ; 12 025.313 0.428
+    dl 0x007319,0x000593 ; 13 026.719 0.450
+    dl 0x0078AD,0x000580 ; 14 028.125 0.471
+    dl 0x007E2E,0x00056E ; 15 029.531 0.493
+    dl 0x00839C,0x000559 ; 16 030.938 0.514
+    dl 0x0088F5,0x000544 ; 17 032.344 0.535
+    dl 0x008E39,0x00052E ; 18 033.750 0.556
+    dl 0x009367,0x000518 ; 19 035.156 0.576
+    dl 0x009880,0x0004FF ; 1A 036.563 0.596
+    dl 0x009D80,0x0004E7 ; 1B 037.969 0.615
+    dl 0x00A267,0x0004CE ; 1C 039.375 0.634
+    dl 0x00A736,0x0004B5 ; 1D 040.781 0.653
+    dl 0x00ABEB,0x00049A ; 1E 042.188 0.672
+    dl 0x00B085,0x00047F ; 1F 043.594 0.690
+    dl 0x00B504,0x000463 ; 20 045.000 0.707
+    dl 0x00B968,0x000447 ; 21 046.406 0.724
+    dl 0x00BDAF,0x000429 ; 22 047.813 0.741
+    dl 0x00C1D8,0x00040B ; 23 049.219 0.757
+    dl 0x00C5E4,0x0003EC ; 24 050.625 0.773
+    dl 0x00C9D0,0x0003CE ; 25 052.031 0.788
+    dl 0x00CD9F,0x0003AE ; 26 053.438 0.803
+    dl 0x00D14D,0x00038D ; 27 054.844 0.818
+    dl 0x00D4DB,0x00036C ; 28 056.250 0.831
+    dl 0x00D848,0x00034C ; 29 057.656 0.845
+    dl 0x00DB94,0x000329 ; 2A 059.063 0.858
+    dl 0x00DEBE,0x000307 ; 2B 060.469 0.870
+    dl 0x00E1C5,0x0002E4 ; 2C 061.875 0.882
+    dl 0x00E4AA,0x0002C1 ; 2D 063.281 0.893
+    dl 0x00E76C,0x00029D ; 2E 064.688 0.904
+    dl 0x00EA09,0x000279 ; 2F 066.094 0.914
+    dl 0x00EC83,0x000255 ; 30 067.500 0.924
+    dl 0x00EED8,0x000230 ; 31 068.906 0.933
+    dl 0x00F109,0x00020B ; 32 070.313 0.942
+    dl 0x00F314,0x0001E5 ; 33 071.719 0.950
+    dl 0x00F4FA,0x0001BF ; 34 073.125 0.957
+    dl 0x00F6B9,0x00019A ; 35 074.531 0.964
+    dl 0x00F854,0x000173 ; 36 075.938 0.970
+    dl 0x00F9C7,0x00014D ; 37 077.344 0.976
+    dl 0x00FB14,0x000126 ; 38 078.750 0.981
+    dl 0x00FC3B,0x0000FF ; 39 080.156 0.985
+    dl 0x00FD3A,0x0000D8 ; 3A 081.563 0.989
+    dl 0x00FE13,0x0000B1 ; 3B 082.969 0.992
+    dl 0x00FEC4,0x000089 ; 3C 084.375 0.995
+    dl 0x00FF4E,0x000062 ; 3D 085.781 0.997
+    dl 0x00FFB1,0x00003B ; 3E 087.188 0.999
+    dl 0x00FFEC,0x000013 ; 3F 088.594 1.000
+    dl 0x010000,0xFFFFEC ; 40 090.000 1.000
+    dl 0x00FFEC,0xFFFFC4 ; 41 091.406 1.000
+    dl 0x00FFB1,0xFFFF9D ; 42 092.813 0.999
+    dl 0x00FF4E,0xFFFF76 ; 43 094.219 0.997
+    dl 0x00FEC4,0xFFFF4E ; 44 095.625 0.995
+    dl 0x00FE13,0xFFFF27 ; 45 097.031 0.992
+    dl 0x00FD3A,0xFFFF00 ; 46 098.438 0.989
+    dl 0x00FC3B,0xFFFED9 ; 47 099.844 0.985
+    dl 0x00FB14,0xFFFEB2 ; 48 101.250 0.981
+    dl 0x00F9C7,0xFFFE8C ; 49 102.656 0.976
+    dl 0x00F853,0xFFFE66 ; 4A 104.063 0.970
+    dl 0x00F6B9,0xFFFE40 ; 4B 105.469 0.964
+    dl 0x00F4FA,0xFFFE1A ; 4C 106.875 0.957
+    dl 0x00F314,0xFFFDF4 ; 4D 108.281 0.950
+    dl 0x00F108,0xFFFDCF ; 4E 109.688 0.942
+    dl 0x00EED8,0xFFFDAA ; 4F 111.094 0.933
+    dl 0x00EC83,0xFFFD86 ; 50 112.500 0.924
+    dl 0x00EA09,0xFFFD61 ; 51 113.906 0.914
+    dl 0x00E76B,0xFFFD3E ; 52 115.313 0.904
+    dl 0x00E4AA,0xFFFD1B ; 53 116.719 0.893
+    dl 0x00E1C5,0xFFFCF8 ; 54 118.125 0.882
+    dl 0x00DEBE,0xFFFCD5 ; 55 119.531 0.870
+    dl 0x00DB93,0xFFFCB4 ; 56 120.938 0.858
+    dl 0x00D848,0xFFFC93 ; 57 122.344 0.845
+    dl 0x00D4DB,0xFFFC72 ; 58 123.750 0.831
+    dl 0x00D14D,0xFFFC51 ; 59 125.156 0.818
+    dl 0x00CD9E,0xFFFC32 ; 5A 126.563 0.803
+    dl 0x00C9D0,0xFFFC13 ; 5B 127.969 0.788
+    dl 0x00C5E4,0xFFFBF4 ; 5C 129.375 0.773
+    dl 0x00C1D8,0xFFFBD5 ; 5D 130.781 0.757
+    dl 0x00BDAE,0xFFFBB9 ; 5E 132.188 0.741
+    dl 0x00B968,0xFFFB9C ; 5F 133.594 0.724
+    dl 0x00B504,0xFFFB80 ; 60 135.000 0.707
+    dl 0x00B085,0xFFFB64 ; 61 136.406 0.690
+    dl 0x00ABEA,0xFFFB4B ; 62 137.813 0.672
+    dl 0x00A736,0xFFFB31 ; 63 139.219 0.653
+    dl 0x00A267,0xFFFB18 ; 64 140.625 0.634
+    dl 0x009D80,0xFFFAFF ; 65 142.031 0.615
+    dl 0x00987F,0xFFFAE8 ; 66 143.438 0.596
+    dl 0x009367,0xFFFAD1 ; 67 144.844 0.576
+    dl 0x008E39,0xFFFABB ; 68 146.250 0.556
+    dl 0x0088F5,0xFFFAA5 ; 69 147.656 0.535
+    dl 0x00839B,0xFFFA92 ; 6A 149.063 0.514
+    dl 0x007E2E,0xFFFA7F ; 6B 150.469 0.493
+    dl 0x0078AD,0xFFFA6C ; 6C 151.875 0.471
+    dl 0x007319,0xFFFA59 ; 6D 153.281 0.450
+    dl 0x006D73,0xFFFA49 ; 6E 154.688 0.428
+    dl 0x0067BD,0xFFFA39 ; 6F 156.094 0.405
+    dl 0x0061F7,0xFFFA2A ; 70 157.500 0.383
+    dl 0x005C22,0xFFFA1B ; 71 158.906 0.360
+    dl 0x00563D,0xFFFA0F ; 72 160.313 0.337
+    dl 0x00504D,0xFFFA02 ; 73 161.719 0.314
+    dl 0x004A50,0xFFF9F7 ; 74 163.125 0.290
+    dl 0x004447,0xFFF9EB ; 75 164.531 0.267
+    dl 0x003E33,0xFFF9E3 ; 76 165.938 0.243
+    dl 0x003816,0xFFF9DA ; 77 167.344 0.219
+    dl 0x0031F1,0xFFF9D3 ; 78 168.750 0.195
+    dl 0x002BC4,0xFFF9CB ; 79 170.156 0.171
+    dl 0x00258F,0xFFF9C6 ; 7A 171.563 0.147
+    dl 0x001F56,0xFFF9C1 ; 7B 172.969 0.122
+    dl 0x001917,0xFFF9BD ; 7C 174.375 0.098
+    dl 0x0012D5,0xFFF9B9 ; 7D 175.781 0.074
+    dl 0x000C8F,0xFFF9B8 ; 7E 177.188 0.049
+    dl 0x000648,0xFFF9B7 ; 7F 178.594 0.025
+    dl 0x000000,0xFFF9B7 ; 80 180.000 0.000
+    dl 0xFFF9B8,0xFFF9B7 ; 81 181.406 -0.025
+    dl 0xFFF370,0xFFF9BA ; 82 182.813 -0.049
+    dl 0xFFED2B,0xFFF9BD ; 83 184.219 -0.074
+    dl 0xFFE6E9,0xFFF9C1 ; 84 185.625 -0.098
+    dl 0xFFE0AA,0xFFF9C5 ; 85 187.031 -0.122
+    dl 0xFFDA70,0xFFF9CC ; 86 188.438 -0.147
+    dl 0xFFD43C,0xFFF9D3 ; 87 189.844 -0.171
+    dl 0xFFCE0F,0xFFF9DA ; 88 191.250 -0.195
+    dl 0xFFC7EA,0xFFF9E2 ; 89 192.656 -0.219
+    dl 0xFFC1CC,0xFFF9EC ; 8A 194.063 -0.243
+    dl 0xFFBBB9,0xFFF9F7 ; 8B 195.469 -0.267
+    dl 0xFFB5B0,0xFFFA02 ; 8C 196.875 -0.290
+    dl 0xFFAFB3,0xFFFA0E ; 8D 198.281 -0.314
+    dl 0xFFA9C2,0xFFFA1C ; 8E 199.688 -0.337
+    dl 0xFFA3DE,0xFFFA2A ; 8F 201.094 -0.360
+    dl 0xFF9E09,0xFFFA39 ; 90 202.500 -0.383
+    dl 0xFF9843,0xFFFA48 ; 91 203.906 -0.405
+    dl 0xFF928C,0xFFFA5A ; 92 205.313 -0.428
+    dl 0xFF8CE7,0xFFFA6C ; 93 206.719 -0.450
+    dl 0xFF8753,0xFFFA7F ; 94 208.125 -0.471
+    dl 0xFF81D2,0xFFFA91 ; 95 209.531 -0.493
+    dl 0xFF7C64,0xFFFAA6 ; 96 210.938 -0.514
+    dl 0xFF770B,0xFFFABB ; 97 212.344 -0.535
+    dl 0xFF71C7,0xFFFAD1 ; 98 213.750 -0.556
+    dl 0xFF6C99,0xFFFAE7 ; 99 215.156 -0.576
+    dl 0xFF6780,0xFFFB00 ; 9A 216.563 -0.596
+    dl 0xFF6280,0xFFFB18 ; 9B 217.969 -0.615
+    dl 0xFF5D99,0xFFFB31 ; 9C 219.375 -0.634
+    dl 0xFF58CA,0xFFFB4A ; 9D 220.781 -0.653
+    dl 0xFF5415,0xFFFB65 ; 9E 222.188 -0.672
+    dl 0xFF4F7B,0xFFFB80 ; 9F 223.594 -0.690
+    dl 0xFF4AFC,0xFFFB9C ; A0 225.000 -0.707
+    dl 0xFF4698,0xFFFBB8 ; A1 226.406 -0.724
+    dl 0xFF4251,0xFFFBD6 ; A2 227.813 -0.741
+    dl 0xFF3E28,0xFFFBF4 ; A3 229.219 -0.757
+    dl 0xFF3A1C,0xFFFC13 ; A4 230.625 -0.773
+    dl 0xFF3630,0xFFFC31 ; A5 232.031 -0.788
+    dl 0xFF3261,0xFFFC51 ; A6 233.438 -0.803
+    dl 0xFF2EB3,0xFFFC72 ; A7 234.844 -0.818
+    dl 0xFF2B25,0xFFFC93 ; A8 236.250 -0.831
+    dl 0xFF27B8,0xFFFCB3 ; A9 237.656 -0.845
+    dl 0xFF246C,0xFFFCD6 ; AA 239.063 -0.858
+    dl 0xFF2142,0xFFFCF8 ; AB 240.469 -0.870
+    dl 0xFF1E3B,0xFFFD1B ; AC 241.875 -0.882
+    dl 0xFF1B56,0xFFFD3E ; AD 243.281 -0.893
+    dl 0xFF1894,0xFFFD62 ; AE 244.688 -0.904
+    dl 0xFF15F7,0xFFFD86 ; AF 246.094 -0.914
+    dl 0xFF137D,0xFFFDAA ; B0 247.500 -0.924
+    dl 0xFF1128,0xFFFDCF ; B1 248.906 -0.933
+    dl 0xFF0EF7,0xFFFDF4 ; B2 250.313 -0.942
+    dl 0xFF0CEC,0xFFFE1A ; B3 251.719 -0.950
+    dl 0xFF0B06,0xFFFE40 ; B4 253.125 -0.957
+    dl 0xFF0947,0xFFFE65 ; B5 254.531 -0.964
+    dl 0xFF07AC,0xFFFE8C ; B6 255.938 -0.970
+    dl 0xFF0639,0xFFFEB2 ; B7 257.344 -0.976
+    dl 0xFF04EC,0xFFFED9 ; B8 258.750 -0.981
+    dl 0xFF03C5,0xFFFF00 ; B9 260.156 -0.985
+    dl 0xFF02C6,0xFFFF27 ; BA 261.563 -0.989
+    dl 0xFF01ED,0xFFFF4E ; BB 262.969 -0.992
+    dl 0xFF013C,0xFFFF76 ; BC 264.375 -0.995
+    dl 0xFF00B2,0xFFFF9D ; BD 265.781 -0.997
+    dl 0xFF004F,0xFFFFC4 ; BE 267.188 -0.999
+    dl 0xFF0014,0xFFFFEC ; BF 268.594 -1.000
+    dl 0xFF0000,0x000013 ; C0 270.000 -1.000
+    dl 0xFF0014,0x00003B ; C1 271.406 -1.000
+    dl 0xFF004F,0x000062 ; C2 272.813 -0.999
+    dl 0xFF00B2,0x000089 ; C3 274.219 -0.997
+    dl 0xFF013C,0x0000B1 ; C4 275.625 -0.995
+    dl 0xFF01ED,0x0000D8 ; C5 277.031 -0.992
+    dl 0xFF02C6,0x0000FF ; C6 278.438 -0.989
+    dl 0xFF03C5,0x000126 ; C7 279.844 -0.985
+    dl 0xFF04EC,0x00014D ; C8 281.250 -0.981
+    dl 0xFF0639,0x000173 ; C9 282.656 -0.976
+    dl 0xFF07AD,0x000199 ; CA 284.063 -0.970
+    dl 0xFF0947,0x0001BF ; CB 285.469 -0.964
+    dl 0xFF0B06,0x0001E5 ; CC 286.875 -0.957
+    dl 0xFF0CEC,0x00020B ; CD 288.281 -0.950
+    dl 0xFF0EF8,0x000230 ; CE 289.688 -0.942
+    dl 0xFF1128,0x000255 ; CF 291.094 -0.933
+    dl 0xFF137D,0x000279 ; D0 292.500 -0.924
+    dl 0xFF15F7,0x00029E ; D1 293.906 -0.914
+    dl 0xFF1895,0x0002C1 ; D2 295.313 -0.904
+    dl 0xFF1B56,0x0002E4 ; D3 296.719 -0.893
+    dl 0xFF1E3B,0x000307 ; D4 298.125 -0.882
+    dl 0xFF2142,0x00032A ; D5 299.531 -0.870
+    dl 0xFF246D,0x00034B ; D6 300.938 -0.858
+    dl 0xFF27B8,0x00036C ; D7 302.344 -0.845
+    dl 0xFF2B25,0x00038D ; D8 303.750 -0.831
+    dl 0xFF2EB3,0x0003AE ; D9 305.156 -0.818
+    dl 0xFF3262,0x0003CD ; DA 306.563 -0.803
+    dl 0xFF3630,0x0003EC ; DB 307.969 -0.788
+    dl 0xFF3A1C,0x00040B ; DC 309.375 -0.773
+    dl 0xFF3E28,0x00042A ; DD 310.781 -0.757
+    dl 0xFF4252,0x000446 ; DE 312.188 -0.741
+    dl 0xFF4698,0x000463 ; DF 313.594 -0.724
+    dl 0xFF4AFC,0x00047F ; E0 315.000 -0.707
+    dl 0xFF4F7B,0x00049B ; E1 316.406 -0.690
+    dl 0xFF5416,0x0004B4 ; E2 317.813 -0.672
+    dl 0xFF58CA,0x0004CE ; E3 319.219 -0.653
+    dl 0xFF5D99,0x0004E7 ; E4 320.625 -0.634
+    dl 0xFF6280,0x000500 ; E5 322.031 -0.615
+    dl 0xFF6781,0x000517 ; E6 323.438 -0.596
+    dl 0xFF6C99,0x00052E ; E7 324.844 -0.576
+    dl 0xFF71C7,0x000544 ; E8 326.250 -0.556
+    dl 0xFF770B,0x00055A ; E9 327.656 -0.535
+    dl 0xFF7C65,0x00056D ; EA 329.063 -0.514
+    dl 0xFF81D2,0x000580 ; EB 330.469 -0.493
+    dl 0xFF8753,0x000593 ; EC 331.875 -0.471
+    dl 0xFF8CE7,0x0005A6 ; ED 333.281 -0.450
+    dl 0xFF928D,0x0005B6 ; EE 334.688 -0.428
+    dl 0xFF9843,0x0005C6 ; EF 336.094 -0.405
+    dl 0xFF9E09,0x0005D5 ; F0 337.500 -0.383
+    dl 0xFFA3DE,0x0005E4 ; F1 338.906 -0.360
+    dl 0xFFA9C3,0x0005F0 ; F2 340.313 -0.337
+    dl 0xFFAFB3,0x0005FD ; F3 341.719 -0.314
+    dl 0xFFB5B0,0x000608 ; F4 343.125 -0.290
+    dl 0xFFBBB9,0x000614 ; F5 344.531 -0.267
+    dl 0xFFC1CD,0x00061C ; F6 345.938 -0.243
+    dl 0xFFC7EA,0x000625 ; F7 347.344 -0.219
+    dl 0xFFCE0F,0x00062C ; F8 348.750 -0.195
+    dl 0xFFD43C,0x000634 ; F9 350.156 -0.171
+    dl 0xFFDA71,0x000639 ; FA 351.563 -0.147
+    dl 0xFFE0AA,0x00063E ; FB 352.969 -0.122
+    dl 0xFFE6E9,0x000642 ; FC 354.375 -0.098
+    dl 0xFFED2B,0x000646 ; FD 355.781 -0.074
+    dl 0xFFF371,0x000647 ; FE 357.188 -0.049
+    dl 0xFFF9B8,0x000648 ; FF 358.594 -0.025
+    dl 0x000000,0x000648 ; 00 360.000 0.000
 
 sin_lut_1212:
     dl 0x000000 ; 00, 00.000, +0.000000

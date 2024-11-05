@@ -86,28 +86,156 @@ _main_end_ok:
 ; ---- input arguments (16.8 fixed) ----
 input_params_num: equ 5
 input_params:               ; label so we can traverse the table in loops
-petals: 	    dl 0x000307	; 3.03
-vectors: 	    dl 0x0001FA	; 1.98
-depth: 	        dl 0x000099	; 0.6
-periods: 	    dl 0x004200	; 66
-shrink: 	    dl 0x0000CC	; 0.8
-clock_prime: 	dl 0x000100	; 1
-clock_petal: 	dl 0x000100	; 1
-theta_prime: 	dl 0x000000	; 0
-theta_petal: 	dl 0x000000	; 0
+petals: 	        dl 0x000307	; 3.03
+vectors: 	        dl 0x0001FA	; 1.98
+depth: 	            dl 0x000099	; 0.6
+periods: 	        dl 0x004200	; 66
+shrink: 	        dl 0x0000CC	; 0.8
+clock_prime: 	    dl 0x000100	; 1
+clock_petal: 	    dl 0x000100	; 1
 ; radius_scale: 	dl 0x01E000	; 480
-radius_scale: 	dl 0x010000 ; 256
+radius_scale: 	    dl 0x010000 ; 256
 
 ; ---- main loop parameters (16.8 fixed) ----
 step_theta_prime:   dl 0x000000  ; Step increment for theta_prime in each loop iteration
 step_theta_petal:   dl 0x000000  ; Step increment for theta_petal in each loop iteration
 total_steps:        dl 0x000000  ; Total number of iterations based on periods and step_theta_prime
-shrink_step:        dl 0x000000  ; Step decrement applied to radius in each iteration
+step_shrink:        dl 0x000000  ; Step decrement applied to radius in each iteration
 
 ; ---- main loop state variables (16.8 fixed) ----
+theta_prime: 	    dl 0x000000	; 0
+theta_petal: 	    dl 0x000000	; 0
 radius_prime:       dl 0x000000  ; Initial radius before shrink factor is applied
+radius_petal:       dl 0x000000  ; Radius of the petal circle
+radius:             dl 0x000000  ; Total radius of the curve
 x_prev:             dl 0x000000  ; Previous x coordinate
 y_prev:             dl 0x000000  ; Previous y coordinate
+
+; ---- text strings ----
+str_step_theta_prime: ASCIZ "step_theta_prime: "
+str_step_theta_petal: ASCIZ "step_theta_petal: "
+str_total_steps: ASCIZ "total_steps: "
+str_step_shrink: ASCIZ "step_shrink: "
+
+str_theta_prime: ASCIZ "theta_prime: "
+str_radius_prime: ASCIZ "radius_prime: "
+str_radius_petal: ASCIZ "radius_petal: "
+str_theta_petal: ASCIZ "theta_petal: "
+
+str_radius: ASCIZ "radius: "
+str_xy: ASCIZ "x,y: "
+
+print_step_theta_prime:
+    push hl
+    ld hl,str_step_theta_prime
+    call printString
+    ld hl,(step_theta_prime)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_step_theta_petal:
+    push hl
+    ld hl,str_step_theta_petal
+    call printString
+    ld hl,(step_theta_petal)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_total_steps:
+    push hl
+    ld hl,str_total_steps
+    call printString
+    ld hl,(total_steps)
+    hlu_mul256 ; uh.l = total_steps 16.8 fixed
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_step_shrink:
+    push hl
+    ld hl,str_step_shrink
+    call printString
+    ld hl,(step_shrink)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_theta_prime:
+    push hl
+    ld hl,str_theta_prime
+    call printString
+    ld hl,(theta_prime)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_radius_prime:
+    push hl
+    ld hl,str_radius_prime
+    call printString
+    ld hl,(radius_prime)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_theta_petal:
+    push hl
+    ld hl,str_theta_petal
+    call printString
+    ld hl,(theta_petal)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_radius_petal:
+    push hl
+    ld hl,str_radius_petal
+    call printString
+    ld hl,(radius_petal)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_radius:
+    push hl
+    ld hl,str_radius
+    call printString
+    ld hl,(radius)
+    ; call print_hex_hl
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
+
+print_xy:
+    push hl
+    ld hl,str_xy
+    call printString
+    ld hl,(x_prev)
+    call print_s168_hl
+    ld hl,(y_prev)
+    call print_s168_hl
+    ; call printNewLine
+    pop hl
+    ret
 
 main_loop:
 ; --- clear the screen ---
@@ -131,41 +259,41 @@ main_loop:
     ld hl,256*256 ; 360 degrees in 16.8 fixed point
     call udiv168 ; ud.e = 256 / (petals * vectors)
     ld (step_theta_prime),de ; store the result
-;    call print_hex_de
-;    call print_s168_de
-;    call printNewLine
+    call print_step_theta_prime
 
 ; step_theta_petal = 256 degrees / vectors
     ld hl,256*256 ; 360 degrees in 16.8 fixed point
     ld de,(vectors)
     call udiv168 ; ud.e = 256 / vectors
     ld (step_theta_petal),de ; store the result
-;    call print_hex_de
-;    call print_s168_de
-;    call printNewLine
+    call print_step_theta_petal
 
-; total_steps = int(256 degrees / step_theta_prime * periods)
-    ld hl,256*256 ; 360 degrees in 16.8 fixed point
-    ld de,(step_theta_prime)
-    call udiv168 ; ud.e = 256 / step_theta_prime
+; total_steps = int(petals * vectors * periods)
+    ld hl,(petals)
+    ld de,(vectors)
+    call umul168 ; uh.l = petals * vectors
+    call hlu_udiv256 ; uh.l = int(petals * vectors)
+    ex de,hl ; de = petals * vectors
     ld hl,(periods)
-    call umul168 ; uh.l = periods * 256 / step_theta_prime
-    call hlu_udiv256 ; we only want the integer part
+    call hlu_udiv256 ; uh.l = int(periods)
+    call umul24 ; uh.l = int(petals * vectors * periods)
     ld (total_steps),hl ; store the result
-    ; call print_hex_hl
-    ; call printDec
-    ; call printNewLine
+    call print_total_steps
 
 ; Calculate shrink per step (linear)
-    ; shrink_step = -shrink / total_steps
-    ex de,hl ; de = total_steps
+    ; step_shrink = -shrink * radius_scale / total_steps 
     ld hl,(shrink)
-    call neg_hlu
-    call sdiv168 ; ud.e = -shrink / total_steps
-    ld (shrink_step),de ; store the result
-;    call print_hex_de
-;    call print_s168_de
-;    call printNewLine
+    ld de,(radius_scale)
+    call umul168 ; uh.l = shrink * radius_scale
+    ld de,(total_steps)
+    ex de,hl
+    hlu_mul256 ; total steps in 16.8 fixed point
+    ex de,hl ; flip back again for the division
+    call udiv168 ; ud.e = shrink * radius_scale / total_steps
+    ex de,hl ; hl = -shrink * radius_scale / total_steps
+    call neg_hlu ; uh.l = -shrink / total_steps
+    ld (step_shrink),hl ; store the result
+    call print_step_shrink
 
 ; ; Initialize radius_prime
 ;     ; radius_prime = (1 - (depth / 2)) * radius_scale
@@ -203,6 +331,7 @@ main_loop:
         ld de,(step_theta_prime)
         add hl,de
         ld (theta_prime),hl
+
         ; theta_petal += step_theta_petal
         ld hl,(theta_petal)
         ld de,(step_theta_petal)
@@ -210,9 +339,9 @@ main_loop:
         ld (theta_petal),hl
 
     ; Update radius_prime
-        ; radius_prime += shrink_step
+        ; radius_prime += step_shrink
         ld hl,(radius_prime)
-        ld de,(shrink_step)
+        ld de,(step_shrink)
         add hl,de
         ld (radius_prime),hl
 
@@ -220,6 +349,14 @@ main_loop:
         call calc_point ; ub.c = x, ud.e = y
         ld a,plot_sl_both+dr_abs_fg ; plot mode
         call vdu_plot_168
+
+        ; call printNewLine
+        ; call print_theta_prime
+        ; call print_theta_petal
+        ; ; call print_radius_prime
+        ; ; call print_radius_petal
+        ; call print_radius
+        ; call print_xy
 
     ; Decrement the loop counter
         ld hl,total_steps
@@ -237,17 +374,21 @@ calc_point:
     call cos168 ; uh.l = cos(theta_petal)
     ld de,(depth)
     call smul168 ; uh.l = radius_petal
+    ld (radius_petal),hl
 
     ; radius = radius_prime + radius_petal * radius_prime
     ld de,(radius_prime)
     call smul168 ; uh.l = radius_petal * radius_prime
     add hl,de ; uh.l = radius_prime + radius_petal * radius_prime
     ex de,hl ; de = radius
+    ld (radius),de
 
 ; Convert polar to Cartesian coordinates
     ; x, y = polar_to_cartesian(radius, theta_prime)
     ld hl,(theta_prime)
     call polar_to_cartesian ; ub.c = x, ud.e = y
+    ld (x_prev),bc
+    ld (y_prev),de
 
 ; ; Debug print
 ;     call print_hex_bc

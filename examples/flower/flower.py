@@ -55,7 +55,7 @@ def flower(petals, vectors, depth, periods, shrink, clock_prime, clock_petal,
     # Calculate step increments and total steps
     step_theta_prime = 2 * math.pi / (petals * vectors)
     step_theta_petal = 2 * math.pi / vectors
-    total_steps = int(2 * math.pi / step_theta_prime * periods)
+    total_steps = int(vectors * petals * periods)
     step_theta_prime *= clock_prime
     step_theta_petal *= clock_petal
 
