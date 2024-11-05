@@ -75,8 +75,7 @@ test_sdiv168:
 ; get first numeric argument
     call get_arg_s168 ; de = first numeric argument
     push de
-    ex de,hl
-    call print_s168
+    call print_s168_de
 
 ; match on single number functions
     ld iy,function
@@ -96,11 +95,11 @@ test_sdiv168:
 
 ; get second numeric argument if needed
     call get_arg_s168 ; de = second argument
-    ex de,hl
-    call print_s168 
-    ex de,hl
+    call print_s168_de
 
 @execute:
+    call printNewLine
+
     pop iy ; restore the function/operator pointer
     pop af ; restore zero flag
     pop hl ; restore first argument
@@ -108,6 +107,7 @@ test_sdiv168:
     jp nz,_main_end_error
 
     callIY ; call the function
+    call printNewLine
     call printNewLine
     jp _main_end_ok
 
@@ -189,6 +189,7 @@ sin:
     asciz "sin"
 @start:
     call deg_360_to_256
+    call print_s168_hl
     call sin168
     call print_s168_hl
     ret
@@ -197,6 +198,7 @@ cos:
     asciz "cos"
 @start:
     call deg_360_to_256
+    call print_s168_hl
     call cos168
     call print_s168_hl
     ret

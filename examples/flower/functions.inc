@@ -526,6 +526,18 @@ print_s168_bc_de:
     pop af
     ret
 
+print_s168_a:
+    push af
+    push bc
+    push hl
+    ld hl,0
+    ld l,a
+    call print_s168_hl
+    pop hl
+    pop bc
+    pop af
+    ret
+
 ; #### new functions added by Brandon R. Gates ####
 
 ; print the binary representation of the 8-bit value in a
