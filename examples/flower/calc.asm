@@ -205,8 +205,10 @@ sin:
     asciz "sin"
 @start:
     call deg_360_to_256
+    call print_hex_hl
     call print_s168_hl
     call sin168
+    call print_hex_hl
     call print_s168_hl
     ret
 cos:
@@ -214,8 +216,10 @@ cos:
     asciz "cos"
 @start:
     call deg_360_to_256
+    call print_hex_hl
     call print_s168_hl
     call cos168
+    call print_hex_hl
     call print_s168_hl
     ret
 sqrt:
@@ -230,6 +234,7 @@ deg256:
     asciz "deg256"
 @start:
     call deg_360_to_256
+    call print_hex_hl
     call print_s168_hl
     ret
 

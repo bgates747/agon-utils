@@ -4,7 +4,7 @@
 ;         s0,z1,pv0,n1,c0 if hlu was zero
 ;         s0,z0,pv0,n1,c0 if hlu was positive
 ; destroys: a
-abs_hlu:
+hlu_abs:
     add hl,de
     or a
     sbc hl,de 

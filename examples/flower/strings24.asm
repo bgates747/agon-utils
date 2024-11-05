@@ -10,7 +10,7 @@
 ; and postpended with a minus sign if was negative
 ; Uses HLU, DEU, BCU
 print_HLU_s24:
-	call abs_hlu
+	call hlu_abs
 	push af ; save the sign and zero flags
 	call print_HLU_u24
 	pop af

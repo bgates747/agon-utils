@@ -1,28 +1,4 @@
 
-; ; convert signed angles from a 360 to 256 degree circle
-; ; inputs: uh.l is the angle360 in 16.8 fixed format
-; ; outputs: uh.l is the angle256 in 16.8 fixed format
-; ; destroys: TODO
-; deg_360_to_256:
-; 	push de ; preserve de
-; ; make angle positive and store sign flag
-; 	call abs_hlu
-; 	push af
-; ; multiply by 256 first to keep precision
-; 	hlu_mul256 ; uh.l = uh.l * 256
-; ; divide uh.l by 360
-; 	ld de,360
-; 	call udiv24 ; ud.e = degrees / 360
-; 	ex de,hl    ; uh.l = degrees / 360
-; ; restore sign flag and adjust output accordingly
-; 	pop af
-; 	jp p,@pos ; positive number
-; 	call neg_hlu
-; @pos:
-; ; restore de and return uh.l as the result
-; 	pop de
-; 	ret
-
 ; convert signed angles from a 360 to 256 degree circle
 ; inputs: uh.l is the angle360 in 16.8 fixed format
 ; outputs: uh.l is the angle256 in 16.8 fixed format
@@ -30,11 +6,8 @@
 deg_360_to_256:
 	push de ; preserve de
 ; make angle positive and store sign flag
-	call abs_hlu
+	call hlu_abs
 	push af
-; modulo uh by 360*256 (360 degrees in 16.8 fixed format)
-	ld de,360*256
-	call hlu_mod
 ; multiply by 256 first to keep precision
 	hlu_mul256 ; uh.l = uh.l * 256
 ; divide uh.l by 360
@@ -64,8 +37,15 @@ cos168:
 ; ---------------------
 ; fixed 16.8 routine
 ; sin(uh.l) --> uh.l
-; destroys: de
+; destroys: af
 sin168:
+	; push de ; to be nice
+; handle negative angles appropriately
+	call hlu_abs
+	jp p,@hlu_pos
+	ld de,-256
+	add hl,de
+@hlu_pos:
 ; get the lookup value for the integer portion of the angle
 	ld a,l ; save fractional part of the angle
 	ld l,3 ; multiply by 3 to get our lookup index
@@ -86,6 +66,7 @@ sin168:
 	sbc hl,de ; hl = sin(int(angle+1)0 - sin(int(angle)), de = sin(int(angle))
 	call smul168 ; hl = interpolation factor * (sin(int(angle+1)) - sin(int(angle)))
 	add hl,de ; hl = sin(int(angle)) + interpolation factor * (sin(int(angle+1)) - sin(int(angle)))
+	; pop de ; send her home unmolested
     ret ; and out
 
 ; ; 16.8 fixed inputs / outputs
@@ -205,7 +186,7 @@ distance168:
 ; 	push af ; carry indicates overflow
 ; compute dy^2
 	ld hl,(dy168)
-    call abs_hlu  ; make dy positive so we can use unsigned multiply
+    call hlu_abs  ; make dy positive so we can use unsigned multiply
     ; call hlu_div2 ; divide hlu by 2 to give us some headroom
     push hl ; load hl/2 to bc via the stack
     pop bc ; bc = dy/2
@@ -214,7 +195,7 @@ distance168:
     push hl ; dy^2/2 to the stack
 ; compute dx^2
     ld hl,(dx168) ; get back dx
-    call abs_hlu  ; make dx positive so we can use unsigned multiply
+    call hlu_abs  ; make dx positive so we can use unsigned multiply
     ; call hlu_div2 ; divide hlu by 2 to give us some headroom
     push hl ; load hl/2 to bc via the stack
     pop bc ; bc = dx/2
@@ -258,13 +239,13 @@ atan2_168game:
 ; get abs(x) and store its original sign
     push bc
     pop hl
-    call abs_hlu ; if x was negative this also sets the sign flag
+    call hlu_abs ; if x was negative this also sets the sign flag
     push hl ; store abs(x)
     pop bc ; bc = abs(x)
     push af ; store sign of x
 ; get abs(y) and store its original sign
     ex de,hl ; hl = y
-    call abs_hlu ; if y was negative this also sets the sign flag
+    call hlu_abs ; if y was negative this also sets the sign flag
     ex de,hl ; de = abs(y)
     push af ; store sign of y
 ; if abs(bc) < abs(de),then we do bc/de,otherwise de/bc

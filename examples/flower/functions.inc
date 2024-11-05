@@ -426,7 +426,7 @@ print_u168:
 ; signed version of u168_to_ascii
 s168_to_ascii:
     push de ; save starting address of buffer
-    call abs_hlu
+    call hlu_abs
     push af ; save sign flag
     call u168_to_ascii
     pop af ; restore sign flag

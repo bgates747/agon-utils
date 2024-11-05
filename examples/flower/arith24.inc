@@ -13,7 +13,7 @@ arith24upc: ds 6
 ; destroys: AF, HL
 smul24x8:
 ; make hl positive and store sign flag
-	call abs_hlu
+	call hlu_abs
 	push af
 ; do the division
     call umul24x8 ; hl = product
@@ -133,10 +133,10 @@ umul168:
 ; smul168:	UH.L * UD.E --> UH.L (signed)
 smul168:
 ; make everything positive and store sign flags
-	call abs_hlu
+	call hlu_abs
 	push af
 	ex de,hl
-	call abs_hlu
+	call hlu_abs
 	ex de,hl
 	push af
 ; do the division
@@ -275,10 +275,10 @@ div168_out: ds 4 ; the extra byte is for overflow
 ; with a signed 16.8 fixed place result and unsigned 24-bit remainder
 sdiv168:
 ; make everything positive and store sign flags
-	call abs_hlu
+	call hlu_abs
 	push af
 	ex de,hl
-	call abs_hlu
+	call hlu_abs
 	ex de,hl
 	push af
 ; do the division
