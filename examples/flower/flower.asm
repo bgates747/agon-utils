@@ -87,25 +87,25 @@ _main_end_ok:
 ; ---- input arguments (16.8 fixed) ----
 input_params_num: equ 5
 input_params:               ; label so we can traverse the table in loops
-petals: 	        dl 0x000307	; 3.03
-vectors: 	        dl 0x0001FA	; 1.98
-depth: 	            dl 0x000099	; 0.6
-periods: 	        dl 0x004200	; 66
-shrink: 	        dl 0x0000CC	; 0.8
-clock_prime: 	    dl 0x000100	; 1
-clock_petal: 	    dl 0x000100	; 1
+petals: 	        dl 0x000307	; 3.03  16.8 fixed
+vectors: 	        dl 0x0001FA	; 1.98  16.8 fixed
+depth: 	            dl 0x000099	; 0.6   16.8 fixed
+periods: 	        dl 0x004200	; 66    24.0 fixed
+shrink: 	        dl 0x0000CC	; 0.8   8.16 fixed
+clock_prime: 	    dl 0x000100	; 1     not used
+clock_petal: 	    dl 0x000100	; 1     not used
 ; radius_scale: 	dl 0x01E000	; 480
-radius_scale: 	    dl 0x010000 ; 256
+radius_scale: 	    dl 0x010000 ; 256   16.8 fixed
 
-; ---- main loop parameters (16.8 fixed) ----
+; ---- main loop parameters (16.8 fixed unless noted otherwise) ----
 step_theta_prime:   dl 0x000000  ; Step increment for theta_prime in each loop iteration
 step_theta_petal:   dl 0x000000  ; Step increment for theta_petal in each loop iteration
-total_steps:        dl 0x000000  ; Total number of iterations based on periods and step_theta_prime
+total_steps:        dl 0x000000  ; 24.0 fixed. Total number of iterations based on periods and step_theta_prime
 step_shrink:        dl 0x000000  ; Step decrement applied to radius in each iteration
 
 ; ---- main loop state variables (16.8 fixed) ----
-theta_prime: 	    dl 0x000000	; 0
-theta_petal: 	    dl 0x000000	; 0
+theta_prime: 	    dl 0x000000
+theta_petal: 	    dl 0x000000
 radius_prime:       dl 0x000000  ; Initial radius before shrink factor is applied
 radius_petal:       dl 0x000000  ; Radius of the petal circle
 radius:             dl 0x000000  ; Total radius of the curve

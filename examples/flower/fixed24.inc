@@ -7,6 +7,106 @@ arith24uiy: ds 6
 arith24usp: ds 6
 arith24upc: ds 6
 
+; write hlu to a 54-bit output buffer arithmetically shifted up or down a specified number of bits
+; uses whole-byte shifts for the initial shift and bit shifts for the remainder
+; inputs: hlu = 24-bit number to shift
+;         a = signed number of bits to shift
+;         ix = output buffer address
+; outputs: hlu = shifted 24-bit number, ix = modified pointer aligned with value in hlu
+shift_hlu:
+    push bc ; preserve
+    ld b,a            ; store shift value in b for later
+
+; Initialize DE to zero and clear output buffer
+    ld de, 0
+    ld (ix-3), de
+    ld (ix+3), de
+
+; Get absolute value of a and save its original sign
+    or a
+    push af ; save sign flag
+    jp p,@F ; If a is positive do nothing
+    neg ; If a is negative, negate it
+@@:
+
+; Write abs(HLU) to the output buffer and save its original sign
+    call hlu_abs
+    push af ; save sign of HLU
+    ld (ix), hl
+
+; Divide bits to shift by 8 to get the whole byte shift and bit remainder
+    ld a,b            ; Restore original shift value into 'a'
+    srl a             ; a = a / 2 (shift right 1 bit)
+    srl a             ; a = a / 4 (shift right another bit)
+    srl a             ; a = a / 8 (final shift for division by 8)
+    ld c,a            ; c holds the number of whole bytes to shift
+
+; Calculate remainder of a (original shift) mod 8
+    and 0x07          ; Mask with 0x07 to get the remainder (bits to shift back up)
+    ld b,a            ; 'b' now holds the number of bits to shift back up
+    ld de,0           ; Clear deu for computing the offset address later
+
+    ; call dumpRegistersHex ; DEBUG
+
+; Get back the original sign of the byte shift
+    pop af            ; Restore sign flag
+    jp p,@F           ; If a was positive, we're done
+    ld a,c            ; 'a' now holds the number of whole bytes to shift
+    neg               ; Negate the number of whole bytes to shift
+    dec a             ; Subtract 1 because that's just how this works
+    ld c,a            ; 'c' now holds the number of whole bytes to shift
+    dec de            ; DE = -1 to make the signed addition below work
+    ld a,8            ; Subtract bits to shift from 8 because we're in backwards land
+    sub b
+    ld b,a            ; b is the number of bits to shift back up
+
+    ; call dumpRegistersHex ; DEBUG
+
+@@:
+
+; Add the byte offset to the base address of output buffer
+    ld e,c            ; DEU and D were properly signed above
+    add ix,de         ; Add byte-aligned offset (hl = output buffer + l)
+
+    ; call dumpRegistersHex ; DEBUG
+
+; Read the byte-aligned result into HL and shift in the required number of bits
+    ld hl,(ix)        ; Byte-aligned result
+
+    call dumpRegistersHex ; DEBUG
+
+; Check whether we're already byte-aligned
+    xor a
+    or b
+    jr z,@end         ; If no bits to shift, we're done
+
+; Otherwise shiften zee bitzen
+    ld a,(ix-1)       ; read one byte below for the bits to shift into HLU
+@loop:
+    rlca              ; One bit to carry
+
+    call dumpFlags ; DEBUG
+
+    adc hl,hl         ; Shift the carry into the result
+
+    call dumpRegistersHex ; DEBUG
+
+    djnz @loop        ; Loop until all bits are shifted up
+
+@end:
+
+    call dumpRegistersHex ; DEBUG
+
+; get back HLU's original sign and negate if necessary
+    pop af
+    jp p,@F
+    call neg_hlu
+@@:
+; return the result
+    ld (ix),hl        ; Store the shifted result
+    pop bc              ; Restore BC
+    ret
+
 ; operation: UHL * UDE --> UHL
 ; multiply unsigned 24-bit numbers and return a 48-bit intermediate
 ; with inputs and outputs having an arbitrary number of fractional bits from 0 to 24

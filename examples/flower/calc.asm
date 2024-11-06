@@ -117,6 +117,7 @@ test_sdiv168:
     jp _main_end_ok
 
 ; ========== DISPATCH TABLES ==========
+; TWO-NUMBER OPERATORS
 operator:
     dl addition
     dl subtract
@@ -126,6 +127,7 @@ operator:
     dl atan2
     dl polar2cart
     dl cart2polar
+    dl shift
     dl 0x000000 ; list terminator
 addition:
     jr @start
@@ -238,6 +240,16 @@ deg256:
     asciz "deg256"
 @start:
     call deg_360_to_256
+    call print_hex_hl
+    call print_s168_hl
+    ret
+shift:
+    jr @start
+    asciz "shift"
+@start:
+    ld ix,arith24uhl ; pointer to output buffer
+    ld a,d ; integer portion of ude is number of bits to shift
+    call shift_hlu
     call print_hex_hl
     call print_s168_hl
     ret
