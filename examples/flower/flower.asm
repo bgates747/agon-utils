@@ -19,6 +19,7 @@
     include "functions.inc"
     include "maths.inc"
 	INCLUDE	"arith24.inc"
+    include "fixed24.inc"
     include "trig24.inc"
     include "files.inc"
     include "timer.inc"
@@ -156,15 +157,16 @@ main_loop:
 
 ; Calculate shrink per step (linear)
     ; step_shrink = -shrink * radius_scale / total_steps 
+
+    ; multiply first to maintain precision
     ld hl,(shrink)
     ld de,(radius_scale)
     call umul168 ; uh.l = shrink * radius_scale
+    hlu_mul256 ; shift up a byte for even moar precision
+
+    ; divide by total_steps
     ld de,(total_steps)
-    ex de,hl
-    hlu_mul256 ; total steps in 16.8 fixed point
-    ex de,hl ; flip back again for the division
     call udiv168 ; ud.e = shrink * radius_scale / total_steps
-    ex de,hl ; hl = -shrink * radius_scale / total_steps
     call neg_hlu ; uh.l = -shrink / total_steps
     ld (step_shrink),hl ; store the result
     call print_step_shrink
