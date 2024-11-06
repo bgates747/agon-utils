@@ -12,12 +12,97 @@ arith24upc: ds 6
 ; with inputs and outputs having an arbitrary number of fractional bits from 0 to 24
 ; inputs: hl = 24-bit number, de = 24-bit number, 
 ;         b = hl fractional bits, c = de fractional bits, a = output fractional bits
-; outputs: umul24x24out = 48-bit intermediate
-; destroys: af, hl, de
+; outputs: umulfxout = 48-bit intermediate
+; destroys: af, hl, bc, de
 umulfx:
+    push ix ; preserve
+    push af ; need later
+
+; do the multiplication
+    call umul24x24
+    ; DEBUG
+    ld hl,umulfxout ; point to output buffer
+    ld a,6 ; 6 bytes to print
+    call dumpMemoryHex ; print the result
+    ; END DEBUG
+
+; shift the result to the required output precision
+    ld a,b
+    add a,c ; a is left shift from the multiplication
+    pop bc ; b is the output precision (was a)
+    sub b ; a is the net shift of the output
+
+; Get absolute value of a and save its original sign
+    or a
+    push af ; save sign flag
+    jp p,@F ; If a is positive do nothing
+    neg ; If a is negative, negate it
+@@:
+
+; Divide a by 8 to get the whole byte shift and bit remainder
+    ld b,a            ; Store 'a' temporarily in 'b' (net shift)
+    srl a             ; a = a / 2 (shift right 1 bit)
+    srl a             ; a = a / 4 (shift right another bit)
+    srl a             ; a = a / 8 (final shift for division by 8)
+    ld c,a            ; c holds the number of whole bytes to shift
+
+; Calculate remainder of a (original shift) mod 8
+    ld a,b            ; Restore original shift value into 'a'
+    and 0x07          ; Mask with 0x07 to get the remainder (bits to shift back up)
+    ld b,a            ; 'b' now holds the number of bits to shift back up
+    ld de,0           ; Clear deu for computing the offset address later
+
+    ; call dumpRegistersHex ; DEBUG
+
+; Get back the original sign of the byte shift
+    pop af            ; Restore sign flag
+    jp p,@F           ; If a was positive, we're done
+    ld a,c            ; 'a' now holds the number of whole bytes to shift
+    neg               ; Negate the number of whole bytes to shift
+    dec a             ; Subtract 1 because that's just how this works
+    ld c,a            ; 'c' now holds the number of whole bytes to shift
+    dec de            ; DE = -1 to make the signed addition below work
+    ld a,8            ; Subtract bits to shift from 8 because we're in backwards land
+    sub b
+    ld b,a            ; b is the number of bits to shift back up
+
+    ; call dumpRegistersHex ; DEBUG
+
+@@:
+
+; Add the byte offset to the base address of umulfxout
+    ld e,c            ; DEU and D were properly signed above
+    ld ix,umulfxout   ; Load base address of the output buffer
+    add ix,de         ; Add byte-aligned offset (hl = umulfxout + l)
+
+    ; call dumpRegistersHex ; DEBUG
+
+; Read the byte-aligned result into HL and shift in the required number of bits
+    ld hl,(ix)        ; Byte-aligned result
+    ld a,(ix-1)       ; One byte below
+
+; Check whether we're already byte-aligned
+    xor a
+    or b
+    jr z,@end         ; If no bits to shift, we're done
+
+; Otherwise shiften zee bitzen
+@loop:
+
+    call dumpRegistersHex ; DEBUG
+
+    rlca              ; One bit to carry
+    adc hl,hl         ; Shift the carry into the result
+
+    djnz @loop        ; Loop until all bits are shifted up
+
+@end:
+; return the result
+    pop ix ; restore
+    ret
 
     dl 0 ; padding
-umulfx_out: ds 6 
+umulfxout: blkb 6,0
     dl 0 ; padding
 
 ; multiply a signed 24-bit number by an unsigned 8-bit number giving a signed 24-bit result
@@ -79,9 +164,9 @@ umul24x8:
 @scratch: ds 3
 
 ; unsigned multiplication of two 24-bit numbers giving a 48-bit result
-; operation: UHL * UDE --> umul24x24out
+; operation: UHL * UDE --> umulfxout
 umul24x24:
-	ld iy,umul24x24out ; point to output buffer
+	ld iy,umulfxout ; point to output buffer
 	push bc
 	ld bc,0
 	ld (iy),bc
@@ -135,7 +220,6 @@ umul24x24:
 	adc a,(iy+3)
 	ld (iy+3),a
 	ret
-umul24x24out: ds 6 ; output buffer
 
 ; umul168:	UH.L = UH.L*UD.E (unsigned)
 umul168:
@@ -167,6 +251,7 @@ smul168:
 	ret m ; both negative, nothing to do
 	call neg_hlu ; result is negative
 	ret
+
 ; UH.L / UD.E --> UD.E rem UHL (unsigned)
 ; perform unsigned division of 16.8 fixed place values
 ; with an unsigned 16.8 fixed place result and 24-bit remainder

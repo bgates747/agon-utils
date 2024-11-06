@@ -62,9 +62,9 @@ test_umul24x24:
     ex de,hl
 
     call umul24x24
-    ld hl,(umul24x24out+3)
+    ld hl,(umulfxout+3)
     call printHexUHL
-    ld hl,(umul24x24out)
+    ld hl,(umulfxout)
     call printHexUHL
     call printNewLine
     ret

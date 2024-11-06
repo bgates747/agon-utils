@@ -19,6 +19,7 @@
     include "functions.inc"
     include "maths.inc"
 	INCLUDE	"arith24.inc"
+    include "fixed24.inc"
     include "trig24.inc"
     include "files.inc"
     include "timer.inc"

@@ -192,10 +192,10 @@ test_umul24x24:
     ; call dumpRegistersHex
     call umul24x24
 
-    ld hl,(umul24x24out+3)
+    ld hl,(umulfxout+3)
     call printHexUHL
 
-    ld hl,(umul24x24out+0)
+    ld hl,(umulfxout+0)
     call printHexUHL
     call printNewLine
 
