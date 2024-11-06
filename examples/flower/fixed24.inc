@@ -89,7 +89,7 @@ umulfx:
 ; Otherwise shiften zee bitzen
 @loop:
 
-    call dumpRegistersHex ; DEBUG
+    ; call dumpRegistersHex ; DEBUG
 
     rlca              ; One bit to carry
     adc hl,hl         ; Shift the carry into the result
@@ -104,6 +104,37 @@ umulfx:
     dl 0 ; padding
 umulfxout: blkb 6,0
     dl 0 ; padding
+
+; operation: UHL * UDE --> UHL
+; multiply signed 24-bit numbers and return a 48-bit intermediate
+; with inputs and outputs having an arbitrary number of fractional bits from 0 to 24
+; inputs: hl = 24-bit number, de = 24-bit number, 
+;         b = hl fractional bits, c = de fractional bits, a = output fractional bits
+; outputs: umulfxout = 48-bit intermediate
+; destroys: af, hl, bc, de
+smulfx:
+; make everything positive and store sign flags
+	call hlu_abs
+	push af
+	ex de,hl
+	call hlu_abs
+	ex de,hl
+	push af
+; do the division
+    call umulfx ; hl = product
+; adjust sign of result
+	pop af ; sign de
+	jp m,@de_neg
+	pop af ; sign hl
+	ret p ; both positive, nothing to do
+@hl_neg:
+    call neg_hlu ; de pos, hl neg, result is negative
+    ret
+@de_neg:
+	pop af
+	ret m ; both negative, nothing to do
+	call neg_hlu ; result is negative
+	ret
 
 ; multiply a signed 24-bit number by an unsigned 8-bit number giving a signed 24-bit result
 ; uses EZ80 MLT instruction for speed

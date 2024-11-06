@@ -148,7 +148,10 @@ multiply:
     jr @start
     asciz "*"
 @start:
-    call smul168
+    ld a,8 ; 8 fractional bits output
+    ld b,8 ; 8 fractional bits input arg1
+    ld c,8 ; 8 fractional bits input arg2
+    call smulfx ; hl = hl * de
     call print_hex_hl
     call print_s168_hl
     ret
