@@ -6,16 +6,16 @@
 ;
 ; Modinfo:
 
-			INCLUDE	"macros.inc"
-			INCLUDE	"equs.inc"
+			; INCLUDE	"macros.inc"
+			; INCLUDE	"equs.inc"
 
-			.ASSUME	ADL = 1
+			; .ASSUME	ADL = 1
 
-			SEGMENT CODE
+			; SEGMENT CODE
 				
-			XDEF	GPIOB_SETMODE
+			; XDEF	GPIOB_SETMODE
 				
-			XREF	SWITCH_A
+			; XREF	SWITCH_A
 
 ;  A: Mode
 ;  B: Pins

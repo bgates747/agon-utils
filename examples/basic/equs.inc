@@ -7,8 +7,8 @@
 ; Modinfo:
 ; 08/06/2023:	Added SIZEW
 
-			XREF		STAVAR
-			XREF		ACCS
+			; XREF		STAVAR
+			; XREF		ACCS
 			
 RAM_Top:		EQU		0B0000h	; Initial value of HIMEM
 ;Stack_Top:		EQU		0000h	; Stack at top

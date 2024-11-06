@@ -7,22 +7,22 @@
 ; Modinfo:
 ; 07/06/2023:	Modified to run in ADL mode
 
-			.ASSUME	ADL = 1
+			; .ASSUME	ADL = 1
 				
-			INCLUDE	"macros.inc"
-			INCLUDE	"equs.inc"
-			INCLUDE "mos_api.inc"	; In MOS/src
+			; INCLUDE	"macros.inc"
+			; INCLUDE	"equs.inc"
+			; INCLUDE "mos_api.inc"	; In MOS/src
 
-			SEGMENT CODE
+			; SEGMENT CODE
 				
-			XDEF	VBLANK_INIT
-			XDEF	VBLANK_STOP
-			XDEF	VBLANK_HANDLER	
+			; XDEF	VBLANK_INIT
+			; XDEF	VBLANK_STOP
+			; XDEF	VBLANK_HANDLER	
 
-			XREF	ESCSET	
-			XREF	KEYDOWN		; In ram.asm
-			XREF	KEYASCII 	; In ram.asm
-			XREF	KEYCOUNT	; In ram.asm
+			; XREF	ESCSET	
+			; XREF	KEYDOWN		; In ram.asm
+			; XREF	KEYASCII 	; In ram.asm
+			; XREF	KEYCOUNT	; In ram.asm
 
 ; Hook into the MOS VBLANK interrupt
 ;

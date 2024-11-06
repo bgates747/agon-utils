@@ -7,39 +7,39 @@
 ; Modinfo:
 ; 07/06/2023:	Modified to run in ADL mode
 			
-			.ASSUME	ADL = 1
+			; .ASSUME	ADL = 1
 				
-			INCLUDE	"equs.inc"
-			INCLUDE "macros.inc"
-			INCLUDE "mos_api.inc"	; In MOS/src
+			; INCLUDE	"equs.inc"
+			; INCLUDE "macros.inc"
+			; INCLUDE "mos_api.inc"	; In MOS/src
 		
-			SEGMENT CODE
+			; SEGMENT CODE
 				
-			XDEF	CLG
-			XDEF	CLRSCN
-			XDEF	MODE
-			XDEF	COLOUR
-			XDEF	GCOL
-			XDEF	MOVE
-			XDEF	PLOT
-			XDEF	DRAW
-			XDEF	POINT
-			XDEF	GETSCHR
+			; XDEF	CLG
+			; XDEF	CLRSCN
+			; XDEF	MODE
+			; XDEF	COLOUR
+			; XDEF	GCOL
+			; XDEF	MOVE
+			; XDEF	PLOT
+			; XDEF	DRAW
+			; XDEF	POINT
+			; XDEF	GETSCHR
 			
-			XREF	OSWRCH
-			XREF	ASC_TO_NUMBER
-			XREF	EXTERR
-			XREF	EXPRI
-			XREF	COMMA
-			XREF	XEQ
-			XREF	NXT
-			XREF	BRAKET
-			XREF	COUNT0
-			XREF	CRTONULL
-			XREF	NULLTOCR
-			XREF	CRLF
-			XREF	EXPR_W2
-			XREF	INKEY1
+			; XREF	OSWRCH
+			; XREF	ASC_TO_NUMBER
+			; XREF	EXTERR
+			; XREF	EXPRI
+			; XREF	COMMA
+			; XREF	XEQ
+			; XREF	NXT
+			; XREF	BRAKET
+			; XREF	COUNT0
+			; XREF	CRTONULL
+			; XREF	NULLTOCR
+			; XREF	CRLF
+			; XREF	EXPR_W2
+			; XREF	INKEY1
 			
 ; CLG: clears the graphics area
 ;

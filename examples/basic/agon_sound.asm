@@ -6,22 +6,22 @@
 ;
 ; Modinfo:
 			
-			.ASSUME	ADL = 1
+			; .ASSUME	ADL = 1
 				
-			INCLUDE	"equs.inc"
-			INCLUDE "macros.inc"
-			INCLUDE "mos_api.inc"	; In MOS/src
+			; INCLUDE	"equs.inc"
+			; INCLUDE "macros.inc"
+			; INCLUDE "mos_api.inc"	; In MOS/src
 		
-			SEGMENT CODE
+			; SEGMENT CODE
 			
-			XDEF	SOUND
+			; XDEF	SOUND
 			
-			XREF	COMMA
-			XREF	EXPR_W2
-			XREF	XEQ
-			XREF	LTRAP
-			XREF	OSWRCH
-			XREF	VDU_BUFFER
+			; XREF	COMMA
+			; XREF	EXPR_W2
+			; XREF	XEQ
+			; XREF	LTRAP
+			; XREF	OSWRCH
+			; XREF	VDU_BUFFER
 			
 				
 ; SOUND channel,volume,pitch,duration

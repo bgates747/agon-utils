@@ -9,18 +9,18 @@
 ; 11/07/2023:	Fixed *BYE for ADL mode
 ; 26/11/2023:	Moved the ram clear routine into here
 
-			SEGMENT CODE
+			; SEGMENT CODE
 
-			XDEF	_end			
+			; XDEF	_end			
 			
-			XREF	_main				; In main.asm
+			; XREF	_main				; In main.asm
 			
-			XREF	RAM_START			; In ram.asm
-			XREF	RAM_END
+			; XREF	RAM_START			; In ram.asm
+			; XREF	RAM_END
 			
-			.ASSUME	ADL = 1
+			; .ASSUME	ADL = 1
 				
-			INCLUDE	"equs.inc"
+			; INCLUDE	"equs.inc"
 			
 argv_ptrs_max:		EQU	16				; Maximum number of arguments allowed in argv
 			

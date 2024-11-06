@@ -7,15 +7,15 @@
 ;
 ; Modinfo:
 
-			.ASSUME	ADL = 1
+			; .ASSUME	ADL = 1
 
-			SEGMENT CODE
+			; SEGMENT CODE
 			
-			XDEF	ENVEL
-			XDEF	ADVAL
-			XDEF	PUTIMS
+			; XDEF	ENVEL
+			; XDEF	ADVAL
+			; XDEF	PUTIMS
 			
-			XREF	EXTERR
+			; XREF	EXTERR
 			
 ENVEL:
 ADVAL:
