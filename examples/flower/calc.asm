@@ -371,3 +371,27 @@ debug_print:
     call printNewLine   ; DEBUG
     call printNewLine   ; DEBUG
     ret
+
+; ========= EXPERIMENTAL FLOATING POINT FUNCTIONS =========
+    ; include "basic.inc"
+    include "basic/fpp.asm"
+
+
+;Function STR - convert numeric value to ASCII string.
+;   Inputs: HLH'L'C = integer or floating-point number
+;           DE = address at which to store string
+;           IX = address of @% format control
+;  Outputs: String stored, with NUL terminator
+
+
+;NUMBER: Get unsigned integer from string.
+;    Inputs: string at (IX)
+;            C = truncated digit count
+;                (initially zero)
+;            B = total digit count
+;            HLH'L' = initial value
+;   Outputs: HLH'L' = number (binary integer)
+;            A = delimiter.
+;            B, C & IX updated
+;  Destroys: A,B,C,D,E,H,L,B',C',D',E',H',L',IX,F
+;

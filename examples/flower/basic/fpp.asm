@@ -12,7 +12,7 @@
 ; 12/05/2023:	Modified by Dean Belfield
 ; 07/06/2023:	Modified to run in ADL mode
 
-			; .ASSUME	ADL = 1
+			.ASSUME	ADL = 1
 
 			; SEGMENT CODE
 				
@@ -67,9 +67,11 @@ ERROR_:			LD      SP,IY           ;Restore SP from IY
 ;
 ;Perform operation or function:
 ;
-OP:			CP      RTABLE-DTABLE/3
+; OP:			CP      (RTABLE-DTABLE)/3
+OP:			CP      RTABLE-DTABLE/3 ; ez80asm doesn't do nested expressions
         		JR      NC,BAD
-        		CP      FTABLE-DTABLE/3
+        		; CP      (FTABLE-DTABLE)/3
+        		CP      FTABLE-DTABLE/3 ; ditto
         		JR      NC,DISPAT
         		EX      AF,AF'
         		LD      A,B
@@ -1744,7 +1746,8 @@ FLOAT_:			BIT     7,H
 ;    Destroys: A,C,H,L,H',L',F
 ;
 FLOATA:			EX      AF,AF'
-        		ADD     A,RTABLE-DTABLE/3
+        		; ADD     A,(RTABLE-DTABLE)/3
+        		ADD     A,RTABLE-DTABLE/3 ; ez80asm doesn't do nested expressions
         		EX      AF,AF'
 FLOAT2:			CALL    SWAP
         		CALL    SFLOAT

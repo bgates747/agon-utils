@@ -148,7 +148,8 @@ if __name__ == '__main__':
     tgt_dir = 'mos'
     app_name = 'flower'
     emulator_dir = '/home/smith/Agon/emulator'
-    asm_src_dir = 'examples/flower'
+    # asm_src_dir = 'examples/flower'
+    asm_src_dir = f'/home/smith/Agon/emulator/sdcard/mystuff/agon-utils/examples/flower'
     tgt_bin_filename = f'{app_name}.bin'
     copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
     autoexec_text = []
