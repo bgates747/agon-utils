@@ -59,8 +59,8 @@ EXIT_:			POP     IY              ;Restore IY
 ;
 ;Error exit:
 ;
-BAD:			LD      A,BADOP         ;"Bad operation code"
-ERROR_:			LD      SP,IY           ;Restore SP from IY
+BAD_fpp:			LD      A,BADOP         ;"Bad operation code"
+ERROR_FPP_:			LD      SP,IY           ;Restore SP from IY
         		OR      A               ;Set NZ
         		SCF                     ;Set C
         		JR      EXIT_
@@ -69,7 +69,7 @@ ERROR_:			LD      SP,IY           ;Restore SP from IY
 ;
 ; OP:			CP      (RTABLE-DTABLE)/3
 OP:			CP      RTABLE-DTABLE/3
-        		JR      NC,BAD
+        		JR      NC,BAD_fpp
         		; CP      (FTABLE-DTABLE)/3
         		CP      FTABLE-DTABLE/3
         		JR      NC,DISPAT
@@ -356,7 +356,7 @@ IDIV:			CALL    FLOAT2
 FDIV:			DEC     B               ;TEST FOR ZERO
         		INC     B
         		LD      A,DIVBY0
-        		JP      Z,ERROR_         ;"Division by zero"
+        		JP      Z,ERROR_FPP_         ;"Division by zero"
         		DEC     C               ;TEST FOR ZERO
         		INC     C
         		RET     Z
@@ -775,7 +775,7 @@ INT_:			DEC     C
 SQR:			CALL    SFLOAT
 SQR0:			BIT     7,H
         		LD      A,NGROOT
-        		JP      NZ,ERROR_        ;"-ve root"
+        		JP      NZ,ERROR_FPP_        ;"-ve root"
         		DEC     C
         		INC     C
         		RET     Z               ;ZERO
@@ -959,7 +959,7 @@ EXP0:			CALL    LN2             ;LN(2)
         		RLA
         		JP      C,ZERO
         		LD      A,EXPRNG
-        		JP      ERROR_           ;"Exp range"
+        		JP      ERROR_FPP_           ;"Exp range"
 ;
 EXP1:			AND     80H
         		OR      E
@@ -1028,10 +1028,10 @@ LN2:			LD      DE,3172H        ;LN(2)
 LN:			CALL    SFLOAT
 LN0:			LD      A,LOGRNG
         		BIT     7,H
-        		JP      NZ,ERROR_        ;"Log range"
+        		JP      NZ,ERROR_FPP_        ;"Log range"
         		INC     C
         		DEC     C
-        		JP      Z,ERROR_
+        		JP      Z,ERROR_FPP_
         		LD      DE,3504H        ;SQR(2)
         		EXX
         		LD      DE,0F333H       ;1.41421356237
@@ -1654,7 +1654,7 @@ NEG_:			EXX
 SCALE:			LD      A,150
         		CP      C
         		LD      A,ACLOST
-        		JP      C,ERROR_         ;"Accuracy lost"
+        		JP      C,ERROR_FPP_         ;"Accuracy lost"
         		CALL    PIBY4
         		EXX
         		LD      BC,2169H        ;3.141592653589793238
@@ -1823,7 +1823,7 @@ DIV2:			CALL    D2
 INCC:			INC     C
         		RET     NZ
 OFLOW:			LD      A,TOOBIG
-        		JP      ERROR_           ;"Too big"
+        		JP      ERROR_FPP_           ;"Too big"
 ;
 ; FTEST - Test for zero & sign
 ;     Output: A=0 if zero, A=&40 if +ve, A=&C0 if -ve

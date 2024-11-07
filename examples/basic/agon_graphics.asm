@@ -125,7 +125,8 @@ POINT:			CALL    EXPRI      		; Get X coordinate
 ;
 ; Return the data as a 1 byte index
 ;
-			LD	L, (IX+(sysvar_scrpixelIndex))
+			; LD	L, (IX+(sysvar_scrpixelIndex))
+			ld l, (IX+sysvar_scrpixel) ; changed to be compatible with ez80asm
 			POP	IX	
 			JP	COUNT0
 

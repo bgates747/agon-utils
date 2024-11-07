@@ -370,15 +370,15 @@ UPPRC:  		AND     7FH
 ; Each command has bit 7 of the last character set, and is followed by the address of the handler
 ; These must be in alphabetical order
 ;		
-COMDS:  		DB	'AS','M'+80h		; ASM
+COMDS:  		DB	"AS","M"+80h		; ASM
 			DW	STAR_ASM
-			DB	'BY','E'+80h		; BYE
+			DB	"BY","E"+80h		; BYE
 			DW	STAR_BYE
-			DB	'EDI','T'+80h		; EDIT
+			DB	"EDI","T"+80h		; EDIT
 			DW	STAR_EDIT
-			DB	'F','X'+80h		; FX
+			DB	"F","X"+80h		; FX
 			DW	STAR_FX
-			DB	'VERSIO','N'+80h	; VERSION
+			DB	"VERSIO","N"+80h	; VERSION
 			DW	STAR_VERSION
 			DB	FFh
 						
@@ -746,10 +746,10 @@ EXT_HANDLER_2:		INC	DE			; Skip to the file extension # byte
 ; 	- 0: BBC (tokenised BBC BASIC for Z80 format)
 ; 	- 1: Human readable plain text
 ;
-EXT_LOOKUP:		DB	'.BBC', 0, 0		; First entry is the default extension
-			DB	'.TXT', 0, 1
-			DB	'.ASC', 0, 1
-			DB	'.BAS', 0, 1
+EXT_LOOKUP:		DB	".BBC", 0, 0		; First entry is the default extension
+			DB	".TXT", 0, 1
+			DB	".ASC", 0, 1
+			DB	".BAS", 0, 1
 			DB	0			; End of table
 			
 ;OSCALL - Intercept page &FF calls and provide an alternative address
@@ -868,14 +868,14 @@ OSSTAT:			PUSH	BC
 ; Destroys: A,B,C,D,E,H,L,F
 ;
 GETPTR:			PUSH		IY
-			LD		C, E 
-			MOSCALL		mos_getfil 	; HLU: Pointer to FIL structure
-			PUSH		HL
-			POP		IY		; IYU: Pointer to FIL structure
-			LD		L, (IY + FIL.fptr + 0)
-			LD		H, (IY + FIL.fptr + 1)
-			LD		E, (IY + FIL.fptr + 2)
-			LD		D, (IY + FIL.fptr + 3)
+			; LD		C, E 
+			; MOSCALL		mos_getfil 	; HLU: Pointer to FIL structure
+			; PUSH		HL
+			; POP		IY		; IYU: Pointer to FIL structure
+			; LD		L, (IY + FIL.fptr + 0)
+			; LD		H, (IY + FIL.fptr + 1)
+			; LD		E, (IY + FIL.fptr + 2)
+			; LD		D, (IY + FIL.fptr + 3)
 			POP		IY
 			RET
 
@@ -903,14 +903,14 @@ PUTPTR:			PUSH		IY
 ; Destroys: A,B,C,D,E,H,L,F
 ;
 GETEXT:			PUSH		IY 
-			LD		C, E 
-			MOSCALL		mos_getfil 	; HLU: Pointer to FIL structure
-			PUSH		HL
-			POP		IY		; IYU: Pointer to FIL structure
-			LD		L, (IY + FIL.obj.objsize + 0)
-			LD		H, (IY + FIL.obj.objsize + 1)
-			LD		E, (IY + FIL.obj.objsize + 2)
-			LD		D, (IY + FIL.obj.objsize + 3)			
+			; LD		C, E 
+			; MOSCALL		mos_getfil 	; HLU: Pointer to FIL structure
+			; PUSH		HL
+			; POP		IY		; IYU: Pointer to FIL structure
+			; LD		L, (IY + FIL.obj.objsize + 0)
+			; LD		H, (IY + FIL.obj.objsize + 1)
+			; LD		E, (IY + FIL.obj.objsize + 2)
+			; LD		D, (IY + FIL.obj.objsize + 3)			
 			POP		IY 
 			RET	
 

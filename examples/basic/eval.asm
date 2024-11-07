@@ -103,7 +103,7 @@ FUNTOK:			EQU	8DH			; First token number
 FUNTBL:			DW24	DECODE			; Line number
 			DW24	OPENIN			; OPENIN
 			DW24	PTR			; PTR
-			DW24	PAGE			; PAGE
+			; DW24	PAGE			; PAGE (label definition not found)
 			DW24	TIMEV			; TIME
 			DW24	LOMEMV			; LOMEM
 			DW24	HIMEMV			; HIMEM
@@ -123,7 +123,7 @@ FUNTBL:			DW24	DECODE			; Line number
 			DW24	EXP			; EXP
 			DW24	EXT			; EXT
 			DW24	ZERO			; FALSE
-			DW24	FN			; FN
+			; DW24	FN			; FN (label definition not found)
 			DW24	GET			; GET
 			DW24	INKEY			; INKEY
 			DW24	INSTR			; INSTR(

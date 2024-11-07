@@ -1,1 +1,309 @@
 Namespace Collisions:
+
+Collision for 'ABSV':
+  Defined as label in eval.asm at line 874
+  Defined as label in fpp.asm at line 656
+
+Collision for 'ACS':
+  Defined as label in eval.asm at line 964
+  Defined as label in fpp.asm at line 1200
+
+Collision for 'ADD1':
+  Defined as label in eval.asm at line 494
+  Defined as label in fpp.asm at line 1774
+
+Collision for 'ASN':
+  Defined as label in eval.asm at line 952
+  Defined as label in fpp.asm at line 1110
+
+Collision for 'ATN':
+  Defined as label in eval.asm at line 958
+  Defined as label in fpp.asm at line 1130
+
+Collision for 'CON':
+  Defined as label in eval.asm at line 613
+  Defined as label in fpp.asm at line 1455
+
+Collision for 'COS':
+  Defined as label in eval.asm at line 922
+  Defined as label in fpp.asm at line 844
+
+Collision for 'DATA_':
+  Defined as EQU in exec.asm: DATA_:			EQU     DCH
+  Defined as EQU in main.asm: DATA_:			EQU     DCH
+
+Collision for 'DEG':
+  Defined as label in eval.asm at line 886
+  Defined as label in fpp.asm at line 699
+
+Collision for 'DIM':
+  Defined as label in exec.asm at line 437
+  Defined as EQU in main.asm: DIM:			EQU     DEH
+
+Collision for 'DISPAT':
+  Defined as label in eval.asm at line 1684
+  Defined as label in fpp.asm at line 81
+
+Collision for 'ELSE_':
+  Defined as EQU in exec.asm: ELSE_:			EQU     8BH
+  Defined as EQU in main.asm: ELSE_:			EQU     8BH
+
+Collision for 'ERROR0':
+  Defined as label in eval.asm at line 597
+  Defined as label in exec.asm at line 385
+  Defined as label in main.asm at line 957
+
+Collision for 'ERROR1':
+  Defined as label in eval.asm at line 1628
+  Defined as label in exec.asm at line 518
+  Defined as label in main.asm at line 965
+
+Collision for 'ERROR2':
+  Defined as label in exec.asm at line 728
+  Defined as label in main.asm at line 994
+
+Collision for 'ERROR3':
+  Defined as label in exec.asm at line 941
+  Defined as label in main.asm at line 1473
+
+Collision for 'EXIT_':
+  Defined as label in exec.asm at line 2874
+  Defined as label in fpp.asm at line 57
+
+Collision for 'EXP':
+  Defined as label in eval.asm at line 934
+  Defined as label in fpp.asm at line 948
+
+Collision for 'EXT':
+  Defined as label in eval.asm at line 798
+  Defined as label in exec.asm at line 326
+
+Collision for 'FN':
+  Defined as label in exec.asm at line 946
+  Defined as EQU in main.asm: FN:			EQU     A4H
+
+Collision for 'FOR':
+  Defined as label in eval.asm at line 854
+  Defined as label in exec.asm at line 816
+  Defined as label in fpp.asm at line 221
+  Defined as EQU in main.asm: FOR:			EQU     E3H
+
+Collision for 'GOSUB':
+  Defined as label in exec.asm at line 751
+  Defined as EQU in main.asm: GOSUB:			EQU     E4H
+
+Collision for 'GOTO':
+  Defined as label in exec.asm at line 735
+  Defined as EQU in main.asm: GOTO:			EQU     E5H
+
+Collision for 'HEX':
+  Defined as label in eval.asm at line 416
+  Defined as label in exec.asm at line 2265
+
+Collision for 'HIMEMV':
+  Defined as label in eval.asm at line 732
+  Defined as label in exec.asm at line 1427
+
+Collision for 'INT_':
+  Defined as label in eval.asm at line 904
+  Defined as label in fpp.asm at line 756
+
+Collision for 'LINE_':
+  Defined as EQU in exec.asm: LINE_:			EQU     86H
+  Defined as EQU in main.asm: LINE_:			EQU     86H
+
+Collision for 'LINO':
+  Defined as EQU in exec.asm: LINO:			EQU     8DH
+  Defined as EQU in main.asm: LINO:			EQU     8DH
+
+Collision for 'LN':
+  Defined as label in eval.asm at line 940
+  Defined as label in fpp.asm at line 1028
+
+Collision for 'LOCAL_':
+  Defined as label in exec.asm at line 1046
+  Defined as EQU in main.asm: LOCAL_:			EQU     EAH
+
+Collision for 'LOG':
+  Defined as label in eval.asm at line 946
+  Defined as label in fpp.asm at line 1097
+
+Collision for 'LOMEMV':
+  Defined as label in eval.asm at line 728
+  Defined as label in exec.asm at line 1419
+
+Collision for 'NEGATE':
+  Defined as label in eval.asm at line 480
+  Defined as label in fpp.asm at line 1613
+
+Collision for 'NEXT':
+  Defined as label in exec.asm at line 869
+  Defined as EQU in main.asm: NEXT:			EQU     EDH
+
+Collision for 'NOTK':
+  Defined as label in eval.asm at line 880
+  Defined as label in fpp.asm at line 667
+
+Collision for 'NUMBER':
+  Defined as label in exec.asm at line 2801
+  Defined as label in fpp.asm at line 1550
+
+Collision for 'OFFSET':
+  Defined as label in exec.asm at line 2797
+  Defined as EQU in main.asm: OFFSET:			EQU     CFH-TOKLO		; Offset to the parameterised SET versions
+
+Collision for 'ON_':
+  Defined as label in exec.asm at line 675
+  Defined as EQU in main.asm: ON_:			EQU     EEH
+
+Collision for 'PAGEV':
+  Defined as label in eval.asm at line 736
+  Defined as label in exec.asm at line 1396
+
+Collision for 'PAIR':
+  Defined as label in exec.asm at line 2842
+  Defined as label in main.asm at line 1856
+
+Collision for 'PAIR1':
+  Defined as label in exec.asm at line 2844
+  Defined as label in main.asm at line 1862
+
+Collision for 'PI':
+  Defined as label in eval.asm at line 868
+  Defined as label in fpp.asm at line 688
+
+Collision for 'PROC':
+  Defined as label in exec.asm at line 956
+  Defined as EQU in main.asm: PROC:			EQU     F2H
+
+Collision for 'PTR':
+  Defined as label in eval.asm at line 802
+  Defined as label in exec.asm at line 1384
+
+Collision for 'RAD':
+  Defined as label in eval.asm at line 892
+  Defined as label in fpp.asm at line 707
+
+Collision for 'REM':
+  Defined as label in exec.asm at line 329
+  Defined as EQU in main.asm: REM:			EQU     F4H
+
+Collision for 'REPEAT':
+  Defined as label in exec.asm at line 776
+  Defined as EQU in main.asm: REPEAT:			EQU     F5H
+
+Collision for 'RESTOR':
+  Defined as label in exec.asm at line 1365
+  Defined as EQU in main.asm: RESTOR:			EQU     F7H
+
+Collision for 'SAVE':
+  Defined as label in eval.asm at line 1630
+  Defined as label in main.asm at line 924
+
+Collision for 'SEARCH':
+  Defined as label in eval.asm at line 1139
+  Defined as label in exec.asm at line 2093
+
+Collision for 'SFIX':
+  Defined as label in eval.asm at line 975
+  Defined as label in fpp.asm at line 1603
+
+Collision for 'SFLOAT':
+  Defined as label in eval.asm at line 980
+  Defined as label in fpp.asm at line 1755
+
+Collision for 'SGN':
+  Defined as label in eval.asm at line 898
+  Defined as label in fpp.asm at line 725
+
+Collision for 'SIN':
+  Defined as label in eval.asm at line 928
+  Defined as label in fpp.asm at line 854
+
+Collision for 'SKIPSP':
+  Defined as label in misc.asm at line 87
+  Defined as label in patch.asm at line 358
+
+Collision for 'SQR':
+  Defined as label in eval.asm at line 910
+  Defined as label in fpp.asm at line 775
+
+Collision for 'SRCH1':
+  Defined as label in eval.asm at line 1149
+  Defined as label in exec.asm at line 2095
+
+Collision for 'SRCH2':
+  Defined as label in eval.asm at line 1172
+  Defined as label in exec.asm at line 2110
+
+Collision for 'STR':
+  Defined as label in eval.asm at line 1483
+  Defined as label in fpp.asm at line 1213
+
+Collision for 'STR2':
+  Defined as label in eval.asm at line 1493
+  Defined as label in fpp.asm at line 1273
+
+Collision for 'SWAP':
+  Defined as label in eval.asm at line 1373
+  Defined as label in fpp.asm at line 1802
+
+Collision for 'TAN':
+  Defined as label in eval.asm at line 916
+  Defined as label in fpp.asm at line 829
+
+Collision for 'TCMD':
+  Defined as EQU in eval.asm: TCMD:			EQU     FUNTBL_END-FUNTBL/3+FUNTOK ; reorder because ez80asm doesn't do order of operations
+  Defined as EQU in exec.asm: TCMD:			EQU     C6H
+
+Collision for 'TERROR':
+  Defined as EQU in exec.asm: TERROR:			EQU     85H
+  Defined as EQU in main.asm: TERROR:			EQU     85H
+
+Collision for 'TEST':
+  Defined as label in eval.asm at line 1386
+  Defined as label in fpp.asm at line 1842
+
+Collision for 'THEN':
+  Defined as EQU in exec.asm: THEN:			EQU     8CH
+  Defined as EQU in main.asm: THEN:			EQU     8CH
+
+Collision for 'TIMEV':
+  Defined as label in eval.asm at line 809
+  Defined as label in exec.asm at line 1403
+
+Collision for 'TIMEVS':
+  Defined as label in eval.asm at line 823
+  Defined as label in exec.asm at line 1413
+
+Collision for 'TO':
+  Defined as EQU in exec.asm: TO:			EQU     B8H
+  Defined as EQU in main.asm: TO:			EQU     B8H
+
+Collision for 'TOOBIG':
+  Defined as EQU in fpp.asm: TOOBIG:			EQU     20              ;Too big
+  Defined as label in main.asm at line 1847
+
+Collision for 'TRACE':
+  Defined as label in exec.asm at line 1463
+  Defined as EQU in main.asm: TRACE:			EQU     FCH
+
+Collision for 'TYPE_':
+  Defined as label in eval.asm at line 401
+  Defined as label in main.asm at line 1744
+
+Collision for 'UNTIL':
+  Defined as label in exec.asm at line 787
+  Defined as EQU in main.asm: UNTIL:			EQU     FDH
+
+Collision for 'UPPRC':
+  Defined as label in misc.asm at line 105
+  Defined as label in patch.asm at line 364
+
+Collision for 'VAL':
+  Defined as label in eval.asm at line 986
+  Defined as label in fpp.asm at line 737
+
+Collision for 'ZERO':
+  Defined as label in eval.asm at line 1509
+  Defined as label in fpp.asm at line 1876

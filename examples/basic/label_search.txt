@@ -1,0 +1,17 @@
+Search results for label 'BAD':
+
+; ======= File: fpp.asm =======
+  62: BAD:			LD      A,BADOP         ;"Bad operation code"
+  72: JR      NC,BAD
+
+; ======= File: main.asm =======
+ 127: XREF	BAD
+ 886: BAD:			CALL    TELL            	; Output "Bad program" error
+ 906: JR      NZ,BAD			; If not found, then the first line of code is not a valid BBC BASIC code
+1133: JP      BAD			; If anything else, then something has gone wrong - trip a Bad Program error
+
+; ======= File: patch.asm =======
+  85: XREF	BAD
+ 589: JP	Z, BAD			; If the buffer is full (wrapped to 0) then jump to Bad Program error
+ 615: JP	Z, BAD
+

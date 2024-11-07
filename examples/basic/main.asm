@@ -18,18 +18,20 @@
 
 			.ASSUME	ADL = 1
 
-			include "mos_api.inc"
-			include "macros.inc"
-			include "ram.asm"
-			INCLUDE	"equs.inc"
-			include "init.asm"
-			include "eval.asm"
-			include "exec.asm"
-			include "fpp.asm"
-			include "gpio.asm"
-			include "interrupts.asm"
-			include "patch.asm"
-			include "sorry.asm"
+			; include "mos_api.inc"
+			; include "macros.inc"
+			; include "ram.asm"
+			; INCLUDE "equs.inc"
+			; include "init.asm"
+			; include "agon_graphics.asm"
+			; include "agon_sound.asm"
+			; include "eval.asm"
+			; include "exec.asm"
+			; include "fpp.asm"
+			; include "gpio.asm"
+			; include "interrupts.asm"
+			; include "patch.asm"
+			; include "sorry.asm"
 
 			; SEGMENT CODE
 			
@@ -371,197 +373,197 @@ ATEND:			POP     BC              	; BC: Line length
 ; it will only match with the keyword followed immediately by
 ; a delimiter
 ;
-KEYWDS:			DB    80H, 'AND'
-			DB    94H, 'ABS'
-			DB    95H, 'ACS'
-			DB    96H, 'ADVAL'
-			DB    97H, 'ASC'
-			DB    98H, 'ASN'
-			DB    99H, 'ATN'
-			DB    C6H, 'AUTO'
-			DB    9AH, 'BGET', 0
-			DB    D5H, 'BPUT', 0
-			DB    FBH, 'COLOUR'
-			DB    FBH, 'COLOR'
-			DB    D6H, 'CALL'
-			DB    D7H, 'CHAIN'
-			DB    BDH, 'CHR$'
-			DB    D8H, 'CLEAR', 0
-			DB    D9H, 'CLOSE', 0
-			DB    DAH, 'CLG', 0
-			DB    DBH, 'CLS', 0
-			DB    9BH, 'COS'
-			DB    9CH, 'COUNT', 0
-			DB    DCH, 'DATA'
-			DB    9DH, 'DEG'
-			DB    DDH, 'DEF'
-			DB    C7H, 'DELETE'
-			DB    81H, 'DIV'
-			DB    DEH, 'DIM'
-			DB    DFH, 'DRAW'
-			DB    E1H, 'ENDPROC', 0
-			DB    E0H, 'END', 0
-			DB    E2H, 'ENVELOPE'
-			DB    8BH, 'ELSE'
-			DB    A0H, 'EVAL'
-			DB    9EH, 'ERL', 0
-			DB    85H, 'ERROR'
-			DB    C5H, 'EOF', 0
-			DB    82H, 'EOR'
-			DB    9FH, 'ERR', 0
-			DB    A1H, 'EXP'
-			DB    A2H, 'EXT', 0
-			DB    E3H, 'FOR'
-			DB    A3H, 'FALSE', 0
-			DB    A4H, 'FN'
-			DB    E5H, 'GOTO'
-			DB    BEH, 'GET$'
-			DB    A5H, 'GET'
-			DB    E4H, 'GOSUB'
-			DB    E6H, 'GCOL'
-			DB    93H, 'HIMEM', 0
-			DB    E8H, 'INPUT'
-			DB    E7H, 'IF'
-			DB    BFH, 'INKEY$'
-			DB    A6H, 'INKEY'
-			DB    A8H, 'INT'
-			DB    A7H, 'INSTR('
-			DB    C9H, 'LIST'
-			DB    86H, 'LINE'
-			DB    C8H, 'LOAD'
-			DB    92H, 'LOMEM', 0
-			DB    EAH, 'LOCAL'
-			DB    C0H, 'LEFT$('
-			DB    A9H, 'LEN'
-			DB    E9H, 'LET'
-			DB    ABH, 'LOG'
-			DB    AAH, 'LN'
-			DB    C1H, 'MID$('
-			DB    EBH, 'MODE'
-			DB    83H, 'MOD'
-			DB    ECH, 'MOVE'
-			DB    EDH, 'NEXT'
-			DB    CAH, 'NEW', 0
-			DB    ACH, 'NOT'
-			DB    CBH, 'OLD', 0
-			DB    EEH, 'ON'
-			DB    87H, 'OFF'
-			DB    84H, 'OR'
-			DB    8EH, 'OPENIN'
-			DB    AEH, 'OPENOUT'
-			DB    ADH, 'OPENUP'
-			DB    FFH, 'OSCLI'
-			DB    F1H, 'PRINT'
-			DB    90H, 'PAGE', 0
-			DB    8FH, 'PTR', 0
-			DB    AFH, 'PI', 0
-			DB    F0H, 'PLOT'
-			DB    B0H, 'POINT('
-			DB    F2H, 'PROC'
-			DB    B1H, 'POS', 0
-			DB    CEH, 'PUT'
-			DB    F8H, 'RETURN', 0
-			DB    F5H, 'REPEAT'
-			DB    F6H, 'REPORT', 0
-			DB    F3H, 'READ'
-			DB    F4H, 'REM'
-			DB    F9H, 'RUN', 0
-			DB    B2H, 'RAD'
-			DB    F7H, 'RESTORE'
-			DB    C2H, 'RIGHT$('
-			DB    B3H, 'RND', 0
-			DB    CCH, 'RENUMBER'
-			DB    88H, 'STEP'
-			DB    CDH, 'SAVE'
-			DB    B4H, 'SGN'
-			DB    B5H, 'SIN'
-			DB    B6H, 'SQR'
-			DB    89H, 'SPC'
-			DB    C3H, 'STR$'
-			DB    C4H, 'STRING$('
-			DB    D4H, 'SOUND'
-			DB    FAH, 'STOP', 0
-			DB    B7H, 'TAN'
-			DB    8CH, 'THEN'
-			DB    B8H, 'TO'
-			DB    8AH, 'TAB('
-			DB    FCH, 'TRACE'
-			DB    91H, 'TIME', 0
-			DB    B9H, 'TRUE', 0
-			DB    FDH, 'UNTIL'
-			DB    BAH, 'USR'
-			DB    EFH, 'VDU'
-			DB    BBH, 'VAL'
-			DB    BCH, 'VPOS', 0
-			DB    FEH, 'WIDTH'
-			DB    D3H, 'HIMEM'
-			DB    D2H, 'LOMEM'
-			DB    D0H, 'PAGE'
-			DB    CFH, 'PTR'
-			DB    D1H, 'TIME'
+KEYWDS:			DB    80H, "AND"
+			DB    94H, "ABS"
+			DB    95H, "ACS"
+			DB    96H, "ADVAL"
+			DB    97H, "ASC"
+			DB    98H, "ASN"
+			DB    99H, "ATN"
+			DB    C6H, "AUTO"
+			DB    9AH, "BGET", 0
+			DB    D5H, "BPUT", 0
+			DB    FBH, "COLOUR"
+			DB    FBH, "COLOR"
+			DB    D6H, "CALL"
+			DB    D7H, "CHAIN"
+			DB    BDH, "CHR$"
+			DB    D8H, "CLEAR", 0
+			DB    D9H, "CLOSE", 0
+			DB    DAH, "CLG", 0
+			DB    DBH, "CLS", 0
+			DB    9BH, "COS"
+			DB    9CH, "COUNT", 0
+			DB    DCH, "DATA"
+			DB    9DH, "DEG"
+			DB    DDH, "DEF"
+			DB    C7H, "DELETE"
+			DB    81H, "DIV"
+			DB    DEH, "DIM"
+			DB    DFH, "DRAW"
+			DB    E1H, "ENDPROC", 0
+			DB    E0H, "END", 0
+			DB    E2H, "ENVELOPE"
+			DB    8BH, "ELSE"
+			DB    A0H, "EVAL"
+			DB    9EH, "ERL", 0
+			DB    85H, "ERROR"
+			DB    C5H, "EOF", 0
+			DB    82H, "EOR"
+			DB    9FH, "ERR", 0
+			DB    A1H, "EXP"
+			DB    A2H, "EXT", 0
+			DB    E3H, "FOR"
+			DB    A3H, "FALSE", 0
+			DB    A4H, "FN"
+			DB    E5H, "GOTO"
+			DB    BEH, "GET$"
+			DB    A5H, "GET"
+			DB    E4H, "GOSUB"
+			DB    E6H, "GCOL"
+			DB    93H, "HIMEM", 0
+			DB    E8H, "INPUT"
+			DB    E7H, "IF"
+			DB    BFH, "INKEY$"
+			DB    A6H, "INKEY"
+			DB    A8H, "INT"
+			DB    A7H, "INSTR("
+			DB    C9H, "LIST"
+			DB    86H, "LINE"
+			DB    C8H, "LOAD"
+			DB    92H, "LOMEM", 0
+			DB    EAH, "LOCAL"
+			DB    C0H, "LEFT$("
+			DB    A9H, "LEN"
+			DB    E9H, "LET"
+			DB    ABH, "LOG"
+			DB    AAH, "LN"
+			DB    C1H, "MID$("
+			DB    EBH, "MODE"
+			DB    83H, "MOD"
+			DB    ECH, "MOVE"
+			DB    EDH, "NEXT"
+			DB    CAH, "NEW", 0
+			DB    ACH, "NOT"
+			DB    CBH, "OLD", 0
+			DB    EEH, "ON"
+			DB    87H, "OFF"
+			DB    84H, "OR"
+			DB    8EH, "OPENIN"
+			DB    AEH, "OPENOUT"
+			DB    ADH, "OPENUP"
+			DB    FFH, "OSCLI"
+			DB    F1H, "PRINT"
+			DB    90H, "PAGE", 0
+			DB    8FH, "PTR", 0
+			DB    AFH, "PI", 0
+			DB    F0H, "PLOT"
+			DB    B0H, "POINT("
+			DB    F2H, "PROC"
+			DB    B1H, "POS", 0
+			DB    CEH, "PUT"
+			DB    F8H, "RETURN", 0
+			DB    F5H, "REPEAT"
+			DB    F6H, "REPORT", 0
+			DB    F3H, "READ"
+			DB    F4H, "REM"
+			DB    F9H, "RUN", 0
+			DB    B2H, "RAD"
+			DB    F7H, "RESTORE"
+			DB    C2H, "RIGHT$("
+			DB    B3H, "RND", 0
+			DB    CCH, "RENUMBER"
+			DB    88H, "STEP"
+			DB    CDH, "SAVE"
+			DB    B4H, "SGN"
+			DB    B5H, "SIN"
+			DB    B6H, "SQR"
+			DB    89H, "SPC"
+			DB    C3H, "STR$"
+			DB    C4H, "STRING$("
+			DB    D4H, "SOUND"
+			DB    FAH, "STOP", 0
+			DB    B7H, "TAN"
+			DB    8CH, "THEN"
+			DB    B8H, "TO"
+			DB    8AH, "TAB("
+			DB    FCH, "TRACE"
+			DB    91H, "TIME", 0
+			DB    B9H, "TRUE", 0
+			DB    FDH, "UNTIL"
+			DB    BAH, "USR"
+			DB    EFH, "VDU"
+			DB    BBH, "VAL"
+			DB    BCH, "VPOS", 0
+			DB    FEH, "WIDTH"
+			DB    D3H, "HIMEM"
+			DB    D2H, "LOMEM"
+			DB    D0H, "PAGE"
+			DB    CFH, "PTR"
+			DB    D1H, "TIME"
 ;
 ; These are indexed from the ERRWDS table
 ;
-			DB    01H, 'Missing '
-			DB    02H, 'No such '
-			DB    03H, 'Bad '
-			DB    04H, ' range'
-			DB    05H, 'variable'
-			DB    06H, 'Out of'
-			DB    07H, 'No '
-			DB    08H, ' space'
+			DB    01H, "Missing "
+			DB    02H, "No such "
+			DB    03H, "Bad "
+			DB    04H, " range"
+			DB    05H, "variable"
+			DB    06H, "Out of"
+			DB    07H, "No "
+			DB    08H, " space"
 
 KEYWDL:			EQU     $-KEYWDS
 			DW    -1
 ;
 ; Error messages
 ;
-ERRWDS:			DB    7, 'room', 0		;  0: No room
+ERRWDS:			DB    7, "room", 0		;  0: No room
 			DB    6, 4, 0			;  1: Out of range
 			DB    0				;  2: *
 			DB    0				;  3: *
-			DB    'Mistake', 0		;  4: Mistake
-			DB    1, ',', 0			;  5: Missing ,
-			DB    'Type mismatch', 0	;  6: Type mismatch
+			DB    "Mistake", 0		;  4: Mistake
+			DB    1, ",", 0			;  5: Missing ,
+			DB    "Type mismatch", 0	;  6: Type mismatch
 			DB    7, FN, 0			;  7: No FN
 			DB    0				;  8: *
 			DB    1, 34, 0			;  9: Missing "
 			DB    3, DIM, 0			; 10: Bad DIM
 			DB    DIM, 8, 0			; 11: DIM space
-			DB    'Not ', LOCAL_, 0		; 12: Not LOCAL
+			DB    "Not ", LOCAL_, 0		; 12: Not LOCAL
 			DB    7, PROC, 0		; 13: No PROC
-			DB    'Array', 0		; 14: Array
-			DB    'Subscript', 0		; 15: Subscript
-			DB    'Syntax error', 0		; 16: Syntax error
-			DB    'Escape', 0		; 17: Escape
-			DB    'Division by zero', 0	; 18: Division by zero
-			DB    'String too long', 0	; 19: String too long
-			DB    'Too big', 0		; 20: Too big
-			DB    '-ve root', 0		; 21: -ve root
-			DB    'Log', 4, 0		; 22: Log range
-			DB    'Accuracy lost', 0	; 23: Accuracy lost
-			DB    'Exp', 4, 0		; 24: Exp range
+			DB    "Array", 0		; 14: Array
+			DB    "Subscript", 0		; 15: Subscript
+			DB    "Syntax error", 0		; 16: Syntax error
+			DB    "Escape", 0		; 17: Escape
+			DB    "Division by zero", 0	; 18: Division by zero
+			DB    "String too long", 0	; 19: String too long
+			DB    "Too big", 0		; 20: Too big
+			DB    "-ve root", 0		; 21: -ve root
+			DB    "Log", 4, 0		; 22: Log range
+			DB    "Accuracy lost", 0	; 23: Accuracy lost
+			DB    "Exp", 4, 0		; 24: Exp range
 			DB    0				; 25: *
 			DB    2, 5, 0			; 26: No such variable
-			DB    1, ')', 0			; 27: Missing )
-			DB    3, 'HEX', 0		; 28: Bad HEX
-			DB    2, FN, '/', PROC, 0	; 29: No such FN/PROC
-			DB    3, 'call', 0		; 30: Bad call
-			DB    'Arguments', 0		; 31: Arguments
+			DB    1, ")", 0			; 27: Missing )
+			DB    3, "HEX", 0		; 28: Bad HEX
+			DB    2, FN, "/", PROC, 0	; 29: No such FN/PROC
+			DB    3, "call", 0		; 30: Bad call
+			DB    "Arguments", 0		; 31: Arguments
 			DB    7, FOR, 0			; 32: No FOR
-			DB    "Can't match ", FOR, 0	; 33: Can't match FOR
-			DB    FOR, ' ', 5, 0		; 34: FOR variable
+			DB    "Can"t match ", FOR, 0	; 33: Can"t match FOR
+			DB    FOR, " ", 5, 0		; 34: FOR variable
 			DB    0				; 35: *
 			DB    7, TO, 0			; 36: No TO
 			DB    0				; 37: *
 			DB    7, GOSUB, 0		; 38: No GOSUB
-			DB    ON_, ' syntax', 0		; 39: ON syntax
+			DB    ON_, " syntax", 0		; 39: ON syntax
 			DB    ON_, 4, 0			; 40: ON range
-			DB    2, 'line', 0		; 41: No such line
-			DB    6, ' ', DATA_, 0		; 42: Out of DATA
+			DB    2, "line", 0		; 41: No such line
+			DB    6, " ", DATA_, 0		; 42: Out of DATA
 			DB    7, REPEAT, 0		; 43: No REPEAT
 			DB    0				; 44: *
-			DB    1, '#', 0			; 45: Missing #
+			DB    1, "#", 0			; 45: Missing #
 ;
 ; COMMANDS:
 ;
@@ -850,7 +852,7 @@ RENUM4:			LD      E,(HL)          	; DE: The OLD line number
 			JR      Z,RENUM5        	; If Z flag is set, there is an exact match to the decoded line number on the heap
 ;
 			CALL    TELL			; Display this error if the line number is not found
-			DB    	'Failed at '
+			DB    	"Failed at "
 			DB    	0
 			LD      HL,(LINENO)
 			CALL    PBCDL
@@ -883,7 +885,7 @@ AUTO:			CALL    PAIR			; Get the parameter pair (HL: first parameter, BC: second
 ;
 BAD:			CALL    TELL            	; Output "Bad program" error
 			DB    3				; Token for "BAD"
-			DB    'program'
+			DB    "program"
 			DB    CR
 			DB    LF
 			DB    0				; Falls through to NEW	
@@ -1421,7 +1423,7 @@ SAYLN:			LD      HL,(LINENO)		; Get the LINENO sysvar
 			OR      L			
 			RET     Z			; Don't need to do anything; return with F:C set to 0
 			CALL    TELL			; Output the error message
-			DB    	' at line ', 0		
+			DB    	" at line ", 0		
 PBCDL:			LD      C,0			; C: Leading character (NUL)
 			JR      PBCD0			; Output the line number; return with F:C set to 1
 ;
@@ -1868,7 +1870,7 @@ PAIR1:			CALL    TERMQ			; Check for ELSE, : or CR
 			OR      C			; We're good...
 			RET     NZ			; Exit, otherwise...
 			CALL    EXTERR			; Throw error: "Silly"
-			DB    	'Silly', 0
+			DB    	"Silly", 0
 ;
 ; DLPAIR - GET PAIR OF LINE NUMBERS FOR DELETE/LIST.
 ;   Inputs: IY = text pointer
