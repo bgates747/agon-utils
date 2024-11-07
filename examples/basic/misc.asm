@@ -13,19 +13,19 @@
 
 			; SEGMENT CODE
 				
-			; XDEF	ASC_TO_NUMBER
-			; XDEF	SWITCH_A
-			; XDEF	NULLTOCR
-			; XDEF	CRTONULL
-			; XDEF	CSTR_FNAME
-			; XDEF	CSTR_LINE
-			; XDEF	CSTR_FINDCH
-			; XDEF	CSTR_ENDSWITH
-			; XDEF	CSTR_CAT
+			XDEF	ASC_TO_NUMBER
+			XDEF	SWITCH_A
+			XDEF	NULLTOCR
+			XDEF	CRTONULL
+			XDEF	CSTR_FNAME
+			XDEF	CSTR_LINE
+			XDEF	CSTR_FINDCH
+			XDEF	CSTR_ENDSWITH
+			XDEF	CSTR_CAT
 				
-			; XREF	OSWRCH
-			; XREF	KEYWDS
-			; XREF	KEYWDL
+			XREF	OSWRCH
+			XREF	KEYWDS
+			XREF	KEYWDL
 
 ; Read a number and convert to binary
 ; If prefixed with &, will read as hex, otherwise decimal

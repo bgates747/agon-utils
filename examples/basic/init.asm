@@ -11,12 +11,12 @@
 
 			; SEGMENT CODE
 
-			; XDEF	_end			
+			XDEF	_end			
 			
-			; XREF	_main				; In main.asm
+			XREF	_main				; In main.asm
 			
-			; XREF	RAM_START			; In ram.asm
-			; XREF	RAM_END
+			XREF	RAM_START			; In ram.asm
+			XREF	RAM_END
 			
 			; .ASSUME	ADL = 1
 				

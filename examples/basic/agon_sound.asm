@@ -14,14 +14,14 @@
 		
 			; SEGMENT CODE
 			
-			; XDEF	SOUND
+			XDEF	SOUND
 			
-			; XREF	COMMA
-			; XREF	EXPR_W2
-			; XREF	XEQ
-			; XREF	LTRAP
-			; XREF	OSWRCH
-			; XREF	VDU_BUFFER
+			XREF	COMMA
+			XREF	EXPR_W2
+			XREF	XEQ
+			XREF	LTRAP
+			XREF	OSWRCH
+			XREF	VDU_BUFFER
 			
 				
 ; SOUND channel,volume,pitch,duration

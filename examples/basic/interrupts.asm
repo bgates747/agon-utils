@@ -15,14 +15,14 @@
 
 			; SEGMENT CODE
 				
-			; XDEF	VBLANK_INIT
-			; XDEF	VBLANK_STOP
-			; XDEF	VBLANK_HANDLER	
+			XDEF	VBLANK_INIT
+			XDEF	VBLANK_STOP
+			XDEF	VBLANK_HANDLER	
 
-			; XREF	ESCSET	
-			; XREF	KEYDOWN		; In ram.asm
-			; XREF	KEYASCII 	; In ram.asm
-			; XREF	KEYCOUNT	; In ram.asm
+			XREF	ESCSET	
+			XREF	KEYDOWN		; In ram.asm
+			XREF	KEYASCII 	; In ram.asm
+			XREF	KEYCOUNT	; In ram.asm
 
 ; Hook into the MOS VBLANK interrupt
 ;
