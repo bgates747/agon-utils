@@ -373,10 +373,14 @@ debug_print:
     ret
 
 ; ========= EXPERIMENTAL FLOATING POINT FUNCTIONS =========
-    ; include "basic.inc"
+    include "basic/ram.asm"
+    include "basic/eval.asm"
+    INCLUDE	"basic/equs.inc"
+    INCLUDE "basic/macros.inc"
     include "basic/fpp.asm"
-
-
+    include "basic/snippets.asm"
+; -------------------- from basic/fpp.asm --------------------
+;
 ;Function STR - convert numeric value to ASCII string.
 ;   Inputs: HLH'L'C = integer or floating-point number
 ;           DE = address at which to store string
@@ -394,4 +398,19 @@ debug_print:
 ;            A = delimiter.
 ;            B, C & IX updated
 ;  Destroys: A,B,C,D,E,H,L,B',C',D',E',H',L',IX,F
+;
+
+; -------------------- from basic/eval.asm --------------------
+;
+;Function STR - convert numeric value to ASCII string.
+;   Inputs: HLH'L'C = integer or floating-point number.
+;  Outputs: String in string accumulator.
+;           E = length, D = ACCS/256
+;           A = 80H (type=string)
+
+
+;HEXSTR - convert numeric value to HEX string.
+;   Inputs: HLH'L'C = integer or floating-point number
+;  Outputs: String in string accumulator.
+;           E = string length.  D = ACCS/256
 ;

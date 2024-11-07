@@ -60,7 +60,7 @@ EXIT_:			POP     IY              ;Restore IY
 ;Error exit:
 ;
 BAD:			LD      A,BADOP         ;"Bad operation code"
-ERROR_:			LD      SP,IY           ;Restore SP from IY
+ERROR_FP:			LD      SP,IY           ;Restore SP from IY
         		OR      A               ;Set NZ
         		SCF                     ;Set C
         		JR      EXIT_
@@ -72,13 +72,13 @@ OP:			CP      RTABLE-DTABLE/3 ; ez80asm doesn't do nested expressions
         		JR      NC,BAD
         		; CP      (FTABLE-DTABLE)/3
         		CP      FTABLE-DTABLE/3 ; ditto
-        		JR      NC,DISPAT
+        		JR      NC,DISPATCH
         		EX      AF,AF'
         		LD      A,B
         		OR      C               ;Both integer?
         		CALL    NZ,FLOATA       ;No, so float both
         		EX      AF,AF'
-DISPAT:			PUSH    HL
+DISPATCH:			PUSH    HL
         		LD      HL,DTABLE
         		PUSH    BC
 			LD	BC, 3		; C = 3
@@ -136,15 +136,15 @@ FTABLE:			DW24  ABSV            ;ABS
         		DW24  SQR             ;SQR
         		DW24  TAN             ;TAN
 ;
-		        DW24  ZERO            ;ZERO
+		        DW24  ZERO_FP            ;ZERO
         		DW24  FONE            ;FONE
         		DW24  TRUE            ;TRUE
         		DW24  PI              ;PI
 ;
 		        DW24  VAL             ;VAL
-        		DW24  STR             ;STR$
+        		DW24  STRING             ;STRING$
 ;
-        		DW24  SFIX            ;FIX
+        		DW24  SFIX_FP            ;FIX
         		DW24  SFLOAT          ;FLOAT
 ;
 		        DW24  FTEST           ;TEST
@@ -154,7 +154,7 @@ RTABLE:			DW24  FAND            ;AND (FLOATING-POINT)
         		DW24  FBDIV           ;DIV
         		DW24  FEOR            ;EOR
         		DW24  FMOD            ;MOD
-        		DW24  FOR             ;OR
+        		DW24  FOR_FPP             ;OR
         		DW24  FLE             ;<= 
         		DW24  FNE             ;<>
         		DW24  FGE             ;>=
@@ -215,10 +215,10 @@ IEOR:			LD      A,H
         		EXX
         		RET
 ;
-;FOR - Floating-point OR.
+;FOR_FPP - Floating-point OR.
 ;IOR - Integer OR.
 ;
-FOR:			CALL    FIX2
+FOR_FPP:			CALL    FIX2
 IOR:			LD      A,H
         		OR      D
         		LD      H,A
@@ -245,7 +245,7 @@ IMOD:			LD      A,H
         		EX      AF,AF'
         		BIT     7,H
         		CALL    NZ,NEGATE       ;MAKE ARGUMENTS +VE
-        		CALL    SWAP
+        		CALL    SWAP_FP
         		BIT     7,H
         		CALL    NZ,NEGATE
         		LD      B,H
@@ -268,7 +268,7 @@ IMOD:			LD      A,H
 FBDIV:			CALL    FIX2
 IBDIV:			CALL    IMOD
         		OR      A
-        		CALL    SWAP
+        		CALL    SWAP_FP
         		LD      C,0
         		RET     P
         		JP      NEGATE
@@ -304,7 +304,7 @@ FADD:			DEC     B
         		RET     Z               ;ARG 2 ZERO
         		DEC     C
         		INC     C
-        		JP      Z,SWAP          ;ARG 1 ZERO
+        		JP      Z,SWAP_FP          ;ARG 1 ZERO
         		EXX
         		LD      BC,0            ;INITIALISE
         		EXX
@@ -313,7 +313,7 @@ FADD:			DEC     B
         		PUSH    AF
         		LD      A,B
         		CP      C               ;COMPARE EXPONENTS
-        		CALL    C,SWAP          ;MAKE DED'E'B LARGEST
+        		CALL    C,SWAP_FP          ;MAKE DED'E'B LARGEST
         		LD      A,B
         		SET     7,H             ;IMPLIED 1
         		CALL    NZ,FIX          ;ALIGN
@@ -343,7 +343,7 @@ FADD4:			EXX
         		RES     7,H
         		DEC     C
         		INC     C
-        		JP      Z,ZERO
+        		JP      Z,ZERO_FP
         		OR      A               ;RESULT SIGNQ
         		RET     P               ;POSITIVE
         		SET     7,H             ;NEGATIVE
@@ -356,7 +356,7 @@ IDIV:			CALL    FLOAT2
 FDIV:			DEC     B               ;TEST FOR ZERO
         		INC     B
         		LD      A,DIVBY0
-        		JP      Z,ERROR_         ;"Division by zero"
+        		JP      Z,ERROR_FP         ;"Division by zero"
         		DEC     C               ;TEST FOR ZERO
         		INC     C
         		RET     Z
@@ -404,7 +404,7 @@ IMUL:			LD      A,H
         		EX      AF,AF'          ;SAVE RESULT SIGN
         		BIT     7,H
         		CALL    NZ,NEGATE
-        		CALL    SWAP
+        		CALL    SWAP_FP
         		BIT     7,H
         		CALL    NZ,NEGATE
         		LD      B,H
@@ -418,11 +418,11 @@ IMUL:			LD      A,H
         		CALL    MULA            ;MULTIPLY
         		EXX
         		LD      C,191           ;PRESET EXPONENT
-        		CALL    TEST            ;TEST RANGE
+        		CALL    TEST_FP            ;TEST RANGE
         		JR      NZ,IMUL1        ;TOO BIG
         		BIT     7,D
         		JR      NZ,IMUL1
-        		CALL    SWAP
+        		CALL    SWAP_FP
         		LD      C,D             ;INTEGER MARKER
         		EX      AF,AF'
         		RET     P
@@ -449,7 +449,7 @@ IMUL1:			DEC     C
 ;
 FMUL:			DEC     B               ;TEST FOR ZERO
         		INC     B
-        		JP      Z,ZERO
+        		JP      Z,ZERO_FP
         		DEC     C               ;TEST FOR ZERO
         		INC     C
         		RET     Z
@@ -483,12 +483,12 @@ FMUL:			DEC     B               ;TEST FOR ZERO
         		LD      A,C             ;COMPUTE NEW EXPONENT
         		ADC     A,B
 CHKOVF:			JR      C,CHKO1
-        		JP      P,ZERO          ;UNDERFLOW
+        		JP      P,ZERO_FP          ;UNDERFLOW
         		JR      CHKO2
 CHKO1:			JP      M,OFLOW         ;OVERFLOW
 CHKO2:			ADD     A,80H
         		LD      C,A
-        		JP      Z,ZERO
+        		JP      Z,ZERO_FP
         		EX      AF,AF'          ;RESTORE SIGN BIT
         		RES     7,H
         		RET     P
@@ -497,7 +497,7 @@ CHKO2:			ADD     A,80H
 ;
 ;IPOW - Integer involution.
 ;
-IPOW:			CALL    SWAP
+IPOW:			CALL    SWAP_FP
         		BIT     7,H
         		PUSH    AF              ;SAVE SIGN
         		CALL    NZ,NEGATE
@@ -578,7 +578,7 @@ FPOW0:			POP     AF
 ;
 FPOW:			BIT     7,D
         		PUSH    AF
-        		CALL    SWAP
+        		CALL    SWAP_FP
         		CALL    PUSH5
         		DEC     C
         		INC     C
@@ -590,7 +590,7 @@ FPOW:			BIT     7,D
         		CALL    FIX
         		EX      AF,AF'
         		JP      P,FPOW0
-FPOW1:			CALL    SWAP
+FPOW1:			CALL    SWAP_FP
         		CALL    LN0
         		CALL    POP5
         		POP     AF
@@ -664,7 +664,7 @@ ABSV:			BIT     7,H
 ;NOT - Complement integer.
 ;Result is integer numeric.
 ;
-NOTK:			CALL    SFIX
+NOTK:			CALL    SFIX_FP
         		LD      A,H
         		CPL
         		LD      H,A
@@ -722,12 +722,12 @@ FPI180:			CALL    SFLOAT
 ;SGN - Return -1, 0 or +1
 ;Result is integer numeric.
 ;
-SGN:			CALL    TEST
+SGN:			CALL    TEST_FP
         		OR      C
         		RET     Z               ;ZERO
         		BIT     7,H
         		JP      NZ,TRUE         ;-1
-        		CALL    ZERO
+        		CALL    ZERO_FP
         		JP      ADD1            ;1
 ;
 ;VAL - Return numeric value of string.
@@ -775,7 +775,7 @@ INT_:			DEC     C
 SQR:			CALL    SFLOAT
 SQR0:			BIT     7,H
         		LD      A,NGROOT
-        		JP      NZ,ERROR_        ;"-ve root"
+        		JP      NZ,ERROR_FP        ;"-ve root"
         		DEC     C
         		INC     C
         		RET     Z               ;ZERO
@@ -831,7 +831,7 @@ TAN:			CALL    SFLOAT
         		CALL    COS0
         		CALL    POP5
         		CALL    PUSH5
-        		CALL    SWAP
+        		CALL    SWAP_FP
         		CALL    SIN0
         		CALL    POP5
         		CALL    FDIV
@@ -957,9 +957,9 @@ EXP0:			CALL    LN2             ;LN(2)
         		BIT     7,E
         		JR      Z,EXP1
         		RLA
-        		JP      C,ZERO
+        		JP      C,ZERO_FP
         		LD      A,EXPRNG
-        		JP      ERROR_           ;"Exp range"
+        		JP      ERROR_FP           ;"Exp range"
 ;
 EXP1:			AND     80H
         		OR      E
@@ -1002,17 +1002,17 @@ EXP1:			AND     80H
 EXP4:			ADD     A,80H
         		ADD     A,C
         		JR      C,EXP2
-        		JP      P,ZERO          ;UNDERFLOW
+        		JP      P,ZERO_FP          ;UNDERFLOW
         		JR      EXP3
 EXP2:			JP      M,OFLOW         ;OVERFLOW
 EXP3:			ADD     A,80H
-        		JP      Z,ZERO
+        		JP      Z,ZERO_FP
         		LD      C,A
         		XOR     A               ;NUMERIC MARKER
         		RET
 ;
 RECIP:			CALL    DONE
-RDIV:			CALL    SWAP
+RDIV:			CALL    SWAP_FP
         		JP      FDIV            ;RECIPROCAL
 ;
 LN2:			LD      DE,3172H        ;LN(2)
@@ -1028,10 +1028,10 @@ LN2:			LD      DE,3172H        ;LN(2)
 LN:			CALL    SFLOAT
 LN0:			LD      A,LOGRNG
         		BIT     7,H
-        		JP      NZ,ERROR_        ;"Log range"
+        		JP      NZ,ERROR_FP        ;"Log range"
         		INC     C
         		DEC     C
-        		JP      Z,ERROR_
+        		JP      Z,ERROR_FP
         		LD      DE,3504H        ;SQR(2)
         		EXX
         		LD      DE,0F333H       ;1.41421356237
@@ -1068,7 +1068,7 @@ LN4:			PUSH    AF              ;SAVE EXPONENT
         		POP     AF              ;EXPONENT
         		CALL    PUSH5
         		EX      AF,AF'
-        		CALL    ZERO
+        		CALL    ZERO_FP
         		EX      AF,AF'
         		SUB     80H
         		JR      Z,LN3
@@ -1202,7 +1202,7 @@ ACS:			CALL    ASN
         		PUSH    AF
         		JR      ACS1
 ;
-;Function STR - convert numeric value to ASCII string.
+;Function STRING - convert numeric value to ASCII string.
 ;   Inputs: HLH'L'C = integer or floating-point number
 ;           DE = address at which to store string
 ;           IX = address of @% format control
@@ -1210,7 +1210,7 @@ ACS:			CALL    ASN
 ;
 ;First normalise for decimal output:
 ;
-STR:			CALL    SFLOAT
+STRING:			CALL    SFLOAT
         		LD      B,0             ;DEFAULT PT. POSITION
         		BIT     7,H             ;NEGATIVE?
         		JR      Z,STR10
@@ -1220,7 +1220,7 @@ STR:			CALL    SFLOAT
         		INC     DE
 STR10:			XOR     A               ;CLEAR A
         		CP      C
-        		JR      Z,STR2          ;ZERO
+        		JR      Z,STRING2          ;ZERO
         		PUSH    DE              ;SAVE TEXT POINTER
         		LD      A,B
 STR11:			PUSH    AF              ;SAVE DECIMAL COUNTER
@@ -1270,7 +1270,7 @@ STR15:			LD      A,9
 ;            B = decimal place adjustment
 ;            C = binary place adjustment (29-33)
 ;
-STR2:			INC     C
+STRING2:			INC     C
         		EX      AF,AF'          ;SAVE A
         		LD      A,B
         		BIT     1,(IX+2)
@@ -1324,7 +1324,7 @@ STR26:			INC     A               ;SET +VE
         		DEC     A
         		PUSH    AF              ;PUT ON STACK + CARRY
 STR27:			INC     B
-        		CALL    TEST            ;IS HLH'L' ZERO?
+        		CALL    TEST_FP            ;IS HLH'L' ZERO?
         		LD      C,32
         		LD      A,0
         		JR      NZ,STR22
@@ -1452,7 +1452,7 @@ DLOAD5_SPL:		LD      B,(IX+6)
 ;           IX updated (points to delimiter)
 ;           A7 = 0 (numeric marker)
 ;
-CON:			CALL    ZERO            ;INITIALISE TO ZERO
+CON:			CALL    ZERO_FP            ;INITIALISE TO ZERO
         		LD      C,0             ;TRUNCATION COUNTER
         		CALL    NUMBER          ;GET INTEGER PART
         		CP      '.'
@@ -1589,7 +1589,7 @@ FIX1:			CALL    DIV2
         		JP      NC,FIX1
         		JP      OFLOW
 ;
-;SFIX - Convert to integer if necessary.
+;SFIX_FP - Convert to integer if necessary.
 ;    Input: Variable-type number in HLH'L'C
 ;   Output: Integer in HLH'L', C=0
 ; Destroys: A,C,H,L,A',B',C',H',L',F,F'
@@ -1597,10 +1597,10 @@ FIX1:			CALL    DIV2
 ;NEGATE - Negate HLH'L'
 ;    Destroys: H,L,H',L',F
 ;
-FIX2:			CALL    SWAP
-        		CALL    SFIX
-        		CALL    SWAP
-SFIX:			DEC     C
+FIX2:			CALL    SWAP_FP
+        		CALL    SFIX_FP
+        		CALL    SWAP_FP
+SFIX_FP:			DEC     C
         		INC     C
         		RET     Z               ;INTEGER/ZERO
         		BIT     7,H             ;SIGN
@@ -1654,7 +1654,7 @@ NEG_:			EXX
 SCALE:			LD      A,150
         		CP      C
         		LD      A,ACLOST
-        		JP      C,ERROR_         ;"Accuracy lost"
+        		JP      C,ERROR_FP         ;"Accuracy lost"
         		CALL    PIBY4
         		EXX
         		LD      BC,2169H        ;3.141592653589793238
@@ -1749,13 +1749,13 @@ FLOATA:			EX      AF,AF'
         		; ADD     A,(RTABLE-DTABLE)/3
         		ADD     A,RTABLE-DTABLE/3 ; ez80asm doesn't do nested expressions
         		EX      AF,AF'
-FLOAT2:			CALL    SWAP
+FLOAT2:			CALL    SWAP_FP
         		CALL    SFLOAT
-        		CALL    SWAP
+        		CALL    SWAP_FP
 SFLOAT:			DEC     C
         		INC     C
         		RET     NZ              ;ALREADY FLOATING-POINT
-        		CALL    TEST
+        		CALL    TEST_FP
         		RET     Z               ;ZERO
         		LD      A,H
         		OR      A
@@ -1793,13 +1793,13 @@ ODD:			OR      A               ;CLEAR CARRY
         		EXX
         		RET
 ;
-;SWAP - Swap arguments.
+;SWAP_FP - Swap arguments.
 ;    Exchanges DE,HL D'E',H'L' and B,C
 ;    Destroys: A,B,C,D,E,H,L,D',E',H',L'
 ;SWAP1 - Swap DEHL with D'E'H'L'
 ;    Destroys: D,E,H,L,D',E',H',L'
 ;
-SWAP:			LD      A,C
+SWAP_FP:			LD      A,C
         		LD      C,B
         		LD      B,A
 SWAP1:			EX      DE,HL
@@ -1823,23 +1823,23 @@ DIV2:			CALL    D2
 INCC:			INC     C
         		RET     NZ
 OFLOW:			LD      A,TOOBIG
-        		JP      ERROR_           ;"Too big"
+        		JP      ERROR_FP           ;"Too big"
 ;
 ; FTEST - Test for zero & sign
 ;     Output: A=0 if zero, A=&40 if +ve, A=&C0 if -ve
 ;
-FTEST:			CALL    TEST
+FTEST:			CALL    TEST_FP
         		RET     Z
         		LD      A,H
         		AND     10000000B
         		OR      01000000B
         		RET
 ;
-; TEST - Test HLH'L' for zero.
+; TEST_FP - Test HLH'L' for zero.
 ;     Output: Z-flag set & A=0 if HLH'L'=0
 ;     Destroys: A,F
 ;
-TEST:			LD      A,H
+TEST_FP:			LD      A,H
         		OR      L
         		EXX
         		OR      H
@@ -1869,11 +1869,11 @@ FCOMP1:			CALL    FLOAT2          ;Float both
 ; Result pre-set to FALSE
 ; ICP1, FCP1 destroy A,F
 ;
-; ZERO - Return zero.
+; ZERO_FP - Return zero.
 ;  Destroys: A,C,H,L,H',L'
 ;
 ICP:			CALL    ICP1
-ZERO:			LD      A,0
+ZERO_FP:			LD      A,0
         		EXX
         		LD      H,A
 	       		LD      L,A
@@ -1884,7 +1884,7 @@ ZERO:			LD      A,0
         		RET
 ;
 FCP:			CALL    FCP1
-        		JR      ZERO            ;PRESET FALSE
+        		JR      ZERO_FP            ;PRESET FALSE
 ;
 FCP0:			LD      A,C
         		CP      B               ;COMPARE EXPONENTS
@@ -2031,7 +2031,7 @@ RATIO:			CALL    PUSH5           ;SAVE X
         		CALL    FADD
         		CALL    POP5            ;RESTORE X
         		CALL    PUSH5           ;SAVE X+1
-        		CALL    SWAP
+        		CALL    SWAP_FP
         		CALL    DONE
         		CALL    FSUB
         		CALL    POP5            ;RESTORE X+1
@@ -2078,7 +2078,7 @@ POWR10:			INC     A
         		PUSH    HL
         		EXX
         		CALL    DONE
-        		CALL    SWAP
+        		CALL    SWAP_FP
         		XOR     A
 POWR11:			EX      AF,AF'
         		DEC     A
@@ -2100,7 +2100,7 @@ POWR12:			EX      AF,AF'
         		INC     C
         		JP      M,POWR11
         		JP      OFLOW
-POWR14:			CALL    SWAP
+POWR14:			CALL    SWAP_FP
         		RES     7,D
         		EXX
         		POP     HL

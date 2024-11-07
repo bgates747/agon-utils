@@ -18,21 +18,6 @@
 
 			.ASSUME	ADL = 1
 
-			; include "mos_api.inc"
-			; include "macros.inc"
-			; include "ram.asm"
-			; INCLUDE "equs.inc"
-			; include "init.asm"
-			; include "agon_graphics.asm"
-			; include "agon_sound.asm"
-			; include "eval.asm"
-			; include "exec.asm"
-			; include "fpp.asm"
-			; include "gpio.asm"
-			; include "interrupts.asm"
-			; include "patch.asm"
-			; include "sorry.asm"
-
 			; SEGMENT CODE
 			
 			XDEF	_main
