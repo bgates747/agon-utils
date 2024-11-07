@@ -13,12 +13,16 @@ def extract_labels(files_dict):
     labels = {}
     for filename, lines in files_dict.items():
         for line_num, line in enumerate(lines, start=1):
-            # Match labels ending with a colon (e.g., LABEL:)
+            # Match labels ending with a colon (e.g., LABEL:), but exclude EQU definitions
+            if re.match(r'^\w+:\s*EQU\b', line, re.IGNORECASE):
+                continue  # Skip if the line is an EQU definition
+            
             label_match = re.match(r'^(\w+):', line)
             if label_match:
                 label = label_match.group(1)
                 labels[label] = {'file': filename, 'line': line_num}
     return labels
+
 
 def extract_equ_definitions(files_dict):
     """Extracts EQU definitions and returns a dictionary of EQU labels.
