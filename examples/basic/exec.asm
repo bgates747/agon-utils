@@ -129,17 +129,17 @@
 ;
 TAND:			EQU     80H
 TOR:			EQU     84H
-TERROR:			EQU     85H
-LINE_:			EQU     86H
+TERROR_exec:			EQU     85H
+LINE_exec_:			EQU     86H
 OFF_:			EQU     87H
 STEP:			EQU     88H
 SPC:			EQU     89H
 TAB:			EQU     8AH
-ELSE_:			EQU     8BH
+ELSE_exec_:			EQU     8BH
 THEN:			EQU     8CH
 LINO:			EQU     8DH
 TO:			EQU     B8H
-TCMD:			EQU     C6H
+TCMD_exec:			EQU     C6H
 TCALL:			EQU     D6H
 DATA_:			EQU     DCH
 DEF_:			EQU     DDH
@@ -164,10 +164,10 @@ CMDTAB:			DW24  AUTO			; C6H
 			DW24  SAVE			; CDH
 			DW24  PUT			; CEH
 			DW24  PTR			; CFH
-			DW24  PAGEV			; D0H
-			DW24  TIMEV			; D1H
-			DW24  LOMEMV			; D2H
-			DW24  HIMEMV			; D3H
+			DW24  PAGEV_exec			; D0H
+			DW24  TIMEV_exec			; D1H
+			DW24  LOMEMV_exec			; D2H
+			DW24  HIMEMV_exec			; D3H
 			DW24  SOUND			; D4H
 			DW24  BPUT			; D5H
 			DW24  CALL_			; D6H
@@ -183,7 +183,7 @@ CMDTAB:			DW24  AUTO			; C6H
 			DW24  END_			; E0H
 			DW24  ENDPRO			; E1H
 			DW24  ENVEL			; E2H
-			DW24  FOR			; E3H
+			DW24  FOR_exec			; E3H
 			DW24  GOSUB			; E4H
 			DW24  GOTO			; E5H
 			DW24  GCOL			; E6H
@@ -229,8 +229,8 @@ CHAIN0:			LD      SP,(HIMEM)		; Reset SP
 ;
 RUN0:			LD      SP,(HIMEM)      	; Prepare for RUN
 			LD      IX,RANDOM		; Pointer to the RANDOM sysvar
-$$:			LD      A, R			; Use the R register to seed the random number generator
-			JR      Z, $B			; Loop unti we get a non-zero value in A
+@@:			LD      A, R			; Use the R register to seed the random number generator
+			JR      Z, @B			; Loop unti we get a non-zero value in A
 			RLCA				; Rotate it
 			RLCA
 			LD      (IX+3),A		; And store
@@ -241,7 +241,7 @@ $$:			LD      A, R			; Use the R register to seed the random number generator
 			LD      (ERRTRP),HL
 			LD      HL,(PAGE_)		; Load HL with the start of program memory (PAGE)
 			LD      A,DATA_			; The DATA token value
-			CALL    SEARCH          	; Search for the first DATA token in the tokenised listing
+			CALL    SEARCH_exec          	; Search for the first DATA token in the tokenised listing
 			LD      (DATPTR),HL     	; Set data pointer
 			LD      IY,(PAGE_)		; Load IY with the start of program memory
 ;			
@@ -254,7 +254,7 @@ XEQ1:			CALL    NXT
 			JR      Z,XEQ1
 			CP      CR
 			JR      Z,XEQ0          	; New program line
-			SUB     TCMD
+			SUB     TCMD_exec
 			JP      C,LET0          	; Implied "LET"
 			
 			LD	BC, 3
@@ -297,7 +297,7 @@ NEWLIN:			LD      A,(IY+0)        ;A=LINE LENGTH
 			OR      L
 			RET     Z
 			LD	DE, 0		;Clear DE
-			LD      D,(IY-1)        ;DE = LINE NUMBER
+			LD      D,(IY-1)        ;DE = LINE NUMBER_exec
 			LD      E,(IY-2)
 			SBC     HL,DE
 			RET     C
@@ -323,7 +323,7 @@ CLI:			CALL    EXPRS
 
 ; REM, *
 ;
-EXT:			PUSH    IY
+EXT_exec:			PUSH    IY
 			POP     HL
 			CALL    OSCLI
 REM:			PUSH    IY
@@ -337,13 +337,16 @@ REM:			PUSH    IY
 
 ; [LET] var = expr
 ;
-LET0:			CP      ELSE_-TCMD
+LET0:			CP      ELSE_exec_-TCMD_exec
 			JR      Z,REM
-			CP      ('*'-TCMD) & 0FFH
-			JR      Z,EXT
-			CP      ('='-TCMD) & 0FFH
+			; CP      ('*'-TCMD_exec) & 0FFH ; ez80asm doesn't do () in expressions
+			CP      '*'-TCMD_exec & 0FFH
+			JR      Z,EXT_exec
+			; CP      ('='-TCMD_exec) & 0FFH ; ditto
+			CP      '='-TCMD_exec & 0FFH
 			JR      Z,FNEND
-			CP      ('['-TCMD) & 0FFH
+			; CP      ('['-TCMD_exec) & 0FFH ; ibid
+			CP      '['-TCMD_exec & 0FFH
 			JR      Z,ASM
 			DEC     IY
 LET:			CALL    ASSIGN			; Assign the variable
@@ -377,9 +380,9 @@ VAR_:			CALL    GETVAR
 			RET     Z
 			JP      NC,PUTVAR
 SYNTAX:			LD      A,16            ;"Syntax error"
-			JR	ERROR0
+			JR	ERROR0_exec
 ESCAPE:			LD      A,17            ;"Escape"
-ERROR0:			JP      ERROR_
+ERROR0_exec:			JP      ERROR_
 
 ; =
 ;
@@ -397,7 +400,7 @@ FNEND5:			POP     BC
 			OR      A
 			SBC     HL,BC
 			LD      A,7
-			JR      NZ,ERROR0       ;"No FN"
+			JR      NZ,ERROR0_exec       ;"No FN"
 			POP     IY
 			LD      (ERRLIN),IY     ;IN CASE OF ERROR
 			EX      DE,HL
@@ -510,9 +513,9 @@ DIM5:			CALL    NXT
 ; DIM errors
 ;
 BADDIM:			LD      A,10            	; Throw a "Bad DIM" error
-			JR	ERROR1			
+			JR	ERROR1_exec			
 NOROOM:			LD      A,11            	; Throw a "DIM space" error
-ERROR1:			JP      ERROR_
+ERROR1_exec:			JP      ERROR_
 ;
 ; At this point we're reserving a block of memory, i.e.
 ; DIM var expr[,var expr...]
@@ -636,7 +639,7 @@ PRINTC:			CALL    TERMQ
 			PUSH    AF
 			CALL    Z,STR           ;DECIMAL
 			POP     AF
-			CALL    NZ,HEXSTR       ;HEX
+			CALL    NZ,HEXSTR       ;HEX_exec
 			POP     BC
 			PUSH    BC
 			LD      A,C
@@ -669,7 +672,7 @@ ONERR:			INC     IY              ;SKIP "ERROR"
 ; ON expr GOSUB line[,line...] [ELSE line]
 ; ON expr PROCone [,PROCtwo..] [ELSE PROCotherwise]
 ;
-ON_:			CP      TERROR
+ON_:			CP      TERROR_exec
 			JR      Z,ONERR         ;"ON ERROR"
 			CALL    EXPRI
 			LD      A,(IY)
@@ -707,7 +710,7 @@ ON3:			LD      A,E
 			CP      TPROC
 			JR      Z,ONPROC
 			PUSH    DE
-			CALL    ITEMI           ;LINE NUMBER
+			CALL    ITEMI           ;LINE NUMBER_exec
 			POP     DE
 			LD      A,D
 			CP      TGOTO
@@ -717,7 +720,7 @@ ON3:			LD      A,E
 ;
 ON4:			LD      A,(IY)
 			INC     IY
-			CP      ELSE_
+			CP      ELSE_exec_
 			JP      Z,IF1           ;ELSE CLAUSE
 			CP      CR
 			JR      NZ,ON4
@@ -799,7 +802,7 @@ UNTIL:			POP     BC			; Fetch the marker
 			POP     IY			; This sets the execution address back to the REPEAT instruction
 XEQ2:			JP      XEQ			; Continue execution
 
-; FOR var = expr TO expr [STEP expr]
+; FOR_exec var = expr TO expr [STEP expr]
 ; This pushes the following data onto the execution stack
 ; - 3 bytes: The limit value
 ; - 3 bytes: The step value
@@ -808,10 +811,10 @@ XEQ2:			JP      XEQ			; Continue execution
 ; - 3 bytes: Marker (the address of FORCHK)
 ;
 FORVAR:			LD      A,34
-			JR      ERROR2          	; Throw "FOR variable" error
+			JR      ERROR2          	; Throw "FOR_exec variable" error
 ;
-FOR:			CALL    ASSIGN			; Assign the START expression value to a variable
-			JR      NZ,FORVAR       	; If the variable is a string, or invalid, then throw a "FOR variable" error
+FOR_exec:			CALL    ASSIGN			; Assign the START expression value to a variable
+			JR      NZ,FORVAR       	; If the variable is a string, or invalid, then throw a "FOR_exec variable" error
 			PUSH    AF              	; Save the variable type
 			LD      A,(IY)			; Check the next token
 			CP      TO			; Compare with the token value for "TO"
@@ -868,7 +871,7 @@ NEXT:			POP     BC              	; Pop the marker off the execution stack
 			OR      A
 			SBC     HL,BC
 			LD      A,32
-			JP      NZ,ERROR3      		; If this does not match, throw a "No FOR" error
+			JP      NZ,ERROR3      		; If this does not match, throw a "No FOR_exec" error
 			CALL    TERMQ			; Check for terminator (a NEXT without a variable)
 			POP     HL			; Pop the address of the loop variable off the execution stack
 			PUSH    HL			; Push it back onto the execution stack
@@ -934,7 +937,7 @@ NEXT1:			LD      HL,27			; TODO: What does this do?
 			JR      Z,NEXT0
 ;			
 			LD      A,33
-ERROR3:			JP      ERROR_           	; Throw the error "Can't match FOR"
+ERROR3:			JP      ERROR_           	; Throw the error "Can't match FOR_exec"
 
 ; FNname
 ; N.B. ENTERED WITH A <> TON
@@ -969,7 +972,7 @@ PROC1:			CALL    CHECK			; Check there is space for this
 			LD      HL,(PAGE_)		; HL: Start of program memory
 ;
 PROC2:			LD      A,DEF_			;  A: The token to search for
-			CALL    SEARCH          	; Look for "DEF" as the first token in a program line
+			CALL    SEARCH_exec          	; Look for "DEF" as the first token in a program line
 			JR      C,PROC3			; Not found, so jump to PROC3
 			PUSH    HL			; HL: Points to the DEF token in the DEFPROC
 			POP     IY			; IY = HL
@@ -1121,7 +1124,7 @@ UNSTK1:			LD      HL,0			; Unstack a string
 
 ; INPUT #channel,var,var...
 ;
-INPUTN:			CALL    CHNL            ;E = CHANNEL NUMBER
+INPUTN:			CALL    CHNL            ;E = CHANNEL NUMBER_exec
 INPN1:			CALL    NXT
 			CP      ','
 			JP      NZ,XEQ
@@ -1175,7 +1178,7 @@ INPN4:			POP     IX
 INPUT:			CP      '#'
 			JR      Z,INPUTN
 			LD      C,0             ;FLAG PROMPT
-			CP      LINE_
+			CP      LINE_exec_
 			JR      NZ,INPUT0
 			INC     IY              ;SKIP "LINE"
 			LD      C,80H
@@ -1297,7 +1300,7 @@ READ2:			POP     HL
 			JR      READ0
 ;
 GETDAT:			LD      A,DATA_
-			CALL    SEARCH
+			CALL    SEARCH_exec
 			INC     HL
 			RET     NC
 			LD      A,42
@@ -1322,7 +1325,7 @@ IFNOT:			LD      A,(IY)
 			CP      CR
 			INC     IY
 			JP      Z,XEQ0          ;END OF LINE
-			CP      ELSE_
+			CP      ELSE_exec_
 			JR      NZ,IFNOT
 			JR      IF1
 
@@ -1363,21 +1366,21 @@ RESTOR:			LD      HL,(PAGE_)
 			JR      Z,RESTR1
 			CALL    ITEMI
 			EXX
-			CALL    FINDL           ;SEARCH FOR LINE
+			CALL    FINDL           ;SEARCH_exec FOR_exec LINE
 			LD      A,41
 			JP      NZ,ERROR4       ;"No such line"
 RESTR1:			LD      A,DATA_
-			CALL    SEARCH
+			CALL    SEARCH_exec
 			LD      (DATPTR),HL
 			JP      XEQ
 
-; PTR#channel=expr
+; PTR_exec#channel=expr
 ; PAGE=expr
 ; TIME=expr
 ; LOMEM=expr
 ; HIMEM=expr
 ;
-PTR:			CALL    CHANEL
+PTR_exec:			CALL    CHANEL
 			CALL    EQUALS
 			LD      A,E
 			PUSH    AF
@@ -1389,15 +1392,15 @@ PTR:			CALL    CHANEL
 			CALL    PUTPTR
 			JP      XEQ
 ;
-PAGEV:			CALL    EQUALS
+PAGEV_exec:			CALL    EQUALS
 			CALL    EXPRI
 			EXX
 			LD      L,0
 			LD      (PAGE_),HL
 			JP      XEQ
 ;
-TIMEV:			CP      '$'
-			JR      Z,TIMEVS
+TIMEV_exec:			CP      '$'
+			JR      Z,TIMEVS_exec
 			CALL    EQUALS
 			CALL    EXPRI
 			PUSH    HL
@@ -1406,13 +1409,13 @@ TIMEV:			CP      '$'
 			CALL    PUTIME
 			JP      XEQ
 ;
-TIMEVS:			INC     IY              ;SKIP '$'
+TIMEVS_exec:			INC     IY              ;SKIP '$'
 			CALL    EQUALS
 			CALL    EXPRS
 			CALL    PUTIMS
 			JP      XEQ
 ;
-LOMEMV:			CALL    EQUALS
+LOMEMV_exec:			CALL    EQUALS
 			CALL    EXPRI
 			CALL    CLEAR
 			EXX
@@ -1420,7 +1423,7 @@ LOMEMV:			CALL    EQUALS
 			LD      (FREE),HL
 			JP      XEQ
 ;
-HIMEMV:			CALL    EQUALS			; Check for '=' and throw an error if not found
+HIMEMV_exec:			CALL    EQUALS			; Check for '=' and throw an error if not found
 			CALL    EXPRI			; Load the expression into registers
 			LD	A,L			;  A: The MSB of the 24-bit value
 			EXX				; HL: The LSW of the 24-bit value
@@ -1729,7 +1732,9 @@ STORES:			RRA				; Rotate right to shift bit 0 into carry
 			POP     HL
 			SCF
 			JR      Z,STORS1
-			LD	HL, BC			; HL=BC
+			; LD	HL, BC			; HL=BC ; how did this even assemble in the first place?!
+			push bc
+			pop hl
 ; 
 ; At this point carry flag will be clear if the string can be replaced in memory, otherwise will be set
 ; - H': The maximum (original) string length
@@ -1954,7 +1959,7 @@ TERM:			CP      ';'             	; Assembler terminator
 			JR      TERM0
 ;
 TERMQ:			CALL    NXT
-			CP      ELSE_
+			CP      ELSE_exec_
 			RET     NC
 TERM0:			CP      ':'             	; Assembler seperator
 			RET     NC
@@ -2084,12 +2089,12 @@ XTRAC1:			LD      A,(IY)
 ; Corrupts:
 ; - BC
 ;
-SEARCH:			LD      BC,0			; Clear BC
+SEARCH_exec:			LD      BC,0			; Clear BC
 ;
-SRCH1:			LD      C,(HL)			;  C: Fetch the line length
+SRCH1_exec:			LD      C,(HL)			;  C: Fetch the line length
 			INC     C			; Check for 0, i.e. end of program marker
 			DEC     C
-			JR      Z,SRCH2         	; Not found the token, so end
+			JR      Z,SRCH2_exec         	; Not found the token, so end
 			INC     HL			; Skip the line length and line number
 			INC     HL
 			INC     HL
@@ -2099,9 +2104,9 @@ SRCH1:			LD      C,(HL)			;  C: Fetch the line length
 			DEC     C
 			DEC     C
 			ADD     HL,BC
-			JR      SRCH1			; Rinse, lather and repeat
+			JR      SRCH1_exec			; Rinse, lather and repeat
 ; 			
-SRCH2:			DEC     HL              	; Token not found, so back up to the CR at the end of the last line
+SRCH2_exec:			DEC     HL              	; Token not found, so back up to the CR at the end of the last line
 			SCF				; And set the carry flag
 			RET
 
@@ -2118,7 +2123,9 @@ SRCH2:			DEC     HL              	; Token not found, so back up to the CR at the
 ; Corrupts:
 ; - HL
 X4OR5:			CP      4			; Check A = 4 (Z flag is used later)
-			LD	HL,DE
+			; LD	HL,DE  ; HOW!?
+			push de
+			pop hl
 			ADD     HL,HL			; Multiply by 2 (note this operation preserves the zero flag)
 			RET     C			; Exit if overflow
 			ADD     HL,HL			; Multiply by 2 again
@@ -2219,9 +2226,9 @@ ASSEM5:			POP     HL              	; Old PC
 			JR      Z,ASSEM
 			LD	(R0),HL			; Store HL in R0 so we can access the MSB
 			LD	A,(R0+2)		; Print out the address
-			CALL	HEX
+			CALL	HEX_exec
 			LD      A,H			
-			CALL    HEX
+			CALL    HEX_exec
 			LD      A,L
 			CALL    HEXSP
 			XOR     A
@@ -2251,10 +2258,10 @@ ASSEM4:			LD      A,(BC)
 			CALL    CRLF
 			JP      ASSEM
 ;
-HEXSP:			CALL    HEX
+HEXSP:			CALL    HEX_exec
 			LD      A,' '
 			JR      OUTCH1
-HEX:			PUSH    AF
+HEX_exec:			PUSH    AF
 			RRCA
 			RRCA
 			RRCA
@@ -2360,7 +2367,7 @@ GROUP05_1:		CALL    REGLO			; Handle ADD A,?
 			JR      NC,BIND1		; If it is a register, then write that out
 			XOR     46H			; Handle ADD A,n
 			CALL    BIND
-DB_:			CALL    NUMBER
+DB_:			CALL    NUMBER_exec
 			JP      VAL8
 ;
 GROUP05_HL:		AND     3FH
@@ -2399,12 +2406,12 @@ BYTE0:			LD      A,C
 GROUP08:		SUB	2			; The number of opcodes in GROUP8
 			JR	NC,GROUP09
 			CP	1-2
-			CALL    Z,NUMBER		; Fetch number first if OUT
+			CALL    Z,NUMBER_exec		; Fetch number first if OUT
 			EX      AF,AF'			; Save flags
 			CALL    REG			; Get the register value regardless
 			RET     C			; Return if not a register
 			EX      AF,AF'			; Restore the flags
-			CALL    C,NUMBER		; Fetch number last if IN
+			CALL    C,NUMBER_exec		; Fetch number last if IN
 			LD	A,B			; Get the register number
 			CP	6			; Fail on (HL)
 			SCF
@@ -2457,10 +2464,10 @@ GROUP11:		SUB     2			; The number of opcodes in GROUP11
 			CP      1-2
 			CALL    NZ,COND_
 			LD      A,C
-			JR      NC,$F
+			JR      NC,@F
 			LD      A,18H
-$$:			CALL    BYTE_
-			CALL    NUMBER
+@@:			CALL    BYTE_
+			CALL    NUMBER_exec
 			LD      DE,(PC)
 			INC     DE
 			SCF
@@ -2506,7 +2513,7 @@ GROUP14:		SUB	1			; The number of opcodes in GROUP14
 			JR	NC,GROUP15
 			CALL	EZ80SF_FULL		; Evaluate the suffix
 			RET	C			; Exit if an invalid suffix provided		
-			CALL    NUMBER
+			CALL    NUMBER_exec
 			AND     C
 			OR      H
 			JR      NZ,TOOFAR
@@ -2563,7 +2570,7 @@ LDIN:			EX      AF,AF'
 			CALL    PAIR1
 			CALL    LD16
 			JP      NC,GROUP12_1
-			CALL    NUMBER
+			CALL    NUMBER_exec
 			LD      C,2
 			CALL    PAIR
 			CALL    LD16
@@ -2583,7 +2590,7 @@ GROUP17:		SUB	1			; The number of opcodes in GROUP17
 ;
 			LD	A,64H			; Opcode for TST n
 			CALL	BYTE_			; Write out the opcode
-			CALL	NUMBER			; Get the number
+			CALL	NUMBER_exec			; Get the number
 			JP	VAL8			; And write that out
 ;
 GROUP17_1:		LD	A,B			; Check the register rangs
@@ -2604,7 +2611,7 @@ OPTS:			SUB	2
 			CP	1-2			; Check for ADL opcode
 			JR	Z, ADL_
 ;
-OPT:			CALL    NUMBER			; Fetch the OPT value
+OPT:			CALL    NUMBER_exec			; Fetch the OPT value
 			LD      HL,LISTON		; Address of the LISTON/OPT flag
 			AND	7			; Only interested in the first three bits
 			LD      C,A			; Store the new OPT value in C
@@ -2614,7 +2621,7 @@ OPT:			CALL    NUMBER			; Fetch the OPT value
 			RRD				; And shift the nibble back in
 			RET
 ;
-ADL_:			CALL	NUMBER			; Fetch the ADL value
+ADL_:			CALL	NUMBER_exec			; Fetch the ADL value
 			AND	1			; Only interested if it is 0 or 1
 			RRCA				; Rotate to bit 7
 			LD	C,A			; Store in C
@@ -2637,24 +2644,24 @@ DEFS:			OR	A			; Handle DEFB
 			CALL    EXPRS
 			POP     IX
 			LD      HL,ACCS
-$$:			XOR     A
+@@:			XOR     A
 			CP      E
 			RET     Z
 			LD      A,(HL)
 			INC     HL
 			CALL    BYTE_
 			DEC     E
-			JR      $B
+			JR      @B
 			
 ;
 ;SUBROUTINES:
 ;
 EZ80SF_PART:		LD	A,(IY)			; Check for a dot
 			CP	'.'
-			JR	Z, $F			; If present, then carry on processing the eZ80 suffix
+			JR	Z, @F			; If present, then carry on processing the eZ80 suffix
 			OR	A			; Reset the carry flag (no error)
 			RET				; And return
-$$:			INC	IY			; Skip the dot
+@@:			INC	IY			; Skip the dot
 			PUSH	BC			; Push the operand
 			LD	HL,EZ80SFS_2		; Check the shorter fully qualified table (just LIL and SIS)
 			CALL	FIND			; Look up the operand
@@ -2664,10 +2671,10 @@ $$:			INC	IY			; Skip the dot
 ;			
 EZ80SF_FULL:		LD	A,(IY)			; Check for a dot
 			CP	'.'
-			JR	Z,$F			; If present, then carry on processing the eZ80 suffix
+			JR	Z,@F			; If present, then carry on processing the eZ80 suffix
 			OR	A			; Reset the carry flag (no error)
 			RET				; And return
-$$:			INC	IY 			; Skip the dot
+@@:			INC	IY 			; Skip the dot
 			PUSH	BC			; Push the operand
 			LD	HL,EZ80SFS_1		; First check the fully qualified table
 			CALL	FIND 			; Look up the operand
@@ -2698,12 +2705,12 @@ EZ80SF_TABLE:		LD	HL,EZ80SFS_ADL0		; Return with the ADL0 lookup table
 ADDR_:			BIT	7,D			; Check the ADL flag
 			JR	NZ,ADDR24 		; If it is set, then use 24-bit addresses
 ;
-ADDR16:			CALL	NUMBER			; Fetch an address (16-bit) and fall through to VAL16
+ADDR16:			CALL	NUMBER_exec			; Fetch an address (16-bit) and fall through to VAL16
 VAL16:			CALL    VAL8			; Write out a 16-bit value (HL)
 			LD      A,H
 			JP      BYTE_
 ;
-ADDR24:			CALL    NUMBER			; Fetch an address (24-bit) and fall through to VAL24
+ADDR24:			CALL    NUMBER_exec			; Fetch an address (24-bit) and fall through to VAL24
 VAL24:			CALL	VAL16			; Lower 16-bits are in HL
 			EXX
 			LD	A,L			; Upper 16-bits are in HL', just need L' to make up 24-bit value
@@ -2740,7 +2747,7 @@ CORN:			PUSH    BC
 			CALL    OPND			; Get the operand
 			BIT     5,B			
 			POP     BC
-			JR      Z,NUMBER		; If bit 5 is clear, then it's IN A,(N) or OUT (N),A, so fetch the port number
+			JR      Z,NUMBER_exec		; If bit 5 is clear, then it's IN A,(N) or OUT (N),A, so fetch the port number
 			LD      H,-1			; At this point it's IN r,(C) or OUT (C),r, so flag by setting H to &FF
 ;
 ED:			LD      A,0EDH			; Write an ED prefix out
@@ -2790,7 +2797,7 @@ OFFSET:			LD      A,(IY)
 			CP      ')'
 			LD      HL,0
 			RET     Z
-NUMBER:			CALL    SKIP
+NUMBER_exec:			CALL    SKIP
 			PUSH    BC
 			PUSH    DE
 			PUSH    IX
@@ -2839,7 +2846,7 @@ PAIR1:			LD      A,B
 			RET     C
 			JR      SHL3
 ;
-BIT_:			CALL    NUMBER
+BIT_:			CALL    NUMBER_exec
 			CP      8
 			CCF
 			RET     C
@@ -2863,7 +2870,7 @@ LDOP:			LD      HL,LDOPS
 ;
 FIND:			CALL    SKIP			; Skip delimiters
 ;
-EXIT_:			LD      B,0			; Set B to 0
+EXIT_exec_:			LD      B,0			; Set B to 0
 			SCF				; Set the carry flag
 			RET     Z			; Returns if Z
 ;
@@ -2874,7 +2881,7 @@ EXIT_:			LD      B,0			; Set B to 0
 			RET     C
 FIND0:			LD      A,(HL)			; Check for the end of the table (0 byte marker)
 			OR      A		
-			JR      Z,EXIT_			; Exit
+			JR      Z,EXIT_exec_			; Exit
 			XOR     (IY)
 			AND     01011111B
 			JR      Z,FIND2
@@ -3177,6 +3184,6 @@ EZ80SFS_ADL1:		DB	'S'+80H,52H		; Equivalent to .SIL
 			DB	0
 ;
 ; .LIST
-;
-LF:			EQU     0AH
-CR:			EQU     0DH
+; in equs.inc
+; LF:			EQU     0AH
+; CR:			EQU     0DH

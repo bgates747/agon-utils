@@ -150,14 +150,14 @@ CRTONULL2:		LD	(HL), C
 ;
 CSTR_FNAME:		LD	A, (HL)			; Get source
 			CP	32			; Is it space
-			JR	Z, $F	
+			JR	Z, @F	
 			CP	CR			; Or is it CR
-			JR	Z, $F
+			JR	Z, @F
 			LD	(DE), A			; No, so store
 			INC	HL			; Increment
 			INC	DE			
 			JR	CSTR_FNAME		; And loop
-$$:			XOR	A			; Zero terminate the target string
+@@:			XOR	A			; Zero terminate the target string
 			LD	(DE), A
 			INC	DE			; And point to next free address
 			RET
@@ -168,12 +168,12 @@ $$:			XOR	A			; Zero terminate the target string
 ;
 CSTR_LINE:		LD	A, (HL)			; Get source
 			CP	CR			; Is it CR
-			JR	Z, $F
+			JR	Z, @F
 			LD	(DE), A			; No, so store
 			INC	HL			; Increment
 			INC	DE			
 			JR	CSTR_LINE		; And loop
-$$:			XOR	A			; Zero terminate the target string
+@@:			XOR	A			; Zero terminate the target string
 			LD	(DE), A
 			INC	DE			; And point to next free address
 			RET

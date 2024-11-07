@@ -67,9 +67,11 @@ ERROR_:			LD      SP,IY           ;Restore SP from IY
 ;
 ;Perform operation or function:
 ;
-OP:			CP      (RTABLE-DTABLE)/3
+; OP:			CP      (RTABLE-DTABLE)/3
+OP:			CP      RTABLE-DTABLE/3
         		JR      NC,BAD
-        		CP      (FTABLE-DTABLE)/3
+        		; CP      (FTABLE-DTABLE)/3
+        		CP      FTABLE-DTABLE/3
         		JR      NC,DISPAT
         		EX      AF,AF'
         		LD      A,B
@@ -136,7 +138,7 @@ FTABLE:			DW24  ABSV            ;ABS
 ;
 		        DW24  ZERO            ;ZERO
         		DW24  FONE            ;FONE
-        		DW24  TRUE            ;TRUE
+        		DW24  FOR            ;FOR
         		DW24  PI              ;PI
 ;
 		        DW24  VAL             ;VAL
@@ -596,45 +598,45 @@ FPOW1:			CALL    SWAP
         		JP      EXP0
 ;
 ;Integer and floating-point compare.
-;Result is TRUE (-1) or FALSE (0).
+;Result is FOR_ (-1) or FALSE (0).
 ;
 FLT:			CALL    FCP
         		JR      ILT1
 ILT:			CALL    ICP
 ILT1:			RET     NC
-        		JR      TRUE
+        		JR      FOR_
 ;
 FGT:			CALL    FCP
         		JR      IGT1
 IGT:			CALL    ICP
 IGT1:			RET     Z
         		RET     C
-        		JR      TRUE
+        		JR      FOR_
 ;
 FGE:			CALL    FCP
         		JR      IGE1
 IGE:			CALL    ICP
 IGE1:			RET     C
-        		JR      TRUE
+        		JR      FOR_
 ;
 FLE:			CALL    FCP
         		JR      ILE1
 ILE:			CALL    ICP
-ILE1:			JR      Z,TRUE
+ILE1:			JR      Z,FOR_
         		RET     NC
-        		JR      TRUE
+        		JR      FOR_
 ;
 FNE:			CALL    FCP
         		JR      INE1
 INE:			CALL    ICP
 INE1:			RET     Z
-        		JR      TRUE
+        		JR      FOR_
 ;
 FEQ:			CALL    FCP
         		JR      IEQ1
 IEQ:			CALL    ICP
 IEQ1:			RET     NZ
-TRUE:			LD      HL,-1
+FOR_:			LD      HL,-1
         		EXX
         		LD      HL,-1
         		EXX
@@ -724,7 +726,7 @@ SGN:			CALL    TEST
         		OR      C
         		RET     Z               ;ZERO
         		BIT     7,H
-        		JP      NZ,TRUE         ;-1
+        		JP      NZ,FOR         ;-1
         		CALL    ZERO
         		JP      ADD1            ;1
 ;
@@ -1744,7 +1746,8 @@ FLOAT_:			BIT     7,H
 ;    Destroys: A,C,H,L,H',L',F
 ;
 FLOATA:			EX      AF,AF'
-        		ADD     A,(RTABLE-DTABLE)/3
+        		; ADD     A,(RTABLE-DTABLE)/3
+        		ADD     A,RTABLE-DTABLE/3
         		EX      AF,AF'
 FLOAT2:			CALL    SWAP
         		CALL    SFLOAT

@@ -30,7 +30,8 @@ VBLANK_INIT:		DI
 			LD		HL, VBLANK_HANDLER		; this interrupt handler routine who's
 			LD		E, 32h				; Set up the VBlank Interrupt Vector
 			MOSCALL		mos_setintvector
-			EX		HL, DE 				; DEU: Pointer to the MOS interrupt vector
+			; EX		HL, DE 				; DEU: Pointer to the MOS interrupt vector
+			ex		de, hl 				; how did the above ever work?
 			LD		HL, VBLANK_HANDLER_JP + 1	; Pointer to the JP address in this segment
 			LD		(HL), DE			; Self-modify the code
 			EI	

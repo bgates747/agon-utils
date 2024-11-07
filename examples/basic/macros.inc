@@ -1,19 +1,19 @@
-;
-; Title:	BBC Basic Interpreter - Z80 version
-;		Useful macros
-; Author:	Dean Belfield
-; Created:	12/05/2023
-; Last Updated:	11/06/2023
-;
-; Modinfo:
-; 11/06/2023:	Modified to run in ADL mode
+			; Title:	BBC Basic Interpreter - Z80 version
+			;		Useful macros
+			; Author:	Dean Belfield
+			; Created:	12/05/2023
+			; Last Updated:	11/06/2023
+			;
+			; Modinfo:
+			; 11/06/2023:	Modified to run in ADL mode
+			; 11/06/2024:   Make compatible with ez80asm by Brandon R. Gates
 
-EXREG:			MACRO	rp1, rp2
-			PUSH 	rp1 
+			MACRO EXREG	rp1, rp2
+			PUSH	rp1 
 			POP	rp2
 			ENDMACRO 
-	
-ADD8U_DE:		MACRO 	reg
+			
+			MACRO ADD8U_DE	reg
 			ADD	A, E 
 			LD	E, A 
 			ADC	A, D
@@ -21,7 +21,7 @@ ADD8U_DE:		MACRO 	reg
 			LD	D, A 
 			ENDMACRO 
 
-ADD8U_HL:		MACRO 	reg
+			MACRO ADD8U_HL	reg
 			ADD	A, L 
 			LD	L, A 
 			ADC	A, H
@@ -29,24 +29,24 @@ ADD8U_HL:		MACRO 	reg
 			LD	H, A 
 			ENDMACRO 
 
-VDU:			MACRO	val
+			MACRO VDU	val
 			LD	A, val
 			CALL	OSWRCH
 			ENDMACRO
 
-SET_GPIO:		MACRO	reg, val
-			IN0	A,(reg)
+			MACRO SET_GPIO	reg, val
+			IN0	A, (reg)
 			OR	val
-			OUT0	(reg),A
+			OUT0	(reg), A
 			ENDMACRO
-				
-RES_GPIO:		MACRO	reg, val
+			
+			MACRO RES_GPIO	reg, val
 			PUSH	BC
 			LD	A, val
 			CPL
 			LD	C, A
-			IN0	A,(reg)
+			IN0	A, (reg)
 			AND	C
-			OUT0	(reg),A
+			OUT0	(reg), A
 			POP	BC
-			ENDMACRO			
+			ENDMACRO

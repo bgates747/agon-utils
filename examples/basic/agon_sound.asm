@@ -95,8 +95,8 @@ SOUND0:			RES.LIL	3, (IX+sysvar_vpd_pflags)
 ;
 ; Wait for acknowledgement
 ;
-$$:			BIT.LIL	3, (IX+sysvar_vpd_pflags)
-			JR	Z, $B			; Wait for the result
+@@:			BIT.LIL	3, (IX+sysvar_vpd_pflags)
+			JR	Z, @B			; Wait for the result
 			CALL	LTRAP			; Check for ESC
 			LD.LIL	A, (IX+sysvar_audioSuccess)
 			AND	A			; Check if VDP has queued the note

@@ -8,7 +8,7 @@
 ;
 ; Modinfo:
 ; 07/06/2023:	Modified to run in ADL mode
-; 26/06/2023:	Fixed HEX and HEXSTR
+; 26/06/2023:	Fixed HEX_eval and HEXSTR
 ; 13/08/2023:	Added INKEY(-n) support (requires MOS 1.04)
 ; 17/08/2023:	Added binary constants
 
@@ -31,7 +31,7 @@
 			; XDEF	LOADS
 			; XDEF	SFIX
 			; XDEF	VAL0
-			; XDEF	SEARCH
+			; XDEF	SEARCH_eval
 			; XDEF	SWAP
 			; XDEF	TEST
 			; XDEF	DECODE
@@ -102,51 +102,51 @@ FUNTOK:			EQU	8DH			; First token number
 ;
 FUNTBL:			DW24	DECODE			; Line number
 			DW24	OPENIN			; OPENIN
-			DW24	PTR			; PTR
-			DW24	PAGEV			; PAGE
-			DW24	TIMEV			; TIME
-			DW24	LOMEMV			; LOMEM
-			DW24	HIMEMV			; HIMEM
-			DW24	ABSV			; ABS
+			DW24	PTR_eval			; PTR_eval
+			DW24	PAGE_eval			; PAGE
+			DW24	TIMEV_eval			; TIME
+			DW24	LOMEMV_eval			; LOMEM
+			DW24	HIMEMV_eval			; HIMEM
+			DW24	ABSV_eval			; ABS
 			DW24	ACS			; ACS
 			DW24	ADVAL			; ADVAL
 			DW24	ASC			; ASC
-			DW24	ASN			; ASN
+			DW24	ASN_eval			; ASN_eval
 			DW24	ATN			; ATN
 			DW24	BGET			; BGET
-			DW24	COS			; COS
+			DW24	COS_eval			; COS_eval
 			DW24	COUNTV			; COUNT
-			DW24	DEG			; DEG
+			DW24	DEG_eval			; DEG_eval
 			DW24	ERLV			; ERL
 			DW24	ERRV			; ERR
 			DW24	EVAL_			; EVAL
-			DW24	EXP			; EXP
-			DW24	EXT			; EXT
+			DW24	EXP_eval			; EXP_eval
+			DW24	EXT_eval			; EXT_eval
 			DW24	ZERO			; FALSE
 			DW24	FN			; FN
 			DW24	GET			; GET
 			DW24	INKEY			; INKEY
 			DW24	INSTR			; INSTR(
-			DW24	INT_			; INT
+			DW24	INT_eval_			; INT
 			DW24	LEN			; LEN
-			DW24	LN			; LN
-			DW24	LOG			; LOG
-			DW24	NOTK			; NOT
+			DW24	LN_eval			; LN_eval
+			DW24	LOG_eval			; LOG_eval
+			DW24	NOTK_eval			; NOT
 			DW24	OPENUP			; OPENUP
 			DW24	OPENOT			; OPENOUT
-			DW24	PI			; PI
+			DW24	PI_eval			; PI_eval
 			DW24	POINT			; POINT(
 			DW24	POS			; POS
-			DW24	RAD			; RAD
+			DW24	RAD_eval			; RAD_eval
 			DW24	RND			; RND
-			DW24	SGN			; SGN
-			DW24	SIN			; SIN
-			DW24	SQR			; SQR
-			DW24	TAN			; TAN
+			DW24	SGN_eval			; SGN_eval
+			DW24	SIN_eval			; SIN_eval
+			DW24	SQR_eval			; SQR_eval
+			DW24	TAN_eval			; TAN_eval
 			DW24	TOPV			; TO(P)
-			DW24	TRUE			; TRUE
+			DW24	FOR_eval			; FOR_eval
 			DW24	USR			; USR
-			DW24	VAL			; VAL
+			DW24	VAL_eval			; VAL_eval
 			DW24	VPOS			; VPOS
 			DW24	CHRS			; CHRS
 			DW24	GETS			; GETS
@@ -159,7 +159,8 @@ FUNTBL:			DW24	DECODE			; Line number
 			DW24	EOF			; EOF
 ;
 FUNTBL_END:		EQU	$
-TCMD:			EQU     FUNTOK+(FUNTBL_END-FUNTBL)/3
+; TCMD_eval:			EQU     FUNTOK+(FUNTBL_END-FUNTBL)/3
+TCMD_eval:			EQU     FUNTBL_END-FUNTBL/3+FUNTOK ; reorder because ez80asm doesn't do order of operations
 ;
 ANDK:			EQU     80H
 DIVK:			EQU     81H
@@ -407,14 +408,14 @@ ITEM1:			CALL    EXPR            	; Evaluate the expression
 			EX      AF,AF'
 			RET
 ;
-; HEX - Get hexadecimal constant.
+; HEX_eval - Get hexadecimal constant.
 ;   Inputs: ASCII string at (IY)
 ;  Outputs: Integer result in H'L'HL, C=0, A7=0.
 ;           IY updated (points to delimiter)
 ;
-HEX:			CALL    ZERO			; Set result to 0
+HEX_eval:			CALL    ZERO			; Set result to 0
 			CALL    HEXDIG			; Fetch the character from IY
-			JR      C,BADHEX		; If invalid HEX character, then Error: "Bad HEX"
+			JR      C,BADHEX		; If invalid HEX_eval character, then Error: "Bad HEX_eval"
 HEX1:			INC     IY			; Move pointer to next character
 			AND     0FH			; Clear the top nibble
 			LD      B,4			; Loop counter
@@ -430,12 +431,12 @@ HEX2:			EXX				; Shift the result left B (4) times. This makes
 			EXX
 ;
 			CALL    HEXDIG			; Fetch the next character
-			JR      NC,HEX1			; If it is a HEX digit then loop
+			JR      NC,HEX1			; If it is a HEX_eval digit then loop
 			XOR     A			; Clear A
 			RET
 ;
 BADHEX:			LD      A,28
-			JP      ERROR_          	; Error: "Bad HEX"
+			JP      ERROR_          	; Error: "Bad HEX_eval"
 ;
 ; BIN - Get binary constant.
 ;   Inputs: ASCII string at (IY)
@@ -456,7 +457,7 @@ BIN1:			INC	IY			; Move pointer to next character
 			XOR	A			; Clear A
 			RET
 ;
-BADBIN:			LD	A, 28			; Error: "Bad Binary" - reuses same error code as Bad HEX
+BADBIN:			LD	A, 28			; Error: "Bad Binary" - reuses same error code as Bad HEX_eval
 			CALL	EXTERR
 			DB	"Bad Binary", 0
 ;
@@ -511,7 +512,7 @@ ITEM:			CALL    CHECK			; Check there's at least a page of free memory left and 
 			CALL    NXT			; Skip spaces
 			INC     IY			; Move to the prefix character
 			CP      '&'			; If `&`
-			JP      Z,HEX           	; Then get a HEX constant
+			JP      Z,HEX_eval           	; Then get a HEX_eval constant
 			CP	'%'			; If '%'
 			JR	Z,BIN			; Then get a BINARY constant
 			CP      '-'			; If `-`
@@ -522,17 +523,17 @@ ITEM:			CALL    CHECK			; Check there's at least a page of free memory left and 
 			JP      Z,ITEM1         	; Start of a bracketed expression
 			CP      34			; If `"`
 			JR      Z,CONS          	; Start of a string constant
-			CP      TCMD			; Is it out of range of the function table?
+			CP      TCMD_eval			; Is it out of range of the function table?
 			JP      NC,SYNTAX       	; Error: "Syntax Error"
 			CP      FUNTOK			; If it is in range, then 
-			JP      NC,DISPAT       	; It's a function
+			JP      NC,DISPAT_eval       	; It's a function
 			DEC     IY			
 			CP      ':'
 			JR      NC,ITEM2		; VARIABLE?
 			CP      '0'
-			JP      NC,CON			; NUMERIC CONSTANT
+			JP      NC,CON			; NUMERIC CONSTAN_evalT
 			CP      '.'
-			JP      Z,CON			; NUMERIC CONSTANT
+			JP      Z,CON			; NUMERIC CONSTAN_evalT
 ITEM2:			CALL    GETVAR			; VARIABLE
 			JR      NZ,NOSUCH
 			OR      A
@@ -565,7 +566,7 @@ NOSUCH:			JP      C,SYNTAX
 			LD      A,(LISTON)
 			BIT     5,A
 			LD      A,26
-			JR      NZ,ERROR0		; Throw "No such variable"
+			JR      NZ,ERROR0_eval		; Throw "No such variable"
 NOS1:			INC     IY
 			CALL    RANGE
 			JR      NC,NOS1
@@ -593,7 +594,7 @@ CONS1:			LD      (DE),A			; Store the character in the string accumulator
 			JR      NZ,CONS3		; No, so keep looping
 ;
 			LD      A,9
-ERROR0:			JP      ERROR_           	; Throw error "Missing '"'
+ERROR0_eval:			JP      ERROR_           	; Throw error "Missing '"'
 ;
 CONS2:			LD      A,(IY)			; Fetch the next character
 			CP      '"'			; Check for end quote?
@@ -613,7 +614,7 @@ CON:			PUSH    IY
 			POP     IX
 			LD      A,36
 			CALL    FPP
-			JR      C,ERROR0
+			JR      C,ERROR0_eval
 			PUSH    IX
 			POP     IY
 			XOR     A
@@ -685,7 +686,7 @@ VPOS:			CALL    GETCSR			; Return the vertical cursor position
 ;			
 EOF:			CALL    CHANEL			; Check for EOF
 			CALL    OSSTAT
-			JP      Z,TRUE			; Yes, so return true
+			JP      Z,FOR_eval			; Yes, so return true
 			JP      ZERO			; Otherwise return false (zero)
 ;			
 BGET:			CALL    CHANEL          	; Channel number
@@ -716,7 +717,7 @@ GET0:			CALL    GETS			; Read the keyboard character
 ASC:			CALL    ITEMS			; Get the string argument argument
 ASC0:			XOR     A			; Quickly check the length of the string in ACCS
 			CP      E			; Is the pointer 0
-			JP      Z,TRUE          	; Yes, so return -1 as it is a null string
+			JP      Z,FOR_eval          	; Yes, so return -1 as it is a null string
 ASC1:			LD      HL,(ACCS)		;  L: The first character (H will be discarded in COUNT0
 			JR      COUNT0			; An 8-bit value
 ;
@@ -724,11 +725,11 @@ LEN:			CALL    ITEMS			; Get the string argument
 			EX      DE,HL			; HL: Pointer into ACCS
 			JR      COUNT0			; Return L
 ;			
-LOMEMV:			LD      HL,(LOMEM)		; Return the LOMEM system variable
+LOMEMV_eval:			LD      HL,(LOMEM)		; Return the LOMEM system variable
 			LD	A, (LOMEM+2)
 			JR      COUNT2			; A 24-bit value
 ;			
-HIMEMV:			LD      HL,(HIMEM)		; Return the HIMEM system variable
+HIMEMV_eval:			LD      HL,(HIMEM)		; Return the HIMEM system variable
 			LD	A, (HIMEM+2)
 			JR      COUNT2			; A 24-bit value
 ;			
@@ -790,24 +791,24 @@ OPENIN_1:		PUSH    AF              	; Save OPEN type
 			LD      L,A			; L: Channel number
 			JR      COUNT0			; Return channel number to BASIC
 ;
-;EXT - Return length of file.
-;PTR - Return current file pointer.
+;EXT_eval - Return length of file.
+;PTR_eval - Return current file pointer.
 ;Results are integer numeric.
 ;
-EXT:			CALL    CHANEL
+EXT_eval:			CALL    CHANEL
 			CALL    GETEXT
 			JR      TIME0
 ;
-PTR:			CALL    CHANEL
+PTR_eval:			CALL    CHANEL
 			CALL    GETPTR
 			JR      TIME0
 ;
 ;TIME - Return current value of elapsed time.
 ;Result is integer numeric.
 ;
-TIMEV:			LD      A,(IY)
+TIMEV_eval:			LD      A,(IY)
 			CP      '$'
-			JR      Z,TIMEVS
+			JR      Z,TIMEVS_eval
 			CALL    GETIME
 TIME0:			PUSH    DE
 			EXX
@@ -819,7 +820,7 @@ TIME0:			PUSH    DE
 ;TIME$ - Return date/time string.
 ;Result is string
 ;
-TIMEVS:			INC     IY              ;SKIP $
+TIMEVS_eval:			INC     IY              ;SKIP $
 			CALL    GETIMS
 			LD      A,80H           ;MARK STRING
 			RET
@@ -828,29 +829,29 @@ TIMEVS:			INC     IY              ;SKIP $
 ;
 SLT:			CALL    SCP
 			RET     NC
-			JR      TRUE
+			JR      FOR_eval
 ;
 SGT:			CALL    SCP
 			RET     Z
 			RET     C
-			JR      TRUE
+			JR      FOR_eval
 ;
 SGE:			CALL    SCP
 			RET     C
-			JR      TRUE
+			JR      FOR_eval
 ;
 SLE:			CALL    SCP
-			JR      Z,TRUE
+			JR      Z,FOR_eval
 			RET     NC
-			JR      TRUE
+			JR      FOR_eval
 ;
 SNE:			CALL    SCP
 			RET     Z
-			JR      TRUE
+			JR      FOR_eval
 ;
 SEQ:			CALL    SCP
 			RET     NZ
-TRUE:			LD      A,-1
+FOR_eval:			LD      A,-1
 			EXX
 			LD      H,A
 			LD      L,A
@@ -861,94 +862,94 @@ TRUE:			LD      A,-1
 			LD      C,A
 			RET
 ;
-;PI - Return PI (3.141592654)
+;PI_eval - Return PI_eval (3.141592654)
 ;Result is floating-point numeric.
 ;
-PI:			LD      A,35
+PI_eval:			LD      A,35
 			JR      FPP1
 ;
 ;ABS - Absolute value
 ;Result is numeric, variable type.
 ;
-ABSV:			LD      A,16
+ABSV_eval:			LD      A,16
 			JR      FPPN
 ;
 ;NOT - Complement integer.
 ;Result is integer numeric.
 ;
-NOTK:			LD      A,26
+NOTK_eval:			LD      A,26
 			JR      FPPN
 ;
-;DEG - Convert radians to degrees
+;DEG_eval - Convert radians to degrees
 ;Result is floating-point numeric.
 ;
-DEG:			LD      A,21
+DEG_eval:			LD      A,21
 			JR      FPPN
 ;
-;RAD - Convert degrees to radians
+;RAD_eval - Convert degrees to radians
 ;Result is floating-point numeric.
 ;
-RAD:			LD      A,27
+RAD_eval:			LD      A,27
 			JR      FPPN
 ;
-;SGN - Return -1, 0 or +1
+;SGN_eval - Return -1, 0 or +1
 ;Result is integer numeric.
 ;
-SGN:			LD      A,28
+SGN_eval:			LD      A,28
 			JR      FPPN
 ;
 ;INT - Floor function
 ;Result is integer numeric.
 ;
-INT_:			LD      A,23
+INT_eval_:			LD      A,23
 			JR      FPPN
 ;
-;SQR - square root
+;SQR_eval - square root
 ;Result is floating-point numeric.
 ;
-SQR:			LD      A,30
+SQR_eval:			LD      A,30
 			JR      FPPN
 ;
-;TAN - Tangent function
+;TAN_eval - Tangent function
 ;Result is floating-point numeric.
 ;
-TAN:			LD      A,31
+TAN_eval:			LD      A,31
 			JR      FPPN
 ;
-;COS - Cosine function
+;COS_eval - Cosine function
 ;Result is floating-point numeric.
 ;
-COS:			LD      A,20
+COS_eval:			LD      A,20
 			JR      FPPN
 ;
-;SIN - Sine function
+;SIN_eval - Sine function
 ;Result is floating-point numeric.
 ;
-SIN:			LD      A,29
+SIN_eval:			LD      A,29
 			JR      FPPN
 ;
-;EXP - Exponential function
+;EXP_eval - Exponential function
 ;Result is floating-point numeric.
 ;
-EXP:			LD      A,22
+EXP_eval:			LD      A,22
 			JR      FPPN
 ;
-;LN - Natural log.
+;LN_eval - Natural log.
 ;Result is floating-point numeric.
 ;
-LN:			LD      A,24
+LN_eval:			LD      A,24
 			JR      FPPN
 ;
-;LOG - base-10 logarithm.
+;LOG_eval - base-10 logarithm.
 ;Result is floating-point numeric.
 ;
-LOG:			LD      A,25
+LOG_eval:			LD      A,25
 			JR      FPPN
 ;
-;ASN - Arc-sine
+;ASN_eval - Arc-sine
 ;Result is floating-point numeric.
 ;
-ASN:			LD      A,18
+ASN_eval:			LD      A,18
 			JR      FPPN
 ;
 ;ATN - arc-tangent
@@ -979,10 +980,10 @@ SFIX:			LD      A,38
 SFLOAT:			LD      A,39
 			JR      FPP1
 ;
-;VAL - Return numeric value of string.
+;VAL_eval - Return numeric value of string.
 ;Result is variable type numeric.
 ;
-VAL:			CALL    ITEMS
+VAL_eval:			CALL    ITEMS
 VAL0:			XOR     A
 			LD      (DE),A
 			LD      IX,ACCS
@@ -1111,7 +1112,7 @@ INSTR:			CALL    EXPRSC			; Get the first string expression
 			JR      Z,INSTR1		; If it is zero, then skip
 			DEC     A
 INSTR1:			LD      DE,ACCS         	; DE: Pointer to the sub string
-			CALL    SEARCH			; Do the search
+			CALL    SEARCH_eval			; Do the search
 			POP     DE
 			JR      Z,INSTR2        	; NB: Carry cleared
 			SBC     HL,HL
@@ -1127,7 +1128,7 @@ INSTR2:			SBC     HL,SP
 			CALL    BRAKET			; Check for closing bracket
 			JP      COUNT1			; Return a numeric integer
 ;
-; SEARCH - Search string for sub-string
+; SEARCH_eval - Search string for sub-string
 ;    Inputs: Main string at HL length C
 ;            Sub-string  at DE length B
 ;            Starting offset A
@@ -1135,7 +1136,7 @@ INSTR2:			SBC     HL,SP
 ;            Z - found at location HL-1
 ;            Carry always cleared
 ;
-SEARCH:			PUSH    BC			; Add the starting offset to HL
+SEARCH_eval:			PUSH    BC			; Add the starting offset to HL
 			LD      BC,0
 			LD      C,A
 			ADD     HL,BC           	; New start address
@@ -1145,7 +1146,7 @@ SEARCH:			PUSH    BC			; Add the starting offset to HL
 			NEG
 			LD      C,A             	; Remaining length
 ;
-SRCH1:			PUSH    BC
+SRCH1_eval:			PUSH    BC
 			LD	A,C
 			LD	BC,0
 			LD	C,A
@@ -1168,16 +1169,16 @@ SRCH1:			PUSH    BC
 			PUSH    HL
 			DEC     B
 			JR      Z,SRCH3         	; Found!
-SRCH2:			INC     DE
+SRCH2_eval:			INC     DE
 			LD      A,(DE)
 			CP      (HL)
 			JR      NZ,SRCH3
 			INC     HL
-			DJNZ    SRCH2
+			DJNZ    SRCH2_eval
 SRCH3:			POP     HL
 			POP     DE
 			POP     BC
-			JR      NZ,SRCH1
+			JR      NZ,SRCH1_eval
 			XOR     A               	; Flags: Z, NC
 			RET                     	; Found
 ;
@@ -1246,7 +1247,7 @@ INKEYM:			MOSCALL	mos_getkbmap		; Get the base address of the keyboard
 			LD	A, B			;  B: The mask
 			AND	(IX+0)			; Check whether the bit is set
 			JP	Z, ZERO			; No, so return 0
-			JP	TRUE			; Otherwise return -1
+			JP	FOR_eval			; Otherwise return -1
 ;
 ; A bit lookup table
 ;
@@ -1422,7 +1423,7 @@ DECODE:			EXX
 			LD	C, L
 			RET
 ;
-;HEXSTR - convert numeric value to HEX string.
+;HEXSTR - convert numeric value to HEX_eval string.
 ;   Inputs: HLH'L'C = integer or floating-point number
 ;  Outputs: String in string accumulator.
 ;           E = string length.  D = ACCS/256
@@ -1617,14 +1618,14 @@ COMMA:			CALL    NXT
 			CP      ','
 			RET     Z
 			LD      A,5
-			JR      ERROR1          ;"Missing ,"
+			JR      ERROR1_eval          ;"Missing ,"
 ;
 BRAKET:			CALL    NXT
 			INC     IY
 			CP      ')'
 			RET     Z
 			LD      A,27
-ERROR1:			JP      ERROR_           ;"Missing )"
+ERROR1_eval:			JP      ERROR_           ;"Missing )"
 ;
 SAVE:			INC     IY
 SAVE1:			EX      AF,AF'
@@ -1658,7 +1659,7 @@ DOIT:			EX      AF,AF'
 			EXX
 			AND     0FH
 			CALL    FPP
-			JR      C,ERROR1
+			JR      C,ERROR1_eval
 			XOR     A
 			EX      AF,AF'          ;TYPE
 			LD      A,(IY)
@@ -1680,7 +1681,7 @@ DISPT2:			PUSH    HL
 			LD      HL,SOPTBL
 			JR      DISPT0
 ;
-DISPAT:			PUSH    HL
+DISPAT_eval:			PUSH    HL
 			SUB     FUNTOK
 			LD      HL,FUNTBL
 DISPT0:			PUSH    BC

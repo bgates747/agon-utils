@@ -61,8 +61,8 @@ MODE:			PUSH	IX			; Get the system vars in IX
 			VDU	16H			; Mode change
 			VDU	L
 			MOSCALL	mos_sysvars		
-$$:			BIT	4, (IX+sysvar_vpd_pflags)
-			JR	Z, $B			; Wait for the result			
+@@:			BIT	4, (IX+sysvar_vpd_pflags)
+			JR	Z, @B			; Wait for the result			
 			POP	IX
 			JP	XEQ
 			
@@ -88,15 +88,15 @@ GETSCHR:		INC	IY
 			VDU	(VDU_BUFFER+1)
 			VDU	(VDU_BUFFER+2)
 			VDU	(VDU_BUFFER+3)
-$$:			BIT	1, (IX+sysvar_vpd_pflags)
-			JR	Z, $B			; Wait for the result
+@@:			BIT	1, (IX+sysvar_vpd_pflags)
+			JR	Z, @B			; Wait for the result
 			LD	A, (IX+sysvar_scrchar)	; Fetch the result in A
 			OR	A			; Check for 00h
 			SCF				; C = character map
-			JR	NZ, $F			; We have a character, so skip next bit
+			JR	NZ, @F			; We have a character, so skip next bit
 			XOR	A			; Clear carry
 			DEC	A			; Set A to FFh
-$$:			POP	IX			
+@@:			POP	IX			
 			JP	INKEY1			; Jump back to the GET command
 
 ; POINT(x,y): Get the pixel colour of a point on screen
@@ -120,8 +120,8 @@ POINT:			CALL    EXPRI      		; Get X coordinate
 			VDU	(VDU_BUFFER+1)
 			VDU	(VDU_BUFFER+2)
 			VDU	(VDU_BUFFER+3)
-$$:			BIT	2, (IX+sysvar_vpd_pflags)
-			JR	Z, $B			; Wait for the result
+@@:			BIT	2, (IX+sysvar_vpd_pflags)
+			JR	Z, @B			; Wait for the result
 ;
 ; Return the data as a 1 byte index
 ;

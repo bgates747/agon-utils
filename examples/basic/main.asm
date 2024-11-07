@@ -16,9 +16,20 @@
 ; 15/11/2023:	Fixed bug in ONEDIT1 for OSLOAD_TXT, Startup message now includes Agon version
 ; 26/11/2023:	Fixed bug in AUTOLOAD
 
-			; .ASSUME	ADL = 1
+			.ASSUME	ADL = 1
 
-			; INCLUDE	"equs.inc"
+			include "mos_api.inc"
+			include "macros.inc"
+			include "ram.asm"
+			INCLUDE	"equs.inc"
+			include "init.asm"
+			include "eval.asm"
+			include "exec.asm"
+			include "fpp.asm"
+			include "gpio.asm"
+			include "interrupts.asm"
+			include "patch.asm"
+			include "sorry.asm"
 
 			; SEGMENT CODE
 			
@@ -1142,7 +1153,8 @@ CLEAR:			PUSH    HL			; Stack the BASIC program pointer
 			LD      (FREE),HL		; And the FREE sysvar with that value
 			LD      HL,DYNVAR		; Get the pointer to the dynamic variable pointers buffer in RAM
 			PUSH    BC			
-			LD      B,3*(54+2)		; Loop counter
+			; LD      B,3*(54+2)		; Loop counter
+			LD B,54+2*3			; EZ80ASM doesn't do order of operations
 CLEAR1:			LD      (HL),0			; Clear the dynamic variable pointers
 			INC     HL
 			DJNZ    CLEAR1
@@ -1223,14 +1235,16 @@ PRLINO:			PUSH    HL			; Swap HL and IY
 			RET
 ;
 ; DB: Modification for internationalisation
-;
+; 
 PRREM:			CALL	OUT_			; Output the REM token
-$$:			LD	A, (HL)			; Fetch the character
+; @@:			LD	A, (HL)			; Fetch the character
+@@:			LD	A, (HL)			; Fetch the character
 			CP	CR			; If it is end of line, then
 			RET	Z			; we have finished
 			CALL	OUTCHR			; Ouput the character
 			INC	HL			
-			JR	$B			; And loop		
+			; JR	@B			; And loop		
+			JR	@B			; And loop		
 ;
 ; DB: End of modification
 ;
@@ -1690,7 +1704,9 @@ LOC2:			LD	DE, (HL)		; Fetch the original pointer
 			SBC	HL, DE			; Compare with 0
 			POP	HL			; Restore the original pointer
 			JR	Z, LOC6			; If the pointer in DE is zero, the variable is undefined at this point
-			LD	HL, DE			; Make a copy of this pointer in HL
+			; LD	HL, DE			; Make a copy of this pointer in HL
+			push de ; HOW DID THE ABOVE EVEN ASSEMBLE IN THE ORIGINAL?!
+			pop hl	; Make a copy of this pointer in HL
 			INC     HL              	; Skip the link (24-bits)
 			INC     HL
 			INC	HL			; HL: Address of the variable name in DYNVARS
@@ -1960,9 +1976,9 @@ LEXAN3:			CP      ' '			; Ignore spaces
 			CP      ','			; Ignore commas
 			JR      Z,LEXAN1 
 			CP	'2'			; If less than '2'
-			JR	NC, $F			; No, so skip
+			JR	NC, @F			; No, so skip
 			RES	2,C			; FLAG: NOT IN BINARY
-$$:			CP      'G'			; If less then 'G'
+@@:			CP      'G'			; If less then 'G'
 			JR      C,LEXAN4		; Yes, so skip
 			RES     3,C             	; FLAG: NOT IN HEX
 ;
