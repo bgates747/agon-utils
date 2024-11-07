@@ -72,7 +72,13 @@ _main_end_ok:
 main:
     dec c               ; decrement the argument count to skip the program name
 
-test_sdiv168:
+; match on BASIC functions
+    ld iy,BASIC
+    call match_next_and_print ; iy = function pointer, zero flag set if match
+    jp z,BASIC_EXEC
+@@:
+    lea ix,ix-3
+
 ; get first numeric argument
     call get_arg_s168 ; de = first numeric argument
     push de
@@ -117,6 +123,36 @@ test_sdiv168:
     jp _main_end_ok
 
 ; ========== DISPATCH TABLES ==========
+; BASIC FUNCTIONS
+BASIC_EXEC:
+    jp nz,_main_end_error
+
+    callIY ; call the function
+    call printNewLine
+    call printNewLine
+    jp _main_end_ok
+
+BASIC:
+    dl val
+    dl 0x000000 ; list terminator
+val:
+    jr @start
+    asciz "val"
+@start:
+    call get_arg_text ; point hl at the string to convert
+    push hl ; ld ix,hl
+    pop ix  ; VAL expects IX to point to the string
+    ld a,VAL ; 
+    call OP
+    call printNewLine
+    call dumpRegistersHex
+    exx
+    ex af,af'
+    call dumpRegistersHex
+    exx
+    ex af,af'
+    ret
+
 ; TWO-NUMBER OPERATORS
 operator:
     dl addition
@@ -380,6 +416,10 @@ debug_print:
     include "basic/fpp.asm"
     include "basic/snippets.asm"
 ; -------------------- from basic/fpp.asm --------------------
+;
+;VAL - Return numeric value of string.
+;Input: ASCII string at IX
+;Result is variable type numeric.
 ;
 ;Function STR - convert numeric value to ASCII string.
 ;   Inputs: HLH'L'C = integer or floating-point number
