@@ -447,7 +447,7 @@ val:
     call printNewLine
     call VAL
     ld ix,G9 ; point to the format string
-    ld de,65535
+    ld de,9
     ; ld de,9 ; exponential format
     ld (ix),e ; store the format string
     ld (ix+1),d

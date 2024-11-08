@@ -12056,7 +12056,7 @@ PC     Output      Line
 0B4849 CD E9 38 0B 0448       call VAL
 0B484D DD 21 68 33 0449       ld ix,G9 ; point to the format string
        0B          
-0B4852 11 FF FF 00 0450       ld de,65535
+0B4852 11 09 00 00 0450       ld de,9
 0B4856             0451       ; ld de,9 ; exponential format
 0B4856 DD 73 00    0452       ld (ix),e ; store the format string
 0B4859 DD 72 01    0453       ld (ix+1),d
