@@ -739,7 +739,7 @@ VAL:
 
 				CALL    SIGNQ
 
-				; call dumpRegistersHex
+				call dumpRegistersHex
 				
         		PUSH    AF
         		CALL    CON

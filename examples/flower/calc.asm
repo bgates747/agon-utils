@@ -142,8 +142,8 @@ val:
     call get_arg_text ; point hl at the string to convert
     push hl ; ld ix,hl
     pop ix  ; VAL expects IX to point to the string
-    ld a,VAL ; 
-    call OP
+    call printNewLine
+    call VAL
     call printNewLine
     call dumpRegistersHex
     exx
@@ -416,7 +416,7 @@ debug_print:
     include "basic/fpp.asm"
     include "basic/snippets.asm"
     include "basic/sorry.asm"
-    
+
 ; -------------------- from basic/fpp.asm --------------------
 ;
 ;VAL - Return numeric value of string.
