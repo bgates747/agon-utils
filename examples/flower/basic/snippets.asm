@@ -882,3 +882,8 @@ EQUALS:			CALL    NXT			; Skip whitespace
 			RET     Z			; Yes, so return
 			; LD      A,4			; Otherwise
 			; JP      ERROR_           	; Throw error "Mistake"
+
+
+; STUBS OF STUFF WE WON'T BE USING
+POINT:      ret			; POINT( ; in agon_graphics.asm we won't be using
+USR:        ret			; USR ; in exec.asm

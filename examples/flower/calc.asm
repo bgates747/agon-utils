@@ -415,6 +415,8 @@ debug_print:
     INCLUDE "basic/macros.inc"
     include "basic/fpp.asm"
     include "basic/snippets.asm"
+    include "basic/sorry.asm"
+    
 ; -------------------- from basic/fpp.asm --------------------
 ;
 ;VAL - Return numeric value of string.

@@ -68,7 +68,7 @@ ERROR_FP:			LD      SP,IY           ;Restore SP from IY
 ;Perform operation or function:
 ;
 ; OP:			CP      (RTABLE-DTABLE)/3
-OP:			CP      RTABLE-DTABLE/3 ; ez80asm doesn't do nested expressions
+OP:				CP      RTABLE-DTABLE/3 ; ez80asm doesn't do nested expressions
         		JR      NC,BAD
         		; CP      (FTABLE-DTABLE)/3
         		CP      FTABLE-DTABLE/3 ; ditto
@@ -136,7 +136,7 @@ FTABLE:			DW24  ABSV            ;ABS
         		DW24  SQR             ;SQR
         		DW24  TAN             ;TAN
 ;
-		        DW24  ZERO_FP            ;ZERO
+		        DW24  FPZERO            ;ZERO
         		DW24  FONE            ;FONE
         		DW24  TRUE            ;TRUE
         		DW24  PI              ;PI
@@ -154,7 +154,7 @@ RTABLE:			DW24  FAND            ;AND (FLOATING-POINT)
         		DW24  FBDIV           ;DIV
         		DW24  FEOR            ;EOR
         		DW24  FMOD            ;MOD
-        		DW24  FOR_FPP             ;OR
+        		DW24  FFOR             ;OR (FLOATING-POINT)
         		DW24  FLE             ;<= 
         		DW24  FNE             ;<>
         		DW24  FGE             ;>=
@@ -215,10 +215,10 @@ IEOR:			LD      A,H
         		EXX
         		RET
 ;
-;FOR_FPP - Floating-point OR.
+;FFOR - Floating-point OR.
 ;IOR - Integer OR.
 ;
-FOR_FPP:			CALL    FIX2
+FFOR:			CALL    FIX2
 IOR:			LD      A,H
         		OR      D
         		LD      H,A
@@ -343,7 +343,7 @@ FADD4:			EXX
         		RES     7,H
         		DEC     C
         		INC     C
-        		JP      Z,ZERO_FP
+        		JP      Z,FPZERO
         		OR      A               ;RESULT SIGNQ
         		RET     P               ;POSITIVE
         		SET     7,H             ;NEGATIVE
@@ -449,7 +449,7 @@ IMUL1:			DEC     C
 ;
 FMUL:			DEC     B               ;TEST FOR ZERO
         		INC     B
-        		JP      Z,ZERO_FP
+        		JP      Z,FPZERO
         		DEC     C               ;TEST FOR ZERO
         		INC     C
         		RET     Z
@@ -483,12 +483,12 @@ FMUL:			DEC     B               ;TEST FOR ZERO
         		LD      A,C             ;COMPUTE NEW EXPONENT
         		ADC     A,B
 CHKOVF:			JR      C,CHKO1
-        		JP      P,ZERO_FP          ;UNDERFLOW
+        		JP      P,FPZERO          ;UNDERFLOW
         		JR      CHKO2
 CHKO1:			JP      M,OFLOW         ;OVERFLOW
 CHKO2:			ADD     A,80H
         		LD      C,A
-        		JP      Z,ZERO_FP
+        		JP      Z,FPZERO
         		EX      AF,AF'          ;RESTORE SIGN BIT
         		RES     7,H
         		RET     P
@@ -727,14 +727,20 @@ SGN:			CALL    TEST_FP
         		RET     Z               ;ZERO
         		BIT     7,H
         		JP      NZ,TRUE         ;-1
-        		CALL    ZERO_FP
+        		CALL    FPZERO
         		JP      ADD1            ;1
 ;
 ;VAL - Return numeric value of string.
 ;Input: ASCII string at IX
 ;Result is variable type numeric.
 ;
-VAL:			CALL    SIGNQ
+VAL:			
+				; call dumpRegistersHex
+
+				CALL    SIGNQ
+
+				; call dumpRegistersHex
+				
         		PUSH    AF
         		CALL    CON
         		POP     AF
@@ -957,7 +963,7 @@ EXP0:			CALL    LN2             ;LN(2)
         		BIT     7,E
         		JR      Z,EXP1
         		RLA
-        		JP      C,ZERO_FP
+        		JP      C,FPZERO
         		LD      A,EXPRNG
         		JP      ERROR_FP           ;"Exp range"
 ;
@@ -1002,11 +1008,11 @@ EXP1:			AND     80H
 EXP4:			ADD     A,80H
         		ADD     A,C
         		JR      C,EXP2
-        		JP      P,ZERO_FP          ;UNDERFLOW
+        		JP      P,FPZERO          ;UNDERFLOW
         		JR      EXP3
 EXP2:			JP      M,OFLOW         ;OVERFLOW
 EXP3:			ADD     A,80H
-        		JP      Z,ZERO_FP
+        		JP      Z,FPZERO
         		LD      C,A
         		XOR     A               ;NUMERIC MARKER
         		RET
@@ -1068,7 +1074,7 @@ LN4:			PUSH    AF              ;SAVE EXPONENT
         		POP     AF              ;EXPONENT
         		CALL    PUSH5
         		EX      AF,AF'
-        		CALL    ZERO_FP
+        		CALL    FPZERO
         		EX      AF,AF'
         		SUB     80H
         		JR      Z,LN3
@@ -1452,7 +1458,7 @@ DLOAD5_SPL:		LD      B,(IX+6)
 ;           IX updated (points to delimiter)
 ;           A7 = 0 (numeric marker)
 ;
-CON:			CALL    ZERO_FP            ;INITIALISE TO ZERO
+CON:			CALL    FPZERO            ;INITIALISE TO ZERO
         		LD      C,0             ;TRUNCATION COUNTER
         		CALL    NUMBER          ;GET INTEGER PART
         		CP      '.'
@@ -1869,11 +1875,11 @@ FCOMP1:			CALL    FLOAT2          ;Float both
 ; Result pre-set to FALSE
 ; ICP1, FCP1 destroy A,F
 ;
-; ZERO_FP - Return zero.
+; FPZERO - Return zero.
 ;  Destroys: A,C,H,L,H',L'
 ;
 ICP:			CALL    ICP1
-ZERO_FP:			LD      A,0
+FPZERO:			LD      A,0
         		EXX
         		LD      H,A
 	       		LD      L,A
@@ -1884,7 +1890,7 @@ ZERO_FP:			LD      A,0
         		RET
 ;
 FCP:			CALL    FCP1
-        		JR      ZERO_FP            ;PRESET FALSE
+        		JR      FPZERO            ;PRESET FALSE
 ;
 FCP0:			LD      A,C
         		CP      B               ;COMPARE EXPONENTS
@@ -2270,4 +2276,7 @@ SIGNQ:			LD      A,(IX)
         		CP      '-'
         		RET     Z
         		DEC     IX
+
+				; call dumpRegistersHex
+
         		RET

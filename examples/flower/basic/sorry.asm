@@ -19,8 +19,8 @@
 			
 ENVEL:
 ADVAL:
-PUTIMS:
-			XOR     A
-			CALL    EXTERR
-			DEFB    "Sorry"
-			DEFB    0
+PUTIMS: 	ret ; hopefully we won't be needing this
+			; XOR     A
+			; CALL    EXTERR
+			; DEFB    "Sorry"
+			; DEFB    0

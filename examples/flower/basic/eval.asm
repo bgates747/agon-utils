@@ -111,19 +111,19 @@
 FUNTOK:			EQU	8DH			; First token number
 ;
 FUNTBL:			DW24	DECODE			; Line number
-			; DW24	OPENIN			; OPENIN ; opening a file, we won't be using
-			; DW24	PTR_EV			; PTR ; related to file handling, we won't be using
-			; DW24	PAGE			; PAGE (label definition not found)
-			; DW24	TIMEV_EV			; TIME ; related to time handling, we won't be using
+			DW24	OPENIN			; OPENIN ; opening a file, we won't be using
+			DW24	PTR_EV			; PTR ; related to file handling, we won't be using
+			DW24	PAGE			; PAGE 
+			DW24	TIMEV_EV			; TIME ; related to time handling, we won't be using
 			DW24	LOMEMV_EV			; LOMEM
 			DW24	HIMEMV_EV			; HIMEM
 			DW24	ABSV_EV			; ABS
 			DW24	ACS_EV			; ACS
-			; DW24	ADVAL			; ADVAL ; IN sorry.asm, don't need
+			DW24	ADVAL			; ADVAL ; IN sorry.asm, don't need
 			DW24	ASC			; ASC
 			DW24	ASN_EV			; ASN
 			DW24	ATN_EV			; ATN
-			; DW24	BGET			; BGET ; get a byte from a file, we won't be using
+			DW24	BGET			; BGET ; get a byte from a file, we won't be using
 			DW24	COS_EV			; COS
 			DW24	COUNTV			; COUNT
 			DW24	DEG_EV			; DEG
@@ -131,22 +131,22 @@ FUNTBL:			DW24	DECODE			; Line number
 			DW24	ERRV			; ERR
 			DW24	EVAL_			; EVAL
 			DW24	EXP_EV			; EXP
-			; DW24	EXT_EV			; EXT ; related to file handling, we won't be using
+			DW24	EXT_EV			; EXT ; related to file handling, we won't be using
 			DW24	ZERO			; FALSE
-			; DW24	FN			; FN (label definition not found)
-			; DW24	GET			; GET ; reading from keyboard, we won't be using
-			; DW24	INKEY			; INKEY ; reading from keyboard, we won't be using
+			DW24	FN			; FN 
+			DW24	GET			; GET ; reading from keyboard, we won't be using
+			DW24	INKEY			; INKEY ; reading from keyboard, we won't be using
 			DW24	INSTR			; INSTR(
 			DW24	INT_EV_			; INT
 			DW24	LEN			; LEN
 			DW24	LN_EV			; LN
 			DW24	LOG_EV			; LOG
 			DW24	NOTK_EV			; NOT
-			; DW24	OPENUP			; OPENUP ; related to file handling, we won't be using
-			; DW24	OPENOT			; OPENOUT ; related to file handling, we won't be using
+			DW24	OPENUP			; OPENUP ; related to file handling, we won't be using
+			DW24	OPENOT			; OPENOUT ; related to file handling, we won't be using
 			DW24	PI_EV			; PI
-			; DW24	POINT			; POINT( ; in agon_graphics.asm
-			; DW24	POS			; POS ; related to cursor position, we won't be using
+			DW24	POINT			; POINT( ; in agon_graphics.asm we won't be using
+			DW24	POS			; POS ; related to cursor position, we won't be using
 			DW24	RAD_EV			; RAD
 			DW24	RND			; RND
 			DW24	SGN_EV			; SGN
@@ -155,18 +155,20 @@ FUNTBL:			DW24	DECODE			; Line number
 			DW24	TAN_EV			; TAN
 			DW24	TOPV			; TO(P)
 			DW24	FOR_EV			; FOR
-			; DW24	USR			; USR ; in exec.asm
+			DW24	USR			; USR ; in exec.asm
 			DW24	VAL_EV			; VAL
-			; DW24	VPOS			; VPOS ; related to cursor position, we won't be using
-			; DW24	CHRS			; CHRS ; reading from keyboard, we won't be using
-			; DW24	GETS			; GETS ; reading from keyboard, we won't be using
-			; DW24	INKEYS			; INKEYS ; reading from keyboard, we won't be using
+			DW24	VPOS			; VPOS ; related to cursor position, we won't be using
+			DW24	CHRS			; CHRS ; reading from keyboard, we won't be using
+			DW24	GETS			; GETS ; reading from keyboard, we won't be using
+			DW24	INKEYS			; INKEYS ; reading from keyboard, we won't be using
 			DW24	LEFTS			; LEFTS(
 			DW24	MIDS			; MIDS(
 			DW24	RIGHTS			; RIGHTS(
 			DW24	STRS			; STR$
 			DW24	STRING_			; STRINGS(
-			; DW24	EOF			; EOF ; reading from file, we won't be using
+			DW24	EOF			; EOF ; reading from file, we won't be using
+
+PAGE: ret ; stub function for an item in FUNTBL which doesn't exist
 ;
 FUNTBL_END:		EQU	$
 ; TCMD:			EQU     FUNTOK+(FUNTBL_END-FUNTBL)/3
@@ -616,7 +618,7 @@ CONS2:			LD      A,(IY)			; Fetch the next character
 			LD      A,80H           	; String marker
 			RET
 ;
-;CON - Get unsigned numeric constant from ASCII string.
+;CON_EV - Get unsigned numeric constant from ASCII string.
 ;   Inputs: ASCII string at (IY).
 ;  Outputs: Variable-type result in HLH'L'C
 ;           IY updated (points to delimiter)
@@ -690,42 +692,51 @@ LOADS2:			LD      A,(HL)
 ;Results are integer numeric.
 ;
 ; we won't be using the following:
-; POS:			CALL    GETCSR			; Return the horizontal cursor position
-; 			EX      DE,HL			;  L: The X cursor position
-; 			JP      COUNT1			; Return an 8-bit value
-; ;			
-; VPOS:			CALL    GETCSR			; Return the vertical cursor position
-; 			JP      COUNT1			; Return an 8-bit value
+POS:		ret	
+			; CALL    GETCSR			; Return the horizontal cursor position
+			; EX      DE,HL			;  L: The X cursor position
+			; JP      COUNT1			; Return an 8-bit value
 ;			
-; EOF:			CALL    CHANEL			; Check for EOF
-; 			CALL    OSSTAT
-; 			JP      Z,FOR_EV			; Yes, so return true
-; 			JP      ZERO			; Otherwise return false (zero)
-; ;			
-; BGET:			CALL    CHANEL          	; Channel number
-; 			CALL    OSBGET
-; 			LD      L,A
-; 			JP      COUNT0			; Return an 8-bit value
-; ;			
-; INKEY:			CALL    ITEMI			; Get the argument
-; 			BIT	7, H			; Check the sign
-; 			EXX				; HL: The argument
-; 			JP	NZ, INKEYM		; It's negative, so do INKEY(-n)
-; 			CALL	INKEY0 			; Do INKEY(n)
-; 			JR      ASC0			; Return a numeric value
-; ;			
-; GET:			CALL    NXT			; Skip whitespace
-; 			CP      '('			; Is it GET(
-; 			JR      NZ,GET0			; No, so get a keyboard character
-; 			CALL    ITEMI           	; Yes, so fetch the port address
-; 			EXX
-; 			LD      B,H			; BC: The port address
-; 			LD      C,L
-; 			IN      L,(C)           	;  L: Input from port BC
-; 			JR      COUNT0			; Return an 8-bit value
-; ;
-; GET0:			CALL    GETS			; Read the keyboard character			
-; 			JR      ASC1			; And return the value
+VPOS:		ret	
+			; CALL    GETCSR			; Return the vertical cursor position
+			; JP      COUNT1			; Return an 8-bit value
+			
+EOF:		ret	
+			; CALL    CHANEL			; Check for EOF
+			; CALL    OSSTAT
+			; JP      Z,FOR_EV			; Yes, so return true
+			; JP      ZERO			; Otherwise return false (zero)
+;			
+BGET:		ret	
+			; CALL    CHANEL          	; Channel number
+			; CALL    OSBGET
+			; LD      L,A
+			; JP      COUNT0			; Return an 8-bit value
+;			
+INKEY:		ret
+			; CALL    ITEMI			; Get the argument
+			; BIT	7, H			; Check the sign
+			; EXX				; HL: The argument
+			; JP	NZ, INKEYM		; It's negative, so do INKEY(-n)
+			; CALL	INKEY0 			; Do INKEY(n)
+			; JR      ASC0			; Return a numeric value
+;			
+GET:		ret	
+			; CALL    NXT			; Skip whitespace
+			; CP      '('			; Is it GET(
+			; JR      NZ,GET0			; No, so get a keyboard character
+			; CALL    ITEMI           	; Yes, so fetch the port address
+			; EXX
+			; LD      B,H			; BC: The port address
+			; LD      C,L
+			; IN      L,(C)           	;  L: Input from port BC
+			; JR      COUNT0			; Return an 8-bit value
+;
+GET0:		ret	
+			; CALL    GETS			; Read the keyboard character			
+			; JR      ASC1			; And return the value
+
+; end of the functions we won't be using
 
 
 ;			
@@ -783,64 +794,74 @@ COUNT2:			EXX
 			RET
 
 ; ; we won't be using the following:
-; ;OPENIN - Open a file for reading.
-; ;OPENOT - Open a file for writing.
-; ;OPENUP - Open a file for reading or writing.
-; ;Result is integer channel number (0 if error)
-; ;
-; OPENOT:			XOR     A			; Open for writing
-; 			JR	OPENIN_1
-; ;			
-; OPENUP:			LD      A,2			; Open for reading / writing
-; 			JR	OPENIN_1
-; ;
-; OPENIN:			LD      A,1			; Open for reading
-; ;
-; OPENIN_1:		PUSH    AF              	; Save OPEN type
-; 			CALL    ITEMS           	; Fetch the filename
-; 			LD      A,CR
-; 			LD      (DE),A
-; 			POP     AF              	; Restore the OPEN type
-; 			ADD     A,-1            	; Affect the flags
-; 			LD      HL,ACCS
-; 			CALL    OSOPEN			; Call the OS specific OPEN routine in patch.asm
-; 			LD      L,A			; L: Channel number
-; 			JR      COUNT0			; Return channel number to BASIC
+;OPENIN - Open a file for reading.
+;OPENOT - Open a file for writing.
+;OPENUP - Open a file for reading or writing.
+;Result is integer channel number (0 if error)
 ;
-; ;EXT - Return length of file.
-; ;PTR - Return current file pointer.
-; ;Results are integer numeric.
-; ;
-; EXT_EV:			CALL    CHANEL
-; 			CALL    GETEXT
-; 			JR      TIME0
-; ;
-; PTR_EV:			CALL    CHANEL
-; 			CALL    GETPTR
-; 			JR      TIME0
+OPENOT:		ret	
+			; XOR     A			; Open for writing
+			; JR	OPENIN_1
+;			
+OPENUP:		ret	
+			; LD      A,2			; Open for reading / writing
+			; JR	OPENIN_1
 ;
-; ;TIME - Return current value of elapsed time.
-; ;Result is integer numeric.
-; ;
-; TIMEV_EV:			LD      A,(IY)
-; 			CP      '$'
-; 			JR      Z,TIMEVS_EV
-; 			CALL    GETIME
-; TIME0:			PUSH    DE
-; 			EXX
-; 			POP     HL
-; 			XOR     A
-; 			LD      C,A
-; 			RET
+OPENIN:		ret	
+			; LD      A,1			; Open for reading
 ;
-; ;TIME$ - Return date/time string.
-; ;Result is string
-; ;
-; TIMEVS_EV:			INC     IY              ;SKIP $
-; 			CALL    GETIMS
-; 			LD      A,80H           ;MARK STRING
-; 			RET
+OPENIN_1:	ret	
+			; PUSH    AF              	; Save OPEN type
+			; CALL    ITEMS           	; Fetch the filename
+			; LD      A,CR
+			; LD      (DE),A
+			; POP     AF              	; Restore the OPEN type
+			; ADD     A,-1            	; Affect the flags
+			; LD      HL,ACCS
+			; CALL    OSOPEN			; Call the OS specific OPEN routine in patch.asm
+			; LD      L,A			; L: Channel number
+			; JR      COUNT0			; Return channel number to BASIC
+
+;EXT - Return length of file.
+;PTR - Return current file pointer.
+;Results are integer numeric.
 ;
+EXT_EV:		ret	
+			; CALL    CHANEL
+			; CALL    GETEXT
+			; JR      TIME0
+;
+PTR_EV:		ret	
+			; CALL    CHANEL
+			; CALL    GETPTR
+			; JR      TIME0
+
+;TIME - Return current value of elapsed time.
+;Result is integer numeric.
+;
+TIMEV_EV:	ret		
+			; LD      A,(IY)
+			; CP      '$'
+			; JR      Z,TIMEVS_EV
+			; CALL    GETIME
+TIME0:		ret	
+			; PUSH    DE
+			; EXX
+			; POP     HL
+			; XOR     A
+			; LD      C,A
+			; RET
+
+;TIME$ - Return date/time string.
+;Result is string
+;
+TIMEVS_EV:	ret		
+			; INC     IY              ;SKIP $
+			; CALL    GETIMS
+			; LD      A,80H           ;MARK STRING
+			; RET
+; end of the functions we won't be using
+
 ;String comparison:
 ;
 SLT:			CALL    SCP
@@ -1200,44 +1221,52 @@ SRCH3:			POP     HL
 ;
 SRCH4:			OR      0FFH            	; Flags: NZ, NC
 			RET                     	; Not found
+
+; we won't be using the following:
+;CHRS - Return character with given ASCII value.
+;Result is string.
 ;
-; ;CHRS - Return character with given ASCII value.
-; ;Result is string.
-; ;
-; CHRS:			CALL    ITEMI
-; 			EXX
-; 			LD      A,L
-; 			JR      GET1
-; ;
-; ;GETS - Return key pressed as stringor character at position (X,Y).
-; ;Result is string.
-; ;
-; GETS:			CALL	NXT		;NEW CODE FOR GET$(X,Y)
-; 			CP	'('
-; 			JP	Z, GETSCHR	;CALL FUNCTION IN PATCH.Z80
-; 			CALL    OSRDCH
-; GET1:			SCF
-; 			JR      INKEY1
-; ;
-; ; INKEYS - Wait up to n centiseconds for keypress.
-; ;          Return key pressed as string or null
-; ;          string if time elapsed.
-; ; Result is string.
-; ;
-; INKEYS:			CALL    ITEMI			; Fetch the argument
-; 			EXX
-; INKEY0:			CALL    OSKEY			; This is the entry point for INKEY(n)
-; INKEY1:			LD      DE,ACCS			; Store the result in the string accumulator
-; 			LD      (DE),A
-; 			LD      A,80H
-; 			RET     NC
-; 			INC     E
-; 			RET
-; ;
-; ; INKEYM - Check immediately whether a given key is being pressed
-; ; Result is integer numeric
-; ;
-; INKEYM:			MOSCALL	mos_getkbmap		; Get the base address of the keyboard
+CHRS:		ret	
+			; CALL    ITEMI
+			; EXX
+			; LD      A,L
+			; JR      GET1
+;
+;GETS - Return key pressed as stringor character at position (X,Y).
+;Result is string.
+;
+GETS:		ret	
+			; CALL	NXT		;NEW CODE FOR GET$(X,Y)
+			; CP	'('
+			; JP	Z, GETSCHR	;CALL FUNCTION IN PATCH.Z80
+			; CALL    OSRDCH
+GET1:		ret
+			; SCF
+			; JR      INKEY1
+;
+; INKEYS - Wait up to n centiseconds for keypress.
+;          Return key pressed as string or null
+;          string if time elapsed.
+; Result is string.
+;
+INKEYS:		ret
+			; CALL    ITEMI			; Fetch the argument
+			; EXX
+INKEY0:		ret	
+			; CALL    OSKEY			; This is the entry point for INKEY(n)
+INKEY1:		ret	
+			; LD      DE,ACCS			; Store the result in the string accumulator
+			; LD      (DE),A
+			; LD      A,80H
+			; RET     NC
+			; INC     E
+			; RET
+;
+; INKEYM - Check immediately whether a given key is being pressed
+; Result is integer numeric
+;
+INKEYM:		ret	
+; 			MOSCALL	mos_getkbmap		; Get the base address of the keyboard
 ; 			INC	HL			; Index from 0
 ; 			LD	A, L			; Negate the LSB of the answer
 ; 			NEG
@@ -1264,6 +1293,9 @@ SRCH4:			OR      0FFH            	; Flags: NZ, NC
 ; 			AND	(IX+0)			; Check whether the bit is set
 ; 			JP	Z, ZERO			; No, so return 0
 ; 			JP	FOR_EV			; Otherwise return -1
+
+; end of the functions we won't be using
+
 ;
 ; A bit lookup table
 ;
