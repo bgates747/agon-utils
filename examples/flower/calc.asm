@@ -119,39 +119,9 @@ main:
 
     callIY ; call the function
     call printNewLine
-    call printNewLine
     jp _main_end_ok
 
 ; ========== DISPATCH TABLES ==========
-; BASIC FUNCTIONS
-BASIC_EXEC:
-    jp nz,_main_end_error
-
-    callIY ; call the function
-    call printNewLine
-    call printNewLine
-    jp _main_end_ok
-
-BASIC:
-    dl val
-    dl 0x000000 ; list terminator
-val:
-    jr @start
-    asciz "val"
-@start:
-    call get_arg_text ; point hl at the string to convert
-    push hl ; ld ix,hl
-    pop ix  ; VAL expects IX to point to the string
-    call printNewLine
-    call VAL
-    call printNewLine
-    call dumpRegistersHex
-    exx
-    ex af,af'
-    call dumpRegistersHex
-    exx
-    ex af,af'
-    ret
 
 ; TWO-NUMBER OPERATORS
 operator:
@@ -456,3 +426,36 @@ debug_print:
 ;  Outputs: String in string accumulator.
 ;           E = string length.  D = ACCS/256
 ;
+; BASIC FUNCTIONS
+BASIC_EXEC:
+    jp nz,_main_end_error
+
+    callIY ; call the function
+    call printNewLine
+    jp _main_end_ok
+
+BASIC:
+    dl val
+    dl 0x000000 ; list terminator
+val:
+    jr @start
+    asciz "val"
+@start:
+    call get_arg_text ; point hl at the string to convert
+    push hl ; ld ix,hl
+    pop ix  ; VAL expects IX to point to the string
+    call printNewLine
+    call VAL
+    ld ix,G9 ; point to the format string
+    ld de,65535
+    ; ld de,9 ; exponential format
+    ld (ix),e ; store the format string
+    ld (ix+1),d
+    ld de,BASIC_STR_OUT ; point to the output buffer
+    call STRING ; convert the number back to a string
+    ld hl,BASIC_STR_OUT ; point to the string output buffer
+    call printString
+    call printNewLine
+    ret
+
+BASIC_STR_OUT: blkb 256,0

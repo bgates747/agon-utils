@@ -734,13 +734,7 @@ SGN:			CALL    TEST_FP
 ;Input: ASCII string at IX
 ;Result is variable type numeric.
 ;
-VAL:			
-				; call dumpRegistersHex
-
-				CALL    SIGNQ
-
-				call dumpRegistersHex
-				
+VAL:			CALL    SIGNQ				
         		PUSH    AF
         		CALL    CON
         		POP     AF
