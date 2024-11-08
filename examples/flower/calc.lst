@@ -12052,22 +12052,22 @@ PC     Output      Line
 0B483E CD 4C 27 0B 0444       call get_arg_text ; point hl at the string to convert
 0B4842 E5          0445       push hl ; ld ix,hl
 0B4843 DD E1       0446       pop ix  ; VAL expects IX to point to the string
-0B4845 CD 88 02 0B 0447       call printNewLine
-0B4849 CD E9 38 0B 0448       call VAL
-0B484D DD 21 68 33 0449       ld ix,G9 ; point to the format string
+0B4845 CD E9 38 0B 0447       call VAL
+0B4849 DD 21 6D 49 0448       ld ix,NUMF ; point to the format code buffer
        0B          
-0B4852 11 09 00 00 0450       ld de,9
-0B4856             0451       ; ld de,9 ; exponential format
-0B4856 DD 73 00    0452       ld (ix),e ; store the format string
-0B4859 DD 72 01    0453       ld (ix+1),d
-0B485C 11 71 48 0B 0454       ld de,BASIC_STR_OUT ; point to the output buffer
-0B4860 CD 71 3C 0B 0455       call STRING ; convert the number back to a string
-0B4864 21 71 48 0B 0456       ld hl,BASIC_STR_OUT ; point to the string output buffer
-0B4868 CD 73 02 0B 0457       call printString
-0B486C CD 88 02 0B 0458       call printNewLine
-0B4870 C9          0459       ret
-0B4871             0460   
-0B4871 00 00 00 00 0461   BASIC_STR_OUT: blkb 256,0
+0B484E 1E 0A       0449       ld e,10 ; fractional digits
+0B4850 DD 73 01    0450       ld (ix+1),e ; store the format code
+0B4853 16 02       0451       ld d,%000000010
+0B4855 DD 72 02    0452       ld (ix+2),d ; store the format code
+0B4858 11 6D 48 0B 0453       ld de,STROUT ; point to the output buffer
+0B485C CD 71 3C 0B 0454       call STRING ; convert the number back to a string
+0B4860 21 6D 48 0B 0455       ld hl,STROUT ; point to the string output buffer
+0B4864 CD 73 02 0B 0456       call printString
+0B4868 CD 88 02 0B 0457       call printNewLine
+0B486C C9          0458       ret
+0B486D             0459   
+0B486D             0460   ; output buffer for strings from BASIC
+0B486D 00 00 00 00 0461   STROUT: blkb 256,0
        00 00 00 00 
        00 00 00 00 
        00 00 00 00 
@@ -12131,3 +12131,11 @@ PC     Output      Line
        00 00 00 00 
        00 00 00 00 
        00 00 00 00 
+0B496D             0462   ; numeric string format code
+0B496D             0463   ; byte 1 is the number of significant digits:
+0B496D             0464   ; -- up to 10
+0B496D             0465   ; -- 0 or > 10 defaults to max decimal notation
+0B496D             0466   ; -- if less than number of integer digits, output will be in E notation
+0B496D             0467   ; byte 2 bit 1 is E notation flag when set
+0B496D             0468   ; -- trailing zeros are added to bring number of significant digits to the specified number
+0B496D 00 00 00    0469   NUMF: dl 0

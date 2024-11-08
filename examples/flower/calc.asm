@@ -444,18 +444,26 @@ val:
     call get_arg_text ; point hl at the string to convert
     push hl ; ld ix,hl
     pop ix  ; VAL expects IX to point to the string
-    call printNewLine
     call VAL
-    ld ix,G9 ; point to the format string
-    ld de,9
-    ; ld de,9 ; exponential format
-    ld (ix),e ; store the format string
-    ld (ix+1),d
-    ld de,BASIC_STR_OUT ; point to the output buffer
+    ld ix,NUMF ; point to the format code buffer
+    ld e,10 ; fractional digits
+    ld (ix+1),e ; store the format code
+    ld d,%000000010
+    ld (ix+2),d ; store the format code
+    ld de,STROUT ; point to the output buffer
     call STRING ; convert the number back to a string
-    ld hl,BASIC_STR_OUT ; point to the string output buffer
+    ld hl,STROUT ; point to the string output buffer
     call printString
     call printNewLine
     ret
 
-BASIC_STR_OUT: blkb 256,0
+; output buffer for strings from BASIC
+STROUT: blkb 256,0
+; numeric string format code
+; byte 1 is the number of significant digits:
+; -- up to 10
+; -- 0 or > 10 defaults to max decimal notation
+; -- if less than number of integer digits, output will be in E notation
+; byte 2 bit 1 is E notation flag when set
+; -- trailing zeros are added to bring number of significant digits to the specified number
+NUMF: dl 0
