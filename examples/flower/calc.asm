@@ -30,16 +30,15 @@
 ; SHAWN'S INCLUDES
 	INCLUDE	"strings24.asm"
 
+; BASIC FLOATING POINT FUNCTIONS
+    include "mathfpp.inc"
+
 ; APPLICATION INCLUDES
 str_usage: ASCIZ "Usage: scratch <args>\r\n"
 str_error: ASCIZ "Error!\r\n"
 str_success: ASCIZ "Success!\r\n"
 
-; This is a scratch moslet for testing new features
-; Parameters:
-;
-
-; ========= BOILERPLATE MAIN LOOP ========= 
+; ========= MAIN LOOP ========= 
 ; The main routine
 ; IXU: argv - pointer to array of parameters
 ;   C: argc - number of parameters
@@ -280,6 +279,18 @@ get_arg_s24:
     call asc_to_s24 ; convert the string to a number
     ret ; return with the value in DE
 
+; get the next argument after ix as a floating point number
+; inputs: ix = pointer to the argument string
+; outputs: HLH'L'C = floating point number, ix points to the next argument
+; destroys: everything except iy, including prime registers
+get_arg_float:
+    lea ix,ix+3 ; point to the next argument
+    push ix ; preserve
+    ld ix,(ix)  ; point to argument string
+    call VAL ; convert the string to a float
+    pop ix ; restore
+    ret ; return with the value in HLH'L'C
+
 get_plot_coords:
 ; get the move coordinates
     lea ix,ix+3 ; pointer to next argument address
@@ -378,54 +389,6 @@ debug_print:
     call printNewLine   ; DEBUG
     ret
 
-; ========= EXPERIMENTAL FLOATING POINT FUNCTIONS =========
-    include "basic/ram.asm"
-    include "basic/eval.asm"
-    INCLUDE	"basic/equs.inc"
-    INCLUDE "basic/macros.inc"
-    include "basic/fpp.asm"
-    include "basic/snippets.asm"
-    include "basic/sorry.asm"
-
-; -------------------- from basic/fpp.asm --------------------
-;
-;VAL - Return numeric value of string.
-;Input: ASCII string at IX
-;Result is variable type numeric.
-;
-;Function STR - convert numeric value to ASCII string.
-;   Inputs: HLH'L'C = integer or floating-point number
-;           DE = address at which to store string
-;           IX = address of @% format control
-;  Outputs: String stored, with NUL terminator
-
-
-;NUMBER: Get unsigned integer from string.
-;    Inputs: string at (IX)
-;            C = truncated digit count
-;                (initially zero)
-;            B = total digit count
-;            HLH'L' = initial value
-;   Outputs: HLH'L' = number (binary integer)
-;            A = delimiter.
-;            B, C & IX updated
-;  Destroys: A,B,C,D,E,H,L,B',C',D',E',H',L',IX,F
-;
-
-; -------------------- from basic/eval.asm --------------------
-;
-;Function STR - convert numeric value to ASCII string.
-;   Inputs: HLH'L'C = integer or floating-point number.
-;  Outputs: String in string accumulator.
-;           E = length, D = ACCS/256
-;           A = 80H (type=string)
-
-
-;HEXSTR - convert numeric value to HEX string.
-;   Inputs: HLH'L'C = integer or floating-point number
-;  Outputs: String in string accumulator.
-;           E = string length.  D = ACCS/256
-;
 ; BASIC FUNCTIONS
 BASIC_EXEC:
     jp nz,_main_end_error
@@ -441,29 +404,7 @@ val:
     jr @start
     asciz "val"
 @start:
-    call get_arg_text ; point hl at the string to convert
-    push hl ; ld ix,hl
-    pop ix  ; VAL expects IX to point to the string
-    call VAL
-    ld ix,NUMF ; point to the format code buffer
-    ld e,10 ; fractional digits
-    ld (ix+1),e ; store the format code
-    ld d,%000000010
-    ld (ix+2),d ; store the format code
-    ld de,STROUT ; point to the output buffer
-    call STRING ; convert the number back to a string
-    ld hl,STROUT ; point to the string output buffer
-    call printString
+    call get_arg_float 
+    call print_float_dec
     call printNewLine
     ret
-
-; output buffer for strings from BASIC
-STROUT: blkb 256,0
-; numeric string format code
-; byte 1 is the number of significant digits:
-; -- up to 10
-; -- 0 or > 10 defaults to max decimal notation
-; -- if less than number of integer digits, output will be in E notation
-; byte 2 bit 1 is E notation flag when set
-; -- trailing zeros are added to bring number of significant digits to the specified number
-NUMF: dl 0

@@ -53,6 +53,40 @@
                ; 10 cycles total
     ENDMACRO
 
+    MACRO PUSH_ALL
+        push af
+        push hl
+        push bc
+        push de
+        push ix
+        push iy
+        ex af,af'
+        exx
+        push af
+        push hl
+        push bc
+        push de
+        ex af,af'
+        exx
+    ENDMACRO
+
+    MACRO POP_ALL
+        ex af,af'
+        exx
+        pop de
+        pop bc
+        pop hl
+        pop af
+        ex af,af'
+        exx
+        pop iy
+        pop ix
+        pop de
+        pop bc
+        pop hl
+        pop af
+    ENDMACRO
+
 A_TO_HLU:
     ; call is 7 cycles
     ld (@scratch),hl ; 7 cycles
@@ -741,6 +775,19 @@ dumpRegistersHex:
     ld iy, (uiy)
     pop af
 ; all done
+    ret
+
+; additionally dump prime registers
+; inputs: none
+; outputs: values of every register printed to screen
+; destroys: nothing
+dumpRegistersHexAll:
+    call dumpRegistersHex
+    ex af,af'
+    exx
+    call dumpRegistersHex
+    ex af,af'
+    exx
     ret
 
 ; print hlu to screen in hexidecimal format
