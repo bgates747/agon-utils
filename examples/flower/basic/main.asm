@@ -18,9 +18,12 @@
 
 			.ASSUME	ADL = 1
 
+			INCLUDE "ram.asm"
+			INCLUDE	"equs.inc"
+
 			; SEGMENT CODE
 			
-			; XDEF	_MAIN_
+			; XDEF	_main
 			
 			; XDEF	COLD
 			; XDEF	WARM
@@ -162,64 +165,64 @@ TOKLO:			EQU     8FH			; This defines the block of tokens that are pseudo-variab
 TOKHI:			EQU     93H			; PTR, PAGE, TIME, LOMEM, HIMEM
 OFFSET:			EQU     CFH-TOKLO		; Offset to the parameterised SET versions
 
-; ; The main routine
-; ; IXU: argv - pointer to array of parameters
-; ;   C: argc - number of parameters
-; ; Returns:
-; ;  HL: Error code, or 0 if OK
-; ;
-; _MAIN_:			LD	HL, ACCS		; Clear the ACCS
-; 			LD	(HL), 0
-; 			LD	A, C			
-; 			CP	2
-; 			JR	Z, AUTOLOAD		; 2 parameters = autoload
-; 			JR	C, COLD			; 1 parameter = normal start
-; 			CALL	STAR_VERSION
-; 			CALL	TELL
-; 			DB	"Usage:\n\r"
-; 			DB	"RUN . <filename>\n\r", 0
-; 			LD	HL, 0			; The error code
-; 			JP	_end
-; ;							
-; AUTOLOAD:		LD	HL, (IX+3)		; HLU: Address of filename
-; 			LD	DE, ACCS		;  DE: Destination address
-; AUTOLOAD_1:		LD	A, (HL)			; Fetch the filename byte
-; 			LD	(DE), A			; 
-; 			INC	HL			; Increase the source pointer
-; 			INC	E			; We only need to increase E as ACCS is on a page boundary
-; 			JR	Z, AUTOLOAD_2		; End if we hit the page boundary
-; 			OR	A
-; 			JR	NZ, AUTOLOAD_1		; Loop until we hit a 0 byte
-; AUTOLOAD_2:		DEC	E
-; 			LD	A, CR
-; 			LD	(DE), A			; Replace the 0 byte with a CR for BBC BASIC
-; ;
-; COLD:			POP	HL			; Pop the return address to init off SPS
-; 			PUSH	HL 			; Stack it on SPL (*BYE will use this as the return address)
-; 			LD	HL, STAVAR		; Cold start
-; 			LD	SP, HL
-; 			LD	(HL), 10
-; 			INC	HL
-; 			LD	(HL),9
-; 			CALL    OSINIT			; Call the machine specific OS initialisation routines
-; 			LD      (HIMEM),DE		; This returns HIMEM (ramtop) in DE - store in the HIMEM sysvar
-; 			LD      (PAGE_),HL		; And PAGE in HL (where BASIC program storage starts) - store in PAGE sysvar
-; 			LD      A,B7H           	; Set LISTO sysvar; the bottom nibble is LISTO (7), top nibble is OPT (B)
-; 			LD      (LISTON),A		
-; 			LD      HL,NOTICE
-; 			LD      (ERRTXT),HL
-; 			CALL    NEWIT			; From what I can determine, NEWIT always returns with Z flag set
-; 			LD	A,(ACCS)		; Check if there is a filename in ACCS
-; 			OR	A
-; 			JP	NZ,CHAIN0		; Yes, so load and run
-; 			CALL	STAR_VERSION		; 
-; 			CALL    TELL			; Output the welcome message
-; 			DB    	"BBC BASIC (Z80) Version 3.00\n\r"
-; NOTICE:			DB    	"(C) Copyright R.T.Russell 1987\n\r"
-; 			DB	"\n\r", 0
-; ;			
-; WARM:			DB 	F6H			; Opcode for OR? Maybe to CCF (the following SCF will be the operand)
-; ;
+; The main routine
+; IXU: argv - pointer to array of parameters
+;   C: argc - number of parameters
+; Returns:
+;  HL: Error code, or 0 if OK
+;
+_main:			LD	HL, ACCS		; Clear the ACCS
+			LD	(HL), 0
+			LD	A, C			
+			CP	2
+			JR	Z, AUTOLOAD		; 2 parameters = autoload
+			JR	C, COLD			; 1 parameter = normal start
+			CALL	STAR_VERSION
+			CALL	TELL
+			DB	"Usage:\n\r"
+			DB	"RUN . <filename>\n\r", 0
+			LD	HL, 0			; The error code
+			JP	_end
+;							
+AUTOLOAD:		LD	HL, (IX+3)		; HLU: Address of filename
+			LD	DE, ACCS		;  DE: Destination address
+AUTOLOAD_1:		LD	A, (HL)			; Fetch the filename byte
+			LD	(DE), A			; 
+			INC	HL			; Increase the source pointer
+			INC	E			; We only need to increase E as ACCS is on a page boundary
+			JR	Z, AUTOLOAD_2		; End if we hit the page boundary
+			OR	A
+			JR	NZ, AUTOLOAD_1		; Loop until we hit a 0 byte
+AUTOLOAD_2:		DEC	E
+			LD	A, CR
+			LD	(DE), A			; Replace the 0 byte with a CR for BBC BASIC
+;
+COLD:			POP	HL			; Pop the return address to init off SPS
+			PUSH	HL 			; Stack it on SPL (*BYE will use this as the return address)
+			LD	HL, STAVAR		; Cold start
+			LD	SP, HL
+			LD	(HL), 10
+			INC	HL
+			LD	(HL),9
+			CALL    OSINIT			; Call the machine specific OS initialisation routines
+			LD      (HIMEM),DE		; This returns HIMEM (ramtop) in DE - store in the HIMEM sysvar
+			LD      (PAGE_),HL		; And PAGE in HL (where BASIC program storage starts) - store in PAGE sysvar
+			LD      A,B7H           	; Set LISTO sysvar; the bottom nibble is LISTO (7), top nibble is OPT (B)
+			LD      (LISTON),A		
+			LD      HL,NOTICE
+			LD      (ERRTXT),HL
+			CALL    NEWIT			; From what I can determine, NEWIT always returns with Z flag set
+			LD	A,(ACCS)		; Check if there is a filename in ACCS
+			OR	A
+			JP	NZ,CHAIN0		; Yes, so load and run
+			CALL	STAR_VERSION		; 
+			CALL    TELL			; Output the welcome message
+			DB    	"BBC BASIC (Z80) Version 3.00\n\r"
+NOTICE:			DB    	"(C) Copyright R.T.Russell 1987\n\r"
+			DB	"\n\r", 0
+;			
+WARM:			DB 	F6H			; Opcode for OR? Maybe to CCF (the following SCF will be the operand)
+;
 ; This is the main entry point for BASIC
 ;
 CLOOP:			SCF				; See above - not sure why this is here!
@@ -536,7 +539,7 @@ ERRWDS:			DB    7, "room", 0		;  0: No room
 			DB    3, "call", 0		; 30: Bad call
 			DB    "Arguments", 0		; 31: Arguments
 			DB    7, FOR, 0			; 32: No FOR
-			DB    "Can"t match ", FOR, 0	; 33: Can"t match FOR
+			DB    "Can't match ", FOR, 0	; 33: Can't match FOR
 			DB    FOR, " ", 5, 0		; 34: FOR variable
 			DB    0				; 35: *
 			DB    7, TO, 0			; 36: No TO
@@ -865,11 +868,11 @@ AUTO:			CALL    PAIR			; Get the parameter pair (HL: first parameter, BC: second
 			LD      (INCREM),A		; Store that in INCREM
 			JR      CLOOP0			; Jump back indirectly to the command loop via CLOOP0 (optimisation for size)
 ;
-; BAD_MAIN
+; BAD
 ; NEW
 ;
-BAD_MAIN:			CALL    TELL            	; Output "Bad program" error
-			DB    3				; Token for "BAD_MAIN"
+BAD:			CALL    TELL            	; Output "Bad program" error
+			DB    3				; Token for "BAD"
 			DB    "program"
 			DB    CR
 			DB    LF
@@ -888,7 +891,7 @@ OLD:			LD      HL,(PAGE_)		; HL: The start of the BASIC program area
 			LD      BC,252			; Look for a CR in the first 252 bytes of code; maximum line length
 			LD      A,CR
 			CPIR
-			JR      NZ,BAD_MAIN			; If not found, then the first line of code is not a valid BBC BASIC code
+			JR      NZ,BAD			; If not found, then the first line of code is not a valid BBC BASIC code
 			LD      A,L			; It could still be garbage though! Store the position in A; this requires
 			POP     HL			; PAGE to be on a 256 page boundary, and is now the length of the first line
 			LD      (HL),A			; Restore the length byte (this will have been set to 0 by NEW)
@@ -920,15 +923,6 @@ SAVE:			CALL    SETTOP          	; Set TOP sysvar
 			CALL    OSSAVE			; Call the SAVE routine in patch.asm
 WARM0:			JP      WARM			; Jump back to the command loop
 
-
-; -------- from exec.asm --------
-SYNTAX:			LD      A,16            ;"Syntax error"
-; 			JR	ERROR0
-; ESCAPE:			LD      A,17            ;"Escape"
-; ERROR0:			JP      ERROR_
-; fall through to ERROR_
-
-; -------- from main.asm --------
 ;
 ; ERROR
 ; Called whenever BASIC needs to halt with an error
@@ -1124,7 +1118,7 @@ SETOP1:			LD      C,(HL)			; BC: Get first byte of program line (line length)
 			CP      (HL)
 			INC     HL
 			JR      Z,SETOP1		; If CR then loop
-			JP      BAD_MAIN			; If anything else, then something has gone wrong - trip a Bad Program error
+			JP      BAD			; If anything else, then something has gone wrong - trip a Bad Program error
 ;
 SETOP2:			INC     HL             		; Skip the 3 byte end of program marker (&00, &FF, &FF)
 			INC     HL			; NB: Called from NEWIT
@@ -1150,7 +1144,7 @@ CLEAR:			PUSH    HL			; Stack the BASIC program pointer
 			LD      HL,DYNVAR		; Get the pointer to the dynamic variable pointers buffer in RAM
 			PUSH    BC			
 			; LD      B,3*(54+2)		; Loop counter
-			LD B,54+2*3			; EZ80ASM doesn't do order of operations
+			LD      B,54+2*3		; ez80asm doesn't do () in expressions
 CLEAR1:			LD      (HL),0			; Clear the dynamic variable pointers
 			INC     HL
 			DJNZ    CLEAR1
@@ -1231,15 +1225,13 @@ PRLINO:			PUSH    HL			; Swap HL and IY
 			RET
 ;
 ; DB: Modification for internationalisation
-; 
+;
 PRREM:			CALL	OUT_			; Output the REM token
-; @@:			LD	A, (HL)			; Fetch the character
 @@:			LD	A, (HL)			; Fetch the character
 			CP	CR			; If it is end of line, then
 			RET	Z			; we have finished
 			CALL	OUTCHR			; Ouput the character
 			INC	HL			
-			; JR	@B			; And loop		
 			JR	@B			; And loop		
 ;
 ; DB: End of modification
@@ -1701,8 +1693,8 @@ LOC2:			LD	DE, (HL)		; Fetch the original pointer
 			POP	HL			; Restore the original pointer
 			JR	Z, LOC6			; If the pointer in DE is zero, the variable is undefined at this point
 			; LD	HL, DE			; Make a copy of this pointer in HL
-			push de ; HOW DID THE ABOVE EVEN ASSEMBLE IN THE ORIGINAL?!
-			pop hl	; Make a copy of this pointer in HL
+			push de
+			pop hl ; how was that even possible?
 			INC     HL              	; Skip the link (24-bits)
 			INC     HL
 			INC	HL			; HL: Address of the variable name in DYNVARS
@@ -2150,3 +2142,147 @@ TELL:			EX      (SP), HL		; Get the return address off the stack into HL, this i
 			CALL    TEXT_			; first byte of the string that follows it. Print it, then
 			EX      (SP), HL		; HL will point to the next instruction, swap this back onto the stack	
 			RET				; at this point we'll return to the first instruction after the message
+
+; ========= STUB FUNCTIONS =========
+printInline:
+	RET
+	
+OSINIT:
+	call printInline
+	asciz "main.asm called OSINIT!"
+	ret
+
+CHAIN0:
+	call printInline
+	asciz "main.asm called CHAIN0!"
+	ret
+
+PROMPT:
+	call printInline
+	asciz "main.asm called PROMPT!"
+	ret
+
+OSLINE:
+	call printInline
+	asciz "main.asm called OSLINE!"
+	ret
+
+NXT:
+	call printInline
+	asciz "main.asm called NXT!"
+	ret
+
+XEQ:
+	call printInline
+	asciz "main.asm called XEQ!"
+	ret
+
+EXPRI:
+	call printInline
+	asciz "main.asm called EXPRI!"
+	ret
+
+SEARCH:
+	call printInline
+	asciz "main.asm called SEARCH!"
+	ret
+
+LTRAP:
+	call printInline
+	asciz "main.asm called LTRAP!"
+	ret
+
+DECODE:
+	call printInline
+	asciz "main.asm called DECODE!"
+	ret
+
+EXPRS:
+	call printInline
+	asciz "main.asm called EXPRS!"
+	ret
+
+OSSAVE:
+	call printInline
+	asciz "main.asm called OSSAVE!"
+	ret
+
+RESET:
+	call printInline
+	asciz "main.asm called RESET!"
+	ret
+
+OSSHUT:
+	call printInline
+	asciz "main.asm called OSSHUT!"
+	ret
+
+OSLOAD:
+	call printInline
+	asciz "main.asm called OSLOAD!"
+	ret
+
+FILL:
+	call printInline
+	asciz "main.asm called FILL!"
+	ret
+
+OSWRCH:
+	call printInline
+	asciz "main.asm called OSWRCH!"
+	ret
+
+COMMA:
+	call printInline
+	asciz "main.asm called COMMA!"
+	ret
+
+MUL16:
+	call printInline
+	asciz "main.asm called MUL16!"
+	ret
+
+BRAKET:
+	call printInline
+	asciz "main.asm called BRAKET!"
+	ret
+
+X4OR5:
+	call printInline
+	asciz "main.asm called X4OR5!"
+	ret
+
+LOADN:
+	call printInline
+	asciz "main.asm called LOADN!"
+	ret
+
+SFIX:
+	call printInline
+	asciz "main.asm called SFIX!"
+	ret
+
+ITEMI:
+	call printInline
+	asciz "main.asm called ITEMI!"
+	ret
+
+CHECK:
+	call printInline
+	asciz "main.asm called CHECK!"
+	ret
+
+TERMQ:
+	call printInline
+	asciz "main.asm called TERMQ!"
+	ret
+
+STAR_VERSION:
+	call printInline
+	asciz "main.asm called STAR_VERSION!"
+	ret
+
+_end:
+	call printInline
+	asciz "main.asm called _end!"
+	ret

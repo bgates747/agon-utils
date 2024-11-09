@@ -2,8 +2,10 @@
     include "basic/eval.asm"
     INCLUDE	"basic/equs.inc"
     INCLUDE "basic/macros.inc"
+    include "basic/main.asm
+    include "basic/eval.asm"
+    include "basic/exec.asm"
     include "basic/fpp.asm"
-    include "basic/snippets.asm"
     include "basic/sorry.asm"
 
 iand: equ 0

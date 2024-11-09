@@ -32,6 +32,7 @@
 
 ; BASIC FLOATING POINT FUNCTIONS
     include "mathfpp.inc"
+    include "basic/exec.asm" ; needs to be moved to mathfpp.inc eventually
 
 ; APPLICATION INCLUDES
 

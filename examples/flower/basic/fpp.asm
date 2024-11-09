@@ -59,7 +59,7 @@ EXIT_:			POP     IY              ;Restore IY
 ;
 ;Error exit:
 ;
-BAD:			LD      A,BADOP         ;"Bad operation code"
+BAD_FP:			LD      A,BADOP         ;"Bad operation code"
 ERROR_FP:			LD      SP,IY           ;Restore SP from IY
         		OR      A               ;Set NZ
         		SCF                     ;Set C
@@ -69,7 +69,7 @@ ERROR_FP:			LD      SP,IY           ;Restore SP from IY
 ;
 ; OP:			CP      (RTABLE-DTABLE)/3
 OP:				CP      RTABLE-DTABLE/3 ; ez80asm doesn't do nested expressions
-        		JR      NC,BAD
+        		JR      NC,BAD_FP
         		; CP      (FTABLE-DTABLE)/3
         		CP      FTABLE-DTABLE/3 ; ditto
         		JR      NC,DISPATCH

@@ -1,0 +1,2833 @@
+PC     Output      Line
+040000             0001   ;
+040000             0002   ; Title:	BBC Basic Interpreter - Z80 version
+040000             0003   ;		Command, Error and Lexical Analysis Module - "MAIN"
+040000             0004   ; Author:	(C) Copyright  R.T.Russell  1984
+040000             0005   ; Modified By:	Dean Belfield
+040000             0006   ; Created:	12/05/2023
+040000             0007   ; Last Updated:	26/11/2023
+040000             0008   ;
+040000             0009   ; Modinfo:
+040000             0010   ; 07/05/1984:	Version 2.3
+040000             0011   ; 01/03/1987:	Version 3.0
+040000             0012   ; 03/05/2022:	Modified by Dean Belfield
+040000             0013   ; 06/06/2023:	Modified to run in ADL mode
+040000             0014   ; 26/06/2023:	Fixed binary and unary indirection
+040000             0015   ; 17/08/2023:	Added binary constants
+040000             0016   ; 15/11/2023:	Fixed bug in ONEDIT1 for OSLOAD_TXT, Startup message now includes Agon version
+040000             0017   ; 26/11/2023:	Fixed bug in AUTOLOAD
+040000             0018   
+040000             0019   			.ASSUME	ADL = 1
+040000             0020   
+040000             0021   			INCLUDE "ram.asm"
+040000             0001*  ;
+040000             0002*  ; Title:	BBC Basic Interpreter - Z80 version
+040000             0003*  ;		RAM Module for BBC Basic Interpreter
+040000             0004*  ;		For use with Version 2.0 of BBC BASIC
+040000             0005*  ;		Standard CP/M Distribution Version
+040000             0006*  ; Author:	(C) Copyright  R.T.Russell 31-12-1983
+040000             0007*  ; Modified By:	Dean Belfield
+040000             0008*  ; Created:	12/05/2023
+040000             0009*  ; Last Updated:	26/06/2023
+040000             0010*  ;
+040000             0011*  ; Modinfo:
+040000             0012*  ; 06/06/2023:	Modified to run in ADL mode
+040000             0013*  ; 26/06/2023:	Added temporary stores R0 and R1
+040000             0014*  
+040000             0015*  			.ASSUME	ADL = 1
+040000             0016*  
+040000             0017*  			; DEFINE	LORAM, SPACE = ROM
+040000             0018*  			; SEGMENT LORAM
+040000             0019*  
+040000             0020*  			; XDEF	ACCS
+040000             0021*  			; XDEF	BUFFER
+040000             0022*  			; XDEF	STAVAR
+040000             0023*  			; XDEF	DYNVAR
+040000             0024*  			; XDEF	FNPTR
+040000             0025*  			; XDEF	PROPTR
+040000             0026*  			; XDEF	PAGE_
+040000             0027*  			; XDEF	TOP
+040000             0028*  			; XDEF	LOMEM
+040000             0029*  			; XDEF 	FREE
+040000             0030*  			; XDEF	HIMEM
+040000             0031*  			; XDEF	LINENO
+040000             0032*  			; XDEF	TRACEN
+040000             0033*  			; XDEF	AUTONO
+040000             0034*  			; XDEF	ERRTRP
+040000             0035*  			; XDEF	ERRTXT
+040000             0036*  			; XDEF	DATPTR
+040000             0037*  			; XDEF	ERL
+040000             0038*  			; XDEF	ERRLIN
+040000             0039*  			; XDEF	RANDOM
+040000             0040*  			; XDEF	COUNT
+040000             0041*  			; XDEF	WIDTH
+040000             0042*  			; XDEF	ERR
+040000             0043*  			; XDEF	LISTON
+040000             0044*  			; XDEF	INCREM
+040000             0045*  
+040000             0046*  			; XDEF	FLAGS
+040000             0047*  			; XDEF	OSWRCHPT
+040000             0048*  			; XDEF	OSWRCHCH
+040000             0049*  			; XDEF	OSWRCHFH
+040000             0050*  			; XDEF	KEYDOWN
+040000             0051*  			; XDEF	KEYASCII
+040000             0052*  			; XDEF	KEYCOUNT
+040000             0053*  
+040000             0054*  			; XDEF	R0
+040000             0055*  			; XDEF	R1
+040000             0056*  
+040000             0057*  			; XDEF	RAM_START
+040000             0058*  			; XDEF	RAM_END
+040000             0059*  			; XDEF	USER
+040000             0060*  
+040000             0061*  			ALIGN 		256		; ACCS, BUFFER & STAVAR must be on page boundaries
+040000             0062*  RAM_START:
+040000             0063*  ;
+040000             0064*  ACCS:			DS		256             ; String Accumulator
+040100             0065*  BUFFER:			DS		256             ; String Input Buffer
+040200             0066*  STAVAR:			DS	 	27*4            ; Static Variables
+04026C             0067*  DYNVAR: 		DS 		54*3            ; Dynamic Variable Pointers
+04030E             0068*  FNPTR:  		DS    		3               ; Dynamic Function Pointers
+040311             0069*  PROPTR: 		DS		3               ; Dynamic Procedure Pointers
+040314             0070*  ;
+040314             0071*  PAGE_:   		DS		3               ; Start of User Program
+040317             0072*  TOP:    		DS		3               ; First Location after User Program
+04031A             0073*  LOMEM:  		DS		3               ; Start of Dynamic Storage
+04031D             0074*  FREE:   		DS		3               ; First Free Space Byte
+040320             0075*  HIMEM:  		DS		3               ; First Protected Byte
+040323             0076*  ;
+040323             0077*  LINENO: 		DS		3               ; Line Number
+040326             0078*  TRACEN:			DS		3               ; Trace Flag
+040329             0079*  AUTONO:			DS		3               ; Auto Flag
+04032C             0080*  ERRTRP:			DS		3               ; Error Trap
+04032F             0081*  ERRTXT:			DS		2               ; Error Message Pointer
+040331             0082*  DATPTR:			DS		2               ; Data Pointer
+040333             0083*  ERL:			DS		2               ; Error Line
+040335             0084*  ERRLIN:			DS		3               ; The "ON ERROR" Line
+040338             0085*  RANDOM:			DS		5               ; Random Number
+04033D             0086*  COUNT:			DS		1               ; Print Position
+04033E             0087*  WIDTH:			DS		1               ; Print Width
+04033F             0088*  ERR:			DS		1               ; Error Number
+040340             0089*  LISTON:			DS		1               ; LISTO (bottom nibble)
+040341             0090*  							; - BIT 0: If set, output a space after the line number
+040341             0091*  							; - BIT 1: If set, then indent FOR/NEXT loops
+040341             0092*  							; - BIT 2: If set, then indent REPEAT/UNTIL loops
+040341             0093*  							; - BIT 3: If set, then output to buffer for *EDIT
+040341             0094*  							; OPT FLAG (top nibble)
+040341             0095*  							; - BIT 4: If set, then list whilst assembling
+040341             0096*  							; - BIT 5: If set, then assembler errors are reported
+040341             0097*  							; - BIT 6: If set, then place the code starting at address pointed to by O%
+040341             0098*  							; - BIT 7: If set, then assemble in ADL mode, otherwise assemble in Z80 mode
+040341             0099*  INCREM:			DS		1               ; Auto-Increment Value
+040342             0100*  ;
+040342             0101*  ; Extra Agon-implementation specific system variables
+040342             0102*  ;
+040342             0103*  FLAGS:			DS		1		; Miscellaneous flags
+040343             0104*  							; - BIT 7: Set if ESC pressed
+040343             0105*  							; - BIT 6: Set to disable ESC
+040343             0106*  OSWRCHPT:		DS		2		; Pointer for *EDIT
+040345             0107*  OSWRCHCH:		DS		1		; Channel of OSWRCH
+040346             0108*  							; - 0: Console
+040346             0109*  							; - 1: File
+040346             0110*  OSWRCHFH:		DS		1		; File handle for OSWRCHCHN
+040347             0111*  KEYDOWN:		DS		1		; Keydown flag
+040348             0112*  KEYASCII:		DS		1		; ASCII code of pressed key
+040349             0113*  KEYCOUNT:		DS		1		; Counts every time a key is pressed
+04034A             0114*  R0:			DS		3		; General purpose storage for 8/16 to 24 bit operations
+04034D             0115*  R1:			DS		3		;
+040350             0116*  ;
+040350             0117*  ; This must be at the end
+040350             0118*  ;
+040350             0119*  RAM_END:
+040350 FF FF FF FF 0120*  			ALIGN	256
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+040400             0121*  USER:							; Must be aligned on a page boundary
+040400             0122*  
+040400             0022   			INCLUDE	"equs.inc"
+040400             0001*  ;
+040400             0002*  ; Title:	BBC Basic for AGON - Equs
+040400             0003*  ; Author:	Dean Belfield
+040400             0004*  ; Created:	12/05/2023
+040400             0005*  ; Last Updated:	08/06/2023
+040400             0006*  ;
+040400             0007*  ; Modinfo:
+040400             0008*  ; 08/06/2023:	Added SIZEW
+040400             0009*  
+040400             0010*  			; XREF		STAVAR
+040400             0011*  			; XREF		ACCS
+040400             0012*  
+040400             0013*  RAM_Top:		EQU		0B0000h	; Initial value of HIMEM
+040400             0014*  ;Stack_Top:		EQU		0000h	; Stack at top
+040400             0015*  SIZEW:			EQU		3	; Size of a word (3 for ADL mode)
+040400             0016*  
+040400             0017*  ; For GPIO
+040400             0018*  ; PA not available on eZ80L92
+040400             0019*  ;
+040400             0020*  PA_DR:			EQU		96h
+040400             0021*  PA_DDR:			EQU		97h
+040400             0022*  PA_ALT1:		EQU		98h
+040400             0023*  PA_ALT2:		EQU		99h
+040400             0024*  PB_DR:          	EQU		9Ah
+040400             0025*  PB_DDR:        	 	EQU		9Bh
+040400             0026*  PB_ALT1:        	EQU		9Ch
+040400             0027*  PB_ALT2:        	EQU		9Dh
+040400             0028*  PC_DR:          	EQU		9Eh
+040400             0029*  PC_DDR:         	EQU		9Fh
+040400             0030*  PC_ALT1:        	EQU		A0h
+040400             0031*  PC_ALT2:        	EQU		A1h
+040400             0032*  PD_DR:          	EQU		A2h
+040400             0033*  PD_DDR:			EQU		A3h
+040400             0034*  PD_ALT1:		EQU		A4h
+040400             0035*  PD_ALT2:		EQU		A5h
+040400             0036*  
+040400             0037*  GPIOMODE_OUT:		EQU		0	; Output
+040400             0038*  GPIOMODE_IN:		EQU		1	; Input
+040400             0039*  GPIOMODE_DIO:		EQU		2	; Open Drain IO
+040400             0040*  GPIOMODE_SIO:		EQU		3	; Open Source IO
+040400             0041*  GPIOMODE_INTD:		EQU		4	; Interrupt, Dual Edge
+040400             0042*  GPIOMODE_ALTF:		EQU		5;	; Alt Function
+040400             0043*  GPIOMODE_INTAL:		EQU		6	; Interrupt, Active Low
+040400             0044*  GPIOMODE_INTAH:		EQU		7	; Interrupt, Active High
+040400             0045*  GPIOMODE_INTFE:		EQU		8	; Interrupt, Falling Edge
+040400             0046*  GPIOMODE_INTRE:		EQU		9	; Interrupt, Rising Edge
+040400             0047*  
+040400             0048*  ; Originally in ram.asm
+040400             0049*  ;
+040400             0050*  OC:			EQU     STAVAR+15*4     ; CODE ORIGIN (O%)
+040400             0051*  PC:			EQU     STAVAR+16*4     ; PROGRAM COUNTER (P%)
+040400             0052*  VDU_BUFFER:		EQU	ACCS		; Storage for VDU commands
+040400             0053*  
+040400             0054*  ; Originally in main.asm
+040400             0055*  ;
+040400             0056*  CR:			EQU     0DH
+040400             0057*  LF:			EQU     0AH
+040400             0058*  ESC:			EQU     1BH
+040400             0023   
+040400             0024   			; SEGMENT CODE
+040400             0025   
+040400             0026   			; XDEF	_main
+040400             0027   
+040400             0028   			; XDEF	COLD
+040400             0029   			; XDEF	WARM
+040400             0030   			; XDEF	CLOOP
+040400             0031   			; XDEF	DELETE
+040400             0032   			; XDEF	LIST_
+040400             0033   			; XDEF	RENUM
+040400             0034   			; XDEF	AUTO
+040400             0035   			; XDEF	NEW
+040400             0036   			; XDEF	OLD
+040400             0037   			; XDEF	LOAD
+040400             0038   			; XDEF	SAVE
+040400             0039   			; XDEF	ERROR_
+040400             0040   			; XDEF	EXTERR
+040400             0041   			; XDEF	LOAD0
+040400             0042   			; XDEF	CLEAR
+040400             0043   			; XDEF	CRLF
+040400             0044   			; XDEF	OUTCHR
+040400             0045   			; XDEF	OUT_
+040400             0046   			; XDEF	FINDL
+040400             0047   			; XDEF	SETLIN
+040400             0048   			; XDEF	PBCDL
+040400             0049   			; XDEF	SAYLN
+040400             0050   			; XDEF	PUTVAR
+040400             0051   			; XDEF	GETVAR
+040400             0052   			; XDEF	GETDEF
+040400             0053   			; XDEF	CREATE
+040400             0054   			; XDEF	RANGE
+040400             0055   			; XDEF	LEXAN2
+040400             0056   			; XDEF	REPORT
+040400             0057   			; XDEF	TELL
+040400             0058   			; XDEF	SPACE_
+040400             0059   			; XDEF	KEYWDS
+040400             0060   			; XDEF	KEYWDL
+040400             0061   			; XDEF	ONEDIT
+040400             0062   			; XDEF	ONEDIT1
+040400             0063   			; XDEF	LISTIT
+040400             0064   			; XDEF	CLEAN
+040400             0065   
+040400             0066   			; XREF	LISTON
+040400             0067   			; XREF	ERRTXT
+040400             0068   			; XREF	OSINIT
+040400             0069   			; XREF	HIMEM
+040400             0070   			; XREF	PAGE_
+040400             0071   			; XREF	CHAIN0
+040400             0072   			; XREF	PROMPT
+040400             0073   			; XREF	ERRTRP
+040400             0074   			; XREF	ERRLIN
+040400             0075   			; XREF	AUTONO
+040400             0076   			; XREF	LINENO
+040400             0077   			; XREF	INCREM
+040400             0078   			; XREF	OSLINE
+040400             0079   			; XREF	COUNT
+040400             0080   			; XREF	NXT
+040400             0081   			; XREF	BUFFER
+040400             0082   			; XREF	XEQ
+040400             0083   			; XREF	TOP
+040400             0084   			; XREF	EXPRI
+040400             0085   			; XREF	SEARCH
+040400             0086   			; XREF	LTRAP
+040400             0087   			; XREF	LOMEM
+040400             0088   			; XREF	DECODE
+040400             0089   			; XREF	EXPRS
+040400             0090   			; XREF	OSSAVE
+040400             0091   			; XREF	ERR
+040400             0092   			; XREF	ERL
+040400             0093   			; XREF	TRACEN
+040400             0094   			; XREF	RESET
+040400             0095   			; XREF	OSSHUT
+040400             0096   			; XREF	OSLOAD
+040400             0097   			; XREF	FREE
+040400             0098   			; XREF	DYNVAR
+040400             0099   			; XREF	FILL
+040400             0100   			; XREF	OSWRCH
+040400             0101   			; XREF	WIDTH
+040400             0102   			; XREF	COMMA
+040400             0103   			; XREF	MUL16
+040400             0104   			; XREF	BRAKET
+040400             0105   			; XREF	X4OR5
+040400             0106   			; XREF	LOADN
+040400             0107   			; XREF	SFIX
+040400             0108   			; XREF	ITEMI
+040400             0109   			; XREF	FNPTR
+040400             0110   			; XREF	PROPTR
+040400             0111   			; XREF	CHECK
+040400             0112   			; XREF	TERMQ
+040400             0113   			; XREF	OSWRCHCH
+040400             0114   			; XREF	NEWIT
+040400             0115   			; XREF	BAD
+040400             0116   			; XREF	RAM_START
+040400             0117   			; XREF	RAM_END
+040400             0118   			; XREF	R0
+040400             0119   			; XREF	STAR_VERSION
+040400             0120   
+040400             0121   			; XREF	_end			; In init.asm
+040400             0122   ;
+040400             0123   ; A handful of common token IDs
+040400             0124   ;
+040400             0125   TERROR:			EQU     85H
+040400             0126   LINE_:			EQU     86H
+040400             0127   ELSE_:			EQU     8BH
+040400             0128   THEN:			EQU     8CH
+040400             0129   LINO:			EQU     8DH
+040400             0130   FN:			EQU     A4H
+040400             0131   TO:			EQU     B8H
+040400             0132   REN:			EQU     CCH
+040400             0133   DATA_:			EQU     DCH
+040400             0134   DIM:			EQU     DEH
+040400             0135   FOR:			EQU     E3H
+040400             0136   GOSUB:			EQU     E4H
+040400             0137   GOTO:			EQU     E5H
+040400             0138   TIF:			EQU     E7H
+040400             0139   LOCAL_:			EQU     EAH
+040400             0140   NEXT:			EQU     EDH
+040400             0141   ON_:			EQU     EEH
+040400             0142   PROC:			EQU     F2H
+040400             0143   REM:			EQU     F4H
+040400             0144   REPEAT:			EQU     F5H
+040400             0145   RESTOR:			EQU     F7H
+040400             0146   TRACE:			EQU     FCH
+040400             0147   UNTIL:			EQU     FDH
+040400             0148   ;
+040400             0149   ; This defines the block of tokens that are pseudo-variables.
+040400             0150   ; There are two versions of each token, a GET and a SET
+040400             0151   
+040400             0152   ; Name  : GET : SET
+040400             0153   ; ------:-----:----
+040400             0154   ; PTR   : 8Fh : CFh
+040400             0155   ; PAGE  : 90h : D0h
+040400             0156   ; TIME  : 91h : D1h
+040400             0157   ; LOMEM : 92h : D2h
+040400             0158   ; HIMEM : 93h : D3h
+040400             0159   ;
+040400             0160   ; Examples:
+040400             0161   ;   LET A% = PAGE : REM This is the GET version
+040400             0162   ;   PAGE = 40000  : REM This is the SET version
+040400             0163   ;
+040400             0164   TOKLO:			EQU     8FH			; This defines the block of tokens that are pseudo-variables
+040400             0165   TOKHI:			EQU     93H			; PTR, PAGE, TIME, LOMEM, HIMEM
+040400             0166   OFFSET:			EQU     CFH-TOKLO		; Offset to the parameterised SET versions
+040400             0167   
+040400             0168   ; The main routine
+040400             0169   ; IXU: argv - pointer to array of parameters
+040400             0170   ;   C: argc - number of parameters
+040400             0171   ; Returns:
+040400             0172   ;  HL: Error code, or 0 if OK
+040400             0173   ;
+040400 21 00 00 04 0174   _main:			LD	HL, ACCS		; Clear the ACCS
+040404 36 00       0175   			LD	(HL), 0
+040406 79          0176   			LD	A, C
+040407 FE 02       0177   			CP	2
+040409 28 2D       0178   			JR	Z, AUTOLOAD		; 2 parameters = autoload
+04040B 38 3F       0179   			JR	C, COLD			; 1 parameter = normal start
+04040D CD BF 14 04 0180   			CALL	STAR_VERSION
+040411 CD DA 11 04 0181   			CALL	TELL
+040415 55 73 61 67 0182   			DB	"Usage:\n\r"
+       65 3A 0A 0D 
+04041D 52 55 4E 20 0183   			DB	"RUN . <filename>\n\r", 0
+       2E 20 3C 66 
+       69 6C 65 6E 
+       61 6D 65 3E 
+       0A 0D 00    
+040430 21 00 00 00 0184   			LD	HL, 0			; The error code
+040434 C3 E2 14 04 0185   			JP	_end
+040438             0186   ;
+040438 DD 27 03    0187   AUTOLOAD:		LD	HL, (IX+3)		; HLU: Address of filename
+04043B 11 00 00 04 0188   			LD	DE, ACCS		;  DE: Destination address
+04043F 7E          0189   AUTOLOAD_1:		LD	A, (HL)			; Fetch the filename byte
+040440 12          0190   			LD	(DE), A			;
+040441 23          0191   			INC	HL			; Increase the source pointer
+040442 1C          0192   			INC	E			; We only need to increase E as ACCS is on a page boundary
+040443 28 03       0193   			JR	Z, AUTOLOAD_2		; End if we hit the page boundary
+040445 B7          0194   			OR	A
+040446 20 F7       0195   			JR	NZ, AUTOLOAD_1		; Loop until we hit a 0 byte
+040448 1D          0196   AUTOLOAD_2:		DEC	E
+040449 3E 0D       0197   			LD	A, CR
+04044B 12          0198   			LD	(DE), A			; Replace the 0 byte with a CR for BBC BASIC
+04044C             0199   ;
+04044C E1          0200   COLD:			POP	HL			; Pop the return address to init off SPS
+04044D E5          0201   			PUSH	HL 			; Stack it on SPL (*BYE will use this as the return address)
+04044E 21 00 02 04 0202   			LD	HL, STAVAR		; Cold start
+040452 F9          0203   			LD	SP, HL
+040453 36 0A       0204   			LD	(HL), 10
+040455 23          0205   			INC	HL
+040456 36 09       0206   			LD	(HL),9
+040458 CD E2 11 04 0207   			CALL    OSINIT			; Call the machine specific OS initialisation routines
+04045C ED 53 20 03 0208   			LD      (HIMEM),DE		; This returns HIMEM (ramtop) in DE - store in the HIMEM sysvar
+       04          
+040461 22 14 03 04 0209   			LD      (PAGE_),HL		; And PAGE in HL (where BASIC program storage starts) - store in PAGE sysvar
+040465 3E B7       0210   			LD      A,B7H           	; Set LISTO sysvar; the bottom nibble is LISTO (7), top nibble is OPT (B)
+040467 32 40 03 04 0211   			LD      (LISTON),A
+04046B 21 A6 04 04 0212   			LD      HL,NOTICE
+04046F 22 2F 03 04 0213   			LD      (ERRTXT),HL
+040473 CD B6 0C 04 0214   			CALL    NEWIT			; From what I can determine, NEWIT always returns with Z flag set
+040477 3A 00 00 04 0215   			LD	A,(ACCS)		; Check if there is a filename in ACCS
+04047B B7          0216   			OR	A
+04047C C2 FF 11 04 0217   			JP	NZ,CHAIN0		; Yes, so load and run
+040480 CD BF 14 04 0218   			CALL	STAR_VERSION		;
+040484 CD DA 11 04 0219   			CALL    TELL			; Output the welcome message
+040488 42 42 43 20 0220   			DB    	"BBC BASIC (Z80) Version 3.00\n\r"
+       42 41 53 49 
+       43 20 28 5A 
+       38 30 29 20 
+       56 65 72 73 
+       69 6F 6E 20 
+       33 2E 30 30 
+       0A 0D       
+0404A6 28 43 29 20 0221   NOTICE:			DB    	"(C) Copyright R.T.Russell 1987\n\r"
+       43 6F 70 79 
+       72 69 67 68 
+       74 20 52 2E 
+       54 2E 52 75 
+       73 73 65 6C 
+       6C 20 31 39 
+       38 37 0A 0D 
+0404C6 0A 0D 00    0222   			DB	"\n\r", 0
+0404C9             0223   ;
+0404C9 F6          0224   WARM:			DB 	F6H			; Opcode for OR? Maybe to CCF (the following SCF will be the operand)
+0404CA             0225   ;
+0404CA             0226   ; This is the main entry point for BASIC
+0404CA             0227   ;
+0404CA 37          0228   CLOOP:			SCF				; See above - not sure why this is here!
+0404CB ED 7B 20 03 0229   			LD      SP,(HIMEM)
+       04          
+0404D0 CD 1C 12 04 0230   			CALL    PROMPT          	; Prompt user
+0404D4 21 40 03 04 0231   			LD      HL,LISTON		; Pointer to the LISTO/OPT sysvar
+0404D8 7E          0232   			LD      A,(HL)			; Fetch the value
+0404D9 E6 0F       0233   			AND     0FH             	; Bottom nibble: LISTO
+0404DB F6 B0       0234   			OR      B0H             	; Top nibble: Default to OPT (3) with ADL mode bit set to 1 for assembler
+0404DD 77          0235   			LD      (HL),A			; Store back in
+0404DE ED 62       0236   			SBC     HL,HL           	; HL: 0
+0404E0 22 2C 03 04 0237   			LD      (ERRTRP),HL		; Clear ERRTRP sysvar
+0404E4 22 35 03 04 0238   			LD      (ERRLIN),HL		; Clear ERRLIN sysvar (ON ERROR)
+0404E8             0239   ;
+0404E8 2A 29 03 04 0240   			LD      HL,(AUTONO)		; Get the auto line number
+0404EC 22 23 03 04 0241   			LD      (LINENO),HL		; Store in line number
+0404F0 7C          0242   			LD      A,H			; If the auto line number is zero then
+0404F1 B5          0243   			OR      L
+0404F2 28 1E       0244   			JR      Z,NOAUTO		; We're not auto line numbering, so skip the next bit
+0404F4             0245   ;
+0404F4             0246   ; This section handles auto line numbering
+0404F4             0247   ;
+0404F4 E5          0248   			PUSH    HL			; Stack the line number
+0404F5 CD 45 0E 04 0249   			CALL    PBCD           	 	; Output the line number
+0404F9 E1          0250   			POP     HL			; Pop the line number back off the stack
+0404FA             0251   ;			LD      BC,(INCREM)		; Load BC with Increment - but INCREM is just a byte; C is the value
+0404FA             0252   ;			LD      B,0			; So clear B
+0404FA 01 00 00 00 0253   			LD	BC, 0			; Load BC with Increment
+0404FE 3A 41 03 04 0254   			LD	A,(INCREM)
+040502 4F          0255   			LD	C, A
+040503 09          0256   			ADD     HL,BC			; Add the increment to the line number
+040504 DA 6F 10 04 0257   			JP      C,TOOBIG_MAIN		; And error if we wrap
+040508 22 29 03 04 0258   			LD      (AUTONO),HL		; Store the new auto line number
+04050C 3E 20       0259   			LD      A,' '			; Print a space
+04050E CD 99 0D 04 0260   			CALL    OUTCHR
+040512             0261   ;
+040512             0262   ; This section invokes the line editor
+040512             0263   ;
+040512 21 00 00 04 0264   NOAUTO:			LD      HL,ACCS			; Storage for the line editor (256 bytes)
+040516 CD 39 12 04 0265   			CALL    OSLINE          	; Call the line editor in MOS
+04051A CD 26 05 04 0266   ONEDIT:			CALL	ONEDIT1			; Enter the line into memory
+04051E DC 89 0C 04 0267   			CALL    C,CLEAN			; Set TOP, write out &FFFF end of program marker
+040522 C3 CA 04 04 0268   			JP      CLOOP			; Jump back to immediate mode
+040526             0269   ;
+040526             0270   ; This bit enters the line into memory
+040526             0271   ; Also called from OSLOAD_TXT
+040526             0272   ; Returns:
+040526             0273   ; F: C if a new line has been entered (CLEAN will need to be called)
+040526             0274   ;
+040526 AF          0275   ONEDIT1:		XOR     A			; Entry point after *EDIT
+040527 32 3D 03 04 0276   			LD      (COUNT),A
+04052B FD 21 00 00 0277   			LD      IY,ACCS
+       04          
+040530 CD 43 10 04 0278   			CALL    LINNUM			; HL: The line number from the input buffer
+040534 CD 56 12 04 0279   			CALL    NXT			; Skip spaces
+040538 7C          0280   			LD      A,H			; HL: The line number will be 0 for immediate mode or when auto line numbering is used
+040539 B5          0281   			OR      L
+04053A 28 04       0282   			JR      Z,LNZERO        	; Skip if there is no line number in the input buffer
+04053C 22 23 03 04 0283   			LD      (LINENO),HL		; Otherwise store it
+040540             0284   ;
+040540             0285   ; This bit does the lexical analysis and tokenisation
+040540             0286   ;
+040540 0E 01       0287   LNZERO:			LD	C,1			; Left mode
+040542 11 00 01 04 0288   			LD      DE,BUFFER		; Buffer for tokenised BASIC
+040546 CD E9 10 04 0289   			CALL    LEXAN2          	; Lexical analysis on the user input
+04054A 12          0290   			LD      (DE),A          	; Terminator
+04054B AF          0291   			XOR     A
+04054C             0292   ;			LD      B,A
+04054C             0293   ;			LD      C,E             	; BC: Line length
+04054C 01 00 00 00 0294   			LD	BC,0
+040550 4B          0295   			LD	C,E			; BC: Line length
+040551 13          0296   			INC     DE
+040552 12          0297   			LD      (DE),A          	; Zero next
+040553 2A 23 03 04 0298   			LD      HL,(LINENO)		; Get the line number
+040557 7C          0299   			LD      A,H			; Is it zero, i.e. a command with no line number?
+040558 B5          0300   			OR      L
+040559 FD 21 00 01 0301   			LD      IY,BUFFER       	; Yes, so we're in immediate mode
+       04          
+04055E CA 70 12 04 0302   			JP      Z,XEQ           	; Execute it
+040562             0303   ;
+040562             0304   ; This section stores the BASIC line in memory
+040562             0305   ;
+040562 C5          0306   			PUSH    BC
+040563 E5          0307   			PUSH    HL
+040564 CD 95 0C 04 0308   			CALL    SETTOP          	; Set TOP sysvar
+040568 E1          0309   			POP     HL
+040569 CD D9 0D 04 0310   			CALL    FINDL			; Find the address of the line
+04056D CC 4C 0C 04 0311   			CALL    Z,DEL			; Delete the existing line if found
+040571 C1          0312   			POP     BC
+040572 79          0313   			LD      A,C			; Check for the line length being zero, i.e.
+040573 B7          0314   			OR      A			; the user has just entered a line number in the command line
+040574 C8          0315   			RET	Z 	         	; If so, then don't do anything else
+040575 C6 04       0316   			ADD     A,4
+040577 4F          0317   			LD      C,A             	; Length inclusive
+040578 D5          0318   			PUSH    DE              	; DE: Line number (fetched from the call to FINDL)
+040579 C5          0319   			PUSH    BC              	; BC: Line length
+04057A EB          0320   			EX      DE,HL			; DE: Address of the line in memory
+04057B 2A 17 03 04 0321   			LD      HL,(TOP)		; HL: TOP (the first free location after the end of the BASIC program)
+04057F E5          0322   			PUSH    HL			; Stack TOP (current TOP value)
+040580 09          0323   			ADD     HL,BC			; Add the line length to HL, the new TOP value
+040581 E5          0324   			PUSH    HL			; Stack HL (new TOP value)
+040582 24          0325   			INC     H			; Add 256 to HL
+040583 AF          0326   			XOR     A
+040584 ED 72       0327   			SBC     HL,SP			; Check whether HL is in the same page as the current stack pointer
+040586 E1          0328   			POP     HL			; Pop HL (new TOP value)
+040587 D2 AA 0B 04 0329   			JP      NC,ERROR_        	; If HL is in the stack page, then error: "No room"
+04058B 22 17 03 04 0330   			LD      (TOP),HL		; Store new value of TOP
+04058F E3          0331   			EX      (SP),HL			; HL: TOP (current TOP value), top of stack now contains new TOP value
+040590 E5          0332   			PUSH    HL			; PUSH current TOP value
+040591 23          0333   			INC     HL
+040592 B7          0334   			OR      A
+040593 ED 52       0335   			SBC     HL,DE			; DE: Address of the line in memory
+040595 44          0336   			LD      B,H             	; BC: Amount to move
+040596 4D          0337   			LD      C,L
+040597 E1          0338   			POP     HL			; HL: Destination (current TOP value)
+040598 D1          0339   			POP     DE			; DE: Source (new TOP value)
+040599 28 02       0340   			JR      Z,ATEND			; If current TOP and new TOP are the same, i.e. adding a line at the end, then skip...
+04059B ED B8       0341   			LDDR                    	; Otherwise, make space for the new line in the program
+04059D C1          0342   ATEND:			POP     BC              	; BC: Line length
+04059E D1          0343   			POP     DE              	; DE: Line number
+04059F 23          0344   			INC     HL			; HL: Destination address
+0405A0 71          0345   			LD      (HL),C          	; Store length
+0405A1 23          0346   			INC     HL
+0405A2 73          0347   			LD      (HL),E          	; Store line number
+0405A3 23          0348   			INC     HL
+0405A4 72          0349   			LD      (HL),D
+0405A5 23          0350   			INC     HL
+0405A6 11 00 01 04 0351   			LD      DE,BUFFER		; DE: Location of the new, tokenised line
+0405AA EB          0352   			EX      DE,HL			; HL: Location of the new, tokensied line, DE: Destination address in BASIC program
+0405AB 0D          0353   			DEC     C			; Subtract 3 from the number of bytes to copy to
+0405AC 0D          0354   			DEC     C			; compensate for the 3 bytes stored above (length and line number)
+0405AD 0D          0355   			DEC     C
+0405AE ED B0       0356   			LDIR                    	; Add the line to the BASIC program
+0405B0 37          0357   			SCF				; To flag we need to call CLEAN
+0405B1 C9          0358   			RET
+0405B2             0359   ;
+0405B2             0360   ; List of tokens and keywords. If a keyword is followed by 0 then
+0405B2             0361   ; it will only match with the keyword followed immediately by
+0405B2             0362   ; a delimiter
+0405B2             0363   ;
+0405B2 80 41 4E 44 0364   KEYWDS:			DB    80H, "AND"
+0405B6 94 41 42 53 0365   			DB    94H, "ABS"
+0405BA 95 41 43 53 0366   			DB    95H, "ACS"
+0405BE 96 41 44 56 0367   			DB    96H, "ADVAL"
+       41 4C       
+0405C4 97 41 53 43 0368   			DB    97H, "ASC"
+0405C8 98 41 53 4E 0369   			DB    98H, "ASN"
+0405CC 99 41 54 4E 0370   			DB    99H, "ATN"
+0405D0 C6 41 55 54 0371   			DB    C6H, "AUTO"
+       4F          
+0405D5 9A 42 47 45 0372   			DB    9AH, "BGET", 0
+       54 00       
+0405DB D5 42 50 55 0373   			DB    D5H, "BPUT", 0
+       54 00       
+0405E1 FB 43 4F 4C 0374   			DB    FBH, "COLOUR"
+       4F 55 52    
+0405E8 FB 43 4F 4C 0375   			DB    FBH, "COLOR"
+       4F 52       
+0405EE D6 43 41 4C 0376   			DB    D6H, "CALL"
+       4C          
+0405F3 D7 43 48 41 0377   			DB    D7H, "CHAIN"
+       49 4E       
+0405F9 BD 43 48 52 0378   			DB    BDH, "CHR$"
+       24          
+0405FE D8 43 4C 45 0379   			DB    D8H, "CLEAR", 0
+       41 52 00    
+040605 D9 43 4C 4F 0380   			DB    D9H, "CLOSE", 0
+       53 45 00    
+04060C DA 43 4C 47 0381   			DB    DAH, "CLG", 0
+       00          
+040611 DB 43 4C 53 0382   			DB    DBH, "CLS", 0
+       00          
+040616 9B 43 4F 53 0383   			DB    9BH, "COS"
+04061A 9C 43 4F 55 0384   			DB    9CH, "COUNT", 0
+       4E 54 00    
+040621 DC 44 41 54 0385   			DB    DCH, "DATA"
+       41          
+040626 9D 44 45 47 0386   			DB    9DH, "DEG"
+04062A DD 44 45 46 0387   			DB    DDH, "DEF"
+04062E C7 44 45 4C 0388   			DB    C7H, "DELETE"
+       45 54 45    
+040635 81 44 49 56 0389   			DB    81H, "DIV"
+040639 DE 44 49 4D 0390   			DB    DEH, "DIM"
+04063D DF 44 52 41 0391   			DB    DFH, "DRAW"
+       57          
+040642 E1 45 4E 44 0392   			DB    E1H, "ENDPROC", 0
+       50 52 4F 43 
+       00          
+04064B E0 45 4E 44 0393   			DB    E0H, "END", 0
+       00          
+040650 E2 45 4E 56 0394   			DB    E2H, "ENVELOPE"
+       45 4C 4F 50 
+       45          
+040659 8B 45 4C 53 0395   			DB    8BH, "ELSE"
+       45          
+04065E A0 45 56 41 0396   			DB    A0H, "EVAL"
+       4C          
+040663 9E 45 52 4C 0397   			DB    9EH, "ERL", 0
+       00          
+040668 85 45 52 52 0398   			DB    85H, "ERROR"
+       4F 52       
+04066E C5 45 4F 46 0399   			DB    C5H, "EOF", 0
+       00          
+040673 82 45 4F 52 0400   			DB    82H, "EOR"
+040677 9F 45 52 52 0401   			DB    9FH, "ERR", 0
+       00          
+04067C A1 45 58 50 0402   			DB    A1H, "EXP"
+040680 A2 45 58 54 0403   			DB    A2H, "EXT", 0
+       00          
+040685 E3 46 4F 52 0404   			DB    E3H, "FOR"
+040689 A3 46 41 4C 0405   			DB    A3H, "FALSE", 0
+       53 45 00    
+040690 A4 46 4E    0406   			DB    A4H, "FN"
+040693 E5 47 4F 54 0407   			DB    E5H, "GOTO"
+       4F          
+040698 BE 47 45 54 0408   			DB    BEH, "GET$"
+       24          
+04069D A5 47 45 54 0409   			DB    A5H, "GET"
+0406A1 E4 47 4F 53 0410   			DB    E4H, "GOSUB"
+       55 42       
+0406A7 E6 47 43 4F 0411   			DB    E6H, "GCOL"
+       4C          
+0406AC 93 48 49 4D 0412   			DB    93H, "HIMEM", 0
+       45 4D 00    
+0406B3 E8 49 4E 50 0413   			DB    E8H, "INPUT"
+       55 54       
+0406B9 E7 49 46    0414   			DB    E7H, "IF"
+0406BC BF 49 4E 4B 0415   			DB    BFH, "INKEY$"
+       45 59 24    
+0406C3 A6 49 4E 4B 0416   			DB    A6H, "INKEY"
+       45 59       
+0406C9 A8 49 4E 54 0417   			DB    A8H, "INT"
+0406CD A7 49 4E 53 0418   			DB    A7H, "INSTR("
+       54 52 28    
+0406D4 C9 4C 49 53 0419   			DB    C9H, "LIST"
+       54          
+0406D9 86 4C 49 4E 0420   			DB    86H, "LINE"
+       45          
+0406DE C8 4C 4F 41 0421   			DB    C8H, "LOAD"
+       44          
+0406E3 92 4C 4F 4D 0422   			DB    92H, "LOMEM", 0
+       45 4D 00    
+0406EA EA 4C 4F 43 0423   			DB    EAH, "LOCAL"
+       41 4C       
+0406F0 C0 4C 45 46 0424   			DB    C0H, "LEFT$("
+       54 24 28    
+0406F7 A9 4C 45 4E 0425   			DB    A9H, "LEN"
+0406FB E9 4C 45 54 0426   			DB    E9H, "LET"
+0406FF AB 4C 4F 47 0427   			DB    ABH, "LOG"
+040703 AA 4C 4E    0428   			DB    AAH, "LN"
+040706 C1 4D 49 44 0429   			DB    C1H, "MID$("
+       24 28       
+04070C EB 4D 4F 44 0430   			DB    EBH, "MODE"
+       45          
+040711 83 4D 4F 44 0431   			DB    83H, "MOD"
+040715 EC 4D 4F 56 0432   			DB    ECH, "MOVE"
+       45          
+04071A ED 4E 45 58 0433   			DB    EDH, "NEXT"
+       54          
+04071F CA 4E 45 57 0434   			DB    CAH, "NEW", 0
+       00          
+040724 AC 4E 4F 54 0435   			DB    ACH, "NOT"
+040728 CB 4F 4C 44 0436   			DB    CBH, "OLD", 0
+       00          
+04072D EE 4F 4E    0437   			DB    EEH, "ON"
+040730 87 4F 46 46 0438   			DB    87H, "OFF"
+040734 84 4F 52    0439   			DB    84H, "OR"
+040737 8E 4F 50 45 0440   			DB    8EH, "OPENIN"
+       4E 49 4E    
+04073E AE 4F 50 45 0441   			DB    AEH, "OPENOUT"
+       4E 4F 55 54 
+040746 AD 4F 50 45 0442   			DB    ADH, "OPENUP"
+       4E 55 50    
+04074D FF 4F 53 43 0443   			DB    FFH, "OSCLI"
+       4C 49       
+040753 F1 50 52 49 0444   			DB    F1H, "PRINT"
+       4E 54       
+040759 90 50 41 47 0445   			DB    90H, "PAGE", 0
+       45 00       
+04075F 8F 50 54 52 0446   			DB    8FH, "PTR", 0
+       00          
+040764 AF 50 49 00 0447   			DB    AFH, "PI", 0
+040768 F0 50 4C 4F 0448   			DB    F0H, "PLOT"
+       54          
+04076D B0 50 4F 49 0449   			DB    B0H, "POINT("
+       4E 54 28    
+040774 F2 50 52 4F 0450   			DB    F2H, "PROC"
+       43          
+040779 B1 50 4F 53 0451   			DB    B1H, "POS", 0
+       00          
+04077E CE 50 55 54 0452   			DB    CEH, "PUT"
+040782 F8 52 45 54 0453   			DB    F8H, "RETURN", 0
+       55 52 4E 00 
+04078A F5 52 45 50 0454   			DB    F5H, "REPEAT"
+       45 41 54    
+040791 F6 52 45 50 0455   			DB    F6H, "REPORT", 0
+       4F 52 54 00 
+040799 F3 52 45 41 0456   			DB    F3H, "READ"
+       44          
+04079E F4 52 45 4D 0457   			DB    F4H, "REM"
+0407A2 F9 52 55 4E 0458   			DB    F9H, "RUN", 0
+       00          
+0407A7 B2 52 41 44 0459   			DB    B2H, "RAD"
+0407AB F7 52 45 53 0460   			DB    F7H, "RESTORE"
+       54 4F 52 45 
+0407B3 C2 52 49 47 0461   			DB    C2H, "RIGHT$("
+       48 54 24 28 
+0407BB B3 52 4E 44 0462   			DB    B3H, "RND", 0
+       00          
+0407C0 CC 52 45 4E 0463   			DB    CCH, "RENUMBER"
+       55 4D 42 45 
+       52          
+0407C9 88 53 54 45 0464   			DB    88H, "STEP"
+       50          
+0407CE CD 53 41 56 0465   			DB    CDH, "SAVE"
+       45          
+0407D3 B4 53 47 4E 0466   			DB    B4H, "SGN"
+0407D7 B5 53 49 4E 0467   			DB    B5H, "SIN"
+0407DB B6 53 51 52 0468   			DB    B6H, "SQR"
+0407DF 89 53 50 43 0469   			DB    89H, "SPC"
+0407E3 C3 53 54 52 0470   			DB    C3H, "STR$"
+       24          
+0407E8 C4 53 54 52 0471   			DB    C4H, "STRING$("
+       49 4E 47 24 
+       28          
+0407F1 D4 53 4F 55 0472   			DB    D4H, "SOUND"
+       4E 44       
+0407F7 FA 53 54 4F 0473   			DB    FAH, "STOP", 0
+       50 00       
+0407FD B7 54 41 4E 0474   			DB    B7H, "TAN"
+040801 8C 54 48 45 0475   			DB    8CH, "THEN"
+       4E          
+040806 B8 54 4F    0476   			DB    B8H, "TO"
+040809 8A 54 41 42 0477   			DB    8AH, "TAB("
+       28          
+04080E FC 54 52 41 0478   			DB    FCH, "TRACE"
+       43 45       
+040814 91 54 49 4D 0479   			DB    91H, "TIME", 0
+       45 00       
+04081A B9 54 52 55 0480   			DB    B9H, "TRUE", 0
+       45 00       
+040820 FD 55 4E 54 0481   			DB    FDH, "UNTIL"
+       49 4C       
+040826 BA 55 53 52 0482   			DB    BAH, "USR"
+04082A EF 56 44 55 0483   			DB    EFH, "VDU"
+04082E BB 56 41 4C 0484   			DB    BBH, "VAL"
+040832 BC 56 50 4F 0485   			DB    BCH, "VPOS", 0
+       53 00       
+040838 FE 57 49 44 0486   			DB    FEH, "WIDTH"
+       54 48       
+04083E D3 48 49 4D 0487   			DB    D3H, "HIMEM"
+       45 4D       
+040844 D2 4C 4F 4D 0488   			DB    D2H, "LOMEM"
+       45 4D       
+04084A D0 50 41 47 0489   			DB    D0H, "PAGE"
+       45          
+04084F CF 50 54 52 0490   			DB    CFH, "PTR"
+040853 D1 54 49 4D 0491   			DB    D1H, "TIME"
+       45          
+040858             0492   ;
+040858             0493   ; These are indexed from the ERRWDS table
+040858             0494   ;
+040858 01 4D 69 73 0495   			DB    01H, "Missing "
+       73 69 6E 67 
+       20          
+040861 02 4E 6F 20 0496   			DB    02H, "No such "
+       73 75 63 68 
+       20          
+04086A 03 42 61 64 0497   			DB    03H, "Bad "
+       20          
+04086F 04 20 72 61 0498   			DB    04H, " range"
+       6E 67 65    
+040876 05 76 61 72 0499   			DB    05H, "variable"
+       69 61 62 6C 
+       65          
+04087F 06 4F 75 74 0500   			DB    06H, "Out of"
+       20 6F 66    
+040886 07 4E 6F 20 0501   			DB    07H, "No "
+04088A 08 20 73 70 0502   			DB    08H, " space"
+       61 63 65    
+040891             0503   
+040891             0504   KEYWDL:			EQU     $-KEYWDS
+040891 FF FF       0505   			DW    -1
+040893             0506   ;
+040893             0507   ; Error messages
+040893             0508   ;
+040893 07 72 6F 6F 0509   ERRWDS:			DB    7, "room", 0		;  0: No room
+       6D 00       
+040899 06 04 00    0510   			DB    6, 4, 0			;  1: Out of range
+04089C 00          0511   			DB    0				;  2: *
+04089D 00          0512   			DB    0				;  3: *
+04089E 4D 69 73 74 0513   			DB    "Mistake", 0		;  4: Mistake
+       61 6B 65 00 
+0408A6 01 2C 00    0514   			DB    1, ",", 0			;  5: Missing ,
+0408A9 54 79 70 65 0515   			DB    "Type mismatch", 0	;  6: Type mismatch
+       20 6D 69 73 
+       6D 61 74 63 
+       68 00       
+0408B7 07 A4 00    0516   			DB    7, FN, 0			;  7: No FN
+0408BA 00          0517   			DB    0				;  8: *
+0408BB 01 22 00    0518   			DB    1, 34, 0			;  9: Missing "
+0408BE 03 DE 00    0519   			DB    3, DIM, 0			; 10: Bad DIM
+0408C1 DE 08 00    0520   			DB    DIM, 8, 0			; 11: DIM space
+0408C4 4E 6F 74 20 0521   			DB    "Not ", LOCAL_, 0		; 12: Not LOCAL
+       EA 00       
+0408CA 07 F2 00    0522   			DB    7, PROC, 0		; 13: No PROC
+0408CD 41 72 72 61 0523   			DB    "Array", 0		; 14: Array
+       79 00       
+0408D3 53 75 62 73 0524   			DB    "Subscript", 0		; 15: Subscript
+       63 72 69 70 
+       74 00       
+0408DD 53 79 6E 74 0525   			DB    "Syntax error", 0		; 16: Syntax error
+       61 78 20 65 
+       72 72 6F 72 
+       00          
+0408EA 45 73 63 61 0526   			DB    "Escape", 0		; 17: Escape
+       70 65 00    
+0408F1 44 69 76 69 0527   			DB    "Division by zero", 0	; 18: Division by zero
+       73 69 6F 6E 
+       20 62 79 20 
+       7A 65 72 6F 
+       00          
+040902 53 74 72 69 0528   			DB    "String too long", 0	; 19: String too long
+       6E 67 20 74 
+       6F 6F 20 6C 
+       6F 6E 67 00 
+040912 54 6F 6F 20 0529   			DB    "Too big", 0		; 20: Too big
+       62 69 67 00 
+04091A 2D 76 65 20 0530   			DB    "-ve root", 0		; 21: -ve root
+       72 6F 6F 74 
+       00          
+040923 4C 6F 67 04 0531   			DB    "Log", 4, 0		; 22: Log range
+       00          
+040928 41 63 63 75 0532   			DB    "Accuracy lost", 0	; 23: Accuracy lost
+       72 61 63 79 
+       20 6C 6F 73 
+       74 00       
+040936 45 78 70 04 0533   			DB    "Exp", 4, 0		; 24: Exp range
+       00          
+04093B 00          0534   			DB    0				; 25: *
+04093C 02 05 00    0535   			DB    2, 5, 0			; 26: No such variable
+04093F 01 29 00    0536   			DB    1, ")", 0			; 27: Missing )
+040942 03 48 45 58 0537   			DB    3, "HEX", 0		; 28: Bad HEX
+       00          
+040947 02 A4 2F F2 0538   			DB    2, FN, "/", PROC, 0	; 29: No such FN/PROC
+       00          
+04094C 03 63 61 6C 0539   			DB    3, "call", 0		; 30: Bad call
+       6C 00       
+040952 41 72 67 75 0540   			DB    "Arguments", 0		; 31: Arguments
+       6D 65 6E 74 
+       73 00       
+04095C 07 E3 00    0541   			DB    7, FOR, 0			; 32: No FOR
+04095F 43 61 6E 27 0542   			DB    "Can't match ", FOR, 0	; 33: Can't match FOR
+       74 20 6D 61 
+       74 63 68 20 
+       E3 00       
+04096D E3 20 05 00 0543   			DB    FOR, " ", 5, 0		; 34: FOR variable
+040971 00          0544   			DB    0				; 35: *
+040972 07 B8 00    0545   			DB    7, TO, 0			; 36: No TO
+040975 00          0546   			DB    0				; 37: *
+040976 07 E4 00    0547   			DB    7, GOSUB, 0		; 38: No GOSUB
+040979 EE 20 73 79 0548   			DB    ON_, " syntax", 0		; 39: ON syntax
+       6E 74 61 78 
+       00          
+040982 EE 04 00    0549   			DB    ON_, 4, 0			; 40: ON range
+040985 02 6C 69 6E 0550   			DB    2, "line", 0		; 41: No such line
+       65 00       
+04098B 06 20 DC 00 0551   			DB    6, " ", DATA_, 0		; 42: Out of DATA
+04098F 07 F5 00    0552   			DB    7, REPEAT, 0		; 43: No REPEAT
+040992 00          0553   			DB    0				; 44: *
+040993 01 23 00    0554   			DB    1, "#", 0			; 45: Missing #
+040996             0555   ;
+040996             0556   ; COMMANDS:
+040996             0557   ;
+040996             0558   ; DELETE line,line
+040996             0559   ;
+040996 CD 95 0C 04 0560   DELETE:			CALL    SETTOP          	; Set TOP sysvar (first free byte at end of BASIC program)
+04099A CD 9D 10 04 0561   			CALL    DLPAIR			; Get the line number pair - HL: BASIC program address, BC: second number (or 0 if missing)
+04099E 7E          0562   DELET1:			LD      A,(HL)			; Check whether it's the last line
+04099F B7          0563   			OR      A
+0409A0 CA 27 0A 04 0564   			JP      Z,WARMNC		; Yes, so do nothing
+0409A4 23          0565   			INC     HL			; Skip the line length byte
+0409A5 11 00 00 00 0566   			LD	DE, 0			; Clear DE
+0409A9 5E          0567   			LD      E,(HL)			; Fetch the line number in DE
+0409AA 23          0568   			INC     HL
+0409AB 56          0569   			LD      D,(HL)
+0409AC 7A          0570   			LD      A,D			; If the line number is zero then
+0409AD B3          0571   			OR      E
+0409AE 28 1D       0572   			JR      Z,CLOOP1        	; Do nothing
+0409B0 2B          0573   			DEC     HL			; Decrement BASIC program pointer back to length
+0409B1 2B          0574   			DEC     HL
+0409B2 EB          0575   			EX      DE,HL			; Check if we've gone past the terminating line
+0409B3 37          0576   			SCF
+0409B4 ED 42       0577   			SBC     HL,BC
+0409B6 EB          0578   			EX      DE,HL
+0409B7 30 6E       0579   			JR      NC,WARMNC		; Yes, so exit back to BASIC prompt
+0409B9 C5          0580   			PUSH    BC
+0409BA CD 4C 0C 04 0581   			CALL    DEL			; Delete the line pointed to by HL
+0409BE C1          0582   			POP     BC
+0409BF 18 DD       0583   			JR      DELET1			; And loop round to the next line
+0409C1             0584   ;
+0409C1             0585   ; LISTO expr
+0409C1             0586   ;
+0409C1 FD 23       0587   LISTO:			INC     IY              	; Skip "O" byte
+0409C3 CD 8A 12 04 0588   			CALL    EXPRI			; Get expr
+0409C7 D9          0589   			EXX
+0409C8 7D          0590   			LD      A,L
+0409C9 32 40 03 04 0591   			LD      (LISTON),A		; Store in LISTON sysvar
+0409CD C3 CA 04 04 0592   CLOOP1:			JP      CLOOP
+0409D1             0593   ;
+0409D1             0594   ; LIST
+0409D1             0595   ; LIST line
+0409D1             0596   ; LIST line,line [IF string]
+0409D1             0597   ; LIST ,line
+0409D1             0598   ; LIST line,
+0409D1             0599   ;
+0409D1 FE 4F       0600   LIST_:			CP      'O'			; Check for O (LISTO)
+0409D3 28 EC       0601   			JR      Z,LISTO			; and jump to LISTO if zero
+0409D5 CD 9D 10 04 0602   			CALL    DLPAIR			; Get the line number pair - HL: BASIC program address, BC: second number (or 0 if missing)
+0409D9 CD 56 12 04 0603   			CALL    NXT			; Skip space
+0409DD FE E7       0604   			CP      TIF             	; Check for IF clause (token IF)
+0409DF 3E 00       0605   			LD      A,0             	; Initialise the IF clause string length
+0409E1 20 17       0606   			JR      NZ,LISTB		; If there is no IF clause, skip the next bit
+0409E3             0607   ;
+0409E3 FD 23       0608   			INC     IY              	; Skip the IF token
+0409E5 CD 56 12 04 0609   			CALL    NXT             	; And skip any spaces
+0409E9 EB          0610   			EX      DE,HL			; DE: Address in memory
+0409EA FD E5       0611   			PUSH    IY			; LD IY, HL
+0409EC E1          0612   			POP     HL              	; HL is now the address of the tokenised line
+0409ED 3E 0D       0613   			LD      A,CR
+0409EF C5          0614   			PUSH    BC			; Stack the second line number arg
+0409F0 01 00 01 00 0615   			LD      BC,256
+0409F4 ED B1       0616   			CPIR                    	; Locate CR byte
+0409F6 79          0617   			LD      A,C
+0409F7 2F          0618   			CPL                    	 	; A: Substring length (of IF clause)
+0409F8 C1          0619   			POP     BC			; Restore the second line number arg
+0409F9 EB          0620   			EX      DE,HL			; HL: Address in memory
+0409FA             0621   ;
+0409FA 5F          0622   LISTB:			LD      E,A             	; E: IF clause string length
+0409FB 78          0623   			LD      A,B			; Check whether a second line number was passed (BC!=0)
+0409FC B1          0624   			OR      C
+0409FD 20 01       0625   			JR      NZ,LISTA		; If there isn't a second line number
+0409FF 0B          0626   			DEC     BC			; then we set it to the maximum of 65535
+040A00             0627   ;
+040A00 D9          0628   LISTA:			EXX
+040A01 DD 21 40 03 0629   			LD      IX,LISTON		; IX : Pointer to the LISTON (LISTO and OPT) sysvar
+       04          
+040A06 01 00 00 00 0630   			LD      BC,0            	; BC': Indentation counter (C: FOR/NEXT, B: REPEAT/UNTIL)
+040A0A D9          0631   			EXX
+040A0B 3E 14       0632   			LD      A,20			; Number of lines to list
+040A0D             0633   ;
+040A0D C5          0634   LISTC:			PUSH    BC              	; Save second line number
+040A0E D5          0635   			PUSH    DE              	; Save IF clause length
+040A0F E5          0636   			PUSH    HL              	; Save BASIC program counter
+040A10 08          0637   			EX      AF,AF'
+040A11             0638   ;
+040A11             0639   ; BBC BASIC for Z80 lines are stored as follows:
+040A11             0640   ;
+040A11             0641   ; - [LEN] [LSB] [MSB] [DATA...] [0x0D]: LSB, MSB = line number
+040A11             0642   ; - [&00] [&FF] [&FF]: End of program marker
+040A11             0643   ;
+040A11             0644   ; This is the Russell format and different to the Wilson/Acorn format: https://www.beebwiki.mdfs.net/Program_format
+040A11             0645   ;
+040A11 7E          0646   			LD      A,(HL)			; Check for end of program marker
+040A12 B7          0647   			OR      A			; If found
+040A13 28 12       0648   			JR      Z,WARMNC		; Jump to WARMNC (F=NC, so will jump to WARM)
+040A15             0649   ;
+040A15             0650   ; Check if past terminating line number
+040A15             0651   ;
+040A15 7B          0652   			LD      A,E             	; A: IF clause length
+040A16 23          0653   			INC     HL			; Skip the length byte
+040A17 11 00 00 00 0654   			LD	DE,0			; Clear DE
+040A1B 5E          0655   			LD      E,(HL)			; Fetch the line number in DE
+040A1C 23          0656   			INC     HL
+040A1D 56          0657   			LD      D,(HL)
+040A1E 2B          0658   			DEC     HL			; Step HL back to the length byte
+040A1F 2B          0659   			DEC     HL
+040A20 D5          0660   			PUSH    DE             	 	; Push the line number on the stack
+040A21 EB          0661   			EX      DE,HL			; HL: line number
+040A22 37          0662   			SCF				; Do a 16-bit compare of HL and DE
+040A23 ED 42       0663   			SBC     HL,BC
+040A25 EB          0664   			EX      DE,HL
+040A26 D1          0665   			POP     DE              	; Restore the line number
+040A27 D2 C9 04 04 0666   WARMNC:			JP      NC,WARM			; If exceeded the terminating line number then jump to WARM
+040A2B 4E          0667   			LD      C,(HL)          	; C: Line length + 4
+040A2C 47          0668   			LD      B,A             	; B: IF clause length
+040A2D             0669   ;
+040A2D             0670   ; Check if "UNLISTABLE":
+040A2D             0671   ;
+040A2D 7A          0672   			LD      A,D			; TODO: What is "UNLISTABLE?"
+040A2E B3          0673   			OR      E
+040A2F CA CA 04 04 0674   			JP      Z,CLOOP
+040A33             0675   ;
+040A33             0676   ; Check for IF clause:
+040A33             0677   ;
+040A33 23          0678   			INC     HL			; Skip the length
+040A34 23          0679   			INC     HL			; Skip the line number
+040A35 23          0680   			INC     HL              	; HL: Address of the tokenised BASIC line
+040A36 0D          0681   			DEC     C			;  C: Line length
+040A37 0D          0682   			DEC     C
+040A38 0D          0683   			DEC     C
+040A39 0D          0684   			DEC     C
+040A3A D5          0685   			PUSH    DE              	; Save the line number
+040A3B E5          0686   			PUSH    HL              	; Save the BASIC program address
+040A3C AF          0687   			XOR     A               	;
+040A3D B8          0688   			CP      B              	 	; Check for an IF clause (B!=0)
+040A3E FD E5       0689   			PUSH    IY			; LD IY, DE
+040A40 D1          0690   			POP     DE              	; DE: Address of the IF clause string in the input buffer
+040A41 C4 A6 12 04 0691   			CALL    NZ,SEARCH      		; If there is an IF clause (B!=0) then search for it
+040A45 E1          0692   			POP     HL              	; Restore BASIC program address
+040A46 D1          0693   			POP     DE              	; Restore line number
+040A47 FD E5       0694   			PUSH    IY
+040A49 CC DC 0C 04 0695   			CALL    Z,LISTIT        	; List if no IF clause OR there is an IF clause match
+040A4D FD E1       0696   			POP     IY
+040A4F             0697   ;
+040A4F 08          0698   			EX      AF,AF'
+040A50 3D          0699   			DEC     A			; Decrement line list counter
+040A51 CD C3 12 04 0700   			CALL    LTRAP			; TODO: This destroys A - is this a bug I've introduced in LTRAP?
+040A55 E1          0701   			POP     HL             	 	; Restore BASIC program address to beginning of line
+040A56 11 00 00 00 0702   			LD	DE,0
+040A5A 5E          0703   			LD      E,(HL)			; Fetch the length of line in DE
+040A5B 19          0704   			ADD     HL,DE           	; Go to the next line
+040A5C D1          0705   			POP     DE              	; Restore IF clause length
+040A5D C1          0706   			POP     BC              	; Restore second line number
+040A5E 18 AD       0707   			JR      LISTC			; Loop back to do next line
+040A60             0708   ;
+040A60             0709   ; RENUMBER
+040A60             0710   ; RENUMBER start
+040A60             0711   ; RENUMBER start,increment
+040A60             0712   ; RENUMBER ,increment
+040A60             0713   ;
+040A60 CD C0 0C 04 0714   RENUM:			CALL    CLEAR           	; Uses the heap so clear all dynamic variables and function/procedure pointers
+040A64 CD 75 10 04 0715   			CALL    PAIR            	; Fetch the parameters - HL: start (NEW line number), BC: increment
+040A68 D9          0716   			EXX
+040A69 2A 14 03 04 0717   			LD      HL,(PAGE_)		; HL: Top of program
+040A6D ED 5B 1A 03 0718   			LD      DE,(LOMEM)		; DE: Start address of the heap
+       04          
+040A72             0719   ;
+040A72             0720   ; Build the table
+040A72             0721   ;
+040A72 7E          0722   RENUM1:			LD      A,(HL)          	; Fetch the line length byte
+040A73 B7          0723   			OR      A			; Is it zero, i.e. the end of program marker?
+040A74 28 36       0724   			JR      Z,RENUM2		; Yes, so skip to the next part
+040A76 23          0725   			INC     HL
+040A77 4E          0726   			LD      C,(HL)          	; BC: The OLD line number
+040A78 23          0727   			INC     HL
+040A79 46          0728   			LD      B,(HL)
+040A7A 78          0729   			LD      A,B			; Check whether the line number is zero - we only need to check the LSW
+040A7B B1          0730   			OR      C
+040A7C CA CA 04 04 0731   			JP      Z,CLOOP        		; If the line number is zero, then exit back to the command line
+040A80 EB          0732   			EX      DE,HL			; DE: Pointer to BASIC program, HL: Pointer to heap
+040A81 71          0733   			LD      (HL),C			; Store the OLD line number in the heap
+040A82 23          0734   			INC     HL
+040A83 70          0735   			LD      (HL),B
+040A84 23          0736   			INC     HL
+040A85 D9          0737   			EXX				; HL: line number, BC: increment (16-bit values)
+040A86 E5          0738   			PUSH    HL			; HL: Stack the NEW line number value
+040A87 52 09       0739   			ADD.S   HL,BC           	; Add the increment
+040A89 DA 6F 10 04 0740   			JP      C,TOOBIG_MAIN        	; If > 65535, then error: "Too big"
+040A8D D9          0741   			EXX				; DE: Pointer to BASIC program, HL: Pointer to heap
+040A8E C1          0742   			POP     BC			; BC: Pop the NEW line number value off the stack
+040A8F 71          0743   			LD      (HL),C			; Store the NEW line number in the heap
+040A90 23          0744   			INC     HL
+040A91 70          0745   			LD      (HL),B
+040A92 23          0746   			INC     HL
+040A93 EB          0747   			EX      DE,HL			; HL: Pointer to BASIC program, DE: Pointer to heap
+040A94 2B          0748   			DEC     HL			; Back up to the line length byte
+040A95 2B          0749   			DEC     HL
+040A96 01 00 00 00 0750   			LD	BC, 0
+040A9A 4E          0751   			LD      C,(HL)			; BC: Line length
+040A9B 09          0752   			ADD	HL,BC           	; Advance HL to next line
+040A9C EB          0753   			EX      DE,HL			; DE: Pointer to BASIC program, HL: Pointer to heap
+040A9D E5          0754   			PUSH    HL
+040A9E 24          0755   			INC     H			; Increment to next page
+040A9F ED 72       0756   			SBC     HL,SP			; Subtract from SP
+040AA1 E1          0757   			POP     HL
+040AA2 EB          0758   			EX      DE, HL			; HL: Pointer to BASIC program, DE: Pointer to heap
+040AA3 38 CD       0759   			JR      C,RENUM1        	; Loop, as the heap pointer has not strayed into the stack page
+040AA5 CD C1 0B 04 0760   			CALL    EXTERR          	; Otherwise throw error: "RENUMBER space'
+040AA9 CC          0761   			DB    	REN
+040AAA 08          0762   			DB    	8
+040AAB 00          0763   			DB    	0
+040AAC             0764   ;
+040AAC             0765   ; At this point a list of BASIC line numbers have been written to the heap
+040AAC             0766   ; as word pairs:
+040AAC             0767   ; - DW: The OLD line number
+040AAC             0768   ; - DW: The NEW line number
+040AAC             0769   ;
+040AAC EB          0770   RENUM2:			EX      DE,HL			; HL: Pointer to the end of the heap
+040AAD 36 FF       0771   			LD      (HL),-1			; Mark the end with FFFFh
+040AAF 23          0772   			INC     HL
+040AB0 36 FF       0773   			LD      (HL),-1
+040AB2 ED 5B 1A 03 0774   			LD      DE,(LOMEM)		; DE: Pointer to the start of the heap
+       04          
+040AB7 D9          0775   			EXX
+040AB8 2A 14 03 04 0776   			LD      HL,(PAGE_)		; HL: Start of the BASIC program area
+040ABC 4E          0777   RENUM3:			LD      C,(HL)			; Fetch the first line length byte
+040ABD 79          0778   			LD      A,C			; If it is zero, then no program, so...
+040ABE B7          0779   			OR      A
+040ABF CA C9 04 04 0780   			JP      Z,WARM			; Jump to warm start
+040AC3 D9          0781   			EXX				; HL: Pointer to end of heap, DE: Pointer to start of heap
+040AC4 EB          0782   			EX      DE,HL			; DE: Pointer to end of heap, HL: Pointer to start of heap
+040AC5 23          0783   			INC     HL			; Skip to the NEW line number
+040AC6 23          0784   			INC     HL
+040AC7 5E          0785   			LD      E,(HL)			; DE: The NEW line number
+040AC8 23          0786   			INC     HL
+040AC9 56          0787   			LD      D,(HL)
+040ACA 23          0788   			INC     HL
+040ACB D5          0789   			PUSH    DE			; Stack the NEW line number
+040ACC EB          0790   			EX      DE,HL			; HL: The NEW line number, DE: Pointer to the end of heap
+040ACD 22 23 03 04 0791   			LD      (LINENO),HL		; Store the line number in LINENO
+040AD1 D9          0792   			EXX				; HL: Pointer to the BASIC program area
+040AD2 D1          0793   			POP     DE			; DE: The NEW line number
+040AD3 23          0794   			INC     HL
+040AD4 73          0795   			LD      (HL),E          	; Write out the NEW line number to the BASIC program
+040AD5 23          0796   			INC     HL
+040AD6 72          0797   			LD      (HL),D
+040AD7 23          0798   			INC     HL
+040AD8 0D          0799   			DEC     C			; Subtract 3 from the line length to compensate for increasing HL by 3 above
+040AD9 0D          0800   			DEC     C
+040ADA 0D          0801   			DEC     C
+040ADB 79          0802   			LD	A,C
+040ADC 01 00 00 00 0803   			LD	BC,0
+040AE0 4F          0804   			LD	C,A			; BC: Line length
+040AE1             0805   ;
+040AE1 3E 8D       0806   RENUM7:			LD      A,LINO			; A: The token code that precedes any line number encoded in BASIC (i.e. GOTO/GOSUB)
+040AE3 ED B1       0807   			CPIR                    	; Search for the token
+040AE5 20 D5       0808   			JR      NZ,RENUM3		; If not found, then loop to process the next line
+040AE7             0809   ;
+040AE7             0810   ; Having established this line contains at least one encoded line number, we need to update it to point to the new line number
+040AE7             0811   ;
+040AE7 C5          0812   			PUSH    BC			; Stack everything
+040AE8 E5          0813   			PUSH    HL
+040AE9 E5          0814   			PUSH    HL			; HL: Pointer to encoded line number
+040AEA FD E1       0815   			POP     IY			; IY: Pointer to encoded line number
+040AEC D9          0816   			EXX
+040AED CD DF 12 04 0817   			CALL    DECODE			; Decode the encoded line number (in HL')
+040AF1 D9          0818   			EXX				; HL: Decoded line number
+040AF2 44          0819   			LD      B,H			; BC: Decoded line number
+040AF3 4D          0820   			LD      C,L
+040AF4 2A 1A 03 04 0821   			LD      HL,(LOMEM)		; HL: Pointer to heap
+040AF8             0822   ;
+040AF8             0823   ; This section of code cross-references the decoded (OLD) line number with the list
+040AF8             0824   ; created previously in the global heap
+040AF8             0825   ;
+040AF8 5E          0826   RENUM4:			LD      E,(HL)          	; DE: The OLD line number
+040AF9 23          0827   			INC     HL
+040AFA 56          0828   			LD      D,(HL)
+040AFB 23          0829   			INC     HL
+040AFC EB          0830   			EX      DE,HL			; HL: The OLD line number, DE: Pointer in the global heap
+040AFD B7          0831   			OR      A               	; Clear the carry and...
+040AFE 52 ED 42    0832   			SBC.S   HL,BC			; Compare by means of subtraction the OLD line number against the one in the heap
+040B01 EB          0833   			EX      DE,HL			; HL: Pointer in the global heap
+040B02 5E          0834   			LD      E,(HL)          	; DE: The NEW line number
+040B03 23          0835   			INC     HL
+040B04 56          0836   			LD      D,(HL)
+040B05 23          0837   			INC     HL
+040B06 38 F0       0838   			JR      C,RENUM4		; Loop until there is a match (Z) or not (NC)
+040B08 EB          0839   			EX      DE,HL			; DE: Pointer in the global heap
+040B09 28 1D       0840   			JR      Z,RENUM5        	; If Z flag is set, there is an exact match to the decoded line number on the heap
+040B0B             0841   ;
+040B0B CD DA 11 04 0842   			CALL    TELL			; Display this error if the line number is not found
+040B0F 46 61 69 6C 0843   			DB    	"Failed at "
+       65 64 20 61 
+       74 20       
+040B19 00          0844   			DB    	0
+040B1A 2A 23 03 04 0845   			LD      HL,(LINENO)
+040B1E CD 41 0E 04 0846   			CALL    PBCDL
+040B22 CD 91 0D 04 0847   			CALL    CRLF
+040B26 18 07       0848   			JR      RENUM6			; And carry on renumbering
+040B28             0849   ;
+040B28             0850   ; This snippet re-encodes the line number in the BASIC program
+040B28             0851   ;
+040B28 D1          0852   RENUM5:			POP     DE			; DE: Pointer to the encoded line number in the listing
+040B29 D5          0853   			PUSH    DE
+040B2A 1B          0854   			DEC     DE			; Back up a byte to the LINO token
+040B2B CD A6 11 04 0855   			CALL    ENCODE          	; Re-write the new line number out
+040B2F E1          0856   RENUM6:			POP     HL			; HL: Pointer to the encoded line number in the listing
+040B30 C1          0857   			POP     BC			; BC: The remaining line length
+040B31 18 AE       0858   			JR      RENUM7			; Carry on checking for any more encoded line numbers in this line
+040B33             0859   ;
+040B33             0860   ; AUTO
+040B33             0861   ; AUTO start,increment
+040B33             0862   ; AUTO start
+040B33             0863   ; AUTO ,increment
+040B33             0864   ;
+040B33 CD 75 10 04 0865   AUTO:			CALL    PAIR			; Get the parameter pair (HL: first parameter, BC: second parameter)
+040B37 22 29 03 04 0866   			LD      (AUTONO),HL		; Store the start in AUTONO
+040B3B 79          0867   			LD      A,C			; Increment is 8 bit (0-255)
+040B3C 32 41 03 04 0868   			LD      (INCREM),A		; Store that in INCREM
+040B40 18 2E       0869   			JR      CLOOP0			; Jump back indirectly to the command loop via CLOOP0 (optimisation for size)
+040B42             0870   ;
+040B42             0871   ; BAD
+040B42             0872   ; NEW
+040B42             0873   ;
+040B42 CD DA 11 04 0874   BAD:			CALL    TELL            	; Output "Bad program" error
+040B46 03          0875   			DB    3				; Token for "BAD"
+040B47 70 72 6F 67 0876   			DB    "program"
+       72 61 6D    
+040B4E 0D          0877   			DB    CR
+040B4F 0A          0878   			DB    LF
+040B50 00          0879   			DB    0				; Falls through to NEW
+040B51             0880   ;
+040B51 CD B6 0C 04 0881   NEW:			CALL    NEWIT			; Call NEWIT (clears program area and variables)
+040B55 18 19       0882   			JR      CLOOP0			; Jump back indirectly to the command loop via CLOOP0 (optimisation for size)
+040B57             0883   ;
+040B57             0884   ; OLD
+040B57             0885   ;
+040B57 2A 14 03 04 0886   OLD:			LD      HL,(PAGE_)		; HL: The start of the BASIC program area
+040B5B E5          0887   			PUSH    HL			; Stack it
+040B5C 23          0888   			INC     HL			; Skip the potential length byte of first line of code
+040B5D 23          0889   			INC     HL			; And the line number word
+040B5E 23          0890   			INC     HL
+040B5F 01 FC 00 00 0891   			LD      BC,252			; Look for a CR in the first 252 bytes of code; maximum line length
+040B63 3E 0D       0892   			LD      A,CR
+040B65 ED B1       0893   			CPIR
+040B67 20 D9       0894   			JR      NZ,BAD			; If not found, then the first line of code is not a valid BBC BASIC code
+040B69 7D          0895   			LD      A,L			; It could still be garbage though! Store the position in A; this requires
+040B6A E1          0896   			POP     HL			; PAGE to be on a 256 page boundary, and is now the length of the first line
+040B6B 77          0897   			LD      (HL),A			; Restore the length byte (this will have been set to 0 by NEW)
+040B6C CD 89 0C 04 0898   			CALL    CLEAN			; Further checks for bad program, set TOP, write out &FFFF end of program marker
+040B70 C3 CA 04 04 0899   CLOOP0:			JP      CLOOP			; Jump back to the command loop
+040B74             0900   ;
+040B74             0901   ; LOAD filename
+040B74             0902   ;
+040B74 CD FC 12 04 0903   LOAD:			CALL    EXPRS           	; Get the filename
+040B78 3E 0D       0904   			LD      A,CR			; DE points to the last byte of filename in ACCS
+040B7A 12          0905   			LD      (DE),A			; Terminate filename with a CR
+040B7B CD 69 0C 04 0906   			CALL    LOAD0			; Load the file in, then CLEAN
+040B7F CD C0 0C 04 0907   			CALL    CLEAR			; Further checks for bad program, set TOP, write out &FFFF end of program marker
+040B83 18 21       0908   			JR      WARM0			; Jump back to the command loop
+040B85             0909   ;
+040B85             0910   ; SAVE filename
+040B85             0911   ;
+040B85 CD 95 0C 04 0912   SAVE:			CALL    SETTOP          	; Set TOP sysvar
+040B89 CD FC 12 04 0913   			CALL    EXPRS           	; Get the filename
+040B8D 3E 0D       0914   			LD      A,CR			; Terminate the filename with a CR
+040B8F 12          0915   			LD      (DE),A
+040B90 ED 5B 14 03 0916   			LD      DE,(PAGE_)		; DE: Start of program memory
+       04          
+040B95 2A 17 03 04 0917   			LD      HL,(TOP)		; HL: Top of program memory
+040B99 B7          0918   			OR      A			; Calculate program size (TOP-PAGE)
+040B9A ED 52       0919   			SBC     HL,DE
+040B9C 44          0920   			LD      B,H             	; BC: Length of program in bytes
+040B9D 4D          0921   			LD      C,L
+040B9E 21 00 00 04 0922   			LD      HL,ACCS			; HL: Address of the filename
+040BA2 CD 18 13 04 0923   			CALL    OSSAVE			; Call the SAVE routine in patch.asm
+040BA6 C3 C9 04 04 0924   WARM0:			JP      WARM			; Jump back to the command loop
+040BAA             0925   
+040BAA             0926   ;
+040BAA             0927   ; ERROR
+040BAA             0928   ; Called whenever BASIC needs to halt with an error
+040BAA             0929   ; Error messages are indexed from 0
+040BAA             0930   ; Inputs:
+040BAA             0931   ;  A: Error number
+040BAA             0932   ;
+040BAA ED 7B 20 03 0933   ERROR_:			LD      SP,(HIMEM)		; Set SP to HIMEM
+       04          
+040BAF 21 93 08 04 0934   			LD      HL,ERRWDS		; Index into the error string table
+040BB3 B7          0935   			OR      A			; We don't need to search for the first error
+040BB4 28 0A       0936   			JR      Z,ERROR1		; So skip the search routine
+040BB6             0937   ;
+040BB6             0938   ; Search the error table for error #A
+040BB6             0939   ; HL will end up being the pointer into the correct error
+040BB6             0940   ; There is no bounds checking on this, so invalid error numbers will probably output garbage
+040BB6             0941   ;
+040BB6 47          0942   			LD      B,A             	; Store error number in B
+040BB7 08          0943   			EX      AF,AF'			; Store error number in AF'
+040BB8 AF          0944   			XOR     A
+040BB9 BE          0945   ERROR0:			CP      (HL)			; Compare the character with 0 (the terminator byte)
+040BBA 23          0946   			INC     HL			; Increment the string pointer
+040BBB 20 FC       0947   			JR      NZ,ERROR0		; Loop until with hit a 0
+040BBD 10 FA       0948   			DJNZ    ERROR0			; Decrements the error number and loop until 0
+040BBF 08          0949   			EX      AF,AF'			; Restore the error number from AF'
+040BC0             0950   ;
+040BC0             0951   ; At this point HL points to the tokenised error string
+040BC0             0952   ;
+040BC0 E5          0953   ERROR1:			PUSH    HL			; Stack the error string pointer and fall through to EXTERR
+040BC1             0954   
+040BC1             0955   ;
+040BC1             0956   ; EXTERR
+040BC1             0957   ; Inputs:
+040BC1             0958   ;  A: Error number
+040BC1             0959   ;
+040BC1             0960   ; This is the entry point for external errors, i.e. ones not in the ERRWDS table
+040BC1             0961   ; The error text immediately follows the CALL to EXTERR, for example:
+040BC1             0962   ; > CALL  EXTERR
+040BC1             0963   ; > DB    "Silly", 0
+040BC1             0964   ; So we can get the address of the string by popping the return address off the stack
+040BC1             0965   ;
+040BC1 E1          0966   EXTERR:			POP     HL			; Pop the error string pointer
+040BC2 22 2F 03 04 0967   			LD      (ERRTXT),HL		; Store in ERRTXT sysvar
+040BC6 ED 7B 20 03 0968   			LD      SP,(HIMEM)		; Set SP to HIMEM
+       04          
+040BCB 32 3F 03 04 0969   			LD      (ERR),A			; Store error number in ERR sysvar
+040BCF CD F8 0D 04 0970   			CALL    SETLIN			; Get line number
+040BD3 22 33 03 04 0971   			LD      (ERL),HL		; Store in ERL sysvar
+040BD7 B7          0972   			OR      A			; Is error number 0?
+040BD8 28 0D       0973   			JR      Z,ERROR2		; Yes, so skip the next bit as error number 0 is untrappable
+040BDA             0974   ;
+040BDA 2A 2C 03 04 0975   			LD      HL,(ERRTRP)		; Check whether the error is trapped
+040BDE 7C          0976   			LD      A,H
+040BDF B5          0977   			OR      L
+040BE0 E5          0978   			PUSH    HL			; HL: Error line
+040BE1 FD E1       0979   			POP     IY			; IY: HL
+040BE3 C2 70 12 04 0980   			JP      NZ,XEQ         	 	; If error trapped, jump to XEQ
+040BE7             0981   ;
+040BE7 21 00 00 00 0982   ERROR2:			LD      HL,0
+040BEB 22 29 03 04 0983   			LD      (AUTONO),HL		; Cancel AUTO
+040BEF 22 26 03 04 0984   			LD      (TRACEN),HL     	; Cancel TRACE
+040BF3 CD 35 13 04 0985   			CALL    RESET           	; Reset OPSYS
+040BF7 CD 91 0D 04 0986   			CALL    CRLF			; Output newline
+040BFB CD CC 11 04 0987   			CALL    REPORT          	; Output the error message
+040BFF CD 2C 0E 04 0988   			CALL    SAYLN			; Output " at line nnnn" message.
+040C03 1E 00       0989   			LD      E,0			; Close all files
+040C05 DC 51 13 04 0990   			CALL    C,OSSHUT
+040C09 CD 91 0D 04 0991   			CALL    CRLF			; Output newline
+040C0D C3 CA 04 04 0992   			JP      CLOOP			; Back to CLOOP
+040C11             0993   ;
+040C11             0994   ; SUBROUTINES:
+040C11             0995   ;
+040C11             0996   ; LEX - SEARCH FOR KEYWORDS
+040C11             0997   ;   Inputs: HL = start of keyword table
+040C11             0998   ;           IY = start of match text
+040C11             0999   ;  Outputs: If found, Z-flag set, A=token.
+040C11             1000   ;           If not found, Z-flag reset, A=(IY).
+040C11             1001   ;           IY updated (if NZ, IY unchanged).
+040C11             1002   ; Destroys: A,B,H,L,IY,F
+040C11             1003   ;
+040C11 21 B2 05 04 1004   LEX:			LD      HL,KEYWDS		; Address of the keywords table
+040C15             1005   ;
+040C15 FD 7E 00    1006   LEX0:			LD      A,(IY)			; Fetch the character to match
+040C18 46          1007   			LD      B,(HL)			; B: The token from the keywords table
+040C19 23          1008   			INC     HL			; Increment the pointer in the keywords table
+040C1A BE          1009   			CP      (HL)			; Compare the first characters
+040C1B 28 08       1010   			JR      Z,LEX2			; If there is a match, then skip to LEX2
+040C1D D8          1011   			RET     C               	; No match, so fail
+040C1E             1012   ;
+040C1E             1013   ; This snippet of code skips to the next token in the KEYWDS table
+040C1E             1014   ;
+040C1E 23          1015   LEX1:			INC     HL			; Increment the pointer
+040C1F CB 7E       1016   			BIT     7,(HL)			; Check if bit 7 set (all token IDs have bit 7 set)
+040C21 28 FB       1017   			JR      Z,LEX1			; No, so loop
+040C23 18 F0       1018   			JR      LEX0			; At this point HL is pointing to the start of the next keyword
+040C25             1019   ;
+040C25 FD E5       1020   LEX2:			PUSH    IY              	; Save the input pointer
+040C27 23          1021   LEX3:			INC     HL			; Increment the keyword pointer
+040C28 CB 7E       1022   			BIT     7,(HL)			; If we've reached the end (marked by the start of the next token) then
+040C2A 20 1C       1023   			JR      NZ,LEX6         	; Jump to here as we've found a token
+040C2C FD 23       1024   			INC     IY			; Increment the text pointer
+040C2E FD 7E 00    1025   			LD      A,(IY)			; Fetch the character
+040C31 FE 2E       1026   			CP      '.'			; Is it an abbreviated keyword?
+040C33 28 13       1027   			JR      Z,LEX6          	; Yes, so we'll return with the token we've found
+040C35 BE          1028   			CP      (HL)			; Compare with the keywords list
+040C36 28 EF       1029   			JR      Z,LEX3			; It's a match, so continue checking this keyword
+040C38 CD C5 10 04 1030   			CALL    RANGE1			; Is it alphanumeric, '@', '_' or '`'
+040C3C 38 04       1031   			JR      C,LEX5			; No, so check whether keyword needs to be immediately delimited
+040C3E             1032   ;
+040C3E FD E1       1033   LEX4:			POP     IY              	; Restore the input pointer ready for the next search
+040C40 18 DC       1034   			JR      LEX1			; And loop back to start again
+040C42             1035   ;
+040C42             1036   ; This section handles the 0 byte at the end of keywords that indicate the keyword needs to be
+040C42             1037   ; immediately delimited
+040C42             1038   ;
+040C42 7E          1039   LEX5:			LD      A,(HL)			; Fetch the byte from the keywords table
+040C43 B7          1040   			OR      A			; If it is not zero, then...
+040C44 20 F8       1041   			JR      NZ,LEX4			; Keep searching
+040C46 FD 2B       1042   			DEC     IY			; If it is zero, then skip the input pointer back one byte
+040C48             1043   ;
+040C48             1044   ; We've found a token at this point
+040C48             1045   ;
+040C48 F1          1046   LEX6:			POP     AF			; Discard IY input pointer pushed on the stack
+040C49 AF          1047   			XOR     A			; Set the Z flag
+040C4A 78          1048   			LD      A,B			; A: The token
+040C4B C9          1049   			RET
+040C4C             1050   ;
+040C4C             1051   ; DEL - DELETE A PROGRAM LINE.
+040C4C             1052   ;   Inputs: HL addresses program line.
+040C4C             1053   ; Destroys: B,C,F
+040C4C             1054   ;
+040C4C             1055   ; This simply erases the line by moving all of the code after the line to be deleted back over
+040C4C             1056   ; it using an LDIR
+040C4C             1057   ;
+040C4C D5          1058   DEL:			PUSH    DE
+040C4D E5          1059   			PUSH    HL
+040C4E E5          1060   			PUSH    HL			; HL: Address of the program line
+040C4F 06 00       1061   			LD      B,0			; BC: Length of the line
+040C51 4E          1062   			LD      C,(HL)
+040C52 09          1063   			ADD     HL,BC			; HL: Advanced to the start of the next line
+040C53 E5          1064   			PUSH    HL
+040C54 EB          1065   			EX      DE,HL			; DE: Pointer to the next line
+040C55 2A 17 03 04 1066   			LD      HL,(TOP)		; HL: Pointer to the end of the program
+040C59 ED 52       1067   			SBC     HL,DE
+040C5B 44          1068   			LD      B,H			; BC: Size of block to move
+040C5C 4D          1069   			LD      C,L
+040C5D E1          1070   			POP     HL			; HL: Pointer to next line
+040C5E D1          1071   			POP     DE			; DE: Pointer to this line
+040C5F ED B0       1072   			LDIR                    	; Delete the line
+040C61 ED 53 17 03 1073   			LD      (TOP),DE		; Adjust TOP
+       04          
+040C66 E1          1074   			POP     HL
+040C67 D1          1075   			POP     DE
+040C68 C9          1076   			RET
+040C69             1077   ;
+040C69             1078   ;LOAD0 - LOAD A DISK FILE THEN CLEAN.
+040C69             1079   ;   Inputs: Filename in ACCS (term CR)
+040C69             1080   ; Destroys: A,B,C,D,E,H,L,F
+040C69             1081   ;
+040C69             1082   ;CLEAN - CHECK FOR BAD PROGRAM, FIND END OF TEXT
+040C69             1083   ; AND WRITE FF FF, THEN LOAD (TOP).
+040C69             1084   ; Destroys: A,B,C,H,L,F
+040C69             1085   ;
+040C69 ED 5B 14 03 1086   LOAD0: 			LD      DE,(PAGE_)		; DE: Beginning of BASIC program area
+       04          
+040C6E 21 00 FF FF 1087   			LD      HL,-256
+040C72 39          1088   			ADD     HL,SP
+040C73 ED 52       1089   			SBC     HL,DE           	; Find available space
+040C75 44          1090   			LD      B,H
+040C76 4D          1091   			LD      C,L
+040C77 21 00 00 04 1092   			LD      HL,ACCS
+040C7B CD 6E 13 04 1093   			CALL    OSLOAD          	; Call the OSLOAD function in patch
+040C7F D4 B6 0C 04 1094   			CALL    NC,NEWIT		; If NC then NEW
+040C83 3E 00       1095   			LD      A,0
+040C85 D2 AA 0B 04 1096   			JP      NC,ERROR_        	; And trigger a "No room" error, otherwise...
+040C89             1097   ;
+040C89 CD 95 0C 04 1098   CLEAN:			CALL    SETTOP			; Set TOP sysvar
+040C8D 2B          1099   			DEC     HL			; Write out the end of program markers
+040C8E 36 FF       1100   			LD      (HL),-1
+040C90 2B          1101   			DEC     HL
+040C91 36 FF       1102   			LD      (HL),-1
+040C93 18 2B       1103   			JR      CLEAR			; Clear all dynamic variables and function/procedure pointers
+040C95             1104   ;
+040C95             1105   ; Set the TOP sysvar; the first free location after the end of the current program
+040C95             1106   ; Returns:
+040C95             1107   ; - HL: TOP
+040C95             1108   ;
+040C95 2A 14 03 04 1109   SETTOP:			LD      HL,(PAGE_)		; Start at beginning of BASIC program area
+040C99 01 00 00 00 1110   			LD	BC, 0			; BC: 0
+040C9D 3E 0D       1111   			LD      A,CR			; End of line marker
+040C9F 4E          1112   SETOP1:			LD      C,(HL)			; BC: Get first byte of program line (line length)
+040CA0 0C          1113   			INC     C			; Check for zero
+040CA1 0D          1114   			DEC     C
+040CA2 28 0A       1115   			JR      Z,SETOP2		; If it is zero, we've reached the end
+040CA4 09          1116   			ADD     HL,BC			; Skip to next line
+040CA5 2B          1117   			DEC     HL			; Check end of previous line
+040CA6 BE          1118   			CP      (HL)
+040CA7 23          1119   			INC     HL
+040CA8 28 F5       1120   			JR      Z,SETOP1		; If CR then loop
+040CAA C3 42 0B 04 1121   			JP      BAD			; If anything else, then something has gone wrong - trip a Bad Program error
+040CAE             1122   ;
+040CAE 23          1123   SETOP2:			INC     HL             		; Skip the 3 byte end of program marker (&00, &FF, &FF)
+040CAF 23          1124   			INC     HL			; NB: Called from NEWIT
+040CB0 23          1125   			INC     HL
+040CB1 22 17 03 04 1126   			LD      (TOP),HL		; Store in TOP sysvar
+040CB5 C9          1127   			RET
+040CB6             1128   ;
+040CB6             1129   ; NEWIT - NEW PROGRAM THEN CLEAR
+040CB6             1130   ;   Destroys: H,L
+040CB6             1131   ;
+040CB6             1132   ; CLEAR - CLEAR ALL DYNAMIC VARIABLES INCLUDING
+040CB6             1133   ; FUNCTION AND PROCEDURE POINTERS.
+040CB6             1134   ;   Destroys: Nothing
+040CB6             1135   ;
+040CB6 2A 14 03 04 1136   NEWIT:			LD      HL,(PAGE_)		; HL: First byte of BASIC program area
+040CBA 36 00       1137   			LD      (HL),0			; Stick a 0 in there
+040CBC CD AE 0C 04 1138   			CALL    SETOP2			; Skip three bytes to get to end of empty BASIC program area and set TOP sysvar
+040CC0             1139   ;
+040CC0 E5          1140   CLEAR:			PUSH    HL			; Stack the BASIC program pointer
+040CC1 2A 17 03 04 1141   			LD      HL,(TOP)		; Get the TOP sysvar - first available byte after BASIC
+040CC5 22 1A 03 04 1142   			LD      (LOMEM),HL		; Set the LOMEM sysvar
+040CC9 22 1D 03 04 1143   			LD      (FREE),HL		; And the FREE sysvar with that value
+040CCD 21 6C 02 04 1144   			LD      HL,DYNVAR		; Get the pointer to the dynamic variable pointers buffer in RAM
+040CD1 C5          1145   			PUSH    BC
+040CD2             1146   			; LD      B,3*(54+2)		; Loop counter
+040CD2 06 A8       1147   			LD      B,54+2*3		; ez80asm doesn't do () in expressions
+040CD4 36 00       1148   CLEAR1:			LD      (HL),0			; Clear the dynamic variable pointers
+040CD6 23          1149   			INC     HL
+040CD7 10 FB       1150   			DJNZ    CLEAR1
+040CD9 C1          1151   			POP     BC
+040CDA E1          1152   			POP     HL			; Restore the BASIC program pointer
+040CDB C9          1153   			RET
+040CDC             1154   ;
+040CDC             1155   ;LISTIT - LIST A PROGRAM LINE.
+040CDC             1156   ;    Inputs: HL addresses line
+040CDC             1157   ;            DE = line number (binary)
+040CDC             1158   ;            IX = Pointer to LISTON
+040CDC             1159   ;             B = FOR/NEXT indent level
+040CDC             1160   ;             C = REPEAT/UNTIL indent level
+040CDC             1161   ;  Destroys: A,D,E,B',C',D',E',H',L',IY,F
+040CDC             1162   ;
+040CDC E5          1163   LISTIT:			PUSH    HL			; Stack the address of the line
+040CDD EB          1164   			EX      DE,HL			; HL: Line number
+040CDE C5          1165   			PUSH    BC
+040CDF CD 45 0E 04 1166   			CALL    PBCD			; Print the line number
+040CE3 C1          1167   			POP     BC
+040CE4 E1          1168   			POP     HL			; HL: Address of the first token/character
+040CE5 7E          1169   			LD      A,(HL)			; Fetch the token
+040CE6 FE ED       1170   			CP      NEXT			; Is it NEXT...
+040CE8 CC 72 0D 04 1171   			CALL    Z,INDENT		; Yes, so indent in
+040CEC FE FD       1172   			CP      UNTIL			; Or is it UNTIL...
+040CEE CC 72 0D 04 1173   			CALL    Z,INDENT		; Yes, so indent in
+040CF2 D9          1174   			EXX
+040CF3 3E 20       1175   			LD      A,' '
+040CF5 DD CB 00 46 1176   			BIT     0,(IX)			; If BIT 0 of LISTON is set
+040CF9 C4 99 0D 04 1177   			CALL    NZ,OUTCHR		; Then print a space after the line number
+040CFD 78          1178   			LD      A,B			; Fetch the FOR/NEXT indent level
+040CFE 87          1179   			ADD     A,A			; Multiply by 2
+040CFF DD CB 00 4E 1180   			BIT     1,(IX)			; If BIT 1 of LISTON is set
+040D03 C4 8B 13 04 1181   			CALL    NZ,FILL			; Then print the FOR/NEXT indent
+040D07 79          1182   			LD      A,C			; Fetch the REPEAT/UNTIL indent level
+040D08 87          1183   			ADD     A,A			; Multiply by 2
+040D09 DD CB 00 56 1184   			BIT     2,(IX)			; If BIT 2 of LISTON is set
+040D0D C4 8B 13 04 1185   			CALL    NZ,FILL			; Then print the REPEAT/UNTIL indent
+040D11 D9          1186   			EXX
+040D12 7E          1187   			LD      A,(HL)			; Fetch the token
+040D13 FE E3       1188   			CP      FOR			; Is it FOR?
+040D15 CC 72 0D 04 1189   			CALL    Z,INDENT		; Yes, so indent
+040D19 FE F5       1190   			CP      REPEAT			; Is it REPEAT?
+040D1B CC 72 0D 04 1191   			CALL    Z,INDENT		; Yes, so indent
+040D1F 1E 00       1192   			LD      E,0			; E: The quote counter - reset to 0
+040D21 7E          1193   LIST8:			LD      A,(HL)			; Fetch a character / token byte
+040D22 23          1194   			INC     HL
+040D23 FE 0D       1195   			CP      CR			; Is it end of line?
+040D25 28 0B       1196   			JR      Z,LISTE			; Yes, so finish (DB: Used to jump to CRLF, modified for *EDIT)
+040D27 FE 22       1197   			CP      34			; Is it a quote character?
+040D29 20 01       1198   			JR      NZ,LIST7		; No, so skip to next bit
+040D2B 1C          1199   			INC     E			; Otherwise increment quote counter
+040D2C CD 61 0D 04 1200   LIST7:			CALL    LOUT			; Output the character / token
+040D30 18 EF       1201   			JR      LIST8			; And repeat
+040D32             1202   ;
+040D32             1203   ; DB: Modification for *EDIT
+040D32             1204   ; Terminate the line with either a CRLF or a NUL character
+040D32             1205   ;
+040D32 DD CB 00 5E 1206   LISTE:			BIT 	3,(IX)			; Are we printing to buffer?
+040D36 28 59       1207   			JR	Z, CRLF			; Yes, so print a CRLF
+040D38 AF          1208   			XOR	A			; Otherwise print a NUL (0)
+040D39 C3 A6 13 04 1209   			JP	OSWRCH
+040D3D             1210   ;
+040D3D             1211   ; Decode the 3 byte GOTO type line number
+040D3D             1212   ;
+040D3D E5          1213   PRLINO:			PUSH    HL			; Swap HL and IY
+040D3E FD E1       1214   			POP     IY			; IY: Pointer to the line number
+040D40 C5          1215   			PUSH    BC
+040D41 CD DF 12 04 1216   			CALL    DECODE			; Decode
+040D45 C1          1217   			POP     BC
+040D46 D9          1218   			EXX
+040D47 C5          1219   			PUSH    BC
+040D48 CD 41 0E 04 1220   			CALL    PBCDL			; Output the line number
+040D4C C1          1221   			POP     BC
+040D4D D9          1222   			EXX
+040D4E FD E5       1223   			PUSH    IY			; Swap HL and IY
+040D50 E1          1224   			POP     HL			; HL: Pointer to the next character in the line
+040D51 C9          1225   			RET
+040D52             1226   ;
+040D52             1227   ; DB: Modification for internationalisation
+040D52             1228   ;
+040D52 CD B6 0D 04 1229   PRREM:			CALL	OUT_			; Output the REM token
+040D56 7E          1230   @@:			LD	A, (HL)			; Fetch the character
+040D57 FE 0D       1231   			CP	CR			; If it is end of line, then
+040D59 C8          1232   			RET	Z			; we have finished
+040D5A CD 99 0D 04 1233   			CALL	OUTCHR			; Ouput the character
+040D5E 23          1234   			INC	HL
+040D5F 18 F5       1235   			JR	@B			; And loop
+040D61             1236   ;
+040D61             1237   ; DB: End of modification
+040D61             1238   ;
+040D61 CB 43       1239   LOUT:			BIT     0,E			; If the quote counter is odd (bit 1 set) then
+040D63 20 34       1240   			JR      NZ,OUTCHR		; don't tokenise, just output the character
+040D65 FE F4       1241   			CP	REM			; DB: Is it REM
+040D67 28 E9       1242   			JR	Z, PRREM		; DB: Yes so jump to the special case for REM
+040D69 FE 8D       1243   			CP      LINO			; Is it a line number (following GOTO/GOSUB etc)?
+040D6B 28 D0       1244   			JR      Z,PRLINO		; Yes, so decode and print the line number
+040D6D CD B6 0D 04 1245   			CALL    OUT_			; Output a character / keyword
+040D71 7E          1246   			LD      A,(HL)			; Fetch the next character
+040D72             1247   ;
+040D72             1248   ; This block of code handles the indentation
+040D72             1249   ; B: Counter for FOR/NEXT indent
+040D72             1250   ; C: Counter for REPEAT/UNTIL indent
+040D72             1251   ;
+040D72 D9          1252   INDENT:			EXX
+040D73 FE E3       1253   			CP      FOR			; If the token is FOR
+040D75 28 09       1254   			JR      Z,IND1			; Then INC B
+040D77 FE ED       1255   			CP      NEXT			; If it is NEXT
+040D79 20 06       1256   			JR      NZ,IND2_		; Then...
+040D7B 05          1257   			DEC     B			; DEC B
+040D7C F2 81 0D 04 1258   			JP      P,IND2_			; If we have gone below 0 then
+040D80 04          1259   IND1:			INC     B			; Increment back to 0
+040D81             1260   ;
+040D81 FE F5       1261   IND2_:			CP      REPEAT			; If the token is REPEAT
+040D83 28 09       1262   			JR      Z,IND3			; Then INC C
+040D85 FE FD       1263   			CP      UNTIL			; If it is UNTIL
+040D87 20 06       1264   			JR      NZ,IND4			; Then...
+040D89 0D          1265   			DEC     C			; DEC C
+040D8A F2 8F 0D 04 1266   			JP      P,IND4			; If we have gone below 0 then
+040D8E 0C          1267   IND3:			INC     C			; Incremet back to 0
+040D8F D9          1268   IND4:			EXX
+040D90 C9          1269   			RET
+040D91             1270   ;
+040D91             1271   ;CRLF - SEND CARRIAGE RETURN, LINE FEED.
+040D91             1272   ;  Destroys: A,F
+040D91             1273   ;OUTCHR - OUTPUT A CHARACTER TO CONSOLE.
+040D91             1274   ;    Inputs: A = character
+040D91             1275   ;  Destroys: A,F
+040D91             1276   ;
+040D91 3E 0D       1277   CRLF:			LD      A,CR			; Output CR
+040D93 CD 99 0D 04 1278   			CALL    OUTCHR
+040D97 3E 0A       1279   			LD      A,LF			; Output LF
+040D99             1280   ;
+040D99 CD A6 13 04 1281   OUTCHR:			CALL    OSWRCH			; Output the character in A
+040D9D D6 0D       1282   			SUB     CR			; Check for CR
+040D9F 28 06       1283   			JR      Z,CARRET		; If it is CR then A will be 0, this will clear the count
+040DA1 D8          1284   			RET     C              		; If it is less than CR, it is non-printing, so don't increment the count
+040DA2 3A 3D 03 04 1285   			LD      A,(COUNT)		; Increment the count
+040DA6 3C          1286   			INC     A
+040DA7             1287   ;
+040DA7 32 3D 03 04 1288   CARRET:			LD      (COUNT),A		; Store the new count value
+040DAB C8          1289   			RET     Z			; Return if the count has wrapped to 0
+040DAC E5          1290   			PUSH    HL			; Now check if count = print width
+040DAD 2A 3E 03 04 1291   			LD      HL,(WIDTH)		; Get the print width; it's a byte value, so
+040DB1 BD          1292   			CP      L			; L is the width. Compare it with count.
+040DB2 E1          1293   			POP     HL
+040DB3 C0          1294   			RET     NZ			; If we've not hit print width, then just return
+040DB4 18 DB       1295   			JR      CRLF			; Otherwise output CRLF
+040DB6             1296   ;
+040DB6             1297   ; OUT - SEND CHARACTER OR KEYWORD
+040DB6             1298   ;   Inputs: A = character (>=10, <128)
+040DB6             1299   ;           A = Token (<10, >=128)
+040DB6             1300   ;  Destroys: A,F
+040DB6             1301   ;
+040DB6 FE 8A       1302   OUT_:			CP      138			; Neat trick to do condition: If A >= 10 or < 128 then PE flag is set
+040DB8 EA 99 0D 04 1303   			JP      PE,OUTCHR		; If so, then it's a character, so just output it
+040DBC             1304   ;
+040DBC             1305   ; This bit looks up the character in the KEYWDS token table and expands it
+040DBC             1306   ; Note the CP 138; this sets the overflow flag as follows:
+040DBC             1307   ;
+040DBC             1308   ; NB:
+040DBC             1309   ;  1. Any 8-bit number between 128 and 255 is negative (two's complement) so 138 is -118, 128 = -128
+040DBC             1310   ;  2. CP is effectively a SUB; sets the flags without affecting A
+040DBC             1311   ;  3. The operation n - -118 ~ n + 118
+040DBC             1312   ;
+040DBC             1313   ; So:
+040DBC             1314   ;  *   9 CP 138 ~    9 + 118 = 127 = no overflow : token
+040DBC             1315   ;  *  10 CP 138 ~   10 + 118 = 128 =    overflow : character
+040DBC             1316   ;  * 127 CP 138 ~  127 + 118 = 245 =    overflow : character
+040DBC             1317   ;  * 128 CP 138 ~ -128 + 118 = -10 = no overflow : token
+040DBC             1318   ;
+040DBC C5          1319   			PUSH    BC			; Preserve BC and HL
+040DBD E5          1320   			PUSH    HL
+040DBE 21 B2 05 04 1321   			LD      HL,KEYWDS		; The list of tokens and keywords
+040DC2 01 DF 02 00 1322   			LD      BC,KEYWDL		; The length of the keyword list
+040DC6 ED B1       1323   			CPIR				; We can just do a straight CPIR as the token characters are unique in the list
+040DC8             1324   ;							; At this point HL points to the next byte, the first character of the token
+040DC8 7E          1325   TOKEN1:			LD      A,(HL)			; Fetch the character
+040DC9 23          1326   			INC     HL			; Increment to the next byte in the token table
+040DCA FE 8A       1327   			CP      138			; If A >= 10 or < 128, i.e. we've not hit the token code for the next token
+040DCC F5          1328   			PUSH    AF			; Then...
+040DCD EC 99 0D 04 1329   			CALL    PE,OUTCHR		; Output the character...
+040DD1 F1          1330   			POP     AF			;
+040DD2 EA C8 0D 04 1331   			JP      PE,TOKEN1		; And loop to the next character
+040DD6 E1          1332   			POP     HL			; Done, so tidy up the stack and exit
+040DD7 C1          1333   			POP     BC
+040DD8 C9          1334   			RET
+040DD9             1335   ;
+040DD9             1336   ; FINDL - FIND PROGRAM LINE
+040DD9             1337   ;   Inputs: HL = line number (binary)
+040DD9             1338   ;  Outputs: HL addresses line (if found)
+040DD9             1339   ;           DE = line number
+040DD9             1340   ;           Z-flag set if found.
+040DD9             1341   ; Destroys: A,B,C,D,E,H,L,F
+040DD9             1342   ;
+040DD9 EB          1343   FINDL:			EX      DE,HL			; DE: Line number (binary)
+040DDA 2A 14 03 04 1344   			LD      HL,(PAGE_)		; HL: Top of BASIC program area
+040DDE AF          1345   			XOR     A               	;  A: 0
+040DDF BE          1346   			CP      (HL)			; Check for end of program marker
+040DE0 3C          1347   			INC     A			;  A: 1
+040DE1 D0          1348   			RET     NC			; Return with 1 if 0
+040DE2 AF          1349   			XOR     A               	; Clear the carry flag
+040DE3             1350   ;			LD      B,A			;  B: 0
+040DE3 01 00 00 00 1351   			LD	BC, 0			; BC: 0
+040DE7             1352   ;
+040DE7 4E          1353   FINDL1:			LD      C,(HL)			;  C: The line length
+040DE8 E5          1354   			PUSH    HL			; Stack the current program counter
+040DE9 23          1355   			INC     HL			; Skip to the line number bytes
+040DEA 7E          1356   			LD      A,(HL)			; Fetch the line number (in binary) from the BASIC line in HL
+040DEB 23          1357   			INC     HL
+040DEC 66          1358   			LD      H,(HL)
+040DED 6F          1359   			LD      L,A
+040DEE 52 ED 52    1360   			SBC.S   HL,DE			; Compare with the line number we're searching for
+040DF1 E1          1361   			POP     HL			; Get the current program counter
+040DF2 D0          1362   			RET     NC              	; Then return if found or past (Z flag will be set if line number matches)
+040DF3 09          1363   			ADD     HL,BC			; Skip to the next line (B was set to 0 before the loop was entered)
+040DF4 C3 E7 0D 04 1364   			JP      FINDL1			; And loop
+040DF8             1365   ;
+040DF8             1366   ; SETLIN - Search program for line containing address
+040DF8             1367   ;          Update (LINENO)
+040DF8             1368   ;   Inputs: Address in (ERRLIN)
+040DF8             1369   ;  Outputs: Line number in HL and (LINENO)
+040DF8             1370   ; Destroys: B,C,D,E,H,L,F
+040DF8             1371   ;
+040DF8 01 00 00 00 1372   SETLIN:			LD	BC, 0			; Zero BC for later
+040DFC             1373   ;			LD      B, 0			; Zero B for later
+040DFC ED 5B 35 03 1374   			LD      DE, (ERRLIN)		; DE: Address of line
+       04          
+040E01 2A 14 03 04 1375   			LD      HL, (PAGE_)		; HL: Start of user program area
+040E05 B7          1376   			OR      A			; Do a 24 bit compare without destroying HL
+040E06 ED 52       1377   			SBC     HL, DE			;  Z: DE = HL, NC: DE <= HL
+040E08 19          1378   			ADD     HL, DE			;  C: DE > HL
+040E09 30 1B       1379   			JR      NC, SET3		; So skip, as the address is less than or equal to the top of program area
+040E0B             1380   ;
+040E0B 4E          1381   SET1:			LD      C, (HL)			; Get the length of the line; zero indicates the end of the BASIC program
+040E0C 0C          1382   			INC     C			; This is a way to check for zero without using the accumulator
+040E0D 0D          1383   			DEC     C			; If it is zero, then...
+040E0E 28 16       1384   			JR      Z, SET3			; We've reached the end of the current BASIC program, not found the line
+040E10 09          1385   			ADD     HL, BC			; Skip to the next line (we set B to 0 at the top of this subroutine)
+040E11 ED 52       1386   			SBC     HL, DE			; Do a 24-bit compare; the previous ADD will have cleared the carry flag
+040E13 19          1387   			ADD     HL, DE
+040E14 38 F5       1388   			JR      C, SET1			; Loop whilst DE (the address to search for) is > HL (the current line)
+040E16 ED 42       1389   			SBC     HL, BC			; We've found it, so back up to the beginning of the line
+040E18 23          1390   			INC     HL			; Skip the length counter
+040E19 11 00 00 00 1391   			LD	DE, 0			; Zero DE
+040E1D 5E          1392   			LD      E, (HL)          	; Fetch the line number
+040E1E 23          1393   			INC     HL
+040E1F 56          1394   			LD      D, (HL)
+040E20 EB          1395   			EX      DE, HL			; HL: The line number
+040E21 22 23 03 04 1396   SET2:			LD      (LINENO), HL		; Store in the variable LINENO
+040E25 C9          1397   			RET
+040E26             1398   ;
+040E26 21 00 00 00 1399   SET3:			LD      HL, 0			; We've not found the line at this point so
+040E2A 18 F5       1400   			JR      SET2			; Set LINENO to 0
+040E2C             1401   ;
+040E2C             1402   ;SAYLN - PRINT " at line nnnn" MESSAGE.
+040E2C             1403   ;  Outputs: Carry=0 if line number is zero.
+040E2C             1404   ;           Carry=1 if line number is non-zero.
+040E2C             1405   ; Destroys: A,B,C,D,E,H,L,F
+040E2C             1406   ;
+040E2C 2A 23 03 04 1407   SAYLN:			LD      HL,(LINENO)		; Get the LINENO sysvar
+040E30 7C          1408   			LD      A,H			; If it is zero then
+040E31 B5          1409   			OR      L
+040E32 C8          1410   			RET     Z			; Don't need to do anything; return with F:C set to 0
+040E33 CD DA 11 04 1411   			CALL    TELL			; Output the error message
+040E37 20 61 74 20 1412   			DB    	" at line ", 0
+       6C 69 6E 65 
+       20 00       
+040E41 0E 00       1413   PBCDL:			LD      C,0			; C: Leading character (NUL)
+040E43 18 02       1414   			JR      PBCD0			; Output the line number; return with F:C set to 1
+040E45             1415   ;
+040E45             1416   ; PBCD - PRINT NUMBER AS DECIMAL INTEGER.
+040E45             1417   ;   Inputs: HL = number (binary).
+040E45             1418   ;  Outputs: Carry = 1
+040E45             1419   ; Destroys: A,B,C,D,E,H,L,F
+040E45             1420   ;
+040E45 0E 20       1421   PBCD:			LD      C,' '			; C: Leading character (" ")
+040E47 06 05       1422   PBCD0:			LD      B,5			; Number of digits in result
+040E49 11 10 27 00 1423   			LD      DE,10000		; Start off with the 10,000 column
+040E4D AF          1424   PBCD1:			XOR     A			; Counter
+040E4E ED 52       1425   PBCD2:			SBC     HL,DE			; Loop and count how many 10,000s we have
+040E50 3C          1426   			INC     A
+040E51 30 FB       1427   			JR      NC,PBCD2
+040E53 19          1428   			ADD     HL,DE			; The loop overruns by one, so adjust here
+040E54 3D          1429   			DEC     A			; A: Number of 10,000s
+040E55 28 04       1430   			JR      Z,PBCD3			; If it is 0, then skip the next bit
+040E57 CB E1       1431   			SET     4,C			; C: Set to '0' ASCII (30h)
+040E59 CB E9       1432   			SET     5,C
+040E5B B1          1433   PBCD3:			OR      C			; A is then an ASCII character, or 00h if we've not processed any non-zero digits yet
+040E5C C4 99 0D 04 1434   			CALL    NZ,OUTCHR		; If it is not a leading NUL character then output it
+040E60 78          1435   			LD      A,B			; If on first transition, skip this
+040E61 FE 05       1436   			CP      5			; TODO: Need to find out why
+040E63 28 06       1437   			JR      Z,PBCD4
+040E65 29          1438   			ADD     HL,HL			; HL x  2 : We shift the number being tested left,
+040E66 54          1439   			LD      D,H			;         : rather than shifting DE right
+040E67 5D          1440   			LD      E,L			;         : This makes a lot of sense
+040E68 29          1441   			ADD     HL,HL			; HL x  4
+040E69 29          1442   			ADD     HL,HL			; HL x  8
+040E6A 19          1443   			ADD     HL,DE			; HL x 10
+040E6B 11 E8 03 00 1444   PBCD4:			LD      DE,1000			; Set the column heading to 1,000s for subsequent runs
+040E6F 10 DC       1445   			DJNZ    PBCD1			; Loop until done
+040E71 37          1446   			SCF				; SCF set for SAYLN in this module
+040E72 C9          1447   			RET
+040E73             1448   ;
+040E73             1449   ; PUTVAR - CREATE VARIABLE AND INITIALISE TO ZERO.
+040E73             1450   ;   Inputs: HL, IY as returned from GETVAR (NZ).
+040E73             1451   ;  Outputs: As GETVAR.
+040E73             1452   ; Destroys: everything
+040E73             1453   ;
+040E73 CD F8 0F 04 1454   PUTVAR:			CALL    CREATE			; Create the variable
+040E77 FD 7E 00    1455   			LD      A,(IY)			; Fetch the next character
+040E7A FE 28       1456   			CP      '('			; Check for bad use of array
+040E7C 20 70       1457   			JR      NZ,GETVZ        	; It's fine, so set the exit conditions
+040E7E 3E 0E       1458   ARRAY:			LD      A,14            	; Otherwise Error: 'Array'
+040E80 C3 AA 0B 04 1459   ERROR3:			JP      ERROR_
+040E84             1460   ;
+040E84             1461   ;GETVAR - GET LOCATION OF VARIABLE, RETURN IN HL & IX
+040E84             1462   ;   Inputs: IY addresses first character.
+040E84             1463   ;  Outputs: Carry set and NZ if illegal character.
+040E84             1464   ;           Z-flag set if variable found, then:
+040E84             1465   ;            A = variable type (0,4,5,128 or 129)
+040E84             1466   ;            HL = IX = variable pointer.
+040E84             1467   ;            IY updated
+040E84             1468   ;           If Z-flag & carry reset, then:
+040E84             1469   ;            HL, IY set for subsequent PUTVAR call.
+040E84             1470   ; Destroys: everything
+040E84             1471   ;
+040E84 FD 7E 00    1472   GETVAR:			LD      A,(IY)			; Get the first character
+040E87 FE 24       1473   			CP      '$'			; Is it a string?
+040E89 28 69       1474   			JR      Z,GETV4			; Yes, so branch here
+040E8B FE 21       1475   			CP      '!'			; Is it indirection (32-bit)?
+040E8D 28 69       1476   			JR      Z,GETV5			; Yes, so branch here
+040E8F FE 3F       1477   			CP      '?'			; Is it indirection (8-bit)?
+040E91 28 69       1478   			JR      Z,GETV6			; Yes, so branch here
+040E93             1479   ;
+040E93 CD 62 0F 04 1480   			CALL    LOCATE			; Locate the variable
+040E97 C0          1481   			RET     NZ			; And exit here if not found
+040E98             1482   ;
+040E98             1483   ; At this point:
+040E98             1484   ;  HL: Address of variable in memory
+040E98             1485   ;   D: Variable type (4 = Integer, 5 = Floating point, 129 = String)
+040E98             1486   ;
+040E98 FD 7E 00    1487   			LD      A,(IY)			; Further checks
+040E9B FE 28       1488   			CP      '('             	; Is it an array?
+040E9D 20 47       1489   			JR      NZ,GETVX        	; No, so exit
+040E9F             1490   ;
+040E9F             1491   ; We are processing an array at this point
+040E9F             1492   ;
+040E9F D5          1493   			PUSH    DE              	; Save the variable type (in D)
+040EA0 7E          1494   			LD      A,(HL)          	; Fetch the number of dimensions
+040EA1 B7          1495   			OR      A
+040EA2 28 DA       1496   			JR      Z,ARRAY			; If there are none, then Error: 'Array'
+040EA4 23          1497   			INC     HL			;
+040EA5 11 00 00 00 1498   			LD      DE,0            	; Accumulator
+040EA9 F5          1499   			PUSH    AF
+040EAA FD 23       1500   			INC     IY              	; Skip "("
+040EAC 18 05       1501   			JR      GETV3
+040EAE             1502   ;
+040EAE F5          1503   GETV2:			PUSH    AF
+040EAF CD C3 13 04 1504   			CALL    COMMA
+040EB3 E5          1505   GETV3:			PUSH    HL
+040EB4 D5          1506   			PUSH    DE
+040EB5 CD 8A 12 04 1507   			CALL    EXPRI			; Get the subscript
+040EB9 D9          1508   			EXX
+040EBA D1          1509   			POP     DE
+040EBB E3          1510   			EX      (SP),HL
+040EBC 4E          1511   			LD      C,(HL)
+040EBD 23          1512   			INC     HL
+040EBE 46          1513   			LD      B,(HL)
+040EBF 23          1514   			INC     HL
+040EC0 E3          1515   			EX      (SP),HL
+040EC1 EB          1516   			EX      DE,HL
+040EC2 D5          1517   			PUSH    DE
+040EC3 CD DF 13 04 1518   			CALL    MUL16			; HL=HL*BC
+040EC7 D1          1519   			POP     DE
+040EC8 19          1520   			ADD     HL,DE
+040EC9 EB          1521   			EX      DE,HL
+040ECA B7          1522   			OR      A
+040ECB ED 42       1523   			SBC     HL,BC
+040ECD 3E 0F       1524   			LD      A,15
+040ECF 30 AF       1525   			JR      NC,ERROR3		; Throw a "Subscript" error
+040ED1 E1          1526   			POP     HL
+040ED2 F1          1527   			POP     AF
+040ED3 3D          1528   			DEC     A               	; Dimension counter
+040ED4 20 D8       1529   			JR      NZ,GETV2
+040ED6 CD FB 13 04 1530   			CALL    BRAKET          	; Check for closing bracket
+040EDA F1          1531   			POP     AF              	; Restore the type
+040EDB E5          1532   			PUSH    HL
+040EDC CD 18 14 04 1533   			CALL    X4OR5           	; DE=DE*n
+040EE0 E1          1534   			POP     HL
+040EE1 19          1535   			ADD     HL,DE
+040EE2 57          1536   			LD      D,A             	; The type
+040EE3 FD 7E 00    1537   			LD      A,(IY)
+040EE6 FE 3F       1538   GETVX:			CP      '?'
+040EE8 28 1E       1539   			JR      Z,GETV9
+040EEA FE 21       1540   			CP      '!'
+040EEC 28 16       1541   			JR      Z,GETV8
+040EEE E5          1542   GETVZ:			PUSH    HL              	; Set exit conditions
+040EEF DD E1       1543   			POP     IX
+040EF1 7A          1544   			LD      A,D
+040EF2 BF          1545   			CP      A
+040EF3 C9          1546   			RET
+040EF4             1547   ;
+040EF4             1548   ; Process strings, unary & binary indirection:
+040EF4             1549   ;
+040EF4 3E 80       1550   GETV4:			LD      A,128           	; Static strings
+040EF6 18 05       1551   			JR      GETV7
+040EF8             1552   ;
+040EF8 3E 04       1553   GETV5:			LD      A,4             	; Unary 32-bit indirection
+040EFA 18 01       1554   			JR      GETV7
+040EFC             1555   ;
+040EFC AF          1556   GETV6:			XOR     A               	; Unary 8-bit indirection
+040EFD             1557   ;
+040EFD 21 00 00 00 1558   GETV7:			LD      HL,0
+040F01 F5          1559   			PUSH    AF
+040F02 18 24       1560   			JR      GETV0
+040F04             1561   ;
+040F04 06 04       1562   GETV8:			LD      B,4             	; Binary 32-bt indirection
+040F06 18 02       1563   			JR      GETVA
+040F08             1564   ;
+040F08 06 00       1565   GETV9:			LD      B,0             	; Binary 8-bit indirection
+040F0A             1566   ;
+040F0A E5          1567   GETVA:			PUSH    HL
+040F0B DD E1       1568   			POP     IX
+040F0D 7A          1569   			LD      A,D            		; Fetch the variable type
+040F0E FE 81       1570   			CP      129			; Is it a string?
+040F10 C8          1571   			RET     Z               	; Yes, so exit here
+040F11 C5          1572   			PUSH    BC
+040F12 CD 34 14 04 1573   			CALL    LOADN           	; Left operand of the binary indirection (var?index or var!index)
+040F16 CD 50 14 04 1574   			CALL    SFIX
+040F1A 7D          1575   			LD	A,L
+040F1B D9          1576   			EXX
+040F1C 22 4A 03 04 1577   			LD	(R0+0),HL
+040F20 32 4C 03 04 1578   			LD	(R0+2),A
+040F24 2A 4A 03 04 1579   			LD	HL,(R0)			; HL: 24-bit address of the variable in memory
+040F28             1580   ;
+040F28 E5          1581   GETV0:			PUSH    HL			; HL will be 0 for a unary indirection, or the address of the variable for a binary indirection
+040F29 FD 23       1582   			INC     IY
+040F2B CD 6B 14 04 1583   			CALL    ITEMI
+040F2F 7D          1584   			LD	A,L			;  A: The MSB of the address
+040F30 D9          1585   			EXX
+040F31 22 4A 03 04 1586   			LD	(R0+0),HL		; HL: The LSW of the address
+040F35 32 4C 03 04 1587   			LD	(R0+2),A		; R0: L'HL or the 24-bit address
+040F39 D1          1588   			POP     DE
+040F3A F1          1589   			POP     AF
+040F3B 2A 4A 03 04 1590   			LD	HL,(R0)			; HL: L'HL
+040F3F 19          1591   			ADD     HL,DE
+040F40 E5          1592   			PUSH    HL
+040F41 DD E1       1593   			POP     IX
+040F43 BF          1594   			CP      A
+040F44 C9          1595   			RET
+040F45             1596   ;
+040F45             1597   ;GETDEF - Find entry for FN or PROC in dynamic area.
+040F45             1598   ;   Inputs: IY addresses byte following "DEF" token.
+040F45             1599   ;  Outputs: Z flag set if found
+040F45             1600   ;           Carry set if neither FN or PROC first.
+040F45             1601   ;           If Z: HL points to entry
+040F45             1602   ;                 IY addresses delimiter
+040F45             1603   ; Destroys: A,D,E,H,L,IY,F
+040F45             1604   ;
+040F45 FD 7E 01    1605   GETDEF:			LD      A,(IY+1)		; Get the next character from the tokenised line (the start of the procedure name)
+040F48 CD C5 10 04 1606   			CALL    RANGE1			; Is it in range: "0" to "9", "A" to "Z", "a' to "z", "@", "_" or "`"?
+040F4C D8          1607   			RET     C			; No so return with C set
+040F4D FD 7E 00    1608   			LD      A,(IY)			; Fetch the current character from the tokenised line
+040F50 21 0E 03 04 1609   			LD      HL,FNPTR		; HL: Address of the dynamic function pointer in ram.asm
+040F54 FE A4       1610   			CP      FN			; Is it the token FN?
+040F56 28 4A       1611   			JR      Z,LOC2			; Yes, so skip to LOC2 with that pointer to find a match
+040F58 21 11 03 04 1612   			LD      HL,PROPTR		; HL: Address of the dynamic procedure pointer in ram.asm
+040F5C FE F2       1613   			CP      PROC			; Is it the token PROC?
+040F5E 28 42       1614   			JR      Z,LOC2			; Yes, so skip to LOC2 with that pointer to find a match
+040F60 37          1615   			SCF				; No, so just return with C set
+040F61 C9          1616   			RET
+040F62             1617   ;
+040F62             1618   ; LOCATE - Try to locate variable name in static or dynamic variables.
+040F62             1619   ; If illegal first character return carry, non-zero.
+040F62             1620   ; If found, return no-carry, zero.
+040F62             1621   ; If not found, return no-carry, non-zero.
+040F62             1622   ;   Inputs: IY=Addresses first character of name.
+040F62             1623   ;            A=(IY)
+040F62             1624   ;  Outputs:  F=Z set if found, then:
+040F62             1625   ;           IY=addresses terminator
+040F62             1626   ;           HL=addresses location of variable
+040F62             1627   ;            D=type of variable: 4 = integer
+040F62             1628   ;                                5 = floating point
+040F62             1629   ;                              129 = string
+040F62             1630   ; Destroys: A,D,E,H,L,IY,F
+040F62             1631   ;
+040F62             1632   ; Variable names can start with any letter of the alphabet (upper or lower case), underscore (_), or the grave accent (`)
+040F62             1633   ; They can contain any alphanumeric character and underscore (_)
+040F62             1634   ; String variables are postfixed with the dollar ($) character
+040F62             1635   ; Integer variables are postfixed with the percent (%) character
+040F62             1636   ; Static integer variables are named @%, A% to Z%
+040F62             1637   ; All other variables are dynamic
+040F62             1638   ;
+040F62 D6 40       1639   LOCATE:			SUB     '@'			; Check for valid range
+040F64 D8          1640   			RET     C			; First character not "@", "A" to "Z" or "a" to "z", so not a variable
+040F65 21 00 00 00 1641   			LD      HL, 0			; Clear HL
+040F69 FE 1B       1642   			CP      'Z'-'@'+1		; Check for static ("@", "A" to "Z"); if it is not static...
+040F6B 30 1E       1643   			JR      NC,LOC0         	; Then branch here
+040F6D 6F          1644   			LD	L, A			; HL = A
+040F6E FD 7E 01    1645   			LD      A,(IY+1)        	; Check the 2nd character
+040F71 FE 25       1646   			CP      '%'			; If not "%" then it is not static...
+040F73 20 21       1647   			JR      NZ,LOC1         	; Branch here
+040F75 FD 7E 02    1648   			LD      A,(IY+2)		; Check the 3rd character
+040F78 FE 28       1649   			CP      '('			; If it is "(" (array) then it is not static...
+040F7A 28 1A       1650   			JR      Z,LOC1          	; Branch here
+040F7C             1651   ;
+040F7C             1652   ; At this point we're dealing with a static variable
+040F7C             1653   ;
+040F7C 29          1654   			ADD     HL,HL			; HL: Variable index * 4
+040F7D 29          1655   			ADD	HL,HL
+040F7E 11 00 02 04 1656   			LD      DE,STAVAR       	; The static variable area in memory
+040F82 19          1657   			ADD     HL,DE			; HL: The address of the static variable
+040F83 FD 23       1658   			INC     IY			; Skip the program pointer past the static variable name
+040F85 FD 23       1659   			INC     IY
+040F87 16 04       1660   			LD      D,4             	; Set the type to be integer
+040F89 AF          1661   			XOR     A			; Set the Z flag
+040F8A C9          1662   			RET
+040F8B             1663   ;
+040F8B             1664   ; At this point it's potentially a dynamic variable, just need to do a few more checks
+040F8B             1665   ;
+040F8B FE 1F       1666   LOC0:			CP      '_'-'@'			; Check the first character is in
+040F8D D8          1667   			RET     C			; the range "_" to
+040F8E FE 3B       1668   			CP      'z'-'@'+1		; "z" (lowercase characters only)
+040F90 3F          1669   			CCF				; If it is not in range then
+040F91 3D          1670   			DEC     A               	; Set NZ flag and
+040F92 D8          1671   			RET     C			; Exit here
+040F93 D6 03       1672   			SUB     3			; This brings it in the range of 27 upwards (need to confirm)
+040F95 6F          1673   			LD	L, A			; HL = A
+040F96             1674   ;
+040F96             1675   ; Yes, it's definitely a dynamic variable at this point...
+040F96             1676   ;
+040F96 7D          1677   LOC1:			LD	A, L			; Fetch variable index
+040F97 87          1678   			ADD	A, A			; x 2
+040F98 85          1679   			ADD	A, L			; x 3
+040F99 D6 03       1680   			SUB	3			; Subtract 2 TODO: Should be 3
+040F9B 6F          1681   			LD	L, A
+040F9C 11 6C 02 04 1682   			LD      DE, DYNVAR       	; The dynamic variable storage
+040FA0 D8          1683   			RET	C			; Bounds check to trap for variable '@'
+040FA1 19          1684   			ADD     HL, DE			; HL: Address of first entry
+040FA2             1685   ;
+040FA2             1686   ; Loop through the linked list of variables to find a match
+040FA2             1687   ;
+040FA2 ED 17       1688   LOC2:			LD	DE, (HL)		; Fetch the original pointer
+040FA4 E5          1689   			PUSH	HL			; Need to preserve HL for LOC6
+040FA5 AF          1690   			XOR	A			; Reset carry flag
+040FA6 ED 62       1691   			SBC	HL, HL			; Set HL to 0
+040FA8 ED 52       1692   			SBC	HL, DE			; Compare with 0
+040FAA E1          1693   			POP	HL			; Restore the original pointer
+040FAB 28 49       1694   			JR	Z, LOC6			; If the pointer in DE is zero, the variable is undefined at this point
+040FAD             1695   			; LD	HL, DE			; Make a copy of this pointer in HL
+040FAD D5          1696   			push de
+040FAE E1          1697   			pop hl ; how was that even possible?
+040FAF 23          1698   			INC     HL              	; Skip the link (24-bits)
+040FB0 23          1699   			INC     HL
+040FB1 23          1700   			INC	HL			; HL: Address of the variable name in DYNVARS
+040FB2 FD E5       1701   			PUSH    IY			; IY: Address of the variable name in the program
+040FB4             1702   ;
+040FB4 7E          1703   LOC3:			LD      A,(HL)         		; Compare
+040FB5 23          1704   			INC     HL
+040FB6 FD 23       1705   			INC     IY
+040FB8 FD BE 00    1706   			CP      (IY)
+040FBB 28 F7       1707   			JR      Z, LOC3			; Keep looping whilst we've got a match...
+040FBD B7          1708   			OR      A               	; Have we hit a terminator?
+040FBE 28 07       1709   			JR      Z,LOC5          	; Yes, so maybe we've found a variable
+040FC0             1710   ;
+040FC0 FD E1       1711   LOC4:			POP     IY			; Restore the pointer in the program
+040FC2 EB          1712   			EX      DE, HL			; HL: New pointer in DYNVARS
+040FC3 C3 A2 0F 04 1713   			JP      LOC2            	; Loop round and try again
+040FC7             1714   ;
+040FC7             1715   ; We might have located a variable at this point, just need to do a few more tests
+040FC7             1716   ;
+040FC7 FD 2B       1717   LOC5:			DEC     IY
+040FC9 FD 7E 00    1718   			LD      A,(IY)
+040FCC FE 28       1719   			CP      '('
+040FCE 28 15       1720   			JR      Z,LOC5A         	; FOUND
+040FD0 FD 23       1721   			INC     IY
+040FD2 CD B9 10 04 1722   			CALL    RANGE
+040FD6 38 0D       1723   			JR      C,LOC5A         	; FOUND
+040FD8 FE 28       1724   			CP      '('
+040FDA 28 E4       1725   			JR      Z,LOC4          	; KEEP LOOKING
+040FDC FD 7E FF    1726   			LD      A,(IY-1)
+040FDF CD C5 10 04 1727   			CALL    RANGE1
+040FE3 30 DB       1728   			JR      NC,LOC4         	; KEEP LOOKING
+040FE5 D1          1729   LOC5A:			POP     DE
+040FE6 FD 7E FF    1730   TYPE_:			LD      A,(IY-1)		; Check the string type postfix
+040FE9 FE 24       1731   			CP      '$'			; Is it a string?
+040FEB 16 81       1732   			LD      D,129			; Yes, so return D = 129
+040FED C8          1733   			RET     Z
+040FEE FE 25       1734   			CP      '%'			; Is it an integer?
+040FF0 16 04       1735   			LD      D,4			; Yes, so return D = 4
+040FF2 C8          1736   			RET     Z
+040FF3 14          1737   			INC     D			; At this point it must be a float
+040FF4 BF          1738   			CP      A			; Set the flags
+040FF5 C9          1739   			RET
+040FF6             1740   ;
+040FF6             1741   ; The variable is undefined at this point; HL will be zero
+040FF6             1742   ;
+040FF6 3C          1743   LOC6:			INC     A               	; Set NZ flag
+040FF7 C9          1744   			RET
+040FF8             1745   ;
+040FF8             1746   ; CREATE - CREATE NEW ENTRY, INITIALISE TO ZERO.
+040FF8             1747   ;   Inputs: HL, IY as returned from LOCATE (NZ).
+040FF8             1748   ;  Outputs: As LOCATE, GETDEF.
+040FF8             1749   ; Destroys: As LOCATE, GETDEF.
+040FF8             1750   ;
+040FF8 AF          1751   CREATE:			XOR     A
+040FF9 ED 5B 1D 03 1752   			LD      DE,(FREE)		; Get the last byte of available RAM
+       04          
+040FFE ED 1F       1753   			LD	(HL), DE		; Store
+041000 EB          1754   			EX      DE,HL
+041001 77          1755   			LD      (HL),A			; Clear the link of the new entity
+041002 23          1756   			INC     HL
+041003 77          1757   			LD      (HL),A
+041004 23          1758   			INC     HL
+041005 77          1759   			LD      (HL),A
+041006 23          1760   			INC     HL
+041007 FD 23       1761   LOC7:			INC     IY
+041009 CD B9 10 04 1762   			CALL    RANGE           	; END OF VARIABLE?
+04100D 38 15       1763   			JR      C,LOC8
+04100F 77          1764   			LD      (HL),A
+041010 23          1765   			INC     HL
+041011 CD C5 10 04 1766   			CALL    RANGE1
+041015 30 F0       1767   			JR      NC,LOC7
+041017 FE 28       1768   			CP      '('
+041019 28 09       1769   			JR      Z,LOC8
+04101B FD 7E 01    1770   			LD      A,(IY+1)
+04101E FE 28       1771   			CP      '('
+041020 28 E5       1772   			JR      Z,LOC7
+041022 FD 23       1773   			INC     IY
+041024 36 00       1774   LOC8:			LD      (HL),0          	; TERMINATOR
+041026 23          1775   			INC     HL
+041027 E5          1776   			PUSH    HL
+041028 CD E6 0F 04 1777   			CALL    TYPE_			; Get the variable type in D
+04102C 3E 04       1778   			LD      A,4			; If it is an integer then it takes up 4 bytes
+04102E BA          1779   			CP      D
+04102F 28 01       1780   			JR      Z,LOC9			; So skip the next bit
+041031 3C          1781   			INC     A			; Strings and floats take up 5 bytes (NB: Strings take up 4 in BBC BASIC for Z80)
+041032 36 00       1782   LOC9:			LD      (HL),0          	; Initialise the memory to zero
+041034 23          1783   			INC     HL
+041035 3D          1784   			DEC     A
+041036 20 FA       1785   			JR      NZ,LOC9
+041038 22 1D 03 04 1786   			LD      (FREE),HL		; Adjust the stack
+04103C CD 87 14 04 1787   			CALL    CHECK			; Check whether we are out of space
+041040 E1          1788   			POP     HL
+041041 AF          1789   			XOR     A
+041042 C9          1790   			RET
+041043             1791   ;
+041043             1792   ; LINNUM - GET LINE NUMBER FROM TEXT STRING
+041043             1793   ;   Inputs: IY = Text Pointer
+041043             1794   ;  Outputs: HL = Line number (zero if none)
+041043             1795   ;           IY updated
+041043             1796   ; Destroys: A,D,E,H,L,IY,F
+041043             1797   ;
+041043             1798   ; This bit of code performs a BASE 10 shift to build up the number
+041043             1799   ; So if the string passed is "345", the algorithm does this:
+041043             1800   ;
+041043             1801   ;    HL : Digit	: Operation
+041043             1802   ; ----- : ----- : ---------
+041043             1803   ; 00000 :	:
+041043             1804   ; 00003 :     3	: Multiply HL  (0) by 10   (0) and add 3   (3)
+041043             1805   ; 00034 :     4 : Multiply HL  (3) by 10  (30) and add 4  (34)
+041043             1806   ; 00345 :     5	: Multiply HL (34) by 10 (340) and add 5 (345)
+041043             1807   ;
+041043             1808   ; The multiply by 10 is done by an unrolled shift and add loop
+041043             1809   ;
+041043 CD 56 12 04 1810   LINNUM:			CALL    NXT			; Skip whitespace to the first character
+041047 40 21 00 00 1811   			LD.SIS  HL,0			; The running total
+04104B FD 7E 00    1812   LINNM1:			LD      A,(IY)			; A: Fetch the digit to add in
+04104E D6 30       1813   			SUB     '0'			; Sub ASCII '0' to make a binary number (0-9)
+041050 D8          1814   			RET     C			; And return if less than 0
+041051 FE 0A       1815   			CP      10			; Or greater than or equal to 10
+041053 D0          1816   			RET     NC			; As we've hit a non-numeric character (end of number) at this point
+041054 FD 23       1817   			INC     IY			; Increment the string pointer
+041056 54          1818   			LD      D,H			; This next block multiplys HL by 10, shifting the result left in BASE 10
+041057 5D          1819   			LD      E,L			; Store the original number in DE
+041058 52 29       1820   			ADD.S   HL,HL           	; *2
+04105A 38 13       1821   			JR      C,TOOBIG_MAIN		; At each point, error if > 65535 (carry flag set)
+04105C 52 29       1822   			ADD.S   HL,HL           	; *4S
+04105E 38 0F       1823   			JR      C,TOOBIG_MAIN
+041060 52 19       1824   			ADD.S   HL,DE           	; *5
+041062 38 0B       1825   			JR      C,TOOBIG_MAIN
+041064 52 29       1826   			ADD.S   HL,HL           	; *10
+041066 38 07       1827   			JR      C,TOOBIG_MAIN
+041068 5F          1828   			LD      E,A			; A->DE: the digit to add in
+041069 16 00       1829   			LD      D,0
+04106B 52 19       1830   			ADD.S   HL,DE           	; Add in the digit to the running total
+04106D 30 DC       1831   			JR      NC,LINNM1       	; And if it is still <= 65535, loop
+04106F             1832   ;
+04106F 3E 14       1833   TOOBIG_MAIN:			LD      A,20
+041071 C3 AA 0B 04 1834   			JP      ERROR_           	; Error: "Too big"
+041075             1835   ;
+041075             1836   ; PAIR - GET PAIR OF LINE NUMBERS FOR RENUMBER/AUTO.
+041075             1837   ;   Inputs: IY = text pointer
+041075             1838   ;  Outputs: HL = first number (10 by default)
+041075             1839   ;           BC = second number (10 by default)
+041075             1840   ; Destroys: A,B,C,D,E,H,L,B',C',D',E',H',L',IY,F
+041075             1841   ;
+041075 CD 43 10 04 1842   PAIR:			CALL    LINNUM          	; Parse the first line number
+041079 7C          1843   			LD      A,H			; If it is not zero, then...
+04107A B5          1844   			OR      L
+04107B 20 02       1845   			JR      NZ,PAIR1		; Skip...
+04107D 2E 0A       1846   			LD      L,10			; HL: the default value (10)
+04107F             1847   ;
+04107F CD A3 14 04 1848   PAIR1:			CALL    TERMQ			; Check for ELSE, : or CR
+041083 FD 23       1849   			INC     IY			; Skip to next character
+041085 E5          1850   			PUSH    HL			; Stack the first line number
+041086 21 0A 00 00 1851   			LD      HL,10			; HL: the second default (10)
+04108A C4 43 10 04 1852   			CALL    NZ,LINNUM       	; Parse the second line number
+04108E E3          1853   			EX      (SP),HL			; HL: The first line number (off the stack)
+04108F C1          1854   			POP     BC			; BC: Second line number
+041090 78          1855   			LD      A,B			; If the second line number is not zero then...
+041091 B1          1856   			OR      C			; We're good...
+041092 C0          1857   			RET     NZ			; Exit, otherwise...
+041093 CD C1 0B 04 1858   			CALL    EXTERR			; Throw error: "Silly"
+041097 53 69 6C 6C 1859   			DB    	"Silly", 0
+       79 00       
+04109D             1860   ;
+04109D             1861   ; DLPAIR - GET PAIR OF LINE NUMBERS FOR DELETE/LIST.
+04109D             1862   ;   Inputs: IY = text pointer
+04109D             1863   ;  Outputs: HL = points to program text
+04109D             1864   ;           BC = second number (0 by default)
+04109D             1865   ; Destroys: A,B,C,D,E,H,L,IY,F
+04109D             1866   ;
+04109D CD 43 10 04 1867   DLPAIR:			CALL    LINNUM			; Parse the first line number
+0410A1 E5          1868   			PUSH    HL			; Stack it
+0410A2 CD A3 14 04 1869   			CALL    TERMQ			; Check for ELSE, : or CR
+0410A6 28 0A       1870   			JR      Z,DLP1			; And exit if so
+0410A8 FE E7       1871   			CP      TIF			; Is the token IF?
+0410AA 28 06       1872   			JR      Z,DLP1			; Yes, so skip the next bit...
+0410AC FD 23       1873   			INC     IY			; Otherwise...
+0410AE CD 43 10 04 1874   			CALL    LINNUM			; Fetch the second line number
+0410B2 E3          1875   DLP1:			EX      (SP),HL			; HL: The first line number (off the stack)
+0410B3 CD D9 0D 04 1876   			CALL    FINDL			; HL: Find the address of the line
+0410B7 C1          1877   			POP     BC			; BC: The second number
+0410B8 C9          1878   			RET
+0410B9             1879   ;
+0410B9             1880   ; TEST FOR VALID CHARACTER IN VARIABLE NAME:
+0410B9             1881   ;   Inputs: IY addresses character
+0410B9             1882   ;  Outputs: Carry set if out-of-range.
+0410B9             1883   ; Destroys: A,F
+0410B9             1884   ;
+0410B9             1885   ; It is called here to check the following
+0410B9             1886   ; In range: "$", "%" and "("
+0410B9             1887   ;   Plus all characters in RANGE1 and RANGE2
+0410B9             1888   ;
+0410B9 FD 7E 00    1889   RANGE:			LD      A,(IY)			; Fetch the character
+0410BC FE 24       1890   			CP      '$'			; Postfix for string variable is valid
+0410BE C8          1891   			RET     Z
+0410BF FE 25       1892   			CP      '%'			; Postfix for integer variable is valid
+0410C1 C8          1893   			RET     Z
+0410C2 FE 28       1894   			CP      '('			; Postfix for array is valid
+0410C4 C8          1895   			RET     Z
+0410C5             1896   ;
+0410C5             1897   ; It is called here to check the following
+0410C5             1898   ; In range: "0" to "9" and "@"
+0410C5             1899   ;   Plus all characters in RANGE2
+0410C5             1900   ;
+0410C5 FE 30       1901   RANGE1:			CP      '0'			; If it is between '0'...
+0410C7 D8          1902   			RET     C
+0410C8 FE 3A       1903   			CP      '9'+1			; And '9'...
+0410CA 3F          1904   			CCF
+0410CB D0          1905   			RET     NC			; Then it is valid
+0410CC FE 40       1906   			CP      '@'             	; The prefix @ is valid (@% controls numeric print formatting - v2.4)
+0410CE C8          1907   			RET     Z
+0410CF             1908   ;
+0410CF             1909   ; It is called here to check the following
+0410CF             1910   ; In range: "A" to "Z", "a' to "z", "_" and "`"
+0410CF             1911   ;
+0410CF FE 41       1912   RANGE2:			CP      'A'			; If it is between 'A'...
+0410D1 D8          1913   			RET     C
+0410D2 FE 5B       1914   			CP      'Z'+1			; And 'Z'...
+0410D4 3F          1915   			CCF
+0410D5 D0          1916   			RET     NC			; Then it is valid
+0410D6 FE 5F       1917   			CP      '_'			; If it is underscore, grave, or between 'a'
+0410D8 D8          1918   			RET     C
+0410D9 FE 7B       1919   			CP      'z'+1			; And 'z'
+0410DB 3F          1920   			CCF				; Then it is valid
+0410DC C9          1921   			RET
+0410DD             1922   ;
+0410DD             1923   ; Throw a 'LINE space' error (line too long)
+0410DD             1924   ; This is called from LEXAN
+0410DD             1925   ;
+0410DD AF          1926   SPACE_: 		XOR     A
+0410DE CD C1 0B 04 1927   			CALL    EXTERR          	; "LINE space"
+0410E2 86 08 00    1928   			DB    	LINE_, 8, 0
+0410E5             1929   ;
+0410E5             1930   ; LEXAN - LEXICAL ANALYSIS.
+0410E5             1931   ;  Bit 0,C: 1=left, 0=right
+0410E5             1932   ;  Bit 2,C: 1=in BINARY
+0410E5             1933   ;  Bit 3,C: 1=in HEX
+0410E5             1934   ;  Bit 4,C: 1=accept line number
+0410E5             1935   ;  Bit 5,C: 1=in variable, FN, PROC
+0410E5             1936   ;  Bit 6,C: 1=in REM, DATA, *
+0410E5             1937   ;  Bit 7,C: 1=in quotes
+0410E5             1938   ;   Inputs: IY addresses source string
+0410E5             1939   ;           DE addresses destination string (must be page boundary)
+0410E5             1940   ;            C sets initial mode
+0410E5             1941   ;  Outputs: DE, IY updated
+0410E5             1942   ;            A holds carriage return
+0410E5             1943   ;
+0410E5 12          1944   LEXAN1:			LD      (DE),A          	; Transfer to buffer
+0410E6 13          1945   			INC     DE              	; Increment the pointers
+0410E7 FD 23       1946   			INC     IY			; And fall through to the main function
+0410E9             1947   ;
+0410E9             1948   ; This is the main entry point
+0410E9             1949   ;
+0410E9 7B          1950   LEXAN2:			LD      A,E             	; Destination buffer on page boundary, so E can be used as length
+0410EA FE FC       1951   			CP      252             	; If it is >= 252 bytes, then...
+0410EC 30 EF       1952   			JR      NC,SPACE_        	; Throw a 'LINE space' error (line too long)
+0410EE FD 7E 00    1953   			LD      A,(IY)			; Fetch character from source string
+0410F1 FE 0D       1954   			CP      CR			; If it is a CR
+0410F3 C8          1955   			RET     Z               	; Then it is end of line; we're done parsing
+0410F4 CD C5 10 04 1956   			CALL    RANGE1			; Is it alphanumeric, '@', '_' or '`'
+0410F8 30 06       1957   			JR      NC,LEXAN3		; Yes, so skip
+0410FA CB A9       1958   			RES     5,C             	; FLAG: NOT IN VARIABLE
+0410FC CB 99       1959   			RES     3,C             	; FLAG: NOT IN HEX
+0410FE CB 91       1960   			RES	2,C			; FLAG: NOT IN BINARY
+041100             1961   ;
+041100 FE 20       1962   LEXAN3:			CP      ' '			; Ignore spaces
+041102 28 E1       1963   			JR      Z,LEXAN1
+041104 FE 2C       1964   			CP      ','			; Ignore commas
+041106 28 DD       1965   			JR      Z,LEXAN1
+041108 FE 32       1966   			CP	'2'			; If less than '2'
+04110A 30 02       1967   			JR	NC, @F			; No, so skip
+04110C CB 91       1968   			RES	2,C			; FLAG: NOT IN BINARY
+04110E FE 47       1969   @@:			CP      'G'			; If less then 'G'
+041110 38 02       1970   			JR      C,LEXAN4		; Yes, so skip
+041112 CB 99       1971   			RES     3,C             	; FLAG: NOT IN HEX
+041114             1972   ;
+041114 FE 22       1973   LEXAN4:			CP      34			; Is it a quote character?
+041116 20 05       1974   			JR      NZ,LEXAN5		; No, so skip
+041118 CB 11       1975   			RL      C			; Toggle bit 7 of C by shifting it into carry flag
+04111A 3F          1976   			CCF                     	; Toggle the carry
+04111B CB 19       1977   			RR      C			; And then shifting it back into bit 7 of C
+04111D             1978   ;
+04111D CB 61       1979   LEXAN5:			BIT     4,C			; Accept line number?
+04111F 28 12       1980   			JR      Z,LEXAN6		; No, so skip
+041121 CB A1       1981   			RES     4,C			; FLAG: DON'T ACCEPT LINE NUMBER
+041123 C5          1982   			PUSH    BC
+041124 D5          1983   			PUSH    DE
+041125 CD 43 10 04 1984   			CALL    LINNUM         		; Parse the line number to HL
+041129 D1          1985   			POP     DE
+04112A C1          1986   			POP     BC
+04112B 7C          1987   			LD      A,H			; If it is not zero
+04112C B5          1988   			OR      L
+04112D C4 A6 11 04 1989   			CALL    NZ,ENCODE       	; Then encode the line number HL to the destination (DE)
+041131 18 B6       1990   			JR      LEXAN2          	; And loop
+041133             1991   ;
+041133 0D          1992   LEXAN6:			DEC     C			; Check for C=1 (LEFT)
+041134 28 0A       1993   			JR      Z,LEXAN7        	; If so, skip
+041136 0C          1994   			INC     C			; Otherwise restore C
+041137 20 AC       1995   			JR      NZ,LEXAN1		; If C was 0 (RIGHT) then...
+041139 B7          1996   			OR      A			; Set the flags based on the character
+04113A F4 11 0C 04 1997   			CALL    P,LEX           	; Tokenise if A < 128
+04113E 18 13       1998   			JR      LEXAN8			; And skip
+041140             1999   ;
+041140             2000   ; Processing the LEFT hand side here
+041140             2001   ;
+041140 FE 2A       2002   LEXAN7:			CP      '*'			; Is it a '*' (for star commands)
+041142 28 17       2003   			JR      Z,LEXAN9		; Yes, so skip to quit tokenising
+041144 B7          2004   			OR      A			; Set the flags based on the character
+041145 F4 11 0C 04 2005   			CALL    P,LEX           	; Tokenise if A < 128
+041149             2006   ;
+041149             2007   ; This bit of code checks if the tokens are one of the pseudo-variables PTR, PAGE, TIME, LOMEM, HIMEM
+041149             2008   ; These tokens are duplicate in the table with a GET version and a SET version offset by the define OFFSET (40h)
+041149             2009   ; Examples:
+041149             2010   ;   LET A% = PAGE : REM This is the GET version
+041149             2011   ;   PAGE = 40000  : REM This is the SET version
+041149             2012   ;
+041149 FE 8F       2013   			CP      TOKLO			; TOKLO is 8Fh
+04114B 38 06       2014   			JR      C,LEXAN8		; If A is < 8Fh then skip to LEX8
+04114D FE 94       2015   			CP      TOKHI+1			; TOKHI is 93h
+04114F 30 02       2016   			JR      NC,LEXAN8		; If A is >= 94h then skip to LEX8
+041151 C6 40       2017   			ADD     A,OFFSET       		; Add OFFSET (40h) to make the token the SET version
+041153             2018   ;
+041153 FE F4       2019   LEXAN8:			CP      REM			; If the token is REM
+041155 28 04       2020   			JR      Z,LEXAN9		; Then stop tokenising
+041157 FE DC       2021   			CP      DATA_			; If it is not DATA then
+041159 20 02       2022   			JR      NZ,LEXANA		; Skip
+04115B CB F1       2023   LEXAN9:			SET     6,C             	; FLAG: STOP TOKENISING
+04115D             2024   ;
+04115D FE A4       2025   LEXANA:			CP      FN			; If the token is FN
+04115F 28 0A       2026   			JR      Z,LEXANB
+041161 FE F2       2027   			CP      PROC			; Or the token is PROC
+041163 28 06       2028   			JR      Z,LEXANB		; Then jump to here
+041165 CD CF 10 04 2029   			CALL    RANGE2			; Otherwise check the input is alphanumeric, "_" or "`"
+041169 38 02       2030   			JR      C,LEXANC		; Jump here if out of range
+04116B             2031   ;
+04116B CB E9       2032   LEXANB:			SET     5,C             	; FLAG: IN VARIABLE/FN/PROC
+04116D FE 26       2033   LEXANC:			CP      '&'			; Check for hex prefix
+04116F 20 02       2034   			JR      NZ,LEXAND		; If not, skip
+041171 CB D9       2035   			SET     3,C             	; FLAG: IN HEX
+041173             2036   ;
+041173 FE 25       2037   LEXAND:			CP	'%'			; Check for binary prefix
+041175 20 02       2038   			JR	NZ,LEXANE		; If not, skip
+041177 CB D1       2039   			SET	2,C			; FLAG: IN BINARY
+041179             2040   ;
+041179 21 9D 11 04 2041   LEXANE:			LD      HL,LIST1		; List of tokens that must be followed by a line number
+04117D C5          2042   			PUSH    BC
+04117E 01 06 00 00 2043   			LD      BC,LIST1L		; The list length
+041182 ED B1       2044   			CPIR				; Check if the token is in this list
+041184 C1          2045   			POP     BC
+041185 20 02       2046   			JR      NZ,LEXANF		; If not, then skip
+041187 CB E1       2047   			SET     4,C             	; FLAG: ACCEPT LINE NUMBER
+041189             2048   ;
+041189 21 A1 11 04 2049   LEXANF:			LD      HL,LIST2		; List of tokens that switch the lexical analysis back to LEFT mode
+04118D C5          2050   			PUSH    BC
+04118E 01 05 00 00 2051   			LD      BC,LIST2L		; The list length
+041192 ED B1       2052   			CPIR				; Check if the token is in this list
+041194 C1          2053   			POP     BC
+041195 20 02       2054   			JR      NZ,LEXANG		; If not, then skip
+041197 CB C1       2055   			SET     0,C             	; FLAG: ENTER LEFT MODE
+041199 C3 E5 10 04 2056   LEXANG:			JP      LEXAN1			; And loop
+04119D             2057   
+04119D             2058   ;
+04119D             2059   ; LIST1: List of tokens that must be followed by line numbers
+04119D             2060   ; LIST2: List of tokens that switch the lexical analysis back to LEFT mode
+04119D             2061   ;
+04119D E5          2062   LIST1:			DB	GOTO
+04119E E4          2063   			DB	GOSUB
+04119F F7          2064   			DB	RESTOR
+0411A0 FC          2065   			DB	TRACE
+0411A1 8C          2066   LIST2:			DB	THEN
+0411A2 8B          2067   			DB	ELSE_
+0411A3             2068   LIST1L:			EQU     $-LIST1
+0411A3 F5          2069   			DB	REPEAT
+0411A4 85          2070   			DB	TERROR
+0411A5 3A          2071   			DB    	':'
+0411A6             2072   LIST2L:			EQU     $-LIST2
+0411A6             2073   ;
+0411A6             2074   ; ENCODE - ENCODE LINE NUMBER INTO PSEUDO-BINARY FORM.
+0411A6             2075   ;   Inputs: HL=line number, DE=string pointer
+0411A6             2076   ;  Outputs: DE updated, BIT 4,C set.
+0411A6             2077   ; Destroys: A,B,C,D,E,F
+0411A6             2078   ;
+0411A6             2079   ; Thanks to Matt Godblot for this explanation (https://xania.org/200711/bbc-basic-line-number-format)
+0411A6             2080   ;
+0411A6             2081   ; The line number is spread over three bytes and kept in the range of normal ASCII values so the interpreter
+0411A6             2082   ; can make this short cut in skipping to the non-ASCII token ELSE. The algorithm used splits the top two bits off
+0411A6             2083   ; each of the two bytes of the 16-bit line number. These bits are combined (in binary as 00LlHh00),
+0411A6             2084   ; exclusive-ORred with 0x54, and stored as the first byte of the 3-byte sequence. The remaining six bits of
+0411A6             2085   ; each byte are then stored, in LO/HI order, ORred with 0x40.
+0411A6             2086   ;
+0411A6 CB E1       2087   ENCODE:			SET     4,C			; Set bit 4 of C (for lexical analysis - accept line number)
+0411A8 EB          2088   			EX      DE, HL			; HL: string pointer, DE: line number
+0411A9 36 8D       2089   			LD      (HL), LINO		; Store 8Dh first to flag next bytes as an encoded line number
+0411AB 23          2090   			INC     HL
+0411AC 7A          2091   			LD      A,D			; Get the high byte
+0411AD E6 C0       2092   			AND     0C0H			; Get the top two bits	DD000000
+0411AF 0F          2093   			RRCA				; Shift right		00DD0000
+0411B0 0F          2094   			RRCA
+0411B1 47          2095   			LD      B,A			; Store in B
+0411B2 7B          2096   			LD      A,E			; Get the low byte
+0411B3 E6 C0       2097   			AND     0C0H			; Get the top two bits	EE000000
+0411B5 B0          2098   			OR      B			; Combine with D	EEDD0000
+0411B6 0F          2099   			RRCA				; Shift right		00EEDD00
+0411B7 0F          2100   			RRCA
+0411B8 EE 54       2101   			XOR     01010100B		; XOR with 54h
+0411BA 77          2102   			LD      (HL),A			; Store this as the second byte
+0411BB 23          2103   			INC     HL
+0411BC 7B          2104   			LD      A,E			; Get the low byte
+0411BD E6 3F       2105   			AND     3FH			; Strip the top two bits off
+0411BF F6 40       2106   			OR      '@'			; OR with 40h
+0411C1 77          2107   			LD      (HL),A			; Store
+0411C2 23          2108   			INC     HL
+0411C3 7A          2109   			LD      A,D			; Get the high byte
+0411C4 E6 3F       2110   			AND     3FH			; Strip the top two bits off
+0411C6 F6 40       2111   			OR      '@'			; OR with 40h
+0411C8 77          2112   			LD      (HL),A			; Store
+0411C9 23          2113   			INC     HL
+0411CA EB          2114   			EX      DE,HL			; DE: string pointer, HL: line number
+0411CB C9          2115   			RET
+0411CC             2116   ;
+0411CC             2117   ; TEXT - OUTPUT MESSAGE.
+0411CC             2118   ;   Inputs: HL addresses text (terminated by nul)
+0411CC             2119   ;  Outputs: HL addresses character following nul.
+0411CC             2120   ; Destroys: A,H,L,F
+0411CC             2121   ;
+0411CC 2A 2F 03 04 2122   REPORT:			LD      HL, (ERRTXT)		; Output an error message pointed to by ERRTXT
+0411D0             2123   ;
+0411D0 7E          2124   TEXT_:			LD      A, (HL)			; Fetch the character
+0411D1 23          2125   			INC     HL			; Increment pointer to next character
+0411D2 B7          2126   			OR      A			; Check for the nul (0) string terminator
+0411D3 C8          2127   			RET     Z			; And return if so
+0411D4 CD B6 0D 04 2128   			CALL    OUT_			; Output the character; note that OUT_ will detokenise tokens
+0411D8 18 F6       2129   			JR      TEXT_			; And loop
+0411DA             2130   ;
+0411DA             2131   ; TELL - OUTPUT MESSAGE.
+0411DA             2132   ;   Inputs: Text follows subroutine call (term=nul)
+0411DA             2133   ; Destroys: A,F
+0411DA             2134   ;
+0411DA             2135   ; Example usage:
+0411DA             2136   ;
+0411DA             2137   ;	CALL	TELL			Call the function
+0411DA             2138   ;	DB	"Hello World", 0	Followed by a zero terminated string
+0411DA             2139   ;	LD	A, (1234H)		Program execution will carry on here after the message is output
+0411DA             2140   ;
+0411DA E3          2141   TELL:			EX      (SP), HL		; Get the return address off the stack into HL, this is the
+0411DB CD D0 11 04 2142   			CALL    TEXT_			; first byte of the string that follows it. Print it, then
+0411DF E3          2143   			EX      (SP), HL		; HL will point to the next instruction, swap this back onto the stack
+0411E0 C9          2144   			RET				; at this point we'll return to the first instruction after the message
+0411E1             2145   
+0411E1             2146   ; ========= STUB FUNCTIONS =========
+0411E1             2147   printInline:
+0411E1 C9          2148   	RET
+0411E2             2149   
+0411E2             2150   OSINIT:
+0411E2 CD E1 11 04 2151   	call printInline
+0411E6 6D 61 69 6E 2152   	asciz "main.asm called OSINIT!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       4F 53 49 4E 
+       49 54 21 00 
+0411FE C9          2153   	ret
+0411FF             2154   
+0411FF             2155   CHAIN0:
+0411FF CD E1 11 04 2156   	call printInline
+041203 6D 61 69 6E 2157   	asciz "main.asm called CHAIN0!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       43 48 41 49 
+       4E 30 21 00 
+04121B C9          2158   	ret
+04121C             2159   
+04121C             2160   PROMPT:
+04121C CD E1 11 04 2161   	call printInline
+041220 6D 61 69 6E 2162   	asciz "main.asm called PROMPT!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       50 52 4F 4D 
+       50 54 21 00 
+041238 C9          2163   	ret
+041239             2164   
+041239             2165   OSLINE:
+041239 CD E1 11 04 2166   	call printInline
+04123D 6D 61 69 6E 2167   	asciz "main.asm called OSLINE!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       4F 53 4C 49 
+       4E 45 21 00 
+041255 C9          2168   	ret
+041256             2169   
+041256             2170   NXT:
+041256 CD E1 11 04 2171   	call printInline
+04125A 6D 61 69 6E 2172   	asciz "main.asm called NXT!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       4E 58 54 21 
+       00          
+04126F C9          2173   	ret
+041270             2174   
+041270             2175   XEQ:
+041270 CD E1 11 04 2176   	call printInline
+041274 6D 61 69 6E 2177   	asciz "main.asm called XEQ!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       58 45 51 21 
+       00          
+041289 C9          2178   	ret
+04128A             2179   
+04128A             2180   EXPRI:
+04128A CD E1 11 04 2181   	call printInline
+04128E 6D 61 69 6E 2182   	asciz "main.asm called EXPRI!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       45 58 50 52 
+       49 21 00    
+0412A5 C9          2183   	ret
+0412A6             2184   
+0412A6             2185   SEARCH:
+0412A6 CD E1 11 04 2186   	call printInline
+0412AA 6D 61 69 6E 2187   	asciz "main.asm called SEARCH!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       53 45 41 52 
+       43 48 21 00 
+0412C2 C9          2188   	ret
+0412C3             2189   
+0412C3             2190   LTRAP:
+0412C3 CD E1 11 04 2191   	call printInline
+0412C7 6D 61 69 6E 2192   	asciz "main.asm called LTRAP!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       4C 54 52 41 
+       50 21 00    
+0412DE C9          2193   	ret
+0412DF             2194   
+0412DF             2195   DECODE:
+0412DF CD E1 11 04 2196   	call printInline
+0412E3 6D 61 69 6E 2197   	asciz "main.asm called DECODE!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       44 45 43 4F 
+       44 45 21 00 
+0412FB C9          2198   	ret
+0412FC             2199   
+0412FC             2200   EXPRS:
+0412FC CD E1 11 04 2201   	call printInline
+041300 6D 61 69 6E 2202   	asciz "main.asm called EXPRS!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       45 58 50 52 
+       53 21 00    
+041317 C9          2203   	ret
+041318             2204   
+041318             2205   OSSAVE:
+041318 CD E1 11 04 2206   	call printInline
+04131C 6D 61 69 6E 2207   	asciz "main.asm called OSSAVE!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       4F 53 53 41 
+       56 45 21 00 
+041334 C9          2208   	ret
+041335             2209   
+041335             2210   RESET:
+041335 CD E1 11 04 2211   	call printInline
+041339 6D 61 69 6E 2212   	asciz "main.asm called RESET!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       52 45 53 45 
+       54 21 00    
+041350 C9          2213   	ret
+041351             2214   
+041351             2215   OSSHUT:
+041351 CD E1 11 04 2216   	call printInline
+041355 6D 61 69 6E 2217   	asciz "main.asm called OSSHUT!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       4F 53 53 48 
+       55 54 21 00 
+04136D C9          2218   	ret
+04136E             2219   
+04136E             2220   OSLOAD:
+04136E CD E1 11 04 2221   	call printInline
+041372 6D 61 69 6E 2222   	asciz "main.asm called OSLOAD!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       4F 53 4C 4F 
+       41 44 21 00 
+04138A C9          2223   	ret
+04138B             2224   
+04138B             2225   FILL:
+04138B CD E1 11 04 2226   	call printInline
+04138F 6D 61 69 6E 2227   	asciz "main.asm called FILL!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       46 49 4C 4C 
+       21 00       
+0413A5 C9          2228   	ret
+0413A6             2229   
+0413A6             2230   OSWRCH:
+0413A6 CD E1 11 04 2231   	call printInline
+0413AA 6D 61 69 6E 2232   	asciz "main.asm called OSWRCH!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       4F 53 57 52 
+       43 48 21 00 
+0413C2 C9          2233   	ret
+0413C3             2234   
+0413C3             2235   COMMA:
+0413C3 CD E1 11 04 2236   	call printInline
+0413C7 6D 61 69 6E 2237   	asciz "main.asm called COMMA!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       43 4F 4D 4D 
+       41 21 00    
+0413DE C9          2238   	ret
+0413DF             2239   
+0413DF             2240   MUL16:
+0413DF CD E1 11 04 2241   	call printInline
+0413E3 6D 61 69 6E 2242   	asciz "main.asm called MUL16!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       4D 55 4C 31 
+       36 21 00    
+0413FA C9          2243   	ret
+0413FB             2244   
+0413FB             2245   BRAKET:
+0413FB CD E1 11 04 2246   	call printInline
+0413FF 6D 61 69 6E 2247   	asciz "main.asm called BRAKET!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       42 52 41 4B 
+       45 54 21 00 
+041417 C9          2248   	ret
+041418             2249   
+041418             2250   X4OR5:
+041418 CD E1 11 04 2251   	call printInline
+04141C 6D 61 69 6E 2252   	asciz "main.asm called X4OR5!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       58 34 4F 52 
+       35 21 00    
+041433 C9          2253   	ret
+041434             2254   
+041434             2255   LOADN:
+041434 CD E1 11 04 2256   	call printInline
+041438 6D 61 69 6E 2257   	asciz "main.asm called LOADN!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       4C 4F 41 44 
+       4E 21 00    
+04144F C9          2258   	ret
+041450             2259   
+041450             2260   SFIX:
+041450 CD E1 11 04 2261   	call printInline
+041454 6D 61 69 6E 2262   	asciz "main.asm called SFIX!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       53 46 49 58 
+       21 00       
+04146A C9          2263   	ret
+04146B             2264   
+04146B             2265   ITEMI:
+04146B CD E1 11 04 2266   	call printInline
+04146F 6D 61 69 6E 2267   	asciz "main.asm called ITEMI!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       49 54 45 4D 
+       49 21 00    
+041486 C9          2268   	ret
+041487             2269   
+041487             2270   CHECK:
+041487 CD E1 11 04 2271   	call printInline
+04148B 6D 61 69 6E 2272   	asciz "main.asm called CHECK!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       43 48 45 43 
+       4B 21 00    
+0414A2 C9          2273   	ret
+0414A3             2274   
+0414A3             2275   TERMQ:
+0414A3 CD E1 11 04 2276   	call printInline
+0414A7 6D 61 69 6E 2277   	asciz "main.asm called TERMQ!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       54 45 52 4D 
+       51 21 00    
+0414BE C9          2278   	ret
+0414BF             2279   
+0414BF             2280   STAR_VERSION:
+0414BF CD E1 11 04 2281   	call printInline
+0414C3 6D 61 69 6E 2282   	asciz "main.asm called STAR_VERSION!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       53 54 41 52 
+       5F 56 45 52 
+       53 49 4F 4E 
+       21 00       
+0414E1 C9          2283   	ret
+0414E2             2284   
+0414E2             2285   _end:
+0414E2 CD E1 11 04 2286   	call printInline
+0414E6 6D 61 69 6E 2287   	asciz "main.asm called _end!"
+       2E 61 73 6D 
+       20 63 61 6C 
+       6C 65 64 20 
+       5F 65 6E 64 
+       21 00       
+0414FC C9          2288   	ret

@@ -1,32 +1,3 @@
-
-; from exec.asm
-; Check whether the stack is full
-;
-CHECK:			PUSH    HL
-			PUSH	BC
-			LD      HL,(FREE)		; HL: Address of first free space byte
-			LD	BC,100h			; BC: One page of memory
-			ADD	HL,BC			; Add a page to FREE
-			SBC     HL,SP			; And subtract the current SP
-			POP	BC
-			POP     HL
-			RET     C			; The SP is not in the same page, so just return
-			; XOR     A			; Otherwise
-			; JP      ERROR_			; Throw error "No room"
-;
-STORS3:			LD	BC,0
-			LD      C,E			; BC: String length
-			PUSH    IX
-			POP     DE			; DE: Destination
-			XOR     A			; Check if string length is 0
-			CP      C
-			JR      Z,STORS5		; Yes, so don't copy
-			LDIR
-STORS5:			LD      A,CR			; Finally add the terminator
-			LD      (DE),A
-			RET
-
-
 ; from main.asm
 
 ; PUTVAR - CREATE VARIABLE AND INITIALISE TO ZERO.
@@ -353,61 +324,6 @@ TYPE_:			LD      A,(IY-1)		; Check the string type postfix
 ;
 LOC6:			INC     A               	; Set NZ flag
 			RET
-;
-; from exec.asm
-
-; 16-bit unsigned multiply
-; - HL: Operand 1
-; - BC: Operand 2
-; Returns:
-; - HL: Result
-; -  F: C if overflow
-;
-MUL16:			PUSH	BC
-			LD	D, C			; Set up the registers for the multiplies
-			LD	E, L		
-			LD	L, C
-			LD	C, E
-			MLT	HL			; HL = H * C (*256)
-			MLT	DE			; DE = L * C
-			MLT	BC			; BC = B * L (*256)
-			ADD	HL, BC			; HL = The sum of the two most significant multiplications
-			POP	BC
-			XOR	A
-			SBC	H			; If H is not zero then it's an overflow
-			RET	C
-			LD	H, L			; HL = ((H * C) + (B * L) * 256) + (L * C)
-			LD	L, A
-			ADD	HL, DE
-			RET
-
-
-; Multiply by 4 or 5
-; This function is used to allocate space for dimensioned variables
-; This is a 24-bit operation
-; - DE: Number to multiple
-; -  A: 04h (Integer) - takes up 4 bytes
-;       05h (Float)   - takes up 5 bytes
-;       81h (String)  - takes up 5 bytes - this is different from BBC BASIC for Z80 where strings only take up 4 bytes
-; Returns:
-; - DE: Multiplied by 4 if A = 4, otherwise multiplies by 5
-; -  F: Carry if overflow
-; Corrupts:
-; - HL
-X4OR5:			CP      4			; Check A = 4 (Z flag is used later)
-			; LD	HL,DE  ; HOW!?
-			push de
-			pop hl
-			ADD     HL,HL			; Multiply by 2 (note this operation preserves the zero flag)
-			RET     C			; Exit if overflow
-			ADD     HL,HL			; Multiply by 2 again
-			RET     C			; Exit if overflow
-			EX      DE,HL			; DE: Product
-			RET     Z			; Exit if A = 4
-			ADD     HL,DE			; Add original value to HL (effectively multiplying by 5)
-			EX      DE,HL			; DE: Product
-			RET
-
 
 ; from main.asm
 ; TEST FOR VALID CHARACTER IN VARIABLE NAME:
@@ -831,59 +747,14 @@ KEYWDS:			DB    80H, "AND"
 			DB    D1H, "TIME"
 
 
-; from exec.asm
-
-; ASSIGN - Assign a numeric value to a variable.
-; Outputs: NC,  Z - OK, numeric.
-;          NC, NZ - OK, string.
-;           C, NZ - illegal
-;
-ASSIGN:			CALL    GETVAR          	; Try to get the variable
-			RET     C               	; Return with C if it is an illegal variable
-			CALL    NZ,PUTVAR		; If it does not exist, then create the variable
-			OR      A
-			RET     M               	; Return if type is string (81h)
-			PUSH    AF              	; It's a numeric type from this point on
-			CALL    EQUALS			; Check if the variable is followed by an '=' symbol; this will throw a 'Mistake' error if not
-			PUSH    HL
-			CALL    EXPRN
-			POP     IX
-			POP     AF
-STORE:			BIT     0,A
-			JR      Z,STOREI
-			CP      A               	; Set the variable to 0
-STORE5:			LD      (IX+4),C
-STORE4:			EXX
-			LD      (IX+0),L
-			LD      (IX+1),H
-			EXX
-			LD      (IX+2),L
-			LD      (IX+3),H
-			RET
-STOREI:			PUSH    AF
-			INC     C               ;SPEED - & PRESERVE F'
-			DEC     C               ; WHEN CALLED BY FNEND0
-			CALL    NZ,SFIX         ;CONVERT TO INTEGER
-			POP     AF
-			CP      4
-			JR      Z,STORE4
-			CP      A               ;SET ZERO
-STORE1:			EXX
-			LD      (IX+0),L
-			EXX
-			RET
-
-
-; This snippet is used to check whether an expression is followed by an '=' symbol
-;
-EQUALS:			CALL    NXT			; Skip whitespace
-			INC     IY			; Skip past the character in question
-			CP      '='			; Is it '='
-			RET     Z			; Yes, so return
-			; LD      A,4			; Otherwise
-			; JP      ERROR_           	; Throw error "Mistake"
-
 
 ; STUBS OF STUFF WE WON'T BE USING
-POINT:      ret			; POINT( ; in agon_graphics.asm we won't be using
-USR:        ret			; USR ; in exec.asm
+USR: ; in exec.asm
+	call printInline
+	asciz "USR called!\r\n"
+	ret			
+
+POINT: ; in agon_graphics.asm
+	call printInline
+	asciz "POINT called!\r\n"
+	ret			
