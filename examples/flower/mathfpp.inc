@@ -6,6 +6,65 @@
     include "basic/snippets.asm"
     include "basic/sorry.asm"
 
+iand: equ 0
+ibdiv: equ 1
+ieor: equ 2
+imod: equ 3
+ior: equ 4
+ile: equ 5
+ine: equ 6
+ige: equ 7
+ilt: equ 8
+ieq: equ 9
+imul: equ 10
+iadd: equ 11
+igt: equ 12
+isub: equ 13
+ipow: equ 14
+idiv: equ 15
+absv: equ 16
+acs: equ 17
+asn: equ 18
+atn: equ 19
+cos: equ 20
+deg: equ 21
+exp: equ 22
+int_: equ 23
+ln: equ 24
+log: equ 25
+notk: equ 26
+rad: equ 27
+sgn: equ 28
+sin: equ 29
+sqr: equ 30
+tan: equ 31
+fpzero: equ 32
+fone: equ 33
+true: equ 34
+pi: equ 35
+val: equ 36
+string: equ 37
+sfix_fp: equ 38
+sfloat: equ 39
+ftest: equ 40
+fcomp: equ 41
+fand: equ 42
+fbdiv: equ 43
+feor: equ 44
+fmod: equ 45
+ffor: equ 46
+fle: equ 47
+fne: equ 48
+fge: equ 49
+flt: equ 50
+feq: equ 51
+fmul: equ 52
+fadd: equ 53
+fgt: equ 54
+fsub: equ 55
+fpow: equ 56
+fdiv: equ 57
+
 ; -------------------- from basic/fpp.asm --------------------
 
 

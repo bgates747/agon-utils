@@ -68,28 +68,36 @@ _parse_params:		LD	BC, _exec_name
 			LD	BC, 1			; C: ARGC = 1 - also clears out top 16 bits of BCU
 			LD	B, argv_ptrs_max - 1	; B: Maximum number of argv_ptrs
 ;
-_parse_params_1:	
-			PUSH	BC			; Stack ARGC	
-			PUSH	HL			; Stack start address of token
-			CALL	_get_token		; Get the next token
-			LD	A, C			; A: Length of the token in characters
-			POP	DE			; Start address of token (was in HL)
-			POP	BC			; ARGC
-			OR	A			; Check for A=0 (no token found) OR at end of string
-			RET	Z
-;
-			LD	(IX+0), DE		; Store the pointer to the token
-			PUSH	HL			; DE=HL
-			POP	DE
-			CALL	_skip_spaces		; And skip HL past any spaces onto the next character
-			XOR	A
-			LD	(DE), A			; Zero-terminate the token
-			LEA  	IX, IX+3			; Advance to next pointer position
+; _parse_params_1:	
+; 			PUSH	BC			; Stack ARGC	
+; 			PUSH	HL			; Stack start address of token
+; 			CALL	_get_token		; Get the next token
+; 			LD	A, C			; A: Length of the token in characters
+; 			POP	DE			; Start address of token (was in HL)
+; 			POP	BC			; ARGC
+; 			OR	A			; Check for A=0 (no token found) OR at end of string
+; 			RET	Z
+; ;
+; 			LD	(IX+0), DE		; Store the pointer to the token
+; 			PUSH	HL			; DE=HL
+; 			POP	DE
+; 			CALL	_skip_spaces		; And skip HL past any spaces onto the next character
+; 			XOR	A
+; 			LD	(DE), A			; Zero-terminate the token
+; 			LEA  	IX, IX+3			; Advance to next pointer position
+			; INC	C			; Increment ARGC
+			; LD	A, C			; Check for C >= A
+			; CP	B
+			; JR	C, _parse_params_1	; And loop
+			; RET
+
+; instead of all that we drop hl into (ix) and return
+; leaving us with two parameters: 
+; - the app name 
+; - whatever the user entered
+            ld (ix),hl
 			INC	C			; Increment ARGC
-			LD	A, C			; Check for C >= A
-			CP	B
-			JR	C, _parse_params_1	; And loop
-			RET
+            ret
 
 ; Get the next token
 ; Parameters:
@@ -122,8 +130,3 @@ _skip_spaces:		LD	A, (HL)			; Get the character from the parameter string
 			RET	NZ
 			INC	HL			; Advance to next character
 			JR	_skip_spaces		; Increment length
-
-; Storage for the argv array pointers
-;
-argv_ptrs_max:		EQU	16			; Maximum number of arguments allowed in argv
-argv_ptrs:		    BLKP	argv_ptrs_max, 0			

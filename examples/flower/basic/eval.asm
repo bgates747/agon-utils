@@ -238,8 +238,8 @@ EXPR2:			CALL    EXPR3			; Get first operator by calling Level 4
 			CALL    RELOP?          	; Is it a compound operator?
 			JR      NZ,EXPR2B		; No, so skip next bit
 			INC     IY			; Bump over operator
-			; CP      B			; Compare with first
-			; JP      Z,SYNTAX        	; Trap illegal combinations ">>", "==", "<<" (but not "><", "=>", "=<")
+			CP      B			; Compare with first
+			JP      Z,SYNTAX        	; Trap illegal combinations ">>", "==", "<<" (but not "><", "=>", "=<")
 			ADD     A,B			
 			LD      B,A			; B: Unique code for the compound operator
 EXPR2B:			LD      A,B			; A: Code for the operator/compound operator

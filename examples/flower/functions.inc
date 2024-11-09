@@ -108,6 +108,18 @@ A_TO_HLU:
     ;     inc sp
     ; ENDMACRO
 
+; Print a zero-terminated string inline with code, e.g.:
+;
+;    call printInline
+;    ASCIZ "Hello, world!\r\n"
+;
+; Destroys: HL,AF
+printInline:
+    pop hl ; get the return address = pointer to start of string
+    call printString ; HL advances to end of string
+    push hl ; restore the return address = pointer to end of string
+    ret
+    
 ; https://github.com/envenomator/Agon/blob/master/ez80asm%20examples%20(annotated)/functions.s
 ; Print a zero-terminated string
 ; HL: Pointer to string
