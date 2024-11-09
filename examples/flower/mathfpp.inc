@@ -7,17 +7,13 @@
     include "basic/sorry.asm"
 
 ; -------------------- from basic/fpp.asm --------------------
-;
-;VAL - Return numeric value of string.
-;Input: ASCII string at IX
-;Result is variable type numeric.
-;
-;Function STR - convert numeric value to ASCII string.
+
+
+;Function STRING - convert numeric value to ASCII string.
 ;   Inputs: HLH'L'C = integer or floating-point number
 ;           DE = address at which to store string
 ;           IX = address of @% format control
 ;  Outputs: String stored, with NUL terminator
-
 
 ;NUMBER: Get unsigned integer from string.
 ;    Inputs: string at (IX)
@@ -29,6 +25,21 @@
 ;            A = delimiter.
 ;            B, C & IX updated
 ;  Destroys: A,B,C,D,E,H,L,B',C',D',E',H',L',IX,F
+
+;VAL - Return numeric value of string.
+;Input: ASCII string at IX
+;Result is variable type numeric.
+
+;SWAP_FP - Swap arguments.
+;    Exchanges DE,HL D'E',H'L' and B,C
+;    Destroys: A,B,C,D,E,H,L,D',E',H',L'
+;SWAP1 - Swap DEHL with D'E'H'L'
+;    Destroys: D,E,H,L,D',E',H',L'
+
+
+;
+;IADD - Integer addition.
+;FADD - Floating point addition with rounding.
 ;
 
 ; -------------------- from basic/eval.asm --------------------
@@ -45,6 +56,10 @@
 ;  Outputs: String in string accumulator.
 ;           E = string length.  D = ACCS/256
 
+
+
+; ==================== CONVENIENCE FUNCTIONS ====================
+;
 ; print a floating point number in decimal format
 ; inputs: HL'H'L'C is the number to print
 ; outputs: number printed to screen
@@ -64,6 +79,7 @@ print_float_dec:
     POP_ALL
     ret
 
+
 ; output buffer for strings from BASIC
 STROUT: blkb 256,0
 ; numeric string format code
@@ -74,3 +90,75 @@ STROUT: blkb 256,0
 ; byte 2 bit 1 is E notation flag when set
 ; -- trailing zeros are added to bring number of significant digits to the specified number
 NUMF: dl 0
+
+; num1: blkb 6,0
+; num2: blkb 6,0
+; ; store HLH'L'C in num1
+; store1:
+;     push ix
+;     ld ix,num1
+;     exx
+;     ld (ix+0),c
+;     ld (ix+1),l
+;     ld (ix+2),h
+;     exx
+;     ld (ix+3),l
+;     ld (ix+4),h
+
+;     call debug_print
+;     push hl
+;     ld hl,num1
+;     ld a,6
+;     call dumpMemoryHex
+;     pop hl
+
+;     pop ix
+;     ret
+
+; get1:
+;     push ix
+;     ld ix,num1
+;     exx
+;     ld c,(ix+0)
+;     ld l,(ix+1)
+;     ld h,(ix+2)
+;     exx
+;     ld l,(ix+3)
+;     ld h,(ix+4)
+;     pop ix
+;     ret
+
+; ; store DED'E'B in num2
+; store2:
+;     push ix
+;     ld ix,num2
+;     exx
+;     ld (ix+0),b
+;     ld (ix+1),e
+;     ld (ix+2),d
+;     exx
+;     ld (ix+3),e
+;     ld (ix+4),d
+
+;     call debug_print
+;     push hl
+;     ld hl,num2
+;     ld a,6
+;     call dumpMemoryHex
+
+;     pop ix
+;     ret
+
+; ; get DED'E'B from num2
+; get2:
+;     push ix
+;     ld ix,num2
+;     exx
+;     ld b,(ix+0)
+;     ld e,(ix+1)
+;     ld d,(ix+2)
+;     exx
+;     ld e,(ix+3)
+;     ld d,(ix+4)
+;     pop ix
+;     ret

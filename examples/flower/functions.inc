@@ -54,37 +54,39 @@
     ENDMACRO
 
     MACRO PUSH_ALL
+        ex af,af'
+        exx
+        push af
+        push hl
+        push bc
+        push de
+
+        ex af,af'
+        exx
         push af
         push hl
         push bc
         push de
         push ix
         push iy
-        ex af,af'
-        exx
-        push af
-        push hl
-        push bc
-        push de
-        ex af,af'
-        exx
     ENDMACRO
 
     MACRO POP_ALL
-        ex af,af'
-        exx
-        pop de
-        pop bc
-        pop hl
-        pop af
-        ex af,af'
-        exx
         pop iy
         pop ix
         pop de
         pop bc
         pop hl
         pop af
+        ex af,af'
+        exx
+
+        pop de
+        pop bc
+        pop hl
+        pop af
+        ex af,af'
+        exx
     ENDMACRO
 
 A_TO_HLU:
@@ -775,6 +777,14 @@ dumpRegistersHex:
     ld iy, (uiy)
     pop af
 ; all done
+    ret
+    
+dumpRegistersHexPrime:
+    exx
+    ex af,af'
+    call dumpRegistersHex
+    ex af,af'
+    exx
     ret
 
 ; additionally dump prime registers
