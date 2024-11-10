@@ -84,7 +84,7 @@ def generate_xref_assembly(input_file, output_file, include_files):
 
 if __name__ == "__main__":
     # File paths
-    input_file = "basic/sorry.asm"
+    input_file = "basic/interrupts.asm"
     output_file = "basic/xrefs.asm"
 
     # List of include files to check for existing labels
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         "basic/mos_api.inc",
         "basic/macros.inc",
         "basic/equs.inc",
-        "basic/ram.asm"
+        "basic/ram.asm",
     ]
     
     generate_xref_assembly(input_file, output_file, include_files)

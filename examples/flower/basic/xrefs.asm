@@ -2,7 +2,8 @@
 printInline:
     ret
 
-EXTERR:
+ESCSET:
 	call printInline
-	asciz "sorry.asm called EXTERR!"
+	asciz "interrupts.asm called ESCSET!"
 	ret
+

@@ -1,0 +1,912 @@
+PC     Output      Line
+040000             0001   ;
+040000             0002   ; Title:	BBC Basic for AGON - Audio stuff
+040000             0003   ; Author:	Dean Belfield
+040000             0004   ; Created:	12/05/2023
+040000             0005   ; Last Updated:	12/05/2023
+040000             0006   ;
+040000             0007   ; Modinfo:
+040000             0008   
+040000             0009   			.ASSUME	ADL = 1
+040000             0010   
+040000             0011   			INCLUDE "mos_api.inc"
+040000             0001*  ;
+040000             0002*  ; Title:	AGON MOS - API for user projects
+040000             0003*  ; Author:	Dean Belfield
+040000             0004*  ; Created:	03/08/2022
+040000             0005*  ; Last Updated:	11/11/2023
+040000             0006*  ;
+040000             0007*  ; Modinfo:
+040000             0008*  ; 05/08/2022:	Added mos_feof
+040000             0009*  ; 09/08/2022:	Added system variables: cursorX, cursorY
+040000             0010*  ; 18/08/2022:	Added system variables: scrchar, scrpixel, audioChannel, audioSuccess, vpd_pflags
+040000             0011*  ; 05/09/2022:	Added mos_ren, vdp_pflag_mode
+040000             0012*  ; 24/09/2022:	Added mos_getError, mos_mkdir
+040000             0013*  ; 13/10/2022:	Added mos_oscli
+040000             0014*  ; 23/02/2023:	Added more sysvars, fixed typo in sysvar_audioSuccess, offsets for sysvar_scrCols, sysvar_scrRows
+040000             0015*  ; 04/03/2023:	Added sysvar_scrpixelIndex
+040000             0016*  ; 08/03/2023:	Renamed sysvar_keycode to sysvar_keyascii, added sysvar_vkeycode
+040000             0017*  ; 15/03/2023:	Added mos_copy, mos_getrtc, mos_setrtc, rtc, vdp_pflag_rtc
+040000             0018*  ; 21/03/2023:	Added mos_setintvector, sysvars for keyboard status, vdu codes for vdp
+040000             0019*  ; 22/03/2023:	The VDP commands are now indexed from 0x80
+040000             0020*  ; 29/03/2023:	Added mos_uopen, mos_uclose, mos_ugetc, mos_uputc
+040000             0021*  ; 13/04/2023:	Added FatFS file structures (FFOBJID, FIL, DIR, FILINFO)
+040000             0022*  ; 15/04/2023:	Added mos_getfil, mos_fread, mos_fwrite and mos_flseek
+040000             0023*  ; 19/05/2023:	Added sysvar_scrMode
+040000             0024*  ; 05/06/2023:	Added sysvar_rtcEnable
+040000             0025*  ; 03/08/2023:	Added mos_setkbvector
+040000             0026*  ; 10/08/2023:	Added mos_getkbmap
+040000             0027*  ; 11/11/2023:	Added mos_i2c_open, mos_i2c_close, mos_i2c_write and mos_i2c_read
+040000             0028*  
+040000             0029*  ; VDP control (VDU 23, 0, n)
+040000             0030*  ;
+040000             0031*  vdp_gp:			EQU 	80h
+040000             0032*  vdp_keycode:		EQU 	81h
+040000             0033*  vdp_cursor:		EQU	82h
+040000             0034*  vdp_scrchar:		EQU	83h
+040000             0035*  vdp_scrpixel:		EQU	84h
+040000             0036*  vdp_audio:		EQU	85h
+040000             0037*  vdp_mode:		EQU	86h
+040000             0038*  vdp_rtc:		EQU	87h
+040000             0039*  vdp_keystate:		EQU	88h
+040000             0040*  vdp_logicalcoords:	EQU	C0h
+040000             0041*  vdp_terminalmode:	EQU	FFh
+040000             0042*  
+040000             0043*  ; MOS high level functions
+040000             0044*  ;
+040000             0045*  mos_getkey:		EQU	00h
+040000             0046*  mos_load:		EQU	01h
+040000             0047*  mos_save:		EQU	02h
+040000             0048*  mos_cd:			EQU	03h
+040000             0049*  mos_dir:		EQU	04h
+040000             0050*  mos_del:		EQU	05h
+040000             0051*  mos_ren:		EQU	06h
+040000             0052*  mos_mkdir:		EQU	07h
+040000             0053*  mos_sysvars:		EQU	08h
+040000             0054*  mos_editline:		EQU	09h
+040000             0055*  mos_fopen:		EQU	0Ah
+040000             0056*  mos_fclose:		EQU	0Bh
+040000             0057*  mos_fgetc:		EQU	0Ch
+040000             0058*  mos_fputc:		EQU	0Dh
+040000             0059*  mos_feof:		EQU	0Eh
+040000             0060*  mos_getError:		EQU	0Fh
+040000             0061*  mos_oscli:		EQU	10h
+040000             0062*  mos_copy:		EQU	11h
+040000             0063*  mos_getrtc:		EQU	12h
+040000             0064*  mos_setrtc:		EQU	13h
+040000             0065*  mos_setintvector:	EQU	14h
+040000             0066*  mos_uopen:		EQU	15h
+040000             0067*  mos_uclose:		EQU	16h
+040000             0068*  mos_ugetc:		EQU	17h
+040000             0069*  mos_uputc:		EQU 	18h
+040000             0070*  mos_getfil:		EQU	19h
+040000             0071*  mos_fread:		EQU	1Ah
+040000             0072*  mos_fwrite:		EQU	1Bh
+040000             0073*  mos_flseek:		EQU	1Ch
+040000             0074*  mos_setkbvector:	EQU	1Dh
+040000             0075*  mos_getkbmap:		EQU	1Eh
+040000             0076*  mos_i2c_open:		EQU	1Fh
+040000             0077*  mos_i2c_close:		EQU	20h
+040000             0078*  mos_i2c_write:		EQU	21h
+040000             0079*  mos_i2c_read:		EQU	22h
+040000             0080*  
+040000             0081*  
+040000             0082*  ; FatFS file access functions
+040000             0083*  ;
+040000             0084*  ffs_fopen:		EQU	80h
+040000             0085*  ffs_fclose:		EQU	81h
+040000             0086*  ffs_fread:		EQU	82h
+040000             0087*  ffs_fwrite:		EQU	83h
+040000             0088*  ffs_flseek:		EQU	84h
+040000             0089*  ffs_ftruncate:		EQU	85h
+040000             0090*  ffs_fsync:		EQU	86h
+040000             0091*  ffs_fforward:		EQU	87h
+040000             0092*  ffs_fexpand:		EQU	88h
+040000             0093*  ffs_fgets:		EQU	89h
+040000             0094*  ffs_fputc:		EQU	8Ah
+040000             0095*  ffs_fputs:		EQU	8Bh
+040000             0096*  ffs_fprintf:		EQU	8Ch
+040000             0097*  ffs_ftell:		EQU	8Dh
+040000             0098*  ffs_feof:		EQU	8Eh
+040000             0099*  ffs_fsize:		EQU	8Fh
+040000             0100*  ffs_ferror:		EQU	90h
+040000             0101*  
+040000             0102*  ; FatFS directory access functions
+040000             0103*  ;
+040000             0104*  ffs_dopen:		EQU	91h
+040000             0105*  ffs_dclose:		EQU	92h
+040000             0106*  ffs_dread:		EQU	93h
+040000             0107*  ffs_dfindfirst:		EQU	94h
+040000             0108*  ffs_dfindnext:		EQU	95h
+040000             0109*  
+040000             0110*  ; FatFS file and directory management functions
+040000             0111*  ;
+040000             0112*  ffs_stat:		EQU	96h
+040000             0113*  ffs_unlink:		EQU	97h
+040000             0114*  ffs_rename:		EQU	98h
+040000             0115*  ffs_chmod:		EQU	99h
+040000             0116*  ffs_utime:		EQU	9Ah
+040000             0117*  ffs_mkdir:		EQU	9Bh
+040000             0118*  ffs_chdir:		EQU	9Ch
+040000             0119*  ffs_chdrive:		EQU	9Dh
+040000             0120*  ffs_getcwd:		EQU	9Eh
+040000             0121*  
+040000             0122*  ; FatFS volume management and system configuration functions
+040000             0123*  ;
+040000             0124*  ffs_mount:		EQU	9Fh
+040000             0125*  ffs_mkfs:		EQU	A0h
+040000             0126*  ffs_fdisk:		EQU	A1h
+040000             0127*  ffs_getfree:		EQU	A2h
+040000             0128*  ffs_getlabel:		EQU	A3h
+040000             0129*  ffs_setlabel:		EQU	A4h
+040000             0130*  ffs_setcp:		EQU	A5h
+040000             0131*  
+040000             0132*  ; File access modes
+040000             0133*  ;
+040000             0134*  fa_read:		EQU	01h
+040000             0135*  fa_write:		EQU	02h
+040000             0136*  fa_open_existing:	EQU	00h
+040000             0137*  fa_create_new:		EQU	04h
+040000             0138*  fa_create_always:	EQU	08h
+040000             0139*  fa_open_always:		EQU	10h
+040000             0140*  fa_open_append:		EQU	30h
+040000             0141*  
+040000             0142*  ; System variable indexes for api_sysvars
+040000             0143*  ; Index into _sysvars in globals.asm
+040000             0144*  ;
+040000             0145*  sysvar_time:		EQU	00h	; 4: Clock timer in centiseconds (incremented by 2 every VBLANK)
+040000             0146*  sysvar_vpd_pflags:	EQU	04h	; 1: Flags to indicate completion of VDP commands
+040000             0147*  sysvar_keyascii:	EQU	05h	; 1: ASCII keycode, or 0 if no key is pressed
+040000             0148*  sysvar_keymods:		EQU	06h	; 1: Keycode modifiers
+040000             0149*  sysvar_cursorX:		EQU	07h	; 1: Cursor X position
+040000             0150*  sysvar_cursorY:		EQU	08h	; 1: Cursor Y position
+040000             0151*  sysvar_scrchar:		EQU	09h	; 1: Character read from screen
+040000             0152*  sysvar_scrpixel:	EQU	0Ah	; 3: Pixel data read from screen (R,B,G)
+040000             0153*  sysvar_audioChannel:	EQU	0Dh	; 1: Audio channel
+040000             0154*  sysvar_audioSuccess:	EQU	0Eh	; 1: Audio channel note queued (0 = no, 1 = yes)
+040000             0155*  sysvar_scrWidth:	EQU	0Fh	; 2: Screen width in pixels
+040000             0156*  sysvar_scrHeight:	EQU	11h	; 2: Screen height in pixels
+040000             0157*  sysvar_scrCols:		EQU	13h	; 1: Screen columns in characters
+040000             0158*  sysvar_scrRows:		EQU	14h	; 1: Screen rows in characters
+040000             0159*  sysvar_scrColours:	EQU	15h	; 1: Number of colours displayed
+040000             0160*  sysvar_scrpixelIndex:	EQU	16h	; 1: Index of pixel data read from screen
+040000             0161*  sysvar_vkeycode:	EQU	17h	; 1: Virtual key code from FabGL
+040000             0162*  sysvar_vkeydown:	EQU	18h	; 1: Virtual key state from FabGL (0=up, 1=down)
+040000             0163*  sysvar_vkeycount:	EQU	19h	; 1: Incremented every time a key packet is received
+040000             0164*  sysvar_rtc:		EQU	1Ah	; 6: Real time clock data
+040000             0165*  sysvar_spare:		EQU	20h	; 2: Spare, previously used by rtc
+040000             0166*  sysvar_keydelay:	EQU	22h	; 2: Keyboard repeat delay
+040000             0167*  sysvar_keyrate:		EQU	24h	; 2: Keyboard repeat reat
+040000             0168*  sysvar_keyled:		EQU	26h	; 1: Keyboard LED status
+040000             0169*  sysvar_scrMode:		EQU	27h	; 1: Screen mode
+040000             0170*  sysvar_rtcEnable:	EQU	28h	; 1: RTC enable flag (0: disabled, 1: use ESP32 RTC)
+040000             0171*  sysvar_mouseX:		EQU	29h	; 2: Mouse X position
+040000             0172*  sysvar_mouseY:		EQU	2Bh	; 2: Mouse Y position
+040000             0173*  sysvar_mouseButtons:	EQU	2Dh	; 1: Mouse button state
+040000             0174*  sysvar_mouseWheel:	EQU	2Eh	; 1: Mouse wheel delta
+040000             0175*  sysvar_mouseXDelta:	EQU	2Fh	; 2: Mouse X delta
+040000             0176*  sysvar_mouseYDelta:	EQU	31h	; 2: Mouse Y delta
+040000             0177*  
+040000             0178*  ; Flags for the VPD protocol
+040000             0179*  ;
+040000             0180*  vdp_pflag_cursor:	EQU	00000001b
+040000             0181*  vdp_pflag_scrchar:	EQU	00000010b
+040000             0182*  vdp_pflag_point:	EQU	00000100b
+040000             0183*  vdp_pflag_audio:	EQU	00001000b
+040000             0184*  vdp_pflag_mode:		EQU	00010000b
+040000             0185*  vdp_pflag_rtc:		EQU	00100000b
+040000             0186*  vdp_pflag_mouse:	EQU	01000000b
+040000             0187*  ; vdp_pflag_buffered:	EQU	10000000b
+040000             0188*  
+040000             0189*  ;
+040000             0190*  ; FatFS structures
+040000             0191*  ; These mirror the structures contained in src_fatfs/ff.h in the MOS project
+040000             0192*  ;
+040000             0193*  ; Object ID and allocation information (FFOBJID)
+040000             0194*  ;
+040000             0195*  ; FFOBJID	.STRUCT
+040000             0196*  ; 	fs:		DS	3	; Pointer to the hosting volume of this object
+040000             0197*  ; 	id:		DS	2	; Hosting volume mount ID
+040000             0198*  ; 	attr:		DS	1	; Object attribute
+040000             0199*  ; 	stat:		DS	1	; Object chain status (b1-0: =0:not contiguous, =2:contiguous, =3:fragmented in this session, b2:sub-directory stretched)
+040000             0200*  ; 	sclust:		DS	4	; Object data start cluster (0:no cluster or root directory)
+040000             0201*  ; 	objsize:	DS	4	; Object size (valid when sclust != 0)
+040000             0202*  ; FFOBJID_SIZE .ENDSTRUCT FFOBJID
+040000             0203*  ; ;
+040000             0204*  ; ; File object structure (FIL)
+040000             0205*  ; ;
+040000             0206*  ; FIL .STRUCT
+040000             0207*  ; 	obj:		.TAG	FFOBJID	; Object identifier
+040000             0208*  ; 	flag:		DS	1	; File status flags
+040000             0209*  ; 	err:		DS	1	; Abort flag (error code)
+040000             0210*  ; 	fptr:		DS	4	; File read/write pointer (Zeroed on file open)
+040000             0211*  ; 	clust:		DS	4	; Current cluster of fpter (invalid when fptr is 0)
+040000             0212*  ; 	sect:		DS	4	; Sector number appearing in buf[] (0:invalid)
+040000             0213*  ; 	dir_sect:	DS	4	; Sector number containing the directory entry
+040000             0214*  ; 	dir_ptr:	DS	3	; Pointer to the directory entry in the win[]
+040000             0215*  ; FIL_SIZE .ENDSTRUCT FIL
+040000             0216*  ; ;
+040000             0217*  ; ; Directory object structure (DIR)
+040000             0218*  ; ;
+040000             0219*  ; DIR .STRUCT
+040000             0220*  ; 	obj:		.TAG	FFOBJID	; Object identifier
+040000             0221*  ; 	dptr:		DS	4	; Current read/write offset
+040000             0222*  ; 	clust:		DS	4	; Current cluster
+040000             0223*  ; 	sect:		DS	4	; Current sector (0:Read operation has terminated)
+040000             0224*  ; 	dir:		DS	3	; Pointer to the directory item in the win[]
+040000             0225*  ; 	fn:		DS	12	; SFN (in/out) {body[8],ext[3],status[1]}
+040000             0226*  ; 	blk_ofs:	DS	4	; Offset of current entry block being processed (0xFFFFFFFF:Invalid)
+040000             0227*  ; DIR_SIZE .ENDSTRUCT DIR
+040000             0228*  ; ;
+040000             0229*  ; ; File information structure (FILINFO)
+040000             0230*  ; ;
+040000             0231*  ; FILINFO .STRUCT
+040000             0232*  ; 	fsize:		DS 	4	; File size
+040000             0233*  ; 	fdate:		DS	2	; Modified date
+040000             0234*  ; 	ftime:		DS	2	; Modified time
+040000             0235*  ; 	fattrib:	DS	1	; File attribute
+040000             0236*  ; 	altname:	DS	13	; Alternative file name
+040000             0237*  ; 	fname:		DS	256	; Primary file name
+040000             0238*  ; FILINFO_SIZE .ENDSTRUCT FILINFO
+040000             0239*  
+040000             0240*  ; FFOBJID offsets
+040000             0241*  FFOBJID.fs:       EQU 0    ; Pointer to the hosting volume of this object
+040000             0242*  FFOBJID.id:       EQU 3    ; Hosting volume mount ID
+040000             0243*  FFOBJID.attr:     EQU 5    ; Object attribute
+040000             0244*  FFOBJID.stat:     EQU 6    ; Object chain status
+040000             0245*  FFOBJID.sclust:   EQU 7    ; Object data start cluster
+040000             0246*  FFOBJID.objsize:  EQU 11   ; Object size
+040000             0247*  FFOBJID_SIZE:     EQU 15   ; Total size of FFOBJID structure
+040000             0248*  
+040000             0249*  ; FIL offsets (including FFOBJID fields)
+040000             0250*  FIL.obj:          EQU 0                  ; Object identifier (FFOBJID fields start here)
+040000             0251*  FIL.flag:         EQU FFOBJID_SIZE       ; File status flags
+040000             0252*  FIL.err:          EQU FFOBJID_SIZE + 1   ; Abort flag (error code)
+040000             0253*  FIL.fptr:         EQU FFOBJID_SIZE + 2   ; File read/write pointer
+040000             0254*  FIL.clust:        EQU FFOBJID_SIZE + 6   ; Current cluster of fptr
+040000             0255*  FIL.sect:         EQU FFOBJID_SIZE + 10  ; Sector number appearing in buf[]
+040000             0256*  FIL.dir_sect:     EQU FFOBJID_SIZE + 14  ; Sector number containing the directory entry
+040000             0257*  FIL.dir_ptr:      EQU FFOBJID_SIZE + 18  ; Pointer to the directory entry in the win[]
+040000             0258*  FIL_SIZE:         EQU FFOBJID_SIZE + 21  ; Total size of FIL structure
+040000             0259*  
+040000             0260*  ; DIR offsets (including FFOBJID fields)
+040000             0261*  DIR.obj:          EQU 0                  ; Object identifier (FFOBJID fields start here)
+040000             0262*  DIR.dptr:         EQU FFOBJID_SIZE       ; Current read/write offset
+040000             0263*  DIR.clust:        EQU FFOBJID_SIZE + 4   ; Current cluster
+040000             0264*  DIR.sect:         EQU FFOBJID_SIZE + 8   ; Current sector
+040000             0265*  DIR.dir:          EQU FFOBJID_SIZE + 12  ; Pointer to the directory item in the win[]
+040000             0266*  DIR.fn:           EQU FFOBJID_SIZE + 15  ; SFN (in/out) {body[8],ext[3],status[1]}
+040000             0267*  DIR.blk_ofs:      EQU FFOBJID_SIZE + 27  ; Offset of current entry block being processed
+040000             0268*  DIR_SIZE:         EQU FFOBJID_SIZE + 31  ; Total size of DIR structure
+040000             0269*  
+040000             0270*  ; FILINFO offsets
+040000             0271*  FILINFO.fsize:    EQU 0    ; File size
+040000             0272*  FILINFO.fdate:    EQU 4    ; Modified date
+040000             0273*  FILINFO.ftime:    EQU 6    ; Modified time
+040000             0274*  FILINFO.fattrib:  EQU 8    ; File attribute
+040000             0275*  FILINFO.altname:  EQU 9    ; Alternative file name
+040000             0276*  FILINFO.fname:    EQU 22   ; Primary file name
+040000             0277*  FILINFO_SIZE:     EQU 278  ; Total size of FILINFO structure
+040000             0278*  
+040000             0279*  ;
+040000             0280*  ; Macro for calling the API
+040000             0281*  ; Parameters:
+040000             0282*  ; - function: One of the function numbers listed above
+040000             0283*  ;
+040000             0284*  			MACRO MOSCALL	function
+040000             0285*  			LD	A, function
+040000             0286*  			RST.LIS	08h
+040000             0287*  			ENDMACRO
+040000             0012   			INCLUDE "macros.inc"
+040000             0001*  	; Title:	BBC Basic Interpreter - Z80 version
+040000             0002*  	;		Useful macros
+040000             0003*  	; Author:	Dean Belfield
+040000             0004*  	; Created:	12/05/2023
+040000             0005*  	; Last Updated:	11/06/2023
+040000             0006*  	;
+040000             0007*  	; Modinfo:
+040000             0008*  	; 11/06/2023:	Modified to run in ADL mode
+040000             0009*  	; 11/06/2024:   Make compatible with ez80asm by Brandon R. Gates
+040000             0010*  
+040000             0011*  	MACRO EXREG	rp1, rp2
+040000             0012*  		PUSH	rp1
+040000             0013*  		POP	rp2
+040000             0014*  	ENDMACRO
+040000             0015*  
+040000             0016*  	; MACRO ADD8U_DE	reg
+040000             0017*  		MACRO ADD8U_DE
+040000             0018*  		ADD	A, E
+040000             0019*  		LD	E, A
+040000             0020*  		ADC	A, D
+040000             0021*  		SUB	E
+040000             0022*  		LD	D, A
+040000             0023*  	ENDMACRO
+040000             0024*  
+040000             0025*  	; MACRO ADD8U_HL	reg
+040000             0026*  	MACRO ADD8U_HL
+040000             0027*  		ADD	A, L
+040000             0028*  		LD	L, A
+040000             0029*  		ADC	A, H
+040000             0030*  		SUB	L
+040000             0031*  		LD	H, A
+040000             0032*  	ENDMACRO
+040000             0033*  
+040000             0034*  	MACRO VDU	val
+040000             0035*  		LD	A, val
+040000             0036*  		CALL	OSWRCH
+040000             0037*  	ENDMACRO
+040000             0038*  
+040000             0039*  	MACRO SET_GPIO	reg, val
+040000             0040*  		IN0	A, (reg)
+040000             0041*  		OR	val
+040000             0042*  		OUT0	(reg), A
+040000             0043*  	ENDMACRO
+040000             0044*  
+040000             0045*  	MACRO RES_GPIO	reg, val
+040000             0046*  		PUSH	BC
+040000             0047*  		LD	A, val
+040000             0048*  		CPL
+040000             0049*  		LD	C, A
+040000             0050*  		IN0	A, (reg)
+040000             0051*  		AND	C
+040000             0052*  		OUT0	(reg), A
+040000             0053*  		POP	BC
+040000             0054*  	ENDMACRO
+040000             0013   			INCLUDE "ram.asm"
+040000             0001*  ;
+040000             0002*  ; Title:	BBC Basic Interpreter - Z80 version
+040000             0003*  ;		RAM Module for BBC Basic Interpreter
+040000             0004*  ;		For use with Version 2.0 of BBC BASIC
+040000             0005*  ;		Standard CP/M Distribution Version
+040000             0006*  ; Author:	(C) Copyright  R.T.Russell 31-12-1983
+040000             0007*  ; Modified By:	Dean Belfield
+040000             0008*  ; Created:	12/05/2023
+040000             0009*  ; Last Updated:	26/06/2023
+040000             0010*  ;
+040000             0011*  ; Modinfo:
+040000             0012*  ; 06/06/2023:	Modified to run in ADL mode
+040000             0013*  ; 26/06/2023:	Added temporary stores R0 and R1
+040000             0014*  
+040000             0015*  			.ASSUME	ADL = 1
+040000             0016*  
+040000             0017*  			; DEFINE	LORAM, SPACE = ROM
+040000             0018*  			; SEGMENT LORAM
+040000             0019*  
+040000             0020*  			; XDEF	ACCS
+040000             0021*  			; XDEF	BUFFER
+040000             0022*  			; XDEF	STAVAR
+040000             0023*  			; XDEF	DYNVAR
+040000             0024*  			; XDEF	FNPTR
+040000             0025*  			; XDEF	PROPTR
+040000             0026*  			; XDEF	PAGE_
+040000             0027*  			; XDEF	TOP
+040000             0028*  			; XDEF	LOMEM
+040000             0029*  			; XDEF 	FREE
+040000             0030*  			; XDEF	HIMEM
+040000             0031*  			; XDEF	LINENO
+040000             0032*  			; XDEF	TRACEN
+040000             0033*  			; XDEF	AUTONO
+040000             0034*  			; XDEF	ERRTRP
+040000             0035*  			; XDEF	ERRTXT
+040000             0036*  			; XDEF	DATPTR
+040000             0037*  			; XDEF	ERL
+040000             0038*  			; XDEF	ERRLIN
+040000             0039*  			; XDEF	RANDOM
+040000             0040*  			; XDEF	COUNT
+040000             0041*  			; XDEF	WIDTH
+040000             0042*  			; XDEF	ERR
+040000             0043*  			; XDEF	LISTON
+040000             0044*  			; XDEF	INCREM
+040000             0045*  
+040000             0046*  			; XDEF	FLAGS
+040000             0047*  			; XDEF	OSWRCHPT
+040000             0048*  			; XDEF	OSWRCHCH
+040000             0049*  			; XDEF	OSWRCHFH
+040000             0050*  			; XDEF	KEYDOWN
+040000             0051*  			; XDEF	KEYASCII
+040000             0052*  			; XDEF	KEYCOUNT
+040000             0053*  
+040000             0054*  			; XDEF	R0
+040000             0055*  			; XDEF	R1
+040000             0056*  
+040000             0057*  			; XDEF	RAM_START
+040000             0058*  			; XDEF	RAM_END
+040000             0059*  			; XDEF	USER
+040000             0060*  
+040000             0061*  			ALIGN 		256		; ACCS, BUFFER & STAVAR must be on page boundaries
+040000             0062*  RAM_START:
+040000             0063*  ;
+040000             0064*  ACCS:			DS		256             ; String Accumulator
+040100             0065*  BUFFER:			DS		256             ; String Input Buffer
+040200             0066*  STAVAR:			DS	 	27*4            ; Static Variables
+04026C             0067*  DYNVAR: 		DS 		54*3            ; Dynamic Variable Pointers
+04030E             0068*  FNPTR:  		DS    		3               ; Dynamic Function Pointers
+040311             0069*  PROPTR: 		DS		3               ; Dynamic Procedure Pointers
+040314             0070*  ;
+040314             0071*  PAGE_:   		DS		3               ; Start of User Program
+040317             0072*  TOP:    		DS		3               ; First Location after User Program
+04031A             0073*  LOMEM:  		DS		3               ; Start of Dynamic Storage
+04031D             0074*  FREE:   		DS		3               ; First Free Space Byte
+040320             0075*  HIMEM:  		DS		3               ; First Protected Byte
+040323             0076*  ;
+040323             0077*  LINENO: 		DS		3               ; Line Number
+040326             0078*  TRACEN:			DS		3               ; Trace Flag
+040329             0079*  AUTONO:			DS		3               ; Auto Flag
+04032C             0080*  ERRTRP:			DS		3               ; Error Trap
+04032F             0081*  ERRTXT:			DS		2               ; Error Message Pointer
+040331             0082*  DATPTR:			DS		2               ; Data Pointer
+040333             0083*  ERL:			DS		2               ; Error Line
+040335             0084*  ERRLIN:			DS		3               ; The "ON ERROR" Line
+040338             0085*  RANDOM:			DS		5               ; Random Number
+04033D             0086*  COUNT:			DS		1               ; Print Position
+04033E             0087*  WIDTH:			DS		1               ; Print Width
+04033F             0088*  ERR:			DS		1               ; Error Number
+040340             0089*  LISTON:			DS		1               ; LISTO (bottom nibble)
+040341             0090*  							; - BIT 0: If set, output a space after the line number
+040341             0091*  							; - BIT 1: If set, then indent FOR/NEXT loops
+040341             0092*  							; - BIT 2: If set, then indent REPEAT/UNTIL loops
+040341             0093*  							; - BIT 3: If set, then output to buffer for *EDIT
+040341             0094*  							; OPT FLAG (top nibble)
+040341             0095*  							; - BIT 4: If set, then list whilst assembling
+040341             0096*  							; - BIT 5: If set, then assembler errors are reported
+040341             0097*  							; - BIT 6: If set, then place the code starting at address pointed to by O%
+040341             0098*  							; - BIT 7: If set, then assemble in ADL mode, otherwise assemble in Z80 mode
+040341             0099*  INCREM:			DS		1               ; Auto-Increment Value
+040342             0100*  ;
+040342             0101*  ; Extra Agon-implementation specific system variables
+040342             0102*  ;
+040342             0103*  FLAGS:			DS		1		; Miscellaneous flags
+040343             0104*  							; - BIT 7: Set if ESC pressed
+040343             0105*  							; - BIT 6: Set to disable ESC
+040343             0106*  OSWRCHPT:		DS		2		; Pointer for *EDIT
+040345             0107*  OSWRCHCH:		DS		1		; Channel of OSWRCH
+040346             0108*  							; - 0: Console
+040346             0109*  							; - 1: File
+040346             0110*  OSWRCHFH:		DS		1		; File handle for OSWRCHCHN
+040347             0111*  KEYDOWN:		DS		1		; Keydown flag
+040348             0112*  KEYASCII:		DS		1		; ASCII code of pressed key
+040349             0113*  KEYCOUNT:		DS		1		; Counts every time a key is pressed
+04034A             0114*  R0:			DS		3		; General purpose storage for 8/16 to 24 bit operations
+04034D             0115*  R1:			DS		3		;
+040350             0116*  ;
+040350             0117*  ; This must be at the end
+040350             0118*  ;
+040350             0119*  RAM_END:
+040350 FF FF FF FF 0120*  			ALIGN	256
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+040400             0121*  USER:							; Must be aligned on a page boundary
+040400             0122*  
+040400             0014   			INCLUDE	"equs.inc"
+040400             0001*  ;
+040400             0002*  ; Title:	BBC Basic for AGON - Equs
+040400             0003*  ; Author:	Dean Belfield
+040400             0004*  ; Created:	12/05/2023
+040400             0005*  ; Last Updated:	08/06/2023
+040400             0006*  ;
+040400             0007*  ; Modinfo:
+040400             0008*  ; 08/06/2023:	Added SIZEW
+040400             0009*  
+040400             0010*  			; XREF		STAVAR
+040400             0011*  			; XREF		ACCS
+040400             0012*  
+040400             0013*  RAM_Top:		EQU		0B0000h	; Initial value of HIMEM
+040400             0014*  ;Stack_Top:		EQU		0000h	; Stack at top
+040400             0015*  SIZEW:			EQU		3	; Size of a word (3 for ADL mode)
+040400             0016*  
+040400             0017*  ; For GPIO
+040400             0018*  ; PA not available on eZ80L92
+040400             0019*  ;
+040400             0020*  PA_DR:			EQU		96h
+040400             0021*  PA_DDR:			EQU		97h
+040400             0022*  PA_ALT1:		EQU		98h
+040400             0023*  PA_ALT2:		EQU		99h
+040400             0024*  PB_DR:          	EQU		9Ah
+040400             0025*  PB_DDR:        	 	EQU		9Bh
+040400             0026*  PB_ALT1:        	EQU		9Ch
+040400             0027*  PB_ALT2:        	EQU		9Dh
+040400             0028*  PC_DR:          	EQU		9Eh
+040400             0029*  PC_DDR:         	EQU		9Fh
+040400             0030*  PC_ALT1:        	EQU		A0h
+040400             0031*  PC_ALT2:        	EQU		A1h
+040400             0032*  PD_DR:          	EQU		A2h
+040400             0033*  PD_DDR:			EQU		A3h
+040400             0034*  PD_ALT1:		EQU		A4h
+040400             0035*  PD_ALT2:		EQU		A5h
+040400             0036*  
+040400             0037*  GPIOMODE_OUT:		EQU		0	; Output
+040400             0038*  GPIOMODE_IN:		EQU		1	; Input
+040400             0039*  GPIOMODE_DIO:		EQU		2	; Open Drain IO
+040400             0040*  GPIOMODE_SIO:		EQU		3	; Open Source IO
+040400             0041*  GPIOMODE_INTD:		EQU		4	; Interrupt, Dual Edge
+040400             0042*  GPIOMODE_ALTF:		EQU		5;	; Alt Function
+040400             0043*  GPIOMODE_INTAL:		EQU		6	; Interrupt, Active Low
+040400             0044*  GPIOMODE_INTAH:		EQU		7	; Interrupt, Active High
+040400             0045*  GPIOMODE_INTFE:		EQU		8	; Interrupt, Falling Edge
+040400             0046*  GPIOMODE_INTRE:		EQU		9	; Interrupt, Rising Edge
+040400             0047*  
+040400             0048*  ; Originally in ram.asm
+040400             0049*  ;
+040400             0050*  OC:			EQU     STAVAR+15*4     ; CODE ORIGIN (O%)
+040400             0051*  PC:			EQU     STAVAR+16*4     ; PROGRAM COUNTER (P%)
+040400             0052*  VDU_BUFFER:		EQU	ACCS		; Storage for VDU commands
+040400             0053*  
+040400             0054*  ; Originally in main.asm
+040400             0055*  ;
+040400             0056*  CR:			EQU     0DH
+040400             0057*  LF:			EQU     0AH
+040400             0058*  ESC:			EQU     1BH
+040400             0015   
+040400             0016   			; SEGMENT CODE
+040400             0017   
+040400             0018   			; XDEF	SOUND
+040400             0019   
+040400             0020   			; XREF	COMMA
+040400             0021   			; XREF	EXPR_W2
+040400             0022   			; XREF	XEQ
+040400             0023   			; XREF	LTRAP
+040400             0024   			; XREF	OSWRCH
+040400             0025   			; XREF	VDU_BUFFER
+040400             0026   
+040400             0027   
+040400             0028   ; SOUND channel,volume,pitch,duration
+040400             0029   ; volume: 0 (off) to -15 (full volume)
+040400             0030   ; pitch: 0 - 255
+040400             0031   ; duration: -1 to 254 (duration in 20ths of a second, -1 = play forever)
+040400             0032   ;
+040400 CD DD 06 04 0033   SOUND:			CALL	EXPR_W2			; DE: Channel/Control, HL: Volume
+040404 7D          0034   			LD	A, L 			;  A: Volume
+040405 F5          0035   			PUSH	AF
+040406 D5          0036   			PUSH	DE
+040407 CD BB 06 04 0037   			CALL	COMMA
+04040B CD DD 06 04 0038   			CALL	EXPR_W2			; DE: Pitch, HL: Duration
+04040F 53          0039   			LD	D, E			;  D: Pitch
+040410 5D          0040   			LD	E, L 			;  E: Duration
+040411 E1          0041   			POP	HL 			; HL: Channel/Control
+040412 F1          0042   			POP	AF
+040413 ED 44       0043   			NEG
+040415 FE 10       0044   			CP	16			; Check volume is in bounds
+040417 D2 46 07 04 0045   			JP	NC, XEQ			; Out of bounds, do nothing
+04041B             0046   ;
+04041B             0047   ; Store	in VDU vars
+04041B             0048   ;
+04041B 4F          0049   			LD	C, A			; Store Volume in C
+04041C 7D          0050   			LD	A, L
+04041D 32 00 00 04 0051   			LD	(VDU_BUFFER+0), A	; Channel
+040421 AF          0052   			XOR	A
+040422 32 01 00 04 0053   			LD	(VDU_BUFFER+1), A	; Waveform
+040426             0054   ;
+040426             0055   ; Calculate the volume
+040426             0056   ;
+040426 06 06       0057   			LD	B, 6			; C already contains the volume
+040428 ED 4C       0058   			MLT	BC			; Multiply by 6 (0-15 scales to 0-90)
+04042A 79          0059   			LD	A, C
+04042B 32 02 00 04 0060   			LD	(VDU_BUFFER+2), A
+04042F             0061   ;
+04042F             0062   ; And the frequency
+04042F             0063   ;
+04042F 4B          0064   			LD	C, E			; Store duration in C
+040430 26 00       0065   			LD	H, 0			; Lookup the frequency
+040432 6A          0066   			LD	L, D
+040433 11 BA 04 04 0067   			LD	DE, SOUND_FREQ_LOOKUP
+040437 29          0068   			ADD	HL, HL
+040438 19          0069   			ADD	HL, DE
+040439 7E          0070   			LD	A, (HL)
+04043A 32 03 00 04 0071   			LD	(VDU_BUFFER+3), A
+04043E 23          0072   			INC	HL
+04043F 7E          0073   			LD	A, (HL)
+040440 32 04 00 04 0074   			LD	(VDU_BUFFER+4), A
+040444             0075   ;
+040444             0076   ; And now the duration - multiply it by 50 to convert from 1/20ths of seconds to milliseconds
+040444             0077   ;
+040444 06 32       0078   			LD	B, 50			; C contains the duration, so MLT by 50
+040446 ED 4C       0079   			MLT	BC
+040448 ED 43 05 00 0080   			LD	(VDU_BUFFER+5), BC
+       04          
+04044D             0081   ;
+04044D DD E5       0082   			PUSH	IX			; Get the system vars in IX
+04044F             0083   			MOSCALL	mos_sysvars		; Reset the semaphore
+04044F 3E 08       0001M  			LD	A, function
+040451 49 CF       0002M  			RST.LIS	08h
+040453 5B DD CB 04 0084   SOUND0:			RES.LIL	3, (IX+sysvar_vpd_pflags)
+       9E          
+040458             0085   ;
+040458             0086   			VDU	23			; Send the sound command
+040458 3E 17       0001M  		LD	A, val
+04045A CD 23 07 04 0002M  		CALL	OSWRCH
+04045E             0087   			VDU	0
+04045E 3E 00       0001M  		LD	A, val
+040460 CD 23 07 04 0002M  		CALL	OSWRCH
+040464             0088   			VDU	vdp_audio
+040464 3E 85       0001M  		LD	A, val
+040466 CD 23 07 04 0002M  		CALL	OSWRCH
+04046A             0089   			VDU	(VDU_BUFFER+0)		; 0: Channel
+04046A 3A 00 00 04 0001M  		LD	A, val
+04046E CD 23 07 04 0002M  		CALL	OSWRCH
+040472             0090   			VDU	(VDU_BUFFER+1)		; 1: Waveform (0)
+040472 3A 01 00 04 0001M  		LD	A, val
+040476 CD 23 07 04 0002M  		CALL	OSWRCH
+04047A             0091   			VDU	(VDU_BUFFER+2)		; 2: Volume (0-100)
+04047A 3A 02 00 04 0001M  		LD	A, val
+04047E CD 23 07 04 0002M  		CALL	OSWRCH
+040482             0092   			VDU	(VDU_BUFFER+3)		; 3: Frequency L
+040482 3A 03 00 04 0001M  		LD	A, val
+040486 CD 23 07 04 0002M  		CALL	OSWRCH
+04048A             0093   			VDU	(VDU_BUFFER+4)		; 4: Frequency H
+04048A 3A 04 00 04 0001M  		LD	A, val
+04048E CD 23 07 04 0002M  		CALL	OSWRCH
+040492             0094   			VDU	(VDU_BUFFER+5)		; 5: Duration L
+040492 3A 05 00 04 0001M  		LD	A, val
+040496 CD 23 07 04 0002M  		CALL	OSWRCH
+04049A             0095   			VDU	(VDU_BUFFER+6)		; 6: Duration H
+04049A 3A 06 00 04 0001M  		LD	A, val
+04049E CD 23 07 04 0002M  		CALL	OSWRCH
+0404A2             0096   ;
+0404A2             0097   ; Wait for acknowledgement
+0404A2             0098   ;
+0404A2 5B DD CB 04 0099   @@:			BIT.LIL	3, (IX+sysvar_vpd_pflags)
+       5E          
+0404A7 28 F9       0100   			JR	Z, @B			; Wait for the result
+0404A9 CD 01 07 04 0101   			CALL	LTRAP			; Check for ESC
+0404AD 5B DD 7E 0E 0102   			LD.LIL	A, (IX+sysvar_audioSuccess)
+0404B1 A7          0103   			AND	A			; Check if VDP has queued the note
+0404B2 28 9F       0104   			JR	Z, SOUND0		; No, so loop back and send again
+0404B4             0105   ;
+0404B4 DD E1       0106   			POP	IX
+0404B6 C3 46 07 04 0107   			JP	XEQ
+0404BA             0108   
+0404BA             0109   ; Frequency Lookup Table
+0404BA             0110   ; Set up to replicate the BBC Micro audio frequencies
+0404BA             0111   ;
+0404BA             0112   ; Split over 5 complete octaves, with 53 being middle C
+0404BA             0113   ; * C4: 262hz
+0404BA             0114   ; + A4: 440hz
+0404BA             0115   ;
+0404BA             0116   ;	2	3	4	5	6	7	8
+0404BA             0117   ;
+0404BA             0118   ; B	1	49	97	145	193	241
+0404BA             0119   ; A#	0	45	93	141	189	237
+0404BA             0120   ; A		41	89+	137	185	233
+0404BA             0121   ; G#		37	85	133	181	229
+0404BA             0122   ; G		33	81	129	177	225
+0404BA             0123   ; F#		29	77	125	173	221
+0404BA             0124   ; F		25	73	121	169	217
+0404BA             0125   ; E		21	69	117	165	213
+0404BA             0126   ; D#		17	65	113	161	209
+0404BA             0127   ; D		13	61	109	157	205	253
+0404BA             0128   ; C#		9	57	105	153	201	249
+0404BA             0129   ; C		5	53*	101	149	197	245
+0404BA             0130   ;
+0404BA 75 00 76 00 0131   SOUND_FREQ_LOOKUP:	DW	 117,  118,  120,  122,  123,  131,  133,  135
+       78 00 7A 00 
+       7B 00 83 00 
+       85 00 87 00 
+0404CA 89 00 8B 00 0132   			DW	 137,  139,  141,  143,  145,  147,  149,  151
+       8D 00 8F 00 
+       91 00 93 00 
+       95 00 97 00 
+0404DA 99 00 9C 00 0133   			DW	 153,  156,  158,  160,  162,  165,  167,  170
+       9E 00 A0 00 
+       A2 00 A5 00 
+       A7 00 AA 00 
+0404EA AC 00 AF 00 0134   			DW	 172,  175,  177,  180,  182,  185,  188,  190
+       B1 00 B4 00 
+       B6 00 B9 00 
+       BC 00 BE 00 
+0404FA C1 00 C4 00 0135   			DW	 193,  196,  199,  202,  205,  208,  211,  214
+       C7 00 CA 00 
+       CD 00 D0 00 
+       D3 00 D6 00 
+04050A D9 00 DC 00 0136   			DW	 217,  220,  223,  226,  230,  233,  236,  240
+       DF 00 E2 00 
+       E6 00 E9 00 
+       EC 00 F0 00 
+04051A F3 00 F7 00 0137   			DW	 243,  247,  251,  254,  258,  262,  265,  269
+       FB 00 FE 00 
+       02 01 06 01 
+       09 01 0D 01 
+04052A 11 01 15 01 0138   			DW	 273,  277,  281,  285,  289,  294,  298,  302
+       19 01 1D 01 
+       21 01 26 01 
+       2A 01 2E 01 
+04053A 33 01 37 01 0139   			DW	 307,  311,  316,  320,  325,  330,  334,  339
+       3C 01 40 01 
+       45 01 4A 01 
+       4E 01 53 01 
+04054A 58 01 5D 01 0140   			DW	 344,  349,  354,  359,  365,  370,  375,  381
+       62 01 67 01 
+       6D 01 72 01 
+       77 01 7D 01 
+04055A 82 01 88 01 0141   			DW	 386,  392,  398,  403,  409,  415,  421,  427
+       8E 01 93 01 
+       99 01 9F 01 
+       A5 01 AB 01 
+04056A B2 01 B8 01 0142   			DW	 434,  440,  446,  453,  459,  466,  473,  480
+       BE 01 C5 01 
+       CB 01 D2 01 
+       D9 01 E0 01 
+04057A E7 01 EE 01 0143   			DW	 487,  494,  501,  508,  516,  523,  531,  539
+       F5 01 FC 01 
+       04 02 0B 02 
+       13 02 1B 02 
+04058A 22 02 2A 02 0144   			DW	 546,  554,  562,  571,  579,  587,  596,  605
+       32 02 3B 02 
+       43 02 4B 02 
+       54 02 5D 02 
+04059A 65 02 6E 02 0145   			DW	 613,  622,  631,  641,  650,  659,  669,  679
+       77 02 81 02 
+       8A 02 93 02 
+       9D 02 A7 02 
+0405AA B1 02 BB 02 0146   			DW	 689,  699,  709,  719,  729,  740,  751,  762
+       C5 02 CF 02 
+       D9 02 E4 02 
+       EF 02 FA 02 
+0405BA 05 03 10 03 0147   			DW	 773,  784,  795,  807,  819,  831,  843,  855
+       1B 03 27 03 
+       33 03 3F 03 
+       4B 03 57 03 
+0405CA 63 03 70 03 0148   			DW	 867,  880,  893,  906,  919,  932,  946,  960
+       7D 03 8A 03 
+       97 03 A4 03 
+       B2 03 C0 03 
+0405DA CE 03 DC 03 0149   			DW	 974,  988, 1002, 1017, 1032, 1047, 1062, 1078
+       EA 03 F9 03 
+       08 04 17 04 
+       26 04 36 04 
+0405EA 45 04 55 04 0150   			DW	1093, 1109, 1125, 1142, 1158, 1175, 1192, 1210
+       65 04 76 04 
+       86 04 97 04 
+       A8 04 BA 04 
+0405FA CB 04 DD 04 0151   			DW	1227, 1245, 1263, 1282, 1300, 1319, 1338, 1358
+       EF 04 02 05 
+       14 05 27 05 
+       3A 05 4E 05 
+04060A 62 05 76 05 0152   			DW	1378, 1398, 1418, 1439, 1459, 1481, 1502, 1524
+       8A 05 9F 05 
+       B3 05 C9 05 
+       DE 05 F4 05 
+04061A 0A 06 21 06 0153   			DW	1546, 1569, 1592, 1615, 1638, 1662, 1686, 1711
+       38 06 4F 06 
+       66 06 7E 06 
+       96 06 AF 06 
+04062A C8 06 E1 06 0154   			DW	1736, 1761, 1786, 1812, 1839, 1866, 1893, 1920
+       FA 06 14 07 
+       2F 07 4A 07 
+       65 07 80 07 
+04063A 9C 07 B8 07 0155   			DW	1948, 1976, 2005, 2034, 2064, 2093, 2123, 2154
+       D5 07 F2 07 
+       10 08 2D 08 
+       4B 08 6A 08 
+04064A 8A 08 A9 08 0156   			DW	2186, 2217, 2250, 2282, 2316, 2349, 2383, 2418
+       CA 08 EA 08 
+       0C 09 2D 09 
+       4F 09 72 09 
+04065A 95 09 B9 09 0157   			DW	2453, 2489, 2525, 2562, 2599, 2637, 2675, 2714
+       DD 09 02 0A 
+       27 0A 4D 0A 
+       73 0A 9A 0A 
+04066A C2 0A EA 0A 0158   			DW	2754, 2794, 2834, 2876, 2918, 2960, 3003, 3047
+       12 0B 3C 0B 
+       66 0B 90 0B 
+       BB 0B E7 0B 
+04067A 13 0C 40 0C 0159   			DW	3091, 3136, 3182, 3228, 3275, 3322, 3371, 3420
+       6E 0C 9C 0C 
+       CB 0C FA 0C 
+       2B 0D 5C 0D 
+04068A 8E 0D C0 0D 0160   			DW	3470, 3520, 3571, 3623, 3676, 3729, 3784, 3839
+       F3 0D 27 0E 
+       5C 0E 91 0E 
+       C8 0E FF 0E 
+04069A 36 0F 6F 0F 0161   			DW	3894, 3951, 4009, 4067, 4126, 4186, 4247, 4309
+       A9 0F E3 0F 
+       1E 10 5A 10 
+       97 10 D5 10 
+0406AA 13 11 53 11 0162   			DW	4371, 4435, 4499, 4565, 4631, 4699, 4767, 4836
+       93 11 D5 11 
+       17 12 5B 12 
+       9F 12 E4 12 
+0406BA             0163   
+0406BA             0164   
+0406BA             0165   ; ===== STUB FUNCTIONS =====
+0406BA             0166   printInline:
+0406BA C9          0167       ret
+0406BB             0168   
+0406BB             0169   COMMA:
+0406BB CD BA 06 04 0170   	call printInline
+0406BF 61 67 6F 6E 0171   	asciz "agon_sound.asm called COMMA!"
+       5F 73 6F 75 
+       6E 64 2E 61 
+       73 6D 20 63 
+       61 6C 6C 65 
+       64 20 43 4F 
+       4D 4D 41 21 
+       00          
+0406DC C9          0172   	ret
+0406DD             0173   
+0406DD             0174   EXPR_W2:
+0406DD CD BA 06 04 0175   	call printInline
+0406E1 61 67 6F 6E 0176   	asciz "agon_sound.asm called EXPR_W2!"
+       5F 73 6F 75 
+       6E 64 2E 61 
+       73 6D 20 63 
+       61 6C 6C 65 
+       64 20 45 58 
+       50 52 5F 57 
+       32 21 00    
+040700 C9          0177   	ret
+040701             0178   
+040701             0179   LTRAP:
+040701 CD BA 06 04 0180   	call printInline
+040705 61 67 6F 6E 0181   	asciz "agon_sound.asm called LTRAP!"
+       5F 73 6F 75 
+       6E 64 2E 61 
+       73 6D 20 63 
+       61 6C 6C 65 
+       64 20 4C 54 
+       52 41 50 21 
+       00          
+040722 C9          0182   	ret
+040723             0183   
+040723             0184   OSWRCH:
+040723 CD BA 06 04 0185   	call printInline
+040727 61 67 6F 6E 0186   	asciz "agon_sound.asm called OSWRCH!"
+       5F 73 6F 75 
+       6E 64 2E 61 
+       73 6D 20 63 
+       61 6C 6C 65 
+       64 20 4F 53 
+       57 52 43 48 
+       21 00       
+040745 C9          0187   	ret
+040746             0188   
+040746             0189   XEQ:
+040746 CD BA 06 04 0190   	call printInline
+04074A 61 67 6F 6E 0191   	asciz "agon_sound.asm called XEQ!"
+       5F 73 6F 75 
+       6E 64 2E 61 
+       73 6D 20 63 
+       61 6C 6C 65 
+       64 20 58 45 
+       51 21 00    
+040765 C9          0192   	ret
