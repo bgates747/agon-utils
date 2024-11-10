@@ -10,9 +10,10 @@
 
 			.ASSUME	ADL = 1
 				
-			; INCLUDE	"equs.inc"
-			; INCLUDE "macros.inc"
-			; INCLUDE "mos_api.inc"	; In MOS/src
+			INCLUDE "mos_api.inc"
+			INCLUDE "macros.inc"
+			INCLUDE "ram.asm"
+			INCLUDE	"equs.inc"
 		
 			; SEGMENT CODE
 				
@@ -370,15 +371,15 @@ UPPRC:  		AND     7FH
 ; Each command has bit 7 of the last character set, and is followed by the address of the handler
 ; These must be in alphabetical order
 ;		
-COMDS:  		DB	'AS','M'+80h		; ASM
+COMDS:  		DB	"AS","M"+80h		; ASM
 			DW	STAR_ASM
-			DB	'BY','E'+80h		; BYE
+			DB	"BY","E"+80h		; BYE
 			DW	STAR_BYE
-			DB	'EDI','T'+80h		; EDIT
+			DB	"EDI","T"+80h		; EDIT
 			DW	STAR_EDIT
-			DB	'F','X'+80h		; FX
+			DB	"F","X"+80h		; FX
 			DW	STAR_FX
-			DB	'VERSIO','N'+80h	; VERSION
+			DB	"VERSIO","N"+80h	; VERSION
 			DW	STAR_VERSION
 			DB	FFh
 						
@@ -746,10 +747,10 @@ EXT_HANDLER_2:		INC	DE			; Skip to the file extension # byte
 ; 	- 0: BBC (tokenised BBC BASIC for Z80 format)
 ; 	- 1: Human readable plain text
 ;
-EXT_LOOKUP:		DB	'.BBC', 0, 0		; First entry is the default extension
-			DB	'.TXT', 0, 1
-			DB	'.ASC', 0, 1
-			DB	'.BAS', 0, 1
+EXT_LOOKUP:		DB	".BBC", 0, 0		; First entry is the default extension
+			DB	".TXT", 0, 1
+			DB	".ASC", 0, 1
+			DB	".BAS", 0, 1
 			DB	0			; End of table
 			
 ;OSCALL - Intercept page &FF calls and provide an alternative address
@@ -902,17 +903,19 @@ PUTPTR:			PUSH		IY
 ; DEHL = file size (0-&800000)
 ; Destroys: A,B,C,D,E,H,L,F
 ;
-GETEXT:			PUSH		IY 
-			LD		C, E 
-			MOSCALL		mos_getfil 	; HLU: Pointer to FIL structure
-			PUSH		HL
-			POP		IY		; IYU: Pointer to FIL structure
-			LD		L, (IY + FIL.obj.objsize + 0)
-			LD		H, (IY + FIL.obj.objsize + 1)
-			LD		E, (IY + FIL.obj.objsize + 2)
-			LD		D, (IY + FIL.obj.objsize + 3)			
-			POP		IY 
-			RET	
+GETEXT:         PUSH    IY 
+                LD      C, E 
+                MOSCALL mos_getfil  ; HLU: Pointer to FIL structure
+                PUSH    HL
+                POP     IY          ; IYU: Pointer to FIL structure
+                ; Access the obj.objsize field using the offset values
+                LD      L, (IY + FIL.obj + FFOBJID.objsize + 0)
+                LD      H, (IY + FIL.obj + FFOBJID.objsize + 1)
+                LD      E, (IY + FIL.obj + FFOBJID.objsize + 2)
+                LD      D, (IY + FIL.obj + FFOBJID.objsize + 3)            
+
+                POP     IY 
+                RET
 
 ; GETIMS - Get time from RTC
 ;
@@ -942,3 +945,152 @@ EXPR_W2:		CALL	EXPRI			; Get first parameter
 ; Stuff not implemented yet
 ;
 RESET:			RET
+
+; ===== STUB FUNCTIONS =====
+printInline:
+    ret
+
+ASC_TO_NUMBER:
+	call printInline
+	asciz "patch.asm called ASC_TO_NUMBER!"
+	ret
+
+ASSEM:
+	call printInline
+	asciz "patch.asm called ASSEM!"
+	ret
+
+BAD:
+	call printInline
+	asciz "patch.asm called BAD!"
+	ret
+
+CLEAN:
+	call printInline
+	asciz "patch.asm called CLEAN!"
+	ret
+
+COMMA:
+	call printInline
+	asciz "patch.asm called COMMA!"
+	ret
+
+COUNT0:
+	call printInline
+	asciz "patch.asm called COUNT0!"
+	ret
+
+CRLF:
+	call printInline
+	asciz "patch.asm called CRLF!"
+	ret
+
+CSTR_CAT:
+	call printInline
+	asciz "patch.asm called CSTR_CAT!"
+	ret
+
+CSTR_ENDSWITH:
+	call printInline
+	asciz "patch.asm called CSTR_ENDSWITH!"
+	ret
+
+CSTR_FINDCH:
+	call printInline
+	asciz "patch.asm called CSTR_FINDCH!"
+	ret
+
+CSTR_FNAME:
+	call printInline
+	asciz "patch.asm called CSTR_FNAME!"
+	ret
+
+CSTR_LINE:
+	call printInline
+	asciz "patch.asm called CSTR_LINE!"
+	ret
+
+ERROR_:
+	call printInline
+	asciz "patch.asm called ERROR_!"
+	ret
+
+ESCAPE:
+	call printInline
+	asciz "patch.asm called ESCAPE!"
+	ret
+
+EXPRI:
+	call printInline
+	asciz "patch.asm called EXPRI!"
+	ret
+
+EXTERR:
+	call printInline
+	asciz "patch.asm called EXTERR!"
+	ret
+
+FINDL:
+	call printInline
+	asciz "patch.asm called FINDL!"
+	ret
+
+LISTIT:
+	call printInline
+	asciz "patch.asm called LISTIT!"
+	ret
+
+NEWIT:
+	call printInline
+	asciz "patch.asm called NEWIT!"
+	ret
+
+NULLTOCR:
+	call printInline
+	asciz "patch.asm called NULLTOCR!"
+	ret
+
+NXT:
+	call printInline
+	asciz "patch.asm called NXT!"
+	ret
+
+ONEDIT:
+	call printInline
+	asciz "patch.asm called ONEDIT!"
+	ret
+
+ONEDIT1:
+	call printInline
+	asciz "patch.asm called ONEDIT1!"
+	ret
+
+OUT_:
+	call printInline
+	asciz "patch.asm called OUT_!"
+	ret
+
+TELL:
+	call printInline
+	asciz "patch.asm called TELL!"
+	ret
+
+VBLANK_INIT:
+	call printInline
+	asciz "patch.asm called VBLANK_INIT!"
+	ret
+
+VBLANK_STOP:
+	call printInline
+	asciz "patch.asm called VBLANK_STOP!"
+	ret
+
+XEQ:
+	call printInline
+	asciz "patch.asm called XEQ!"
+	ret
+
+_end:
+	call printInline
+	asciz "patch.asm called _end!"
+	ret
