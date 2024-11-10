@@ -16,7 +16,10 @@
 
 			.ASSUME	ADL = 1
 
-; 			INCLUDE	"equs.inc"
+			INCLUDE "mos_api.inc"
+			INCLUDE "macros.inc"
+			INCLUDE "ram.asm"
+			INCLUDE	"equs.inc"
 
 ; 			SEGMENT CODE
 				
@@ -229,8 +232,8 @@ CHAIN0:			LD      SP,(HIMEM)		; Reset SP
 ;
 RUN0:			LD      SP,(HIMEM)      	; Prepare for RUN
 			LD      IX,RANDOM		; Pointer to the RANDOM sysvar
-$$:			LD      A, R			; Use the R register to seed the random number generator
-			JR      Z, $B			; Loop unti we get a non-zero value in A
+@@:			LD      A, R			; Use the R register to seed the random number generator
+			JR      Z, @B			; Loop unti we get a non-zero value in A
 			RLCA				; Rotate it
 			RLCA
 			LD      (IX+3),A		; And store
@@ -339,11 +342,17 @@ REM:			PUSH    IY
 ;
 LET0:			CP      ELSE_-TCMD
 			JR      Z,REM
-			CP      ('*'-TCMD) & 0FFH
+			; CP      ('*'-TCMD) & 0FFH
+			; JR      Z,EXT
+			; CP      ('='-TCMD) & 0FFH
+			; JR      Z,FNEND
+			; CP      ('['-TCMD) & 0FFH
+			; ez80asm doesn't like () in expressions
+			CP      '*'-TCMD & 0FFH
 			JR      Z,EXT
-			CP      ('='-TCMD) & 0FFH
+			CP      '='-TCMD & 0FFH
 			JR      Z,FNEND
-			CP      ('['-TCMD) & 0FFH
+			CP      '['-TCMD & 0FFH
 			JR      Z,ASM
 			DEC     IY
 LET:			CALL    ASSIGN			; Assign the variable
@@ -900,7 +909,8 @@ NEXT0:			SBC     HL,DE			; Compare to make sure that the variables match
 			CALL    DLOAD5_SPL      	; Load the LIMIT value
 			POP     AF
 			CALL    Z,SWAP			; Swap the arguments if the sign is ?
-			LD      A,0+('<'-4) & 0FH
+			; LD      A,0+('<'-4) & 0FH
+			LD      A,0+'<'-4 & 0FH ; ez80asm doesn't do () in expressions
 			CALL    FPP             	; Test against the limit
 			JR      C,ERROR3		; Throw an error if FPP returns bad
 			INC     H
@@ -1729,7 +1739,9 @@ STORES:			RRA				; Rotate right to shift bit 0 into carry
 			POP     HL
 			SCF
 			JR      Z,STORS1
-			LD	HL, BC			; HL=BC
+			; LD	HL, BC			; HL=BC
+			push bc 
+			pop hl
 ; 
 ; At this point carry flag will be clear if the string can be replaced in memory, otherwise will be set
 ; - H': The maximum (original) string length
@@ -2118,7 +2130,9 @@ SRCH2:			DEC     HL              	; Token not found, so back up to the CR at the
 ; Corrupts:
 ; - HL
 X4OR5:			CP      4			; Check A = 4 (Z flag is used later)
-			LD	HL,DE
+			; LD	HL,DE
+			push de
+			pop hl
 			ADD     HL,HL			; Multiply by 2 (note this operation preserves the zero flag)
 			RET     C			; Exit if overflow
 			ADD     HL,HL			; Multiply by 2 again
@@ -2457,9 +2471,9 @@ GROUP11:		SUB     2			; The number of opcodes in GROUP11
 			CP      1-2
 			CALL    NZ,COND_
 			LD      A,C
-			JR      NC,$F
+			JR      NC,@F
 			LD      A,18H
-$$:			CALL    BYTE_
+@@:			CALL    BYTE_
 			CALL    NUMBER
 			LD      DE,(PC)
 			INC     DE
@@ -2637,24 +2651,24 @@ DEFS:			OR	A			; Handle DEFB
 			CALL    EXPRS
 			POP     IX
 			LD      HL,ACCS
-$$:			XOR     A
+@@:			XOR     A
 			CP      E
 			RET     Z
 			LD      A,(HL)
 			INC     HL
 			CALL    BYTE_
 			DEC     E
-			JR      $B
+			JR      @B
 			
 ;
 ;SUBROUTINES:
 ;
 EZ80SF_PART:		LD	A,(IY)			; Check for a dot
 			CP	'.'
-			JR	Z, $F			; If present, then carry on processing the eZ80 suffix
+			JR	Z, @F			; If present, then carry on processing the eZ80 suffix
 			OR	A			; Reset the carry flag (no error)
 			RET				; And return
-$$:			INC	IY			; Skip the dot
+@@:			INC	IY			; Skip the dot
 			PUSH	BC			; Push the operand
 			LD	HL,EZ80SFS_2		; Check the shorter fully qualified table (just LIL and SIS)
 			CALL	FIND			; Look up the operand
@@ -2664,10 +2678,10 @@ $$:			INC	IY			; Skip the dot
 ;			
 EZ80SF_FULL:		LD	A,(IY)			; Check for a dot
 			CP	'.'
-			JR	Z,$F			; If present, then carry on processing the eZ80 suffix
+			JR	Z,@F			; If present, then carry on processing the eZ80 suffix
 			OR	A			; Reset the carry flag (no error)
 			RET				; And return
-$$:			INC	IY 			; Skip the dot
+@@:			INC	IY 			; Skip the dot
 			PUSH	BC			; Push the operand
 			LD	HL,EZ80SFS_1		; First check the fully qualified table
 			CALL	FIND 			; Look up the operand
@@ -2924,226 +2938,225 @@ SIGN:			CP      '+'			; Check whether the character is a sign symbol
 ;
 DOT:			CP	'.'			; Check if it is a dot character
 			RET 
-
 ; Z80 opcode list
 ;
 ; Group 0: (15 opcodes)
 ; Trivial cases requiring no computation
 ;
-OPCODS:			DB	'NO','P'+80H,00h	; # 00h
-			DB	'RLC','A'+80H,07h
-			DB	'EX',0,'AF',0,'AF','''+80H,08h
-			DB	'RRC','A'+80H,0FH
-			DB	'RL','A'+80H,17H
-			DB	'RR','A'+80H,1FH
-			DB	'DA','A'+80H,27H
-			DB	'CP','L'+80H,2FH
-			DB	'SC','F'+80H,37H
-			DB	'CC','F'+80H,3FH
-			DB	'HAL','T'+80H,76H
-			DB	'EX','X'+80H,D9H
-			DB	'EX',0,'DE',0,'H','L'+80H,EBH
-			DB	'D','I'+80H,F3H
-			DB	'E','I'+80H,FBH
+OPCODS:			DB	"NO","P"+80H,00h	; # 00h
+			DB	"RLC","A"+80H,07h
+			DB	"EX",0,"AF",0,"AF","'"+80H,08h
+			DB	"RRC","A"+80H,0FH
+			DB	"RL","A"+80H,17H
+			DB	"RR","A"+80H,1FH
+			DB	"DA","A"+80H,27H
+			DB	"CP","L"+80H,2FH
+			DB	"SC","F"+80H,37H
+			DB	"CC","F"+80H,3FH
+			DB	"HAL","T"+80H,76H
+			DB	"EX","X"+80H,D9H
+			DB	"EX",0,"DE",0,"H","L"+80H,EBH
+			DB	"D","I"+80H,F3H
+			DB	"E","I"+80H,FBH
 ;
 ; Group 1: (53 opcodes)
 ; As Group 0, but with an ED prefix
 ;
-			DB	'NE','G'+80H,44H	; 0Fh
-			DB	'IM',0,'0'+80H,46H
-			DB	'RET','N'+80H,45H
-			DB	'MLT',0,'B','C'+80H,4CH
-			DB	'RET','I'+80H,4DH
-			DB	'IM',0,'1'+80H,56H
-			DB	'MLT',0,'D','E'+80H,5CH						
-			DB	'IM',0,'2'+80H,5EH
-			DB	'RR','D'+80H,67H
-			DB	'MLT',0,'H','L'+80H,6CH
-			DB	'LD',0,'MB',0,'A'+80H,6DH
-			DB	'LD',0,'A',0,'M','B'+80H,6EH
-			DB	'RL','D'+80H,6FH
-			DB	'SL','P'+80H,76H
-			DB	'MLT',0,'S','P'+80H,7CH
-			DB	'STMI','X'+80H,7DH
-			DB	'RSMI','X'+80H,7EH
-			DB	'INI','M'+80H,82H
-			DB	'OTI','M'+80H,83H
-			DB	'INI','2'+80H,84H
-			DB	'IND','M'+80H,8AH
-			DB	'OTD','M'+80H,8BH
-			DB	'IND','2'+80H,8CH
-			DB	'INIM','R'+80H,92H
-			DB	'OTIM','R'+80H,93H
-			DB	'INI2','R'+80H,94H
-			DB	'INDM','R'+80H,9AH
-			DB	'OTDM','R'+80H,9BH
-			DB	'IND2','R'+80H,9CH
-			DB	'LD','I'+80H,A0H
-			DB	'CP','I'+80H,A1H
-			DB	'IN','I'+80H,A2H
-			DB	'OUTI','2'+80H,A4H	; These are swapped round so that FIND will find
-			DB	'OUT','I'+80H,A3H	; OUTI2 before OUTI
-			DB	'LD','D'+80H,A8H
-			DB	'CP','D'+80H,A9H
-			DB	'IN','D'+80H,AAH
-			DB	'OUTD','2'+80H,ACH	; Similarly these are swapped round so that FIND
-			DB	'OUT','D'+80H,ABH	; will find OUTD2 before OUTD
-			DB	'LDI','R'+80H,B0H
-			DB	'CPI','R'+80H,B1H
-			DB	'INI','R'+80H,B2H
-			DB	'OTI','R'+80H,B3H
-			DB	'OTI2','R'+80H,B4H
-			DB	'LDD','R'+80H,B8H
-			DB	'CPD','R'+80H,B9H
-			DB	'IND','R'+80H,BAH
-			DB	'OTD','R'+80H,BBH
-			DB	'OTD2','R'+80H,BCH
-			DB	'INIR','X'+80H,C2H
-			DB	'OTIR','X'+80H,C3H
-			DB	'INDR','X'+80H,CAH
-			DB	'OTDR','X'+80H,CBH
+			DB	"NE","G"+80H,44H	; 0Fh
+			DB	"IM",0,"0"+80H,46H
+			DB	"RET","N"+80H,45H
+			DB	"MLT",0,"B","C"+80H,4CH
+			DB	"RET","I"+80H,4DH
+			DB	"IM",0,"1"+80H,56H
+			DB	"MLT",0,"D","E"+80H,5CH						
+			DB	"IM",0,"2"+80H,5EH
+			DB	"RR","D"+80H,67H
+			DB	"MLT",0,"H","L"+80H,6CH
+			DB	"LD",0,"MB",0,"A"+80H,6DH
+			DB	"LD",0,"A",0,"M","B"+80H,6EH
+			DB	"RL","D"+80H,6FH
+			DB	"SL","P"+80H,76H
+			DB	"MLT",0,"S","P"+80H,7CH
+			DB	"STMI","X"+80H,7DH
+			DB	"RSMI","X"+80H,7EH
+			DB	"INI","M"+80H,82H
+			DB	"OTI","M"+80H,83H
+			DB	"INI","2"+80H,84H
+			DB	"IND","M"+80H,8AH
+			DB	"OTD","M"+80H,8BH
+			DB	"IND","2"+80H,8CH
+			DB	"INIM","R"+80H,92H
+			DB	"OTIM","R"+80H,93H
+			DB	"INI2","R"+80H,94H
+			DB	"INDM","R"+80H,9AH
+			DB	"OTDM","R"+80H,9BH
+			DB	"IND2","R"+80H,9CH
+			DB	"LD","I"+80H,A0H
+			DB	"CP","I"+80H,A1H
+			DB	"IN","I"+80H,A2H
+			DB	"OUTI","2"+80H,A4H	; These are swapped round so that FIND will find
+			DB	"OUT","I"+80H,A3H	; OUTI2 before OUTI
+			DB	"LD","D"+80H,A8H
+			DB	"CP","D"+80H,A9H
+			DB	"IN","D"+80H,AAH
+			DB	"OUTD","2"+80H,ACH	; Similarly these are swapped round so that FIND
+			DB	"OUT","D"+80H,ABH	; will find OUTD2 before OUTD
+			DB	"LDI","R"+80H,B0H
+			DB	"CPI","R"+80H,B1H
+			DB	"INI","R"+80H,B2H
+			DB	"OTI","R"+80H,B3H
+			DB	"OTI2","R"+80H,B4H
+			DB	"LDD","R"+80H,B8H
+			DB	"CPD","R"+80H,B9H
+			DB	"IND","R"+80H,BAH
+			DB	"OTD","R"+80H,BBH
+			DB	"OTD2","R"+80H,BCH
+			DB	"INIR","X"+80H,C2H
+			DB	"OTIR","X"+80H,C3H
+			DB	"INDR","X"+80H,CAH
+			DB	"OTDR","X"+80H,CBH
 ;
 ; Group 2: (3 opcodes)
 ;
-			DB	'BI','T'+80H,40H	; 44h
-			DB	'RE','S'+80H,80H
-			DB	'SE','T'+80H,C0H
+			DB	"BI","T"+80H,40H	; 44h
+			DB	"RE","S"+80H,80H
+			DB	"SE","T"+80H,C0H
 ;
 ; Group 3: (7 opcodes)
 ;
-			DB	'RL','C'+80H,00H	; 47h
-			DB	'RR','C'+80H,08H
-			DB	'R','L'+80H,10H
-			DB	'R','R'+80H,18H
-			DB	'SL','A'+80H,20H
-			DB	'SR','A'+80H,28H
-			DB	'SR','L'+80H,38H
+			DB	"RL","C"+80H,00H	; 47h
+			DB	"RR","C"+80H,08H
+			DB	"R","L"+80H,10H
+			DB	"R","R"+80H,18H
+			DB	"SL","A"+80H,20H
+			DB	"SR","A"+80H,28H
+			DB	"SR","L"+80H,38H
 ;
 ; Group 4: (3 opcodes)
 ;
-			DB	'PO','P'+80H,C1H	; 4Eh
-			DB	'PUS','H'+80H,C5H
-			DB	'EX',0,'(S','P'+80H,E3H
+			DB	"PO","P"+80H,C1H	; 4Eh
+			DB	"PUS","H"+80H,C5H
+			DB	"EX",0,"(S","P"+80H,E3H
 ;
 ; Group 5: (7 opcodes)
 ;
-			DB	'SU','B'+80H,90H	; 51h
-			DB	'AN','D'+80H,A0H
-			DB	'XO','R'+80H,A8H
-			DB	'O','R'+80H,B0H
-			DB	'C','P'+80H,B8H
+			DB	"SU","B"+80H,90H	; 51h
+			DB	"AN","D"+80H,A0H
+			DB	"XO","R"+80H,A8H
+			DB	"O","R"+80H,B0H
+			DB	"C","P"+80H,B8H
 			DB	TAND,A0H		; 56h TAND: Tokenised AND
 			DB	TOR,B0H			; 57h TOR: Tokenised OR
 ;
 ; Group 6 (3 opcodes)
 ;
-			DB	'AD','D'+80H,80H	; 58h
-			DB	'AD','C'+80H,88H
-			DB	'SB','C'+80H,98H
+			DB	"AD","D"+80H,80H	; 58h
+			DB	"AD","C"+80H,88H
+			DB	"SB","C"+80H,98H
 ;
 ; Group 7: (2 opcodes)
 ;
-			DB	'IN','C'+80H,04H	; 5Bh
-			DB	'DE','C'+80H,05H
+			DB	"IN","C"+80H,04H	; 5Bh
+			DB	"DE","C"+80H,05H
 ;
 ; Group 8: (2 opcodes)
 ;
-			DB	'IN','0'+80H,00H	; 5Dh
-			DB	'OUT','0'+80H,01H
+			DB	"IN","0"+80H,00H	; 5Dh
+			DB	"OUT","0"+80H,01H
 ;
 ; Group 9: (1 opcode)
 ;
-			DB	'I','N'+80H,40H		; 5Fh
+			DB	"I","N"+80H,40H		; 5Fh
 ;
 ; Group 10: (1 opcode)
 ;
-			DB	'OU','T'+80H,41H	; 60h
+			DB	"OU","T"+80H,41H	; 60h
 ;
 ; Group 11: (2 opcodes)
 ;
-			DB	'J','R'+80H,20H		; 61h
-			DB	'DJN','Z'+80H,10H
+			DB	"J","R"+80H,20H		; 61h
+			DB	"DJN","Z"+80H,10H
 ;
 ; Group 12: (1 opcode)
 ;
-			DB	'J','P'+80H,C2H		; 63h
+			DB	"J","P"+80H,C2H		; 63h
 ;
 ; Group 13: (1 opcode)
 ;
-			DB	'CAL','L'+80H,C4H	; 64h
+			DB	"CAL","L"+80H,C4H	; 64h
 ;
 ; Group 14: (1 opcode)
 ;
-			DB	'RS','T'+80H,C7H	; 65h
+			DB	"RS","T"+80H,C7H	; 65h
 ;
 ; Group 15: (1 opcode)
 ;
-			DB	'RE','T'+80H,C0H	; 66h
+			DB	"RE","T"+80H,C0H	; 66h
 ;
 ; Group 16: (1 opcode)
 ;
-			DB	'L','D'+80H,40H		; 67h
+			DB	"L","D"+80H,40H		; 67h
 ;
 ; Group 17: (1 opcode)
 ;
-			DB	'TS','T'+80H,04H	; 68h
+			DB	"TS","T"+80H,04H	; 68h
 
 ;
 ; Assembler Directives
 ;
-			DB	'OP','T'+80H,00H	; 69h OPT
-			DB	'AD','L'+80H,00H	; 6Ah ADL
+			DB	"OP","T"+80H,00H	; 69h OPT
+			DB	"AD","L"+80H,00H	; 6Ah ADL
 ;
-			DB	DEF_ & 7FH,'B'+80H,00H	; 6Bh Tokenised DEF + B
-			DB	DEF_ & 7FH,'W'+80H,00H	; 6Ch Tokenised DEF + W
-			DB	DEF_ & 7FH,'L'+80H,00H	; 6Dh Tokenised DEF + L
-			DB 	DEF_ & 7FH,'M'+80H,00H	; 6Eh Tokenised DEF + M
+			DB	DEF_ & 7FH,"B"+80H,00H	; 6Bh Tokenised DEF + B
+			DB	DEF_ & 7FH,"W"+80H,00H	; 6Ch Tokenised DEF + W
+			DB	DEF_ & 7FH,"L"+80H,00H	; 6Dh Tokenised DEF + L
+			DB 	DEF_ & 7FH,"M"+80H,00H	; 6Eh Tokenised DEF + M
 ;
 			DB	0
 ;			
 ; Operands
 ;
-OPRNDS:			DB	'B'+80H, 00H
-			DB	'C'+80H, 01H
-			DB	'D'+80H, 02H
-			DB	'E'+80H, 03H
-			DB	'H'+80H, 04H
-			DB	'L'+80H, 05H
-			DB	'(H','L'+80H,06H
-			DB	'A'+80H, 07H
-			DB	'(I','X'+80H,86H
-			DB	'(I','Y'+80H,C6H
+OPRNDS:			DB	"B"+80H, 00H
+			DB	"C"+80H, 01H
+			DB	"D"+80H, 02H
+			DB	"E"+80H, 03H
+			DB	"H"+80H, 04H
+			DB	"L"+80H, 05H
+			DB	"(H","L"+80H,06H
+			DB	"A"+80H, 07H
+			DB	"(I","X"+80H,86H
+			DB	"(I","Y"+80H,C6H
 ;
-			DB	'B','C'+80H,08H
-			DB	'D','E'+80H,0AH
-			DB	'H','L'+80H,0CH
-			DB	'I','X'+80H,8CH
-			DB	'I','Y'+80H,CCH
-			DB	'A','F'+80H,0EH
-			DB	'S','P'+80H,0EH
+			DB	"B","C"+80H,08H
+			DB	"D","E"+80H,0AH
+			DB	"H","L"+80H,0CH
+			DB	"I","X"+80H,8CH
+			DB	"I","Y"+80H,CCH
+			DB	"A","F"+80H,0EH
+			DB	"S","P"+80H,0EH
 ;
-			DB	'N','Z'+80H,10H
-			DB	'Z'+80H,11H
-			DB	'N','C'+80H,12H
-			DB	'P','O'+80H,14H
-			DB	'P','E'+80H,15H
-			DB	'P'+80H,16H
-			DB	'M'+80H,17H
+			DB	"N","Z"+80H,10H
+			DB	"Z"+80H,11H
+			DB	"N","C"+80H,12H
+			DB	"P","O"+80H,14H
+			DB	"P","E"+80H,15H
+			DB	"P"+80H,16H
+			DB	"M"+80H,17H
 ;
-			DB	'(','C'+80H,20H
+			DB	"(","C"+80H,20H
 ;
 			DB	0
 ;
 ; Load operations
 ;
-LDOPS:			DB	'I',0,'A'+80H,47H
-			DB	'R',0,'A'+80H,4FH
-			DB	'A',0,'I'+80H,57H
-			DB	'A',0,'R'+80H,5FH
-			DB	'(BC',0,'A'+80H,02h
-			DB	'(DE',0,'A'+80H,12H
-			DB	'A',0,'(B','C'+80H,0AH
-			DB	'A',0,'(D','E'+80H,1AH
+LDOPS:			DB	"I",0,"A"+80H,47H
+			DB	"R",0,"A"+80H,4FH
+			DB	"A",0,"I"+80H,57H
+			DB	"A",0,"R"+80H,5FH
+			DB	"(BC",0,"A"+80H,02h
+			DB	"(DE",0,"A"+80H,12H
+			DB	"A",0,"(B","C"+80H,0AH
+			DB	"A",0,"(D","E"+80H,1AH
 ;
 			DB	0
 ;
@@ -3151,32 +3164,402 @@ LDOPS:			DB	'I',0,'A'+80H,47H
 ;
 ; Fully qualified suffixes
 ;
-EZ80SFS_1:		DB	'LI','S'+80H,49H
-			DB	'SI','L'+80H,52H
-EZ80SFS_2:		DB	'SI','S'+80H,40H
-			DB	'LI','L'+80H,5BH
+EZ80SFS_1:		DB	"LI","S"+80H,49H
+			DB	"SI","L"+80H,52H
+EZ80SFS_2:		DB	"SI","S"+80H,40H
+			DB	"LI","L"+80H,5BH
 ;
 			DB	0
 ;
 ; Shortcuts when ADL mode is 0
 ;
-EZ80SFS_ADL0:		DB	'S'+80H,40H		; Equivalent to .SIS
-			DB	'L'+80H,49H		; Equivalent to .LIS
-			DB	'I','S'+80H,40H		; Equivalent to .SIS
-			DB	'I','L'+80H,52H		; Equivalent to .SIL
+EZ80SFS_ADL0:		DB	"S"+80H,40H		; Equivalent to .SIS
+			DB	"L"+80H,49H		; Equivalent to .LIS
+			DB	"I","S"+80H,40H		; Equivalent to .SIS
+			DB	"I","L"+80H,52H		; Equivalent to .SIL
 ;
 			DB	0
 ;
 ; Shortcuts when ADL mode is 1
 ;
-EZ80SFS_ADL1:		DB	'S'+80H,52H		; Equivalent to .SIL
-			DB	'L'+80H,5BH		; Equivalent to .LIL
-			DB	'I','S'+80H,49H		; Equivalent to .LIS
-			DB	'I','L'+80H,5BH		; Equivalent to .LIL
+EZ80SFS_ADL1:		DB	"S"+80H,52H		; Equivalent to .SIL
+			DB	"L"+80H,5BH		; Equivalent to .LIL
+			DB	"I","S"+80H,49H		; Equivalent to .LIS
+			DB	"I","L"+80H,5BH		; Equivalent to .LIL
 ;
 			DB	0
 ;
 ; .LIST
 ;
-LF:			EQU     0AH
-CR:			EQU     0DH
+; already defined in equs.inc
+; LF:			EQU     0AH
+; CR:			EQU     0DH
+
+; ===== STUB FUNCTIONS =====
+printInline:
+    ret
+
+AUTO:
+	call printInline
+	asciz "exec.asm called AUTO!"
+	ret
+
+BRAKET:
+	call printInline
+	asciz "exec.asm called BRAKET!"
+	ret
+
+CLEAR:
+	call printInline
+	asciz "exec.asm called CLEAR!"
+	ret
+
+CLG:
+	call printInline
+	asciz "exec.asm called CLG!"
+	ret
+
+CLOOP:
+	call printInline
+	asciz "exec.asm called CLOOP!"
+	ret
+
+CLRSCN:
+	call printInline
+	asciz "exec.asm called CLRSCN!"
+	ret
+
+COLOUR:
+	call printInline
+	asciz "exec.asm called COLOUR!"
+	ret
+
+COMMA:
+	call printInline
+	asciz "exec.asm called COMMA!"
+	ret
+
+CONS:
+	call printInline
+	asciz "exec.asm called CONS!"
+	ret
+
+CREATE:
+	call printInline
+	asciz "exec.asm called CREATE!"
+	ret
+
+CRLF:
+	call printInline
+	asciz "exec.asm called CRLF!"
+	ret
+
+DATAPTR:
+	call printInline
+	asciz "exec.asm called DATAPTR!"
+	ret
+
+DELETE:
+	call printInline
+	asciz "exec.asm called DELETE!"
+	ret
+
+DLOAD5:
+	call printInline
+	asciz "exec.asm called DLOAD5!"
+	ret
+
+DLOAD5_SPL:
+	call printInline
+	asciz "exec.asm called DLOAD5_SPL!"
+	ret
+
+DRAW:
+	call printInline
+	asciz "exec.asm called DRAW!"
+	ret
+
+ENVEL:
+	call printInline
+	asciz "exec.asm called ENVEL!"
+	ret
+
+ERROR_:
+	call printInline
+	asciz "exec.asm called ERROR_!"
+	ret
+
+EXPR:
+	call printInline
+	asciz "exec.asm called EXPR!"
+	ret
+
+EXPRI:
+	call printInline
+	asciz "exec.asm called EXPRI!"
+	ret
+
+EXPRN:
+	call printInline
+	asciz "exec.asm called EXPRN!"
+	ret
+
+EXPRS:
+	call printInline
+	asciz "exec.asm called EXPRS!"
+	ret
+
+FINDL:
+	call printInline
+	asciz "exec.asm called FINDL!"
+	ret
+
+FPP:
+	call printInline
+	asciz "exec.asm called FPP!"
+	ret
+
+GCOL:
+	call printInline
+	asciz "exec.asm called GCOL!"
+	ret
+
+GETDEF:
+	call printInline
+	asciz "exec.asm called GETDEF!"
+	ret
+
+GETVAR:
+	call printInline
+	asciz "exec.asm called GETVAR!"
+	ret
+
+HEXSTR:
+	call printInline
+	asciz "exec.asm called HEXSTR!"
+	ret
+
+ITEMI:
+	call printInline
+	asciz "exec.asm called ITEMI!"
+	ret
+
+LIST_:
+	call printInline
+	asciz "exec.asm called LIST_!"
+	ret
+
+LOAD:
+	call printInline
+	asciz "exec.asm called LOAD!"
+	ret
+
+LOAD0:
+	call printInline
+	asciz "exec.asm called LOAD0!"
+	ret
+
+LOAD4:
+	call printInline
+	asciz "exec.asm called LOAD4!"
+	ret
+
+LOADN:
+	call printInline
+	asciz "exec.asm called LOADN!"
+	ret
+
+LOADS:
+	call printInline
+	asciz "exec.asm called LOADS!"
+	ret
+
+MODE:
+	call printInline
+	asciz "exec.asm called MODE!"
+	ret
+
+MOVE:
+	call printInline
+	asciz "exec.asm called MOVE!"
+	ret
+
+NEW:
+	call printInline
+	asciz "exec.asm called NEW!"
+	ret
+
+NXT:
+	call printInline
+	asciz "exec.asm called NXT!"
+	ret
+
+OLD:
+	call printInline
+	asciz "exec.asm called OLD!"
+	ret
+
+OSBGET:
+	call printInline
+	asciz "exec.asm called OSBGET!"
+	ret
+
+OSBPUT:
+	call printInline
+	asciz "exec.asm called OSBPUT!"
+	ret
+
+OSCALL:
+	call printInline
+	asciz "exec.asm called OSCALL!"
+	ret
+
+OSCLI:
+	call printInline
+	asciz "exec.asm called OSCLI!"
+	ret
+
+OSLINE:
+	call printInline
+	asciz "exec.asm called OSLINE!"
+	ret
+
+OSSHUT:
+	call printInline
+	asciz "exec.asm called OSSHUT!"
+	ret
+
+OSWRCH:
+	call printInline
+	asciz "exec.asm called OSWRCH!"
+	ret
+
+OUTCHR:
+	call printInline
+	asciz "exec.asm called OUTCHR!"
+	ret
+
+OUT_:
+	call printInline
+	asciz "exec.asm called OUT_!"
+	ret
+
+PBCDL:
+	call printInline
+	asciz "exec.asm called PBCDL!"
+	ret
+
+PLOT:
+	call printInline
+	asciz "exec.asm called PLOT!"
+	ret
+
+POPS:
+	call printInline
+	asciz "exec.asm called POPS!"
+	ret
+
+PUSHS:
+	call printInline
+	asciz "exec.asm called PUSHS!"
+	ret
+
+PUTCSR:
+	call printInline
+	asciz "exec.asm called PUTCSR!"
+	ret
+
+PUTIME:
+	call printInline
+	asciz "exec.asm called PUTIME!"
+	ret
+
+PUTIMS:
+	call printInline
+	asciz "exec.asm called PUTIMS!"
+	ret
+
+PUTPTR:
+	call printInline
+	asciz "exec.asm called PUTPTR!"
+	ret
+
+PUTVAR:
+	call printInline
+	asciz "exec.asm called PUTVAR!"
+	ret
+
+RENUM:
+	call printInline
+	asciz "exec.asm called RENUM!"
+	ret
+
+REPORT:
+	call printInline
+	asciz "exec.asm called REPORT!"
+	ret
+
+SAVE:
+	call printInline
+	asciz "exec.asm called SAVE!"
+	ret
+
+SAYLN:
+	call printInline
+	asciz "exec.asm called SAYLN!"
+	ret
+
+SETLIN:
+	call printInline
+	asciz "exec.asm called SETLIN!"
+	ret
+
+SFIX:
+	call printInline
+	asciz "exec.asm called SFIX!"
+	ret
+
+SOUND:
+	call printInline
+	asciz "exec.asm called SOUND!"
+	ret
+
+STR:
+	call printInline
+	asciz "exec.asm called STR!"
+	ret
+
+SWAP:
+	call printInline
+	asciz "exec.asm called SWAP!"
+	ret
+
+TELL:
+	call printInline
+	asciz "exec.asm called TELL!"
+	ret
+
+TEST:
+	call printInline
+	asciz "exec.asm called TEST!"
+	ret
+
+TRAP:
+	call printInline
+	asciz "exec.asm called TRAP!"
+	ret
+
+VAL0:
+	call printInline
+	asciz "exec.asm called VAL0!"
+	ret
+
+WARM:
+	call printInline
+	asciz "exec.asm called WARM!"
+	ret
+
+ZERO:
+	call printInline
+	asciz "exec.asm called ZERO!"
+	ret

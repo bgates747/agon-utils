@@ -1,8 +1,3 @@
-
-; ========================================
-; FROM eval.asm
-; ----------------------------------------
-
 ;
 ; Title:	BBC Basic Interpreter - Z80 version
 ;		Expression Evaluation & Arithmetic Module - "EVAL"
@@ -17,79 +12,74 @@
 ; 13/08/2023:	Added INKEY(-n) support (requires MOS 1.04)
 ; 17/08/2023:	Added binary constants
 
-			; .ASSUME	ADL = 1
-
-			; include "ram.asm"
-
-			; INCLUDE	"equs.inc"
-			; INCLUDE "macros.inc"
-			; INCLUDE "mos_api.inc"	; In MOS/src
-
-			; include "fpp.asm"
-			; include "snippets.asm"
+			.ASSUME	ADL = 1
+			INCLUDE "mos_api.inc"
+			INCLUDE "macros.inc"
+			INCLUDE "ram.asm"
+			INCLUDE	"equs.inc"
 
 			; SEGMENT CODE
 				
-; 			XDEF	EXPR
-; 			XDEF	EXPRN
-; 			XDEF	EXPRI
-; 			XDEF	EXPRS
-; 			XDEF	ITEMI
-; 			XDEF	LOADN
-; 			XDEF	LOAD4
-; 			XDEF	CONS
-; 			XDEF	LOADS
-; 			XDEF	SFIX
-; 			XDEF	VAL0
-; 			XDEF	SEARCH
-; 			XDEF	SWAP
-; 			XDEF	TEST
-; 			XDEF	DECODE
-; 			XDEF	HEXSTR
-; 			XDEF	STR
-; 			XDEF	ZERO
-; 			XDEF	PUSHS
-; 			XDEF	POPS
-; 			XDEF	COMMA
-; 			XDEF	BRAKET
-; 			XDEF	NXT
-; 			XDEF	COUNT0
+			; XDEF	EXPR
+			; XDEF	EXPRN
+			; XDEF	EXPRI
+			; XDEF	EXPRS
+			; XDEF	ITEMI
+			; XDEF	LOADN
+			; XDEF	LOAD4
+			; XDEF	CONS
+			; XDEF	LOADS
+			; XDEF	SFIX
+			; XDEF	VAL0
+			; XDEF	SEARCH
+			; XDEF	SWAP
+			; XDEF	TEST
+			; XDEF	DECODE
+			; XDEF	HEXSTR
+			; XDEF	STR
+			; XDEF	ZERO
+			; XDEF	PUSHS
+			; XDEF	POPS
+			; XDEF	COMMA
+			; XDEF	BRAKET
+			; XDEF	NXT
+			; XDEF	COUNT0
 				
-; 			XREF	ADVAL
-; 			XREF	FN
-; 			XREF	POINT
-; 			XREF	USR
-; 			XREF	SYNTAX
-; 			XREF	ERROR_
-; 			XREF	CHECK
-; 			XREF	GETVAR
-; 			XREF	LISTON
-; 			XREF	RANGE
-; 			XREF	FPP
-; 			XREF	GETCSR
-; 			XREF	CHANEL
-; 			XREF	OSSTAT
-; 			XREF	OSBGET
-; 			XREF	LOMEM
-; 			XREF	HIMEM
-; 			XREF	PAGE_
-; 			XREF	TOP
-; 			XREF	ERL
-; 			XREF	ERR
-; 			XREF	COUNT
-; 			XREF	OSOPEN
-; 			XREF	GETEXT
-; 			XREF	GETPTR
-; 			XREF	GETIME
-; 			XREF	GETIMS
-; 			XREF	LEXAN2
-; 			XREF	RANDOM
-; 			XREF	STORE5
-; 			XREF	GETSCHR
-; 			XREF	OSRDCH
-; 			XREF	OSKEY
-; 			XREF	INKEY1
-; 			XREF	EXTERR
+			; XREF	ADVAL
+			; XREF	FN
+			; XREF	POINT
+			; XREF	USR
+			; XREF	SYNTAX
+			; XREF	ERROR_
+			; XREF	CHECK
+			; XREF	GETVAR
+			; XREF	LISTON
+			; XREF	RANGE
+			; XREF	FPP
+			; XREF	GETCSR
+			; XREF	CHANEL
+			; XREF	OSSTAT
+			; XREF	OSBGET
+			; XREF	LOMEM
+			; XREF	HIMEM
+			; XREF	PAGE_
+			; XREF	TOP
+			; XREF	ERL
+			; XREF	ERR
+			; XREF	COUNT
+			; XREF	OSOPEN
+			; XREF	GETEXT
+			; XREF	GETPTR
+			; XREF	GETIME
+			; XREF	GETIMS
+			; XREF	LEXAN2
+			; XREF	RANDOM
+			; XREF	STORE5
+			; XREF	GETSCHR
+			; XREF	OSRDCH
+			; XREF	OSKEY
+			; XREF	INKEY1
+			; XREF	EXTERR
 ;
 ; BINARY FLOATING POINT REPRESENTATION:
 ;    32 BIT SIGN-MAGNITUDE NORMALIZED MANTISSA
@@ -111,68 +101,66 @@
 FUNTOK:			EQU	8DH			; First token number
 ;
 FUNTBL:			DW24	DECODE			; Line number
-			DW24	OPENIN			; OPENIN ; opening a file, we won't be using
-			DW24	PTR_EV			; PTR ; related to file handling, we won't be using
-			DW24	PAGE			; PAGE 
-			DW24	TIMEV_EV			; TIME ; related to time handling, we won't be using
-			DW24	LOMEMV_EV			; LOMEM
-			DW24	HIMEMV_EV			; HIMEM
-			DW24	ABSV_EV			; ABS
-			DW24	ACS_EV			; ACS
-			DW24	ADVAL			; ADVAL ; IN sorry.asm, don't need
+			DW24	OPENIN			; OPENIN
+			DW24	PTR			; PTR
+			DW24	PAGEV			; PAGE
+			DW24	TIMEV			; TIME
+			DW24	LOMEMV			; LOMEM
+			DW24	HIMEMV			; HIMEM
+			DW24	ABSV			; ABS
+			DW24	ACS			; ACS
+			DW24	ADVAL			; ADVAL
 			DW24	ASC			; ASC
-			DW24	ASN_EV			; ASN
-			DW24	ATN_EV			; ATN
-			DW24	BGET			; BGET ; get a byte from a file, we won't be using
-			DW24	COS_EV			; COS
+			DW24	ASN			; ASN
+			DW24	ATN			; ATN
+			DW24	BGET			; BGET
+			DW24	COS			; COS
 			DW24	COUNTV			; COUNT
-			DW24	DEG_EV			; DEG
+			DW24	DEG			; DEG
 			DW24	ERLV			; ERL
 			DW24	ERRV			; ERR
 			DW24	EVAL_			; EVAL
-			DW24	EXP_EV			; EXP
-			DW24	EXT_EV			; EXT ; related to file handling, we won't be using
+			DW24	EXP			; EXP
+			DW24	EXT			; EXT
 			DW24	ZERO			; FALSE
-			DW24	FN			; FN 
-			DW24	GET			; GET ; reading from keyboard, we won't be using
-			DW24	INKEY			; INKEY ; reading from keyboard, we won't be using
+			DW24	FN			; FN
+			DW24	GET			; GET
+			DW24	INKEY			; INKEY
 			DW24	INSTR			; INSTR(
-			DW24	INT_EV_			; INT
+			DW24	INT_			; INT
 			DW24	LEN			; LEN
-			DW24	LN_EV			; LN
-			DW24	LOG_EV			; LOG
-			DW24	NOTK_EV			; NOT
-			DW24	OPENUP			; OPENUP ; related to file handling, we won't be using
-			DW24	OPENOT			; OPENOUT ; related to file handling, we won't be using
-			DW24	PI_EV			; PI
-			DW24	POINT			; POINT( ; in agon_graphics.asm we won't be using
-			DW24	POS			; POS ; related to cursor position, we won't be using
-			DW24	RAD_EV			; RAD
+			DW24	LN			; LN
+			DW24	LOG			; LOG
+			DW24	NOTK			; NOT
+			DW24	OPENUP			; OPENUP
+			DW24	OPENOT			; OPENOUT
+			DW24	PI			; PI
+			DW24	POINT			; POINT(
+			DW24	POS			; POS
+			DW24	RAD			; RAD
 			DW24	RND			; RND
-			DW24	SGN_EV			; SGN
-			DW24	SIN_EV			; SIN
-			DW24	SQR_EV			; SQR
-			DW24	TAN_EV			; TAN
+			DW24	SGN			; SGN
+			DW24	SIN			; SIN
+			DW24	SQR			; SQR
+			DW24	TAN			; TAN
 			DW24	TOPV			; TO(P)
-			DW24	FOR_EV			; FOR
-			DW24	USR			; USR ; in exec.asm
-			DW24	VAL_EV			; VAL
-			DW24	VPOS			; VPOS ; related to cursor position, we won't be using
-			DW24	CHRS			; CHRS ; reading from keyboard, we won't be using
-			DW24	GETS			; GETS ; reading from keyboard, we won't be using
-			DW24	INKEYS			; INKEYS ; reading from keyboard, we won't be using
+			DW24	TRUE			; TRUE
+			DW24	USR			; USR
+			DW24	VAL			; VAL
+			DW24	VPOS			; VPOS
+			DW24	CHRS			; CHRS
+			DW24	GETS			; GETS
+			DW24	INKEYS			; INKEYS
 			DW24	LEFTS			; LEFTS(
 			DW24	MIDS			; MIDS(
 			DW24	RIGHTS			; RIGHTS(
 			DW24	STRS			; STR$
 			DW24	STRING_			; STRINGS(
-			DW24	EOF			; EOF ; reading from file, we won't be using
-
-PAGE: ret ; stub function for an item in FUNTBL which doesn't exist
+			DW24	EOF			; EOF
 ;
 FUNTBL_END:		EQU	$
 ; TCMD:			EQU     FUNTOK+(FUNTBL_END-FUNTBL)/3
-TCMD_EV:			EQU     FUNTBL_END-FUNTBL/3+FUNTOK ; reorder because ez80asm doesn't do order of operations
+TCMD:			EQU     FUNTBL_END-FUNTBL/3+FUNTOK ; reorder because ez80asm doesn't do order of operations
 ;
 ANDK:			EQU     80H
 DIVK:			EQU     81H
@@ -212,7 +200,7 @@ EXPR0A:			CP      EORK            	; Is operator EOR?
 			CP      ORK			; Is operator OR
 			RET     NZ			; No, so return
 ;
-EXPR0B:			CALL    SAVE_EV            	; Save first operand
+EXPR0B:			CALL    SAVE            	; Save first operand
 			CALL    EXPR1           	; Get second operand
 			CALL    DOIT            	; Do the operation
 			JR      EXPR0A          	; And continue
@@ -222,7 +210,7 @@ EXPR0B:			CALL    SAVE_EV            	; Save first operand
 EXPR1:			CALL    EXPR2			; Get first operator by calling Level 5
 EXPR1A:			CP      ANDK			; Is operator AND?
 			RET     NZ			; No, so return
-			CALL    SAVE_EV			; Save first operand
+			CALL    SAVE			; Save first operand
 			CALL    EXPR2			; Get second operand
 			CALL    DOIT			; Do the operation
 			JR      EXPR1A			; And continue
@@ -262,7 +250,7 @@ EXPR2S:			EX      AF,AF'			; Handle string comparisons
 			PUSH    AF              	; Save the operator
 			CALL    EXPR3           	; Get the second string
 			EX      AF,AF'
-			JP      P,TYPE_EV_
+			JP      P,TYPE_
 			POP     AF
 			LD      C,E             	; Length of string #2
 			POP     DE
@@ -297,7 +285,7 @@ EXPR3A:			CP      '-'			; Is it "-"?
 			EX      AF,AF'			; Get the type
 			JP      M,EXPR3S		; Branch here if string
 			EX      AF,AF'
-EXPR3B:			CALL    SAVE_EV			; Save the first operator
+EXPR3B:			CALL    SAVE			; Save the first operator
 			CALL    EXPR4			; Fetch the second operator
 			CALL    DOIT			; Do the operation
 			JR      EXPR3A			; And continue
@@ -307,7 +295,7 @@ EXPR3S:			EX      AF,AF'			; Handle string concatenation
 			CALL    PUSHS           	; Save the string on the stack
 			CALL    EXPR4           	; Fetch the second operator
 			EX      AF,AF'
-			JP      P,TYPE_EV_			; If it is not a string, then Error: "Type mismatch"
+			JP      P,TYPE_			; If it is not a string, then Error: "Type mismatch"
 			LD	BC, 0			; Clear BC
 			LD      C,E             	; C: Length of the second string
 			POP     DE
@@ -323,7 +311,7 @@ EXPR3S:			EX      AF,AF'			; Handle string concatenation
 			ADD     A,E
 			LD      E,A             	; Destination
 			LD      A,19
-			; JP      C,ERROR_         	; A carry indicates string > 255 bytes, so Error: "String too long"
+			JP      C,ERROR_         	; A carry indicates string > 255 bytes, so Error: "String too long"
 			PUSH    DE
 			DEC     E
 			DEC     L
@@ -349,7 +337,7 @@ EXPR4A:			CP      '*'			; "*" is valid
 			JR      Z,EXPR4B
 			CP      DIVK			; DIV token is valid
 			RET     NZ			; And return if it is anything else
-EXPR4B:			CALL    SAVE_EV
+EXPR4B:			CALL    SAVE
 			CALL    EXPR5
 			CALL    DOIT
 			JR      EXPR4A
@@ -362,7 +350,7 @@ EXPR5:			CALL    ITEM			; Get variable
 EXPR5A:			CALL    NXT			; Skip spaces
 			CP      '^'			; Is the operator "^"?
 			RET     NZ			; No, so return
-			CALL    SAVE_EV			; Save first operand
+			CALL    SAVE			; Save first operand
 			CALL    ITEM			; Get second operand
 			OR      A			; Test type
 			EX      AF,AF'			; Save type
@@ -374,35 +362,35 @@ EXPR5A:			CALL    NXT			; Skip spaces
 EXPRN:			CALL    EXPR			; Evaluate expression
 			EX      AF,AF'			; Get the type
 			RET     P			; And return if it is a number
-			JR      TYPE_EV_			; Otherwise Error: "Type mismatch"
+			JR      TYPE_			; Otherwise Error: "Type mismatch"
 ;
 ; Evaluate a fixed-point expression 
 ;
 EXPRI:			CALL    EXPR			; Evaluate the expression
 			EX      AF,AF'			; Get the type
 			JP      P,SFIX			; If it is numeric, then convert to fixed-point notation
-			JR      TYPE_EV_			; Otherwise Error: "Type mismatch"
+			JR      TYPE_			; Otherwise Error: "Type mismatch"
 ;	
 ; Evaluate a string expression
 ;	
 EXPRS:			CALL    EXPR			; Evaluate the expression
 			EX      AF,AF'			; Get the type
 			RET     M			; And return if it is a string
-			JR      TYPE_EV_			; Otherwise Error: "Type mismatch"
+			JR      TYPE_			; Otherwise Error: "Type mismatch"
 ;
 ; Get a numeric variable
 ;
 ITEMN:			CALL    ITEM			; Get the variable
 			OR      A			; Test the type
 			RET     P			; And return if it is a number
-			JR      TYPE_EV_			; Otherwise Error: "Type mismatch"
+			JR      TYPE_			; Otherwise Error: "Type mismatch"
 ;
 ; Get a fixed-point variable 
 ;
 ITEMI:			CALL    ITEM			; Get the variable
 			OR      A			; Test the type
 			JP      P,SFIX			; If it is numeric, then convert to fixed-point notation
-			JR      TYPE_EV_			; Otherwise Error: "Type mismatch"
+			JR      TYPE_			; Otherwise Error: "Type mismatch"
 ;
 ; Get a string variable 
 ;
@@ -410,8 +398,8 @@ ITEMS:			CALL    ITEM			; Get the variable
 			OR      A			; Test the type
 			RET     M			; If it is a string, then return
 ;							; Otherwise
-TYPE_EV_:			LD      A,6			; Error: "Type mismatch"
-			; JP      ERROR_           	
+TYPE_:			LD      A,6			; Error: "Type mismatch"
+			JP      ERROR_           	
 ;
 ; Evaluate a bracketed expression
 ;
@@ -425,7 +413,7 @@ ITEM1:			CALL    EXPR            	; Evaluate the expression
 ;  Outputs: Integer result in H'L'HL, C=0, A7=0.
 ;           IY updated (points to delimiter)
 ;
-HEX_EV:			CALL    ZERO			; Set result to 0
+HEX:			CALL    ZERO			; Set result to 0
 			CALL    HEXDIG			; Fetch the character from IY
 			JR      C,BADHEX		; If invalid HEX character, then Error: "Bad HEX"
 HEX1:			INC     IY			; Move pointer to next character
@@ -448,7 +436,7 @@ HEX2:			EXX				; Shift the result left B (4) times. This makes
 			RET
 ;
 BADHEX:			LD      A,28
-			; JP      ERROR_          	; Error: "Bad HEX"
+			JP      ERROR_          	; Error: "Bad HEX"
 ;
 ; BIN - Get binary constant.
 ;   Inputs: ASCII string at (IY)
@@ -470,7 +458,7 @@ BIN1:			INC	IY			; Move pointer to next character
 			RET
 ;
 BADBIN:			LD	A, 28			; Error: "Bad Binary" - reuses same error code as Bad HEX
-			; CALL	EXTERR
+			CALL	EXTERR
 			DB	"Bad Binary", 0
 ;
 ; MINUS - Unary minus.
@@ -481,7 +469,7 @@ BADBIN:			LD	A, 28			; Error: "Bad Binary" - reuses same error code as Bad HEX
 MINUS:			CALL    ITEMN			; Get the numeric argument
 MINUS0:			DEC     C			; Check exponent (C)
 			INC     C			; If it is zero, then it's either a FP zero or an integer
-			JR      Z,NEGATE_EV        	; So do an integer negation
+			JR      Z,NEGATE        	; So do an integer negation
 ;
 			LD      A,H			; Do a FP negation by 
 			XOR     80H             	; Toggling the sign bit (H)
@@ -489,7 +477,7 @@ MINUS0:			DEC     C			; Check exponent (C)
 			XOR     A               	; Numeric marker
 			RET
 ;
-NEGATE_EV:			EXX				; This section does a two's complement negation on H'L'HLC
+NEGATE:			EXX				; This section does a two's complement negation on H'L'HLC
 			LD      A,H			; First do a one's complement by negating all the bytes
 			CPL
 			LD      H,A
@@ -503,7 +491,7 @@ NEGATE_EV:			EXX				; This section does a two's complement negation on H'L'HLC
 			LD      A,L
 			CPL
 			LD      L,A
-ADD1_EV:			EXX				; Then add 1
+ADD1:			EXX				; Then add 1
 			INC     HL			
 			LD      A,H
 			OR      L
@@ -524,7 +512,7 @@ ITEM:			CALL    CHECK			; Check there's at least a page of free memory left and 
 			CALL    NXT			; Skip spaces
 			INC     IY			; Move to the prefix character
 			CP      '&'			; If `&`
-			JP      Z,HEX_EV           	; Then get a HEX constant
+			JP      Z,HEX           	; Then get a HEX constant
 			CP	'%'			; If '%'
 			JR	Z,BIN			; Then get a BINARY constant
 			CP      '-'			; If `-`
@@ -535,17 +523,17 @@ ITEM:			CALL    CHECK			; Check there's at least a page of free memory left and 
 			JP      Z,ITEM1         	; Start of a bracketed expression
 			CP      34			; If `"`
 			JR      Z,CONS          	; Start of a string constant
-			CP      TCMD_EV			; Is it out of range of the function table?
-			; JP      NC,SYNTAX       	; Error: "Syntax Error"
+			CP      TCMD			; Is it out of range of the function table?
+			JP      NC,SYNTAX       	; Error: "Syntax Error"
 			CP      FUNTOK			; If it is in range, then 
-			JP      NC,DISPAT_EV       	; It's a function
+			JP      NC,DISPAT       	; It's a function
 			DEC     IY			
 			CP      ':'
 			JR      NC,ITEM2		; VARIABLE?
 			CP      '0'
-			JP      NC,CON_EV			; NUMERIC CONSTANT
+			JP      NC,CON			; NUMERIC CONSTANT
 			CP      '.'
-			JP      Z,CON_EV			; NUMERIC CONSTANT
+			JP      Z,CON			; NUMERIC CONSTANT
 ITEM2:			CALL    GETVAR			; VARIABLE
 			JR      NZ,NOSUCH
 			OR      A
@@ -574,12 +562,11 @@ LOAD1:			LD      HL,0
 			LD      C,H
 			RET
 ;
-NOSUCH:			
-			; JP      C,SYNTAX
+NOSUCH:			JP      C,SYNTAX
 			LD      A,(LISTON)
 			BIT     5,A
 			LD      A,26
-			JR      NZ,ERROR0_EV		; Throw "No such variable"
+			JR      NZ,ERROR0		; Throw "No such variable"
 NOS1:			INC     IY
 			CALL    RANGE
 			JR      NC,NOS1
@@ -607,8 +594,7 @@ CONS1:			LD      (DE),A			; Store the character in the string accumulator
 			JR      NZ,CONS3		; No, so keep looping
 ;
 			LD      A,9
-ERROR0_EV:			
-			; JP      ERROR_           	; Throw error "Missing '"'
+ERROR0:			JP      ERROR_           	; Throw error "Missing '"'
 ;
 CONS2:			LD      A,(IY)			; Fetch the next character
 			CP      '"'			; Check for end quote?
@@ -618,17 +604,17 @@ CONS2:			LD      A,(IY)			; Fetch the next character
 			LD      A,80H           	; String marker
 			RET
 ;
-;CON_EV - Get unsigned numeric constant from ASCII string.
+;CON - Get unsigned numeric constant from ASCII string.
 ;   Inputs: ASCII string at (IY).
 ;  Outputs: Variable-type result in HLH'L'C
 ;           IY updated (points to delimiter)
 ;           A7 = 0 (numeric marker)
 ;
-CON_EV:			PUSH    IY
+CON:			PUSH    IY
 			POP     IX
 			LD      A,36
 			CALL    FPP
-			JR      C,ERROR0_EV
+			JR      C,ERROR0
 			PUSH    IX
 			POP     IY
 			XOR     A
@@ -691,59 +677,47 @@ LOADS2:			LD      A,(HL)
 ;COUNT - number of printing characters since CR.
 ;Results are integer numeric.
 ;
-; we won't be using the following:
-POS:		ret	
-			; CALL    GETCSR			; Return the horizontal cursor position
-			; EX      DE,HL			;  L: The X cursor position
-			; JP      COUNT1			; Return an 8-bit value
+POS:			CALL    GETCSR			; Return the horizontal cursor position
+			EX      DE,HL			;  L: The X cursor position
+			JP      COUNT1			; Return an 8-bit value
 ;			
-VPOS:		ret	
-			; CALL    GETCSR			; Return the vertical cursor position
-			; JP      COUNT1			; Return an 8-bit value
-			
-EOF:		ret	
-			; CALL    CHANEL			; Check for EOF
-			; CALL    OSSTAT
-			; JP      Z,FOR_EV			; Yes, so return true
-			; JP      ZERO			; Otherwise return false (zero)
+VPOS:			CALL    GETCSR			; Return the vertical cursor position
+			JP      COUNT1			; Return an 8-bit value
 ;			
-BGET:		ret	
-			; CALL    CHANEL          	; Channel number
-			; CALL    OSBGET
-			; LD      L,A
-			; JP      COUNT0			; Return an 8-bit value
+EOF:			CALL    CHANEL			; Check for EOF
+			CALL    OSSTAT
+			JP      Z,TRUE			; Yes, so return true
+			JP      ZERO			; Otherwise return false (zero)
 ;			
-INKEY:		ret
-			; CALL    ITEMI			; Get the argument
-			; BIT	7, H			; Check the sign
-			; EXX				; HL: The argument
-			; JP	NZ, INKEYM		; It's negative, so do INKEY(-n)
-			; CALL	INKEY0 			; Do INKEY(n)
-			; JR      ASC0			; Return a numeric value
+BGET:			CALL    CHANEL          	; Channel number
+			CALL    OSBGET
+			LD      L,A
+			JP      COUNT0			; Return an 8-bit value
 ;			
-GET:		ret	
-			; CALL    NXT			; Skip whitespace
-			; CP      '('			; Is it GET(
-			; JR      NZ,GET0			; No, so get a keyboard character
-			; CALL    ITEMI           	; Yes, so fetch the port address
-			; EXX
-			; LD      B,H			; BC: The port address
-			; LD      C,L
-			; IN      L,(C)           	;  L: Input from port BC
-			; JR      COUNT0			; Return an 8-bit value
+INKEY:			CALL    ITEMI			; Get the argument
+			BIT	7, H			; Check the sign
+			EXX				; HL: The argument
+			JP	NZ, INKEYM		; It's negative, so do INKEY(-n)
+			CALL	INKEY0 			; Do INKEY(n)
+			JR      ASC0			; Return a numeric value
+;			
+GET:			CALL    NXT			; Skip whitespace
+			CP      '('			; Is it GET(
+			JR      NZ,GET0			; No, so get a keyboard character
+			CALL    ITEMI           	; Yes, so fetch the port address
+			EXX
+			LD      B,H			; BC: The port address
+			LD      C,L
+			IN      L,(C)           	;  L: Input from port BC
+			JR      COUNT0			; Return an 8-bit value
 ;
-GET0:		ret	
-			; CALL    GETS			; Read the keyboard character			
-			; JR      ASC1			; And return the value
-
-; end of the functions we won't be using
-
-
+GET0:			CALL    GETS			; Read the keyboard character			
+			JR      ASC1			; And return the value
 ;			
 ASC:			CALL    ITEMS			; Get the string argument argument
 ASC0:			XOR     A			; Quickly check the length of the string in ACCS
 			CP      E			; Is the pointer 0
-			JP      Z,FOR_EV          	; Yes, so return -1 as it is a null string
+			JP      Z,TRUE          	; Yes, so return -1 as it is a null string
 ASC1:			LD      HL,(ACCS)		;  L: The first character (H will be discarded in COUNT0
 			JR      COUNT0			; An 8-bit value
 ;
@@ -751,22 +725,22 @@ LEN:			CALL    ITEMS			; Get the string argument
 			EX      DE,HL			; HL: Pointer into ACCS
 			JR      COUNT0			; Return L
 ;			
-LOMEMV_EV:			LD      HL,(LOMEM)		; Return the LOMEM system variable
+LOMEMV:			LD      HL,(LOMEM)		; Return the LOMEM system variable
 			LD	A, (LOMEM+2)
 			JR      COUNT2			; A 24-bit value
 ;			
-HIMEMV_EV:			LD      HL,(HIMEM)		; Return the HIMEM system variable
+HIMEMV:			LD      HL,(HIMEM)		; Return the HIMEM system variable
 			LD	A, (HIMEM+2)
 			JR      COUNT2			; A 24-bit value
 ;			
-PAGEV_EV:			LD    	HL,(PAGE_)		; Return the PAGE system variable
+PAGEV:			LD    	HL,(PAGE_)		; Return the PAGE system variable
 			LD	A, (PAGE_+2)		; A 24-bit value
 			JR      COUNT2
 ;			
 TOPV:			LD      A,(IY)			; Return the TOP system variable
 			INC     IY              	; Skip "P"
 			CP      'P'
-			; JP      NZ,SYNTAX       	; Throw "Syntax Error"
+			JP      NZ,SYNTAX       	; Throw "Syntax Error"
 			LD      HL,(TOP)
 			LD	A, (TOP+2)
 			JR      COUNT2
@@ -792,103 +766,92 @@ COUNT2:			EXX
 			LD	C,A			; Integer marker
 			LD	H,A 
 			RET
-
-; ; we won't be using the following:
+;
 ;OPENIN - Open a file for reading.
 ;OPENOT - Open a file for writing.
 ;OPENUP - Open a file for reading or writing.
 ;Result is integer channel number (0 if error)
 ;
-OPENOT:		ret	
-			; XOR     A			; Open for writing
-			; JR	OPENIN_1
+OPENOT:			XOR     A			; Open for writing
+			JR	OPENIN_1
 ;			
-OPENUP:		ret	
-			; LD      A,2			; Open for reading / writing
-			; JR	OPENIN_1
+OPENUP:			LD      A,2			; Open for reading / writing
+			JR	OPENIN_1
 ;
-OPENIN:		ret	
-			; LD      A,1			; Open for reading
+OPENIN:			LD      A,1			; Open for reading
 ;
-OPENIN_1:	ret	
-			; PUSH    AF              	; Save OPEN type
-			; CALL    ITEMS           	; Fetch the filename
-			; LD      A,CR
-			; LD      (DE),A
-			; POP     AF              	; Restore the OPEN type
-			; ADD     A,-1            	; Affect the flags
-			; LD      HL,ACCS
-			; CALL    OSOPEN			; Call the OS specific OPEN routine in patch.asm
-			; LD      L,A			; L: Channel number
-			; JR      COUNT0			; Return channel number to BASIC
-
+OPENIN_1:		PUSH    AF              	; Save OPEN type
+			CALL    ITEMS           	; Fetch the filename
+			LD      A,CR
+			LD      (DE),A
+			POP     AF              	; Restore the OPEN type
+			ADD     A,-1            	; Affect the flags
+			LD      HL,ACCS
+			CALL    OSOPEN			; Call the OS specific OPEN routine in patch.asm
+			LD      L,A			; L: Channel number
+			JR      COUNT0			; Return channel number to BASIC
+;
 ;EXT - Return length of file.
 ;PTR - Return current file pointer.
 ;Results are integer numeric.
 ;
-EXT_EV:		ret	
-			; CALL    CHANEL
-			; CALL    GETEXT
-			; JR      TIME0
+EXT:			CALL    CHANEL
+			CALL    GETEXT
+			JR      TIME0
 ;
-PTR_EV:		ret	
-			; CALL    CHANEL
-			; CALL    GETPTR
-			; JR      TIME0
-
+PTR:			CALL    CHANEL
+			CALL    GETPTR
+			JR      TIME0
+;
 ;TIME - Return current value of elapsed time.
 ;Result is integer numeric.
 ;
-TIMEV_EV:	ret		
-			; LD      A,(IY)
-			; CP      '$'
-			; JR      Z,TIMEVS_EV
-			; CALL    GETIME
-TIME0:		ret	
-			; PUSH    DE
-			; EXX
-			; POP     HL
-			; XOR     A
-			; LD      C,A
-			; RET
-
+TIMEV:			LD      A,(IY)
+			CP      '$'
+			JR      Z,TIMEVS
+			CALL    GETIME
+TIME0:			PUSH    DE
+			EXX
+			POP     HL
+			XOR     A
+			LD      C,A
+			RET
+;
 ;TIME$ - Return date/time string.
 ;Result is string
 ;
-TIMEVS_EV:	ret		
-			; INC     IY              ;SKIP $
-			; CALL    GETIMS
-			; LD      A,80H           ;MARK STRING
-			; RET
-; end of the functions we won't be using
-
+TIMEVS:			INC     IY              ;SKIP $
+			CALL    GETIMS
+			LD      A,80H           ;MARK STRING
+			RET
+;
 ;String comparison:
 ;
 SLT:			CALL    SCP
 			RET     NC
-			JR      FOR_EV
+			JR      TRUE
 ;
 SGT:			CALL    SCP
 			RET     Z
 			RET     C
-			JR      FOR_EV
+			JR      TRUE
 ;
 SGE:			CALL    SCP
 			RET     C
-			JR      FOR_EV
+			JR      TRUE
 ;
 SLE:			CALL    SCP
-			JR      Z,FOR_EV
+			JR      Z,TRUE
 			RET     NC
-			JR      FOR_EV
+			JR      TRUE
 ;
 SNE:			CALL    SCP
 			RET     Z
-			JR      FOR_EV
+			JR      TRUE
 ;
 SEQ:			CALL    SCP
 			RET     NZ
-FOR_EV:			LD      A,-1
+TRUE:			LD      A,-1
 			EXX
 			LD      H,A
 			LD      L,A
@@ -902,108 +865,108 @@ FOR_EV:			LD      A,-1
 ;PI - Return PI (3.141592654)
 ;Result is floating-point numeric.
 ;
-PI_EV:			LD      A,35
+PI:			LD      A,35
 			JR      FPP1
 ;
 ;ABS - Absolute value
 ;Result is numeric, variable type.
 ;
-ABSV_EV:			LD      A,16
+ABSV:			LD      A,16
 			JR      FPPN
 ;
 ;NOT - Complement integer.
 ;Result is integer numeric.
 ;
-NOTK_EV:			LD      A,26
+NOTK:			LD      A,26
 			JR      FPPN
 ;
 ;DEG - Convert radians to degrees
 ;Result is floating-point numeric.
 ;
-DEG_EV:			LD      A,21
+DEG:			LD      A,21
 			JR      FPPN
 ;
 ;RAD - Convert degrees to radians
 ;Result is floating-point numeric.
 ;
-RAD_EV:			LD      A,27
+RAD:			LD      A,27
 			JR      FPPN
 ;
 ;SGN - Return -1, 0 or +1
 ;Result is integer numeric.
 ;
-SGN_EV:			LD      A,28
+SGN:			LD      A,28
 			JR      FPPN
 ;
 ;INT - Floor function
 ;Result is integer numeric.
 ;
-INT_EV_:			LD      A,23
+INT_:			LD      A,23
 			JR      FPPN
 ;
 ;SQR - square root
 ;Result is floating-point numeric.
 ;
-SQR_EV:			LD      A,30
+SQR:			LD      A,30
 			JR      FPPN
 ;
 ;TAN - Tangent function
 ;Result is floating-point numeric.
 ;
-TAN_EV:			LD      A,31
+TAN:			LD      A,31
 			JR      FPPN
 ;
 ;COS - Cosine function
 ;Result is floating-point numeric.
 ;
-COS_EV:			LD      A,20
+COS:			LD      A,20
 			JR      FPPN
 ;
 ;SIN - Sine function
 ;Result is floating-point numeric.
 ;
-SIN_EV:			LD      A,29
+SIN:			LD      A,29
 			JR      FPPN
 ;
 ;EXP - Exponential function
 ;Result is floating-point numeric.
 ;
-EXP_EV:			LD      A,22
+EXP:			LD      A,22
 			JR      FPPN
 ;
 ;LN - Natural log.
 ;Result is floating-point numeric.
 ;
-LN_EV:			LD      A,24
+LN:			LD      A,24
 			JR      FPPN
 ;
 ;LOG - base-10 logarithm.
 ;Result is floating-point numeric.
 ;
-LOG_EV:			LD      A,25
+LOG:			LD      A,25
 			JR      FPPN
 ;
 ;ASN - Arc-sine
 ;Result is floating-point numeric.
 ;
-ASN_EV:			LD      A,18
+ASN:			LD      A,18
 			JR      FPPN
 ;
 ;ATN - arc-tangent
 ;Result is floating-point numeric.
 ;
-ATN_EV:			LD      A,19
+ATN:			LD      A,19
 			JR      FPPN
 ;
 ;ACS - arc-cosine
 ;Result is floating point numeric.
 ;
-ACS_EV:			LD      A,17
+ACS:			LD      A,17
 FPPN:			PUSH    AF
 			CALL    ITEMN
 			POP     AF
 FPP1:			CALL    FPP
-			; JP      C,ERROR_
+			JP      C,ERROR_
 			XOR     A
 			RET
 ;
@@ -1014,13 +977,13 @@ SFIX:			LD      A,38
 ;
 ;SFLOAT - Convert to floating-point notation
 ;
-SFLOAT_EV:			LD      A,39
+SFLOAT:			LD      A,39
 			JR      FPP1
 ;
 ;VAL - Return numeric value of string.
 ;Result is variable type numeric.
 ;
-VAL_EV:			CALL    ITEMS
+VAL:			CALL    ITEMS
 VAL0:			XOR     A
 			LD      (DE),A
 			LD      IX,ACCS
@@ -1114,9 +1077,9 @@ RND7:			RES     7,H             ;POSITIVE 0-0.999999
 			LD      B,0             ;INTEGER MARKER
 			LD      A,10
 			CALL    FPP             ;MULTIPLY
-			; JP      C,ERROR_
+			JP      C,ERROR_
 			CALL    SFIX
-			JP      ADD1_EV
+			JP      ADD1
 ;
 ; INSTR - String search.
 ; Result is integer numeric.
@@ -1183,7 +1146,7 @@ SEARCH:			PUSH    BC			; Add the starting offset to HL
 			NEG
 			LD      C,A             	; Remaining length
 ;
-SRCH1_EV:			PUSH    BC
+SRCH1:			PUSH    BC
 			LD	A,C
 			LD	BC,0
 			LD	C,A
@@ -1206,96 +1169,85 @@ SRCH1_EV:			PUSH    BC
 			PUSH    HL
 			DEC     B
 			JR      Z,SRCH3         	; Found!
-SRCH2_EV:			INC     DE
+SRCH2:			INC     DE
 			LD      A,(DE)
 			CP      (HL)
 			JR      NZ,SRCH3
 			INC     HL
-			DJNZ    SRCH2_EV
+			DJNZ    SRCH2
 SRCH3:			POP     HL
 			POP     DE
 			POP     BC
-			JR      NZ,SRCH1_EV
+			JR      NZ,SRCH1
 			XOR     A               	; Flags: Z, NC
 			RET                     	; Found
 ;
 SRCH4:			OR      0FFH            	; Flags: NZ, NC
 			RET                     	; Not found
-
-; we won't be using the following:
+;
 ;CHRS - Return character with given ASCII value.
 ;Result is string.
 ;
-CHRS:		ret	
-			; CALL    ITEMI
-			; EXX
-			; LD      A,L
-			; JR      GET1
+CHRS:			CALL    ITEMI
+			EXX
+			LD      A,L
+			JR      GET1
 ;
 ;GETS - Return key pressed as stringor character at position (X,Y).
 ;Result is string.
 ;
-GETS:		ret	
-			; CALL	NXT		;NEW CODE FOR GET$(X,Y)
-			; CP	'('
-			; JP	Z, GETSCHR	;CALL FUNCTION IN PATCH.Z80
-			; CALL    OSRDCH
-GET1:		ret
-			; SCF
-			; JR      INKEY1
+GETS:			CALL	NXT		;NEW CODE FOR GET$(X,Y)
+			CP	'('
+			JP	Z, GETSCHR	;CALL FUNCTION IN PATCH.Z80
+			CALL    OSRDCH
+GET1:			SCF
+			JR      INKEY1
 ;
 ; INKEYS - Wait up to n centiseconds for keypress.
 ;          Return key pressed as string or null
 ;          string if time elapsed.
 ; Result is string.
 ;
-INKEYS:		ret
-			; CALL    ITEMI			; Fetch the argument
-			; EXX
-INKEY0:		ret	
-			; CALL    OSKEY			; This is the entry point for INKEY(n)
-INKEY1:		ret	
-			; LD      DE,ACCS			; Store the result in the string accumulator
-			; LD      (DE),A
-			; LD      A,80H
-			; RET     NC
-			; INC     E
-			; RET
+INKEYS:			CALL    ITEMI			; Fetch the argument
+			EXX
+INKEY0:			CALL    OSKEY			; This is the entry point for INKEY(n)
+INKEY1:			LD      DE,ACCS			; Store the result in the string accumulator
+			LD      (DE),A
+			LD      A,80H
+			RET     NC
+			INC     E
+			RET
 ;
 ; INKEYM - Check immediately whether a given key is being pressed
 ; Result is integer numeric
 ;
-INKEYM:		ret	
-; 			MOSCALL	mos_getkbmap		; Get the base address of the keyboard
-; 			INC	HL			; Index from 0
-; 			LD	A, L			; Negate the LSB of the answer
-; 			NEG
-; 			LD	C, A			;  E: The positive keycode value
-; 			LD	A, 1			; Throw an "Out of range" error
-; 			JP	M, ERROR_		; if the argument < - 128
-; ;
-; 			LD	HL, BITLOOKUP		; HL: The bit lookup table
-; 			LD	DE, 0
-; 			LD	A, C
-; 			AND	00000111b		; Just need the first three bits
-; 			LD	E, A			; DE: The bit number
-; 			ADD	HL, DE
-; 			LD	B, (HL)			;  B: The mask
-; ;
-; 			LD	A, C			; Fetch the keycode again
-; 			AND	01111000b		; And divide by 8
-; 			RRCA
-; 			RRCA
-; 			RRCA
-; 			LD	E, A			; DE: The offset (the MSW has already been cleared previously)
-; 			ADD	IX, DE			; IX: The address
-; 			LD	A, B			;  B: The mask
-; 			AND	(IX+0)			; Check whether the bit is set
-; 			JP	Z, ZERO			; No, so return 0
-; 			JP	FOR_EV			; Otherwise return -1
-
-; end of the functions we won't be using
-
+INKEYM:			MOSCALL	mos_getkbmap		; Get the base address of the keyboard
+			INC	HL			; Index from 0
+			LD	A, L			; Negate the LSB of the answer
+			NEG
+			LD	C, A			;  E: The positive keycode value
+			LD	A, 1			; Throw an "Out of range" error
+			JP	M, ERROR_		; if the argument < - 128
+;
+			LD	HL, BITLOOKUP		; HL: The bit lookup table
+			LD	DE, 0
+			LD	A, C
+			AND	00000111b		; Just need the first three bits
+			LD	E, A			; DE: The bit number
+			ADD	HL, DE
+			LD	B, (HL)			;  B: The mask
+;
+			LD	A, C			; Fetch the keycode again
+			AND	01111000b		; And divide by 8
+			RRCA
+			RRCA
+			RRCA
+			LD	E, A			; DE: The offset (the MSW has already been cleared previously)
+			ADD	IX, DE			; IX: The address
+			LD	A, B			;  B: The mask
+			AND	(IX+0)			; Check whether the bit is set
+			JP	Z, ZERO			; No, so return 0
+			JP	TRUE			; Otherwise return -1
 ;
 ; A bit lookup table
 ;
@@ -1404,7 +1356,7 @@ STRIN2:			LD      A,(HL)
 			LD      (DE),A
 			INC     E
 			LD      A,19
-			; JP      Z,ERROR_         	; Throw a "String too long" error
+			JP      Z,ERROR_         	; Throw a "String too long" error
 			DJNZ    STRIN2
 			POP     BC
 			DEC     C
@@ -1532,19 +1484,19 @@ STR:			LD      IX,STAVAR
 STR0:			LD      DE,ACCS
 			LD      A,37
 			CALL    FPP
-			; JP      C,ERROR_
+			JP      C,ERROR_
 			BIT     0,(IX+2)
 STR1:			LD      A,80H           ;STRING MARKER
 			RET     Z
 			LD      A,C
 			ADD     A,4
-STR2_EV:			CP      E
+STR2:			CP      E
 			JR      Z,STR1
 			EX      DE,HL	
 			LD      (HL),' '        ;TRAILING SPACE
 			INC     HL
 			EX      DE,HL
-			JR      STR2_EV
+			JR      STR2
 ;
 G9:			DW    9
 ;
@@ -1666,19 +1618,18 @@ COMMA:			CALL    NXT
 			CP      ','
 			RET     Z
 			LD      A,5
-			JR      ERROR1_EV          ;"Missing ,"
+			JR      ERROR1          ;"Missing ,"
 ;
 BRAKET:			CALL    NXT
 			INC     IY
 			CP      ')'
 			RET     Z
 			LD      A,27
-ERROR1_EV:			
-	; JP      ERROR_           ;"Missing )"
+ERROR1:			JP      ERROR_           ;"Missing )"
 ;
-SAVE_EV:			INC     IY
+SAVE:			INC     IY
 SAVE1:			EX      AF,AF'
-			JP      M,TYPE_EV_
+			JP      M,TYPE_
 			EX      AF,AF'
 			EX      (SP),HL
 			EXX
@@ -1689,7 +1640,7 @@ SAVE1:			EX      AF,AF'
 			JP      (HL)
 ;
 DOIT:			EX      AF,AF'
-			JP      M,TYPE_EV_
+			JP      M,TYPE_
 			EXX
 			POP     BC              ;RETURN ADDRESS
 			EXX
@@ -1708,7 +1659,7 @@ DOIT:			EX      AF,AF'
 			EXX
 			AND     0FH
 			CALL    FPP
-			JR      C,ERROR1_EV
+			JR      C,ERROR1
 			XOR     A
 			EX      AF,AF'          ;TYPE
 			LD      A,(IY)
@@ -1730,7 +1681,7 @@ DISPT2:			PUSH    HL
 			LD      HL,SOPTBL
 			JR      DISPT0
 ;
-DISPAT_EV:			PUSH    HL
+DISPAT:			PUSH    HL
 			SUB     FUNTOK
 			LD      HL,FUNTBL
 DISPT0:			PUSH    BC
@@ -1753,4 +1704,132 @@ DISPT0:			PUSH    BC
 			POP     BC
 			EX      (SP),HL
 			RET                     ;OFF TO ROUTINE
+			
+; ===== STUB FUNCTIONS =====
+printInline:
+	ret
+	
+ADVAL:
+	call printInline
+	asciz "eval.asm called ADVAL!"
+	ret
 
+CHANEL:
+	call printInline
+	asciz "eval.asm called CHANEL!"
+	ret
+
+CHECK:
+	call printInline
+	asciz "eval.asm called CHECK!"
+	ret
+
+ERROR_:
+	call printInline
+	asciz "eval.asm called ERROR_!"
+	ret
+
+EXTERR:
+	call printInline
+	asciz "eval.asm called EXTERR!"
+	ret
+
+FN:
+	call printInline
+	asciz "eval.asm called FN!"
+	ret
+
+FPP:
+	call printInline
+	asciz "eval.asm called FPP!"
+	ret
+
+GETCSR:
+	call printInline
+	asciz "eval.asm called GETCSR!"
+	ret
+
+GETEXT:
+	call printInline
+	asciz "eval.asm called GETEXT!"
+	ret
+
+GETIME:
+	call printInline
+	asciz "eval.asm called GETIME!"
+	ret
+
+GETIMS:
+	call printInline
+	asciz "eval.asm called GETIMS!"
+	ret
+
+GETPTR:
+	call printInline
+	asciz "eval.asm called GETPTR!"
+	ret
+
+GETSCHR:
+	call printInline
+	asciz "eval.asm called GETSCHR!"
+	ret
+
+GETVAR:
+	call printInline
+	asciz "eval.asm called GETVAR!"
+	ret
+
+LEXAN2:
+	call printInline
+	asciz "eval.asm called LEXAN2!"
+	ret
+
+OSBGET:
+	call printInline
+	asciz "eval.asm called OSBGET!"
+	ret
+
+OSKEY:
+	call printInline
+	asciz "eval.asm called OSKEY!"
+	ret
+
+OSOPEN:
+	call printInline
+	asciz "eval.asm called OSOPEN!"
+	ret
+
+OSRDCH:
+	call printInline
+	asciz "eval.asm called OSRDCH!"
+	ret
+
+OSSTAT:
+	call printInline
+	asciz "eval.asm called OSSTAT!"
+	ret
+
+POINT:
+	call printInline
+	asciz "eval.asm called POINT!"
+	ret
+
+RANGE:
+	call printInline
+	asciz "eval.asm called RANGE!"
+	ret
+
+STORE5:
+	call printInline
+	asciz "eval.asm called STORE5!"
+	ret
+
+SYNTAX:
+	call printInline
+	asciz "eval.asm called SYNTAX!"
+	ret
+
+USR:
+	call printInline
+	asciz "eval.asm called USR!"
+	ret

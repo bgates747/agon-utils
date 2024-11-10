@@ -18,8 +18,14 @@
 
 			.ASSUME	ADL = 1
 
+			INCLUDE "mos_api.inc"
 			INCLUDE "ram.asm"
 			INCLUDE	"equs.inc"
+			INCLUDE "macros.inc"
+			; include "eval.asm"
+			; include "exec.asm"
+			; include "fpp.asm"
+			; include "sorry.asm"
 
 			; SEGMENT CODE
 			
@@ -2146,7 +2152,7 @@ TELL:			EX      (SP), HL		; Get the return address off the stack into HL, this i
 ; ========= STUB FUNCTIONS =========
 printInline:
 	RET
-	
+
 OSINIT:
 	call printInline
 	asciz "main.asm called OSINIT!"

@@ -242,7 +242,7 @@ vdp_pflag_mouse:	EQU	01000000b
 ; Parameters:
 ; - function: One of the function numbers listed above
 ;
-MOSCALL:		MACRO	function
+			MACRO MOSCALL	function
 			LD	A, function
 			RST.LIS	08h
 			ENDMACRO 	
