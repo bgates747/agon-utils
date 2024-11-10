@@ -9,11 +9,6 @@
 
 			.ASSUME	ADL = 1
 
-			INCLUDE "mos_api.inc"
-			INCLUDE "macros.inc"
-			INCLUDE "ram.asm"
-			INCLUDE	"equs.inc"
-
 			; SEGMENT CODE
 			
 			; XDEF	ENVEL
@@ -29,12 +24,3 @@ PUTIMS:
 			CALL    EXTERR
 			DEFB    "Sorry"
 			DEFB    0
-
-; ===== STUB FUNCTIONS =====
-printInline:
-    ret
-
-EXTERR:
-	call printInline
-	asciz "sorry.asm called EXTERR!"
-	ret

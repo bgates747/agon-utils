@@ -20,8 +20,7 @@
 			
 			.ASSUME	ADL = 1
 				
-			include "ram.asm"
-			INCLUDE	"equs.inc"
+			; INCLUDE	"equs.inc"
 			
 argv_ptrs_max:		EQU	16				; Maximum number of arguments allowed in argv
 			
@@ -159,12 +158,3 @@ _skip_spaces:		LD	A, (HL)			; Get the character from the parameter string
 ;
 _sps:			DS	3			; Storage for the stack pointer
 _argv_ptrs:		BLKP	argv_ptrs_max, 0	; Storage for the argv array pointers
-
-; ===== STUB FUNCTIONS =====
-printInline:
-    ret
-
-_main:
-	call printInline
-	asciz "init.asm called _main!"
-	ret

@@ -9,10 +9,9 @@
 
 			.ASSUME	ADL = 1
 				
-			INCLUDE "mos_api.inc"
-			INCLUDE "macros.inc"
-			INCLUDE "ram.asm"
-			INCLUDE	"equs.inc"
+			; INCLUDE	"macros.inc"
+			; INCLUDE	"equs.inc"
+			; INCLUDE "mos_api.inc"	; In MOS/src
 
 			; SEGMENT CODE
 				
@@ -86,13 +85,3 @@ VBLANK_HANDLER:		DI
 ; Finally jump to the MOS interrupt
 ;
 VBLANK_HANDLER_JP:	JP		0				; This is self-modified by VBLANK_INIT				
-
-; ===== STUB FUNCTIONS =====
-printInline:
-    ret
-
-ESCSET:
-	call printInline
-	asciz "interrupts.asm called ESCSET!"
-	ret
-

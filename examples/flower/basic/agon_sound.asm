@@ -8,10 +8,9 @@
 			
 			.ASSUME	ADL = 1
 				
-			INCLUDE "mos_api.inc"
-			INCLUDE "macros.inc"
-			INCLUDE "ram.asm"
-			INCLUDE	"equs.inc"
+			; INCLUDE	"equs.inc"
+			; INCLUDE "macros.inc"
+			; INCLUDE "mos_api.inc"	; In MOS/src
 		
 			; SEGMENT CODE
 			
@@ -162,31 +161,3 @@ SOUND_FREQ_LOOKUP:	DW	 117,  118,  120,  122,  123,  131,  133,  135
 			DW	4371, 4435, 4499, 4565, 4631, 4699, 4767, 4836	
 
 
-; ===== STUB FUNCTIONS =====
-printInline:
-    ret
-
-COMMA:
-	call printInline
-	asciz "agon_sound.asm called COMMA!"
-	ret
-
-EXPR_W2:
-	call printInline
-	asciz "agon_sound.asm called EXPR_W2!"
-	ret
-
-LTRAP:
-	call printInline
-	asciz "agon_sound.asm called LTRAP!"
-	ret
-
-OSWRCH:
-	call printInline
-	asciz "agon_sound.asm called OSWRCH!"
-	ret
-
-XEQ:
-	call printInline
-	asciz "agon_sound.asm called XEQ!"
-	ret

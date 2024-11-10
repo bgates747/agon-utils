@@ -13,10 +13,10 @@
 ; 17/08/2023:	Added binary constants
 
 			.ASSUME	ADL = 1
-			INCLUDE "mos_api.inc"
-			INCLUDE "macros.inc"
-			INCLUDE "ram.asm"
-			INCLUDE	"equs.inc"
+
+			; INCLUDE	"equs.inc"
+			; INCLUDE "macros.inc"
+			; INCLUDE "mos_api.inc"	; In MOS/src
 
 			; SEGMENT CODE
 				
@@ -1704,132 +1704,4 @@ DISPT0:			PUSH    BC
 			POP     BC
 			EX      (SP),HL
 			RET                     ;OFF TO ROUTINE
-			
-; ===== STUB FUNCTIONS =====
-printInline:
-	ret
-	
-ADVAL:
-	call printInline
-	asciz "eval.asm called ADVAL!"
-	ret
 
-CHANEL:
-	call printInline
-	asciz "eval.asm called CHANEL!"
-	ret
-
-CHECK:
-	call printInline
-	asciz "eval.asm called CHECK!"
-	ret
-
-ERROR_:
-	call printInline
-	asciz "eval.asm called ERROR_!"
-	ret
-
-EXTERR:
-	call printInline
-	asciz "eval.asm called EXTERR!"
-	ret
-
-FN:
-	call printInline
-	asciz "eval.asm called FN!"
-	ret
-
-FPP:
-	call printInline
-	asciz "eval.asm called FPP!"
-	ret
-
-GETCSR:
-	call printInline
-	asciz "eval.asm called GETCSR!"
-	ret
-
-GETEXT:
-	call printInline
-	asciz "eval.asm called GETEXT!"
-	ret
-
-GETIME:
-	call printInline
-	asciz "eval.asm called GETIME!"
-	ret
-
-GETIMS:
-	call printInline
-	asciz "eval.asm called GETIMS!"
-	ret
-
-GETPTR:
-	call printInline
-	asciz "eval.asm called GETPTR!"
-	ret
-
-GETSCHR:
-	call printInline
-	asciz "eval.asm called GETSCHR!"
-	ret
-
-GETVAR:
-	call printInline
-	asciz "eval.asm called GETVAR!"
-	ret
-
-LEXAN2:
-	call printInline
-	asciz "eval.asm called LEXAN2!"
-	ret
-
-OSBGET:
-	call printInline
-	asciz "eval.asm called OSBGET!"
-	ret
-
-OSKEY:
-	call printInline
-	asciz "eval.asm called OSKEY!"
-	ret
-
-OSOPEN:
-	call printInline
-	asciz "eval.asm called OSOPEN!"
-	ret
-
-OSRDCH:
-	call printInline
-	asciz "eval.asm called OSRDCH!"
-	ret
-
-OSSTAT:
-	call printInline
-	asciz "eval.asm called OSSTAT!"
-	ret
-
-POINT:
-	call printInline
-	asciz "eval.asm called POINT!"
-	ret
-
-RANGE:
-	call printInline
-	asciz "eval.asm called RANGE!"
-	ret
-
-STORE5:
-	call printInline
-	asciz "eval.asm called STORE5!"
-	ret
-
-SYNTAX:
-	call printInline
-	asciz "eval.asm called SYNTAX!"
-	ret
-
-USR:
-	call printInline
-	asciz "eval.asm called USR!"
-	ret

@@ -6,10 +6,8 @@
 ;
 ; Modinfo:
 
-			INCLUDE "mos_api.inc"
-			INCLUDE "macros.inc"
-			INCLUDE "ram.asm"
-			INCLUDE	"equs.inc"
+			; INCLUDE	"macros.inc"
+			; INCLUDE	"equs.inc"
 
 			.ASSUME	ADL = 1
 
@@ -110,12 +108,3 @@ GPIOB_M9:		SET_GPIO PB_DR,   B
 			SET_GPIO PB_ALT1, B
 			SET_GPIO PB_ALT2, B
 			RET	
-
-; ===== STUB FUNCTIONS =====
-printInline:
-    ret
-
-SWITCH_A:
-	call printInline
-	asciz "gpio.asm called SWITCH_A!"
-	ret

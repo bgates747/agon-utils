@@ -18,14 +18,7 @@
 
 			.ASSUME	ADL = 1
 
-			INCLUDE "mos_api.inc"
-			INCLUDE "ram.asm"
-			INCLUDE	"equs.inc"
-			INCLUDE "macros.inc"
-			; include "eval.asm"
-			; include "exec.asm"
-			; include "fpp.asm"
-			; include "sorry.asm"
+			; INCLUDE	"equs.inc"
 
 			; SEGMENT CODE
 			
@@ -260,7 +253,7 @@ CLOOP:			SCF				; See above - not sure why this is here!
 			LD	A,(INCREM)
 			LD	C, A
 			ADD     HL,BC			; Add the increment to the line number
-			JP      C,TOOBIG_MAIN		; And error if we wrap
+			JP      C,TOOBIG		; And error if we wrap
 			LD      (AUTONO),HL		; Store the new auto line number
 			LD      A,' '			; Print a space
 			CALL    OUTCHR
@@ -743,7 +736,7 @@ RENUM1:			LD      A,(HL)          	; Fetch the line length byte
 			EXX				; HL: line number, BC: increment (16-bit values)
 			PUSH    HL			; HL: Stack the NEW line number value
 			ADD.S   HL,BC           	; Add the increment
-			JP      C,TOOBIG_MAIN        	; If > 65535, then error: "Too big"
+			JP      C,TOOBIG        	; If > 65535, then error: "Too big"
 			EXX				; DE: Pointer to BASIC program, HL: Pointer to heap
 			POP     BC			; BC: Pop the NEW line number value off the stack
 			LD      (HL),C			; Store the NEW line number in the heap
@@ -1824,19 +1817,19 @@ LINNM1:			LD      A,(IY)			; A: Fetch the digit to add in
 			LD      D,H			; This next block multiplys HL by 10, shifting the result left in BASE 10
 			LD      E,L			; Store the original number in DE
 			ADD.S   HL,HL           	; *2
-			JR      C,TOOBIG_MAIN		; At each point, error if > 65535 (carry flag set)
+			JR      C,TOOBIG		; At each point, error if > 65535 (carry flag set)
 			ADD.S   HL,HL           	; *4S
-			JR      C,TOOBIG_MAIN
+			JR      C,TOOBIG
 			ADD.S   HL,DE           	; *5
-			JR      C,TOOBIG_MAIN	
+			JR      C,TOOBIG	
 			ADD.S   HL,HL           	; *10
-			JR      C,TOOBIG_MAIN
+			JR      C,TOOBIG
 			LD      E,A			; A->DE: the digit to add in
 			LD      D,0
 			ADD.S   HL,DE           	; Add in the digit to the running total
 			JR      NC,LINNM1       	; And if it is still <= 65535, loop
 ;
-TOOBIG_MAIN:			LD      A,20
+TOOBIG:			LD      A,20
 			JP      ERROR_           	; Error: "Too big"
 ;
 ; PAIR - GET PAIR OF LINE NUMBERS FOR RENUMBER/AUTO.
@@ -1862,7 +1855,7 @@ PAIR1:			CALL    TERMQ			; Check for ELSE, : or CR
 			OR      C			; We're good...
 			RET     NZ			; Exit, otherwise...
 			CALL    EXTERR			; Throw error: "Silly"
-			DB    	"Silly", 0
+			DB    	'Silly', 0
 ;
 ; DLPAIR - GET PAIR OF LINE NUMBERS FOR DELETE/LIST.
 ;   Inputs: IY = text pointer
@@ -2148,147 +2141,3 @@ TELL:			EX      (SP), HL		; Get the return address off the stack into HL, this i
 			CALL    TEXT_			; first byte of the string that follows it. Print it, then
 			EX      (SP), HL		; HL will point to the next instruction, swap this back onto the stack	
 			RET				; at this point we'll return to the first instruction after the message
-
-; ========= STUB FUNCTIONS =========
-printInline:
-	RET
-
-OSINIT:
-	call printInline
-	asciz "main.asm called OSINIT!"
-	ret
-
-CHAIN0:
-	call printInline
-	asciz "main.asm called CHAIN0!"
-	ret
-
-PROMPT:
-	call printInline
-	asciz "main.asm called PROMPT!"
-	ret
-
-OSLINE:
-	call printInline
-	asciz "main.asm called OSLINE!"
-	ret
-
-NXT:
-	call printInline
-	asciz "main.asm called NXT!"
-	ret
-
-XEQ:
-	call printInline
-	asciz "main.asm called XEQ!"
-	ret
-
-EXPRI:
-	call printInline
-	asciz "main.asm called EXPRI!"
-	ret
-
-SEARCH:
-	call printInline
-	asciz "main.asm called SEARCH!"
-	ret
-
-LTRAP:
-	call printInline
-	asciz "main.asm called LTRAP!"
-	ret
-
-DECODE:
-	call printInline
-	asciz "main.asm called DECODE!"
-	ret
-
-EXPRS:
-	call printInline
-	asciz "main.asm called EXPRS!"
-	ret
-
-OSSAVE:
-	call printInline
-	asciz "main.asm called OSSAVE!"
-	ret
-
-RESET:
-	call printInline
-	asciz "main.asm called RESET!"
-	ret
-
-OSSHUT:
-	call printInline
-	asciz "main.asm called OSSHUT!"
-	ret
-
-OSLOAD:
-	call printInline
-	asciz "main.asm called OSLOAD!"
-	ret
-
-FILL:
-	call printInline
-	asciz "main.asm called FILL!"
-	ret
-
-OSWRCH:
-	call printInline
-	asciz "main.asm called OSWRCH!"
-	ret
-
-COMMA:
-	call printInline
-	asciz "main.asm called COMMA!"
-	ret
-
-MUL16:
-	call printInline
-	asciz "main.asm called MUL16!"
-	ret
-
-BRAKET:
-	call printInline
-	asciz "main.asm called BRAKET!"
-	ret
-
-X4OR5:
-	call printInline
-	asciz "main.asm called X4OR5!"
-	ret
-
-LOADN:
-	call printInline
-	asciz "main.asm called LOADN!"
-	ret
-
-SFIX:
-	call printInline
-	asciz "main.asm called SFIX!"
-	ret
-
-ITEMI:
-	call printInline
-	asciz "main.asm called ITEMI!"
-	ret
-
-CHECK:
-	call printInline
-	asciz "main.asm called CHECK!"
-	ret
-
-TERMQ:
-	call printInline
-	asciz "main.asm called TERMQ!"
-	ret
-
-STAR_VERSION:
-	call printInline
-	asciz "main.asm called STAR_VERSION!"
-	ret
-
-_end:
-	call printInline
-	asciz "main.asm called _end!"
-	ret

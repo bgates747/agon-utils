@@ -14,11 +14,6 @@
 
 			.ASSUME	ADL = 1
 
-			INCLUDE "mos_api.inc"
-			INCLUDE "macros.inc"
-			INCLUDE "ram.asm"
-			INCLUDE	"equs.inc"
-
 			; SEGMENT CODE
 				
 			; XDEF	FPP
@@ -1754,7 +1749,7 @@ FLOAT_:			BIT     7,H
 FLOATA:			EX      AF,AF'
         		; ADD     A,(RTABLE-DTABLE)/3
         		ADD     A,RTABLE-DTABLE/3 ; ez80asm doesn't do nested expressions        		
-				EX      AF,AF'
+        		EX      AF,AF'
 FLOAT2:			CALL    SWAP
         		CALL    SFLOAT
         		CALL    SWAP
