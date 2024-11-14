@@ -56,7 +56,7 @@ def expand_lines(input_filename, temp_filename):
             else:
                 # Handle lines without byte code
                 if col3 or col4:
-                    temp_file.write(f"{' ' * 7} {' ' * 3} {col3} {col4}\n")
+                    temp_file.write(f"{' ' * 7} {' ' * 2} {col3} {col4}\n")
                 else:
                     temp_file.write(f"{' ' * 7}\n")
 

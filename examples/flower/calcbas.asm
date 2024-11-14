@@ -134,7 +134,9 @@ _skip_spaces:		LD	A, (HL)			; Get the character from the parameter string
 ;
 ;Clear the application memory
 ;
-_clear_ram:		PUSH		BC
+_clear_ram:	
+            push hl
+            PUSH		BC
 			LD		HL, RAM_START		
 			LD		DE, RAM_START + 1
 			LD		BC, RAM_END - RAM_START - 1
@@ -142,6 +144,7 @@ _clear_ram:		PUSH		BC
 			LD		(HL), A
 			LDIR
 			POP		BC
+            pop hl
 			RET
 
 ; ========================================
@@ -149,11 +152,10 @@ _clear_ram:		PUSH		BC
 ; ========================================
 
 ; API INCLUDES
-    include "basic/basic.asm"
 
 ; APPLICATION INCLUDES
     include "calcbas.inc"
-
+    include "basic/basic.asm" ; must be last so that RAM has room for BASIC operations
 
 ; Storage for the argv array pointers
 min_args: equ 2
@@ -177,13 +179,13 @@ _main:
     ld a,c              ; how many arguments?
     cp min_args         ; not enough?
     jr nc,main          ; if enough, go to main loop
-    ; ld hl,str_usage     ; if not enough, print usage
-    ; call printString
-    ;                     ; fall through to _main_end_error
+    ld hl,str_usage     ; if not enough, print usage
+    call printString
+                        ; fall through to _main_end_error
 
 _main_end_error:
-    ; ld hl,str_error     ; print error message
-    ; call printString
+    ld hl,str_error     ; print error message
+    call printString
     ld hl,19            ; return error code 19
     ret
 
@@ -194,25 +196,32 @@ _basic_end:			LD		SP, (_sps)		; Restore the stack pointer
 ; end BASIC-specific end code
 
 _main_end_ok:
-    ; ld hl,str_success   ; print success message
-    ; call printString
+    ld hl,str_success   ; print success message
+    call printString
     ld hl,0             ; return 0 for success
     ret
 
 ; ========= BEGIN CUSTOM MAIN LOOP =========
 main:
     dec c               ; decrement the argument count to skip the program name
-    lea ix,ix+3         ; point to the first real argument
+    lea ix,ix+3         ; point to the first real argument (argv_ptrs+3)
     ld hl,(ix)          ; get the first argument in case hl doesn't land here with it
-    ; call printString  ; DEBUG: works
-    ; call print_params   ; DEBUG: works
+
+    ld a,0 ; DEBUG
+    ; call dumpMemoryHex ; DEBUG
+    call printNewLine ; DEBUG
+    call dumpRegistersHex ; DEBUG
+    call printString  ; DEBUG
+    call printNewLine ; DEBUG
+    ; call print_params   ; DEBUG
 
     ld iy,(ix)           ; point to the expression
-    call EXPR ; send the expression to the BASIC interpreter for evaluation and execution
+    ; call EXPR ; send the expression to the BASIC interpreter for evaluation and execution
     ; call print_float_dec ; print the result
 
     ; call printNewLine
     jp _main_end_ok     ; return success
+    ; jp _basic_end
 
 ; ========== HELPER FUNCTIONS ==========
 ;

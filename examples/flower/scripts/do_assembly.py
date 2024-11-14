@@ -115,6 +115,61 @@ def write_autoexec(autoexec_file, autoexec_text):
             for line in autoexec_text:
                 f.write(line + '\r\n')
 
+def expand_lst(input_filename, output_filename, exclude_comments=False):
+    """Read input lines, expand multibyte lines, and write to the output file.
+       If exclude_comments is True, lines where the first non-whitespace character
+       in column 4 (if exists) is a semicolon are not output."""
+    # Read all lines from the input file and close it
+    with open(input_filename, 'r') as infile:
+        lines = infile.readlines()
+
+    current_address = None  # Tracks the current address
+
+    # Open the output file for writing
+    with open(output_filename, 'w') as output_file:
+        for line in lines:
+            # Splitting the line based on fixed-width columns
+            col1 = line[:7].strip()       # Address (7 chars)
+            col2 = line[7:19].strip()     # Byte code (12 chars)
+            col3_and_4 = line[19:].rstrip()  # Line number and source code (rest of the line)
+
+            # Separate the line number and source code
+            col3_split = col3_and_4.split(maxsplit=1)
+            col3 = col3_split[0].strip().rjust(8) if col3_split else ""
+            col4 = col3_split[1] if len(col3_split) > 1 else ""
+
+            # Check for comment lines in col4 if exclude_comments is True
+            if exclude_comments and col4 and col4.lstrip().startswith(';'):
+                continue  # Skip this line
+
+            # Update the current address if available
+            if col1:
+                try:
+                    current_address = int(col1, 16)
+                except ValueError:
+                    current_address = None
+
+            # Expand byte code if present
+            if col2:
+                bytes_list = col2.split()
+
+                # Write the first byte with source line details
+                if current_address is not None:
+                    output_file.write(f"{current_address:06X} {bytes_list[0]:<3} {col3} {col4}\n")
+                    for byte in bytes_list[1:]:
+                        current_address += 1
+                        output_file.write(f"{current_address:06X} {byte:<3}\n")
+                else:
+                    output_file.write(f"{' ' * 7} {bytes_list[0]:<3} {col3} {col4}\n")
+                    for byte in bytes_list[1:]:
+                        output_file.write(f"{' ' * 7} {byte:<3}\n")
+            else:
+                # Handle lines without byte code
+                if col3 or col4:
+                    output_file.write(f"{' ' * 7} {' ' * 2} {col3} {col4}\n")
+                else:
+                    output_file.write(f"{' ' * 7}\n")
+
 def build_and_run(
     asm_src_dir,
     emulator_dir,
@@ -166,5 +221,7 @@ if __name__ == '__main__':
         autoexec_text = []
         assemble = True
         copy_sdcard = True
-        run_emulator = True
+        run_emulator = False
         build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
+        lst_filepath = f'{asm_src_dir}/{app_name}.lst'
+        expand_lst(lst_filepath, lst_filepath, exclude_comments=False)
