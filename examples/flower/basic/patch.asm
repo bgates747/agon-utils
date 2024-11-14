@@ -46,7 +46,7 @@
 			; XDEF	EXPR_W2
 			; XDEF	STAR_VERSION
 
-			; XREF	_end			; In init.asm
+			; XREF	_basic_end			; In init.asm
 
 			; XREF	ASC_TO_NUMBER
 			; XREF	RAM_START
@@ -430,7 +430,7 @@ COMDS:
 ;
 STAR_BYE:		CALL	VBLANK_STOP		; Restore MOS interrupts
 			LD	HL, 0			; The return value
-			JP	_end 			; Jump back to the end routine in init.asm
+			JP	_basic_end 			; Jump back to the end routine in init.asm
 	
 ; *VERSION
 ;

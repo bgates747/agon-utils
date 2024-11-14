@@ -419,9 +419,9 @@ ESC:			EQU     1BH
 
 			; SEGMENT CODE
 
-			; XDEF	_end			
+			; XDEF	_basic_end			
 			
-			; XREF	_main				; In main.asm
+			; XREF	_basic_main				; In main.asm
 			
 			; XREF	RAM_START			; In ram.asm
 			; XREF	RAM_END
@@ -463,11 +463,11 @@ _start:			PUSH		AF			; Preserve the rest of the registers
 			POP		IX			; IX: argv
 			LD		B, 0			;  C: argc
 			CALL		_clear_ram
-			JP		_main			; Start user code
+			JP		_basic_main			; Start user code
 ;
 ; This bit of code is called from STAR_BYE and returns us safely to MOS
 ;			
-_end:			LD		SP, (_sps)		; Restore the stack pointer
+_basic_end:			LD		SP, (_sps)		; Restore the stack pointer
 
 			POP		IY			; Restore the registers
 			POP		IX			
@@ -8677,7 +8677,7 @@ GPIOB_M9:		SET_GPIO PB_DR,   B
 
 			; SEGMENT CODE
 			
-			; XDEF	_main
+			; XDEF	_basic_main
 			
 			; XDEF	COLD
 			; XDEF	WARM
@@ -8772,7 +8772,7 @@ GPIOB_M9:		SET_GPIO PB_DR,   B
 			; XREF	R0
 			; XREF	STAR_VERSION
 
-			; XREF	_end			; In init.asm			
+			; XREF	_basic_end			; In init.asm			
 ;
 ; A handful of common token IDs
 ;
@@ -8825,7 +8825,7 @@ OFFSET:			EQU     CFH-TOKLO		; Offset to the parameterised SET versions
 ; Returns:
 ;  HL: Error code, or 0 if OK
 ;
-_main:			LD	HL, ACCS		; Clear the ACCS
+_basic_main:			LD	HL, ACCS		; Clear the ACCS
 			LD	(HL), 0
 			LD	A, C			
 			CP	2
@@ -8836,7 +8836,7 @@ _main:			LD	HL, ACCS		; Clear the ACCS
 			DB	"Usage:\n\r"
 			DB	"RUN . <filename>\n\r", 0
 			LD	HL, 0			; The error code
-			JP	_end
+			JP	_basic_end
 ;							
 AUTOLOAD:		LD	HL, (IX+3)		; HLU: Address of filename
 			LD	DE, ACCS		;  DE: Destination address
@@ -11077,7 +11077,7 @@ CSTR_CAT_1:		LD	A, (DE)			; Copy the second string onto the end of the first str
 			; XDEF	EXPR_W2
 			; XDEF	STAR_VERSION
 
-			; XREF	_end			; In init.asm
+			; XREF	_basic_end			; In init.asm
 
 			; XREF	ASC_TO_NUMBER
 			; XREF	RAM_START
@@ -11461,7 +11461,7 @@ COMDS:
 ;
 STAR_BYE:		CALL	VBLANK_STOP		; Restore MOS interrupts
 			LD	HL, 0			; The return value
-			JP	_end 			; Jump back to the end routine in init.asm
+			JP	_basic_end 			; Jump back to the end routine in init.asm
 	
 ; *VERSION
 ;

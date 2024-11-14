@@ -272,25 +272,21 @@ PC     Output      Line
 0B0000             0008*  ; 17/12/2022:	Added parameter processing
 0B0000             0009*  ; 26/12/2022:   Adapted to Copy program, use LEA instead of 3x INC IX, Save/restore MB
 0B0000             0010*  ; Changed:      08/04/2924 adapt to ez80asm
-0B0000             0011*  
-0B0000             0012*  
-0B0000             0013*  argv_ptrs_max:		EQU	16			; Maximum number of arguments allowed in argv
-0B0000             0014*  
-0B0000             0015*  ;
-0B0000             0016*  ; Start in ADL mode
-0B0000             0017*  ;
-0B0000 C3 45 00 0B 0018*  			JP	_start			; Jump to start
-0B0004             0019*  ;
-0B0004             0020*  ; The header stuff is from byte 64 onwards
-0B0004             0021*  ;
-0B0004             0022*  
-0B0004             0023*  _exec_name:
-0B0004             0024*  			PROGNAME			; The executable name, only used in argv
+0B0000             0011*  ;
+0B0000             0012*  ; Start in ADL mode
+0B0000             0013*  ;
+0B0000 C3 45 00 0B 0014*  			JP	_start			; Jump to start
+0B0004             0015*  ;
+0B0004             0016*  ; The header stuff is from byte 64 onwards
+0B0004             0017*  ;
+0B0004             0018*  
+0B0004             0019*  _exec_name:
+0B0004             0020*  			PROGNAME			; The executable name, only used in argv
 0B0004 66 6C 6F 77 0001*M     ASCIZ "flower.bin"
        65 72 2E 62 
        69 6E 00    
-0B000F             0025*  
-0B000F FF FF FF FF 0026*  			ALIGN	64
+0B000F             0021*  
+0B000F FF FF FF FF 0022*  			ALIGN	64
        FF FF FF FF 
        FF FF FF FF 
        FF FF FF FF 
@@ -303,113 +299,114 @@ PC     Output      Line
        FF FF FF FF 
        FF FF FF FF 
        FF          
-0B0040             0027*  
-0B0040 4D 4F 53    0028*  			DB	"MOS"			; Flag for MOS - to confirm this is a valid MOS command
-0B0043 00          0029*  			DB	00h			; MOS header version 0
-0B0044 01          0030*  			DB	01h			; Flag for run mode (0: Z80, 1: ADL)
-0B0045             0031*  ;
-0B0045             0032*  ; And the code follows on immediately after the header
-0B0045             0033*  ;
-0B0045 F5          0034*  _start:			PUSH	AF			; Preserve the registers
-0B0046 C5          0035*  			PUSH	BC
-0B0047 D5          0036*  			PUSH	DE
-0B0048 DD E5       0037*  			PUSH	IX
-0B004A FD E5       0038*  			PUSH	IY
-0B004C ED 6E       0039*  			LD	A, MB			; Save MB
-0B004E F5          0040*  			PUSH 	AF
-0B004F AF          0041*  			XOR 	A
-0B0050 ED 6D       0042*  			LD 	MB, A                   ; Clear to zero so MOS API calls know how to use 24-bit addresses.
-0B0052             0043*  
-0B0052 DD 21 B9 00 0044*  			LD	IX, argv_ptrs		; The argv array pointer address
+0B0040             0023*  
+0B0040 4D 4F 53    0024*  			DB	"MOS"			; Flag for MOS - to confirm this is a valid MOS command
+0B0043 00          0025*  			DB	00h			; MOS header version 0
+0B0044 01          0026*  			DB	01h			; Flag for run mode (0: Z80, 1: ADL)
+0B0045             0027*  ;
+0B0045             0028*  ; And the code follows on immediately after the header
+0B0045             0029*  ;
+0B0045 F5          0030*  _start:			PUSH	AF			; Preserve the registers
+0B0046 C5          0031*  			PUSH	BC
+0B0047 D5          0032*  			PUSH	DE
+0B0048 DD E5       0033*  			PUSH	IX
+0B004A FD E5       0034*  			PUSH	IY
+0B004C ED 6E       0035*  			LD	A, MB			; Save MB
+0B004E F5          0036*  			PUSH 	AF
+0B004F AF          0037*  			XOR 	A
+0B0050 ED 6D       0038*  			LD 	MB, A                   ; Clear to zero so MOS API calls know how to use 24-bit addresses.
+0B0052             0039*  
+0B0052 DD 21 B9 00 0040*  			LD	IX, argv_ptrs		; The argv array pointer address
        0B          
-0B0057 DD E5       0045*  			PUSH	IX
-0B0059 CD 70 00 0B 0046*  			CALL	_parse_params		; Parse the parameters
-0B005D DD E1       0047*  			POP	IX			; IX: argv
-0B005F 06 00       0048*  			LD	B, 0			;  C: argc
-0B0061 CD 69 25 0B 0049*  			CALL	_main			; Start user code
-0B0065             0050*  
-0B0065 F1          0051*  			POP 	AF
-0B0066 ED 6D       0052*  			LD	MB, A
-0B0068 FD E1       0053*  			POP	IY			; Restore registers
-0B006A DD E1       0054*  			POP	IX
-0B006C D1          0055*  			POP	DE
-0B006D C1          0056*  			POP	BC
-0B006E F1          0057*  			POP	AF
-0B006F C9          0058*  			RET
-0B0070             0059*  
-0B0070             0060*  ; Parse the parameter string into a C array
-0B0070             0061*  ; Parameters
-0B0070             0062*  ; - HL: Address of parameter string
-0B0070             0063*  ; - IX: Address for array pointer storage
-0B0070             0064*  ; Returns:
-0B0070             0065*  ; -  C: Number of parameters parsed
-0B0070             0066*  ;
-0B0070 01 04 00 0B 0067*  _parse_params:		LD	BC, _exec_name
-0B0074 DD 0F 00    0068*  			LD	(IX+0), BC		; ARGV[0] = the executable name
-0B0077 ED 32 03    0069*  			LEA     IX, IX+3
-0B007A CD B2 00 0B 0070*  			CALL	_skip_spaces		; Skip HL past any leading spaces
-0B007E             0071*  ;
-0B007E 01 01 00 00 0072*  			LD	BC, 1			; C: ARGC = 1 - also clears out top 16 bits of BCU
-0B0082 06 0F       0073*  			LD	B, argv_ptrs_max - 1	; B: Maximum number of argv_ptrs
-0B0084             0074*  ;
-0B0084             0075*  _parse_params_1:
-0B0084 C5          0076*  			PUSH	BC			; Stack ARGC
-0B0085 E5          0077*  			PUSH	HL			; Stack start address of token
-0B0086 CD A3 00 0B 0078*  			CALL	_get_token		; Get the next token
-0B008A 79          0079*  			LD	A, C			; A: Length of the token in characters
-0B008B D1          0080*  			POP	DE			; Start address of token (was in HL)
-0B008C C1          0081*  			POP	BC			; ARGC
-0B008D B7          0082*  			OR	A			; Check for A=0 (no token found) OR at end of string
-0B008E C8          0083*  			RET	Z
-0B008F             0084*  ;
-0B008F DD 1F 00    0085*  			LD	(IX+0), DE		; Store the pointer to the token
-0B0092 E5          0086*  			PUSH	HL			; DE=HL
-0B0093 D1          0087*  			POP	DE
-0B0094 CD B2 00 0B 0088*  			CALL	_skip_spaces		; And skip HL past any spaces onto the next character
-0B0098 AF          0089*  			XOR	A
-0B0099 12          0090*  			LD	(DE), A			; Zero-terminate the token
-0B009A ED 32 03    0091*  			LEA  	IX, IX+3			; Advance to next pointer position
-0B009D 0C          0092*  			INC	C			; Increment ARGC
-0B009E 79          0093*  			LD	A, C			; Check for C >= A
-0B009F B8          0094*  			CP	B
-0B00A0 38 E2       0095*  			JR	C, _parse_params_1	; And loop
-0B00A2 C9          0096*  			RET
-0B00A3             0097*  
-0B00A3             0098*  ; Get the next token
-0B00A3             0099*  ; Parameters:
-0B00A3             0100*  ; - HL: Address of parameter string
-0B00A3             0101*  ; Returns:
-0B00A3             0102*  ; - HL: Address of first character after token
-0B00A3             0103*  ; -  C: Length of token (in characters)
-0B00A3             0104*  ;
-0B00A3 0E 00       0105*  _get_token:		LD	C, 0			; Initialise length
-0B00A5 7E          0106*  @@:			LD	A, (HL)			; Get the character from the parameter string
-0B00A6 B7          0107*  			OR	A			; Exit if 0 (end of parameter string in MOS)
-0B00A7 C8          0108*  			RET 	Z
-0B00A8 FE 0D       0109*  			CP	13			; Exit if CR (end of parameter string in BBC BASIC)
-0B00AA C8          0110*  			RET	Z
-0B00AB FE 20       0111*  			CP	' '			; Exit if space (end of token)
-0B00AD C8          0112*  			RET	Z
-0B00AE 23          0113*  			INC	HL			; Advance to next character
-0B00AF 0C          0114*  			INC 	C			; Increment length
-0B00B0 18 F3       0115*  			JR	@B
-0B00B2             0116*  
-0B00B2             0117*  ; Skip spaces in the parameter string
-0B00B2             0118*  ; Parameters:
-0B00B2             0119*  ; - HL: Address of parameter string
-0B00B2             0120*  ; Returns:
-0B00B2             0121*  ; - HL: Address of next none-space character
-0B00B2             0122*  ;    F: Z if at end of string, otherwise NZ if there are more tokens to be parsed
-0B00B2             0123*  ;
-0B00B2 7E          0124*  _skip_spaces:		LD	A, (HL)			; Get the character from the parameter string
-0B00B3 FE 20       0125*  			CP	' '			; Exit if not space
-0B00B5 C0          0126*  			RET	NZ
-0B00B6 23          0127*  			INC	HL			; Advance to next character
-0B00B7 18 F9       0128*  			JR	_skip_spaces		; Increment length
-0B00B9             0129*  
-0B00B9             0130*  ; Storage for the argv array pointers
-0B00B9             0131*  ;
-0B00B9 00 00 00 00 0132*  argv_ptrs:		BLKP	argv_ptrs_max, 0
+0B0057 DD E5       0041*  			PUSH	IX
+0B0059 CD 70 00 0B 0042*  			CALL	_parse_params		; Parse the parameters
+0B005D DD E1       0043*  			POP	IX			; IX: argv
+0B005F 06 00       0044*  			LD	B, 0			;  C: argc
+0B0061 CD 69 25 0B 0045*  			CALL	_main			; Start user code
+0B0065             0046*  
+0B0065 F1          0047*  			POP 	AF
+0B0066 ED 6D       0048*  			LD	MB, A
+0B0068 FD E1       0049*  			POP	IY			; Restore registers
+0B006A DD E1       0050*  			POP	IX
+0B006C D1          0051*  			POP	DE
+0B006D C1          0052*  			POP	BC
+0B006E F1          0053*  			POP	AF
+0B006F C9          0054*  			RET
+0B0070             0055*  
+0B0070             0056*  ; Parse the parameter string into a C array
+0B0070             0057*  ; Parameters
+0B0070             0058*  ; - HL: Address of parameter string
+0B0070             0059*  ; - IX: Address for array pointer storage
+0B0070             0060*  ; Returns:
+0B0070             0061*  ; -  C: Number of parameters parsed
+0B0070             0062*  ;
+0B0070 01 04 00 0B 0063*  _parse_params:		LD	BC, _exec_name
+0B0074 DD 0F 00    0064*  			LD	(IX+0), BC		; ARGV[0] = the executable name
+0B0077 ED 32 03    0065*  			LEA     IX, IX+3
+0B007A CD B2 00 0B 0066*  			CALL	_skip_spaces		; Skip HL past any leading spaces
+0B007E             0067*  ;
+0B007E 01 01 00 00 0068*  			LD	BC, 1			; C: ARGC = 1 - also clears out top 16 bits of BCU
+0B0082 06 0F       0069*  			LD	B, argv_ptrs_max - 1	; B: Maximum number of argv_ptrs
+0B0084             0070*  ;
+0B0084             0071*  _parse_params_1:
+0B0084 C5          0072*  			PUSH	BC			; Stack ARGC
+0B0085 E5          0073*  			PUSH	HL			; Stack start address of token
+0B0086 CD A3 00 0B 0074*  			CALL	_get_token		; Get the next token
+0B008A 79          0075*  			LD	A, C			; A: Length of the token in characters
+0B008B D1          0076*  			POP	DE			; Start address of token (was in HL)
+0B008C C1          0077*  			POP	BC			; ARGC
+0B008D B7          0078*  			OR	A			; Check for A=0 (no token found) OR at end of string
+0B008E C8          0079*  			RET	Z
+0B008F             0080*  ;
+0B008F DD 1F 00    0081*  			LD	(IX+0), DE		; Store the pointer to the token
+0B0092 E5          0082*  			PUSH	HL			; DE=HL
+0B0093 D1          0083*  			POP	DE
+0B0094 CD B2 00 0B 0084*  			CALL	_skip_spaces		; And skip HL past any spaces onto the next character
+0B0098 AF          0085*  			XOR	A
+0B0099 12          0086*  			LD	(DE), A			; Zero-terminate the token
+0B009A ED 32 03    0087*  			LEA  	IX, IX+3			; Advance to next pointer position
+0B009D 0C          0088*  			INC	C			; Increment ARGC
+0B009E 79          0089*  			LD	A, C			; Check for C >= A
+0B009F B8          0090*  			CP	B
+0B00A0 38 E2       0091*  			JR	C, _parse_params_1	; And loop
+0B00A2 C9          0092*  			RET
+0B00A3             0093*  
+0B00A3             0094*  ; Get the next token
+0B00A3             0095*  ; Parameters:
+0B00A3             0096*  ; - HL: Address of parameter string
+0B00A3             0097*  ; Returns:
+0B00A3             0098*  ; - HL: Address of first character after token
+0B00A3             0099*  ; -  C: Length of token (in characters)
+0B00A3             0100*  ;
+0B00A3 0E 00       0101*  _get_token:		LD	C, 0			; Initialise length
+0B00A5 7E          0102*  @@:			LD	A, (HL)			; Get the character from the parameter string
+0B00A6 B7          0103*  			OR	A			; Exit if 0 (end of parameter string in MOS)
+0B00A7 C8          0104*  			RET 	Z
+0B00A8 FE 0D       0105*  			CP	13			; Exit if CR (end of parameter string in BBC BASIC)
+0B00AA C8          0106*  			RET	Z
+0B00AB FE 20       0107*  			CP	' '			; Exit if space (end of token)
+0B00AD C8          0108*  			RET	Z
+0B00AE 23          0109*  			INC	HL			; Advance to next character
+0B00AF 0C          0110*  			INC 	C			; Increment length
+0B00B0 18 F3       0111*  			JR	@B
+0B00B2             0112*  
+0B00B2             0113*  ; Skip spaces in the parameter string
+0B00B2             0114*  ; Parameters:
+0B00B2             0115*  ; - HL: Address of parameter string
+0B00B2             0116*  ; Returns:
+0B00B2             0117*  ; - HL: Address of next none-space character
+0B00B2             0118*  ;    F: Z if at end of string, otherwise NZ if there are more tokens to be parsed
+0B00B2             0119*  ;
+0B00B2 7E          0120*  _skip_spaces:		LD	A, (HL)			; Get the character from the parameter string
+0B00B3 FE 20       0121*  			CP	' '			; Exit if not space
+0B00B5 C0          0122*  			RET	NZ
+0B00B6 23          0123*  			INC	HL			; Advance to next character
+0B00B7 18 F9       0124*  			JR	_skip_spaces		; Increment length
+0B00B9             0125*  
+0B00B9             0126*  ; Storage for the argv array pointers
+0B00B9             0127*  ;
+0B00B9             0128*  argv_ptrs_max:		EQU	16			; Maximum number of arguments allowed in argv
+0B00B9 00 00 00 00 0129*  argv_ptrs:		    BLKP	argv_ptrs_max, 0
        00 00 00 00 
        00 00 00 00 
        00 00 00 00 

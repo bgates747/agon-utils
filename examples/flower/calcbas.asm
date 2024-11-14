@@ -52,7 +52,12 @@ _start:
 			PUSH 	AF
 			XOR 	A
 			LD 	MB, A                   ; Clear to zero so MOS API calls know how to use 24-bit addresses.
-			
+
+; intialize BASIC-specific stuff
+			LD		(_sps), SP 		; Preserve the 24-bit stack pointer (SPS)
+			CALL		_clear_ram
+; end of BASIC-specific initialization
+
 			LD	IX, argv_ptrs		; The argv array pointer address
 			PUSH	IX
 			CALL	_parse_params		; Parse the parameters
@@ -124,19 +129,37 @@ _skip_spaces:		LD	A, (HL)			; Get the character from the parameter string
 			JR	_skip_spaces		; Increment length
 
 ; ========================================
+; BASIC INITIALIZATION CODE FROM basic/init.asm
+; ========================================
+;
+;Clear the application memory
+;
+_clear_ram:		PUSH		BC
+			LD		HL, RAM_START		
+			LD		DE, RAM_START + 1
+			LD		BC, RAM_END - RAM_START - 1
+			XOR		A
+			LD		(HL), A
+			LDIR
+			POP		BC
+			RET
+
+; ========================================
 ; BEGIN APPLICATION CODE
 ; ========================================
 
 ; API INCLUDES
-    ; include "parse.inc"
+    include "basic/basic.asm"
 
 ; APPLICATION INCLUDES
+    include "calcbas.inc"
 
 
 ; Storage for the argv array pointers
 min_args: equ 2
 argv_ptrs_max:		EQU	16			; Maximum number of arguments allowed in argv
-argv_ptrs:		    BLKP	argv_ptrs_max, 0			
+argv_ptrs:		    BLKP	argv_ptrs_max, 0		
+_sps:			DS	3			; Storage for the stack pointer (used by BASIC)
 
 ; GLOBAL MESSAGE STRINGS
 str_usage: ASCIZ "Usage: scratch <args>\r\n"
@@ -164,6 +187,12 @@ _main_end_error:
     ld hl,19            ; return error code 19
     ret
 
+; begin BASIC-specific end code
+; This bit of code is called from STAR_BYE and returns us safely to MOS
+_basic_end:			LD		SP, (_sps)		; Restore the stack pointer 
+; fall through to _main_end_ok
+; end BASIC-specific end code
+
 _main_end_ok:
     ; ld hl,str_success   ; print success message
     ; call printString
@@ -178,8 +207,8 @@ main:
     ; call printString  ; DEBUG: works
     ; call print_params   ; DEBUG: works
 
-    ; ld iy,(ix)           ; point to the expression
-    ; call EXPR ; send the expression to the BASIC interpreter for evaluation and execution
+    ld iy,(ix)           ; point to the expression
+    call EXPR ; send the expression to the BASIC interpreter for evaluation and execution
     ; call print_float_dec ; print the result
 
     ; call printNewLine

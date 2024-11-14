@@ -22,7 +22,7 @@
 
 			; SEGMENT CODE
 			
-			; XDEF	_main
+			; XDEF	_basic_main
 			
 			; XDEF	COLD
 			; XDEF	WARM
@@ -117,7 +117,7 @@
 			; XREF	R0
 			; XREF	STAR_VERSION
 
-			; XREF	_end			; In init.asm			
+			; XREF	_basic_end			; In init.asm			
 ;
 ; A handful of common token IDs
 ;
@@ -170,7 +170,7 @@ OFFSET:			EQU     CFH-TOKLO		; Offset to the parameterised SET versions
 ; Returns:
 ;  HL: Error code, or 0 if OK
 ;
-_main:			LD	HL, ACCS		; Clear the ACCS
+_basic_main:			LD	HL, ACCS		; Clear the ACCS
 			LD	(HL), 0
 			LD	A, C			
 			CP	2
@@ -181,7 +181,7 @@ _main:			LD	HL, ACCS		; Clear the ACCS
 			DB	"Usage:\n\r"
 			DB	"RUN . <filename>\n\r", 0
 			LD	HL, 0			; The error code
-			JP	_end
+			JP	_basic_end
 ;							
 AUTOLOAD:		LD	HL, (IX+3)		; HLU: Address of filename
 			LD	DE, ACCS		;  DE: Destination address
