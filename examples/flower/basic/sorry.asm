@@ -7,7 +7,7 @@
 ;
 ; Modinfo:
 
-			.ASSUME	ADL = 1
+			; .ASSUME	ADL = 1
 
 			; SEGMENT CODE
 			

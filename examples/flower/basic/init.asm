@@ -18,7 +18,7 @@
 			; XREF	RAM_START			; In ram.asm
 			; XREF	RAM_END
 			
-			.ASSUME	ADL = 1
+			; .ASSUME	ADL = 1
 				
 			; INCLUDE	"equs.inc"
 			

@@ -7,7 +7,7 @@
 ; Modinfo:
 ; 07/06/2023:	Modified to run in ADL mode
 			
-			.ASSUME	ADL = 1
+			; .ASSUME	ADL = 1
 				
 			; INCLUDE	"equs.inc"
 			; INCLUDE "macros.inc"
@@ -40,10 +40,12 @@
 			; XREF	CRLF
 			; XREF	EXPR_W2
 			; XREF	INKEY1
-			
+
 ; CLG: clears the graphics area
 ;
-CLG:			VDU	10h
+CLG:			
+
+			VDU	10h
 			JP	XEQ
 
 ; CLS: clears the text area

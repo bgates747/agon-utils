@@ -8,7 +8,7 @@
 ; 11/07/2023:	Fixed *BYE for ADL mode
 ; 15/11/2023:	Improved OSLOAD_TXT; now handles LF terminated files, files with no trailing LF or CR/LF at end
 
-			.ASSUME	ADL = 1
+			; .ASSUME	ADL = 1
 				
 			; INCLUDE	"equs.inc"
 			; INCLUDE "macros.inc"
@@ -370,26 +370,61 @@ UPPRC:  		AND     7FH
 ; Each command has bit 7 of the last character set, and is followed by the address of the handler
 ; These must be in alphabetical order
 ;		
-COMDS:  		DB	"AS","M"+80h		; ASM
-			DW	STAR_ASM
-			DB	"BY","E"+80h		; BYE
-			DW	STAR_BYE
-			DB	"EDI","T"+80h		; EDIT
-			DW	STAR_EDIT
-			DB	"F","X"+80h		; FX
-			DW	STAR_FX
-			DB	"VERSIO","N"+80h	; VERSION
-			DW	STAR_VERSION
-			DB	FFh
-						
-; *ASM string
+; BEGIN NOT FOUND IN BINARY
+; COMDS:  		DB	"AS","M"+80h		; ASM
+; 			DW	STAR_ASM
+; 			DB	"BY","E"+80h		; BYE
+; 			DW	STAR_BYE
+; 			DB	"EDI","T"+80h		; EDIT
+; 			DW	STAR_EDIT
+; 			DB	"F","X"+80h		; FX
+; 			DW	STAR_FX
+; 			DB	"VERSIO","N"+80h	; VERSION
+; 			DW	STAR_VERSION
+; 			DB	FFh
+; END NOT FOUND IN BINARY
+; BEGIN INSERTED FROM BINARY
+; Each command has bit 7 of the last character set, and is followed by the address of the handler
+; These must be in alphabetical order
 ;
-STAR_ASM:		PUSH	IY			; Stack the BASIC pointer
-			PUSH	HL			; HL = IY
-			POP	IY
-			CALL	ASSEM			; Invoke the assembler
-			POP	IY
-			RET
+COMDS:
+	db 0x42 ; 044013 41     11404 COMDS:  		DB	"AS","M"+80h		; ASM
+	db 0x59 ; 044014
+	db 0xc5 ; 044015
+	db 0x2c ; 044016 31     11405 DW	STAR_ASM
+	db 0x40 ; 044017
+	db 0x45 ; 044018 42     11406 DB	"BY","E"+80h		; BYE
+	db 0x44 ; 044019
+	db 0x49 ; 04401A
+	db 0xd4 ; 04401B 3D     11407 DW	STAR_BYE
+	db 0x61 ; 04401C
+	db 0x40 ; 04401D 45     11408 DB	"EDI","T"+80h		; EDIT
+	db 0x46 ; 04401E
+	db 0xd8 ; 04401F
+	db 0xa1 ; 044020
+	db 0x40 ; 044021 72     11409 DW	STAR_EDIT
+	db 0x56 ; 044022
+	db 0x45 ; 044023 46     11410 DB	"F","X"+80h		; FX
+	db 0x52 ; 044024
+	db 0x53 ; 044025 B2     11411 DW	STAR_FX
+	db 0x49 ; 044026
+	db 0x4f ; 044027 56     11412 DB	"VERSIO","N"+80h	; VERSION
+	db 0xce ; 044028
+	db 0x38 ; 044029
+	db 0x40 ; 04402A
+	db 0xff ; 04402B
+; END INSERTED FROM BINARY
+
+; BEGIN NOT FOUND IN BINARY						
+; ; *ASM string
+; ;
+; STAR_ASM:		PUSH	IY			; Stack the BASIC pointer
+; 			PUSH	HL			; HL = IY
+; 			POP	IY
+; 			CALL	ASSEM			; Invoke the assembler
+; 			POP	IY
+; 			RET
+; END NOT FOUND IN BINARY
 
 ; *BYE
 ;

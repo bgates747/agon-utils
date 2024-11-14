@@ -6,7 +6,7 @@
 ;
 ; Modinfo:
 			
-			.ASSUME	ADL = 1
+			; .ASSUME	ADL = 1
 				
 			; INCLUDE	"equs.inc"
 			; INCLUDE "macros.inc"

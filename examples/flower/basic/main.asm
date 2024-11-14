@@ -16,7 +16,7 @@
 ; 15/11/2023:	Fixed bug in ONEDIT1 for OSLOAD_TXT, Startup message now includes Agon version
 ; 26/11/2023:	Fixed bug in AUTOLOAD
 
-			.ASSUME	ADL = 1
+			; .ASSUME	ADL = 1
 
 			; INCLUDE	"equs.inc"
 
@@ -121,15 +121,15 @@
 ;
 ; A handful of common token IDs
 ;
-TERROR:			EQU     85H
-LINE_:			EQU     86H
-ELSE_:			EQU     8BH
-THEN:			EQU     8CH
-LINO:			EQU     8DH
+TERROR_MN:			EQU     85H
+LINE_MN_:			EQU     86H
+ELSE_MN_:			EQU     8BH
+THEN_MN_:			EQU     8CH
+LINO_MN:			EQU     8DH
 FN:			EQU     A4H
-TO:			EQU     B8H
+TO_MN:			EQU     B8H
 REN:			EQU     CCH
-DATA_:			EQU     DCH
+DATA_MN_:			EQU     DCH
 DIM:			EQU     DEH
 FOR:			EQU     E3H
 GOSUB:			EQU     E4H
@@ -541,13 +541,13 @@ ERRWDS:			DB    7, "room", 0		;  0: No room
 			DB    "Can't match ", FOR, 0	; 33: Can't match FOR
 			DB    FOR, " ", 5, 0		; 34: FOR variable
 			DB    0				; 35: *
-			DB    7, TO, 0			; 36: No TO
+			DB    7, TO_MN, 0			; 36: No TO
 			DB    0				; 37: *
 			DB    7, GOSUB, 0		; 38: No GOSUB
 			DB    ON_, " syntax", 0		; 39: ON syntax
 			DB    ON_, 4, 0			; 40: ON range
 			DB    2, "line", 0		; 41: No such line
-			DB    6, " ", DATA_, 0		; 42: Out of DATA
+			DB    6, " ", DATA_MN_, 0		; 42: Out of DATA
 			DB    7, REPEAT, 0		; 43: No REPEAT
 			DB    0				; 44: *
 			DB    1, "#", 0			; 45: Missing #
@@ -802,7 +802,7 @@ RENUM3:			LD      C,(HL)			; Fetch the first line length byte
 			LD	BC,0
 			LD	C,A			; BC: Line length
 ;
-RENUM7:			LD      A,LINO			; A: The token code that precedes any line number encoded in BASIC (i.e. GOTO/GOSUB)
+RENUM7:			LD      A,LINO_MN			; A: The token code that precedes any line number encoded in BASIC (i.e. GOTO/GOSUB)
 			CPIR                    	; Search for the token
 			JR      NZ,RENUM3		; If not found, then loop to process the next line
 ;
@@ -1239,7 +1239,7 @@ LOUT:			BIT     0,E			; If the quote counter is odd (bit 1 set) then
 			JR      NZ,OUTCHR		; don't tokenise, just output the character
 			CP	REM			; DB: Is it REM
 			JR	Z, PRREM		; DB: Yes so jump to the special case for REM
-			CP      LINO			; Is it a line number (following GOTO/GOSUB etc)?
+			CP      LINO_MN			; Is it a line number (following GOTO/GOSUB etc)?
 			JR      Z,PRLINO		; Yes, so decode and print the line number
 			CALL    OUT_			; Output a character / keyword
 			LD      A,(HL)			; Fetch the next character	
@@ -1855,7 +1855,7 @@ PAIR1:			CALL    TERMQ			; Check for ELSE, : or CR
 			OR      C			; We're good...
 			RET     NZ			; Exit, otherwise...
 			CALL    EXTERR			; Throw error: "Silly"
-			DB    	'Silly', 0
+			DB    	"Silly", 0
 ;
 ; DLPAIR - GET PAIR OF LINE NUMBERS FOR DELETE/LIST.
 ;   Inputs: IY = text pointer
@@ -1924,7 +1924,7 @@ RANGE2:			CP      'A'			; If it is between 'A'...
 ;
 SPACE_: 		XOR     A
 			CALL    EXTERR          	; "LINE space"
-			DB    	LINE_, 8, 0
+			DB    	LINE_MN_, 8, 0
 ;
 ; LEXAN - LEXICAL ANALYSIS.
 ;  Bit 0,C: 1=left, 0=right
@@ -2017,7 +2017,7 @@ LEXAN7:			CP      '*'			; Is it a '*' (for star commands)
 ;
 LEXAN8:			CP      REM			; If the token is REM
 			JR      Z,LEXAN9		; Then stop tokenising
-			CP      DATA_			; If it is not DATA then
+			CP      DATA_MN_			; If it is not DATA then
 			JR      NZ,LEXANA		; Skip
 LEXAN9:			SET     6,C             	; FLAG: STOP TOKENISING
 ;
@@ -2062,11 +2062,11 @@ LIST1:			DB	GOTO
 			DB	GOSUB
 			DB	RESTOR
 			DB	TRACE
-LIST2:			DB	THEN
-			DB	ELSE_
+LIST2:			DB	THEN_MN_
+			DB	ELSE_MN_
 LIST1L:			EQU     $-LIST1
 			DB	REPEAT
-			DB	TERROR
+			DB	TERROR_MN
 			DB    	':'
 LIST2L:			EQU     $-LIST2
 ;
@@ -2085,7 +2085,7 @@ LIST2L:			EQU     $-LIST2
 ;
 ENCODE:			SET     4,C			; Set bit 4 of C (for lexical analysis - accept line number)
 			EX      DE, HL			; HL: string pointer, DE: line number
-			LD      (HL), LINO		; Store 8Dh first to flag next bytes as an encoded line number
+			LD      (HL), LINO_MN		; Store 8Dh first to flag next bytes as an encoded line number
 			INC     HL
 			LD      A,D			; Get the high byte
 			AND     0C0H			; Get the top two bits	DD000000

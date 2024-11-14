@@ -9,7 +9,7 @@
 			; INCLUDE	"macros.inc"
 			; INCLUDE	"equs.inc"
 
-			.ASSUME	ADL = 1
+			; .ASSUME	ADL = 1
 
 			; SEGMENT CODE
 				

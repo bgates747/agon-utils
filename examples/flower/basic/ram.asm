@@ -12,7 +12,7 @@
 ; 06/06/2023:	Modified to run in ADL mode
 ; 26/06/2023:	Added temporary stores R0 and R1
 
-			.ASSUME	ADL = 1
+			; .ASSUME	ADL = 1
 
 			; DEFINE	LORAM, SPACE = ROM
 			; SEGMENT LORAM
@@ -58,65 +58,79 @@
 			; XDEF	RAM_END
 			; XDEF	USER
 
+end_binary: ;  for assemble.py to know where to truncate the binary file
 			ALIGN 		256		; ACCS, BUFFER & STAVAR must be on page boundaries			
 RAM_START:		
 ;
-ACCS:			DS		256             ; String Accumulator
-BUFFER:			DS		256             ; String Input Buffer
-STAVAR:			DS	 	27*4            ; Static Variables
-DYNVAR: 		DS 		54*3            ; Dynamic Variable Pointers
-FNPTR:  		DS    		3               ; Dynamic Function Pointers
-PROPTR: 		DS		3               ; Dynamic Procedure Pointers
+ACCS:           BLKB    256,0             ; String Accumulator
+BUFFER:         BLKB    256,0             ; String Input Buffer
+STAVAR:         BLKB    27*4,0            ; Static Variables
+DYNVAR:         BLKB    54*3,0            ; Dynamic Variable Pointers
+FNPTR:          BLKB    3,0               ; Dynamic Function Pointers
+PROPTR:         BLKB    3,0               ; Dynamic Procedure Pointers
 ;
-PAGE_:   		DS		3               ; Start of User Program
-TOP:    		DS		3               ; First Location after User Program
-LOMEM:  		DS		3               ; Start of Dynamic Storage
-FREE:   		DS		3               ; First Free Space Byte
-HIMEM:  		DS		3               ; First Protected Byte
+PAGE_:          BLKB    3,0               ; Start of User Program
+TOP:            BLKB    3,0               ; First Location after User Program
+LOMEM:          BLKB    3,0               ; Start of Dynamic Storage
+FREE:           BLKB    3,0               ; First Free Space Byte
+HIMEM:          BLKB    3,0               ; First Protected Byte
 ;
-LINENO: 		DS		3               ; Line Number
-TRACEN:			DS		3               ; Trace Flag
-AUTONO:			DS		3               ; Auto Flag
-ERRTRP:			DS		3               ; Error Trap
-ERRTXT:			DS		2               ; Error Message Pointer
-DATPTR:			DS		2               ; Data Pointer
-ERL:			DS		2               ; Error Line
-ERRLIN:			DS		3               ; The "ON ERROR" Line
-RANDOM:			DS		5               ; Random Number
-COUNT:			DS		1               ; Print Position
-WIDTH:			DS		1               ; Print Width
-ERR:			DS		1               ; Error Number
-LISTON:			DS		1               ; LISTO (bottom nibble)
-							; - BIT 0: If set, output a space after the line number
-							; - BIT 1: If set, then indent FOR/NEXT loops
-							; - BIT 2: If set, then indent REPEAT/UNTIL loops
-							; - BIT 3: If set, then output to buffer for *EDIT
-							; OPT FLAG (top nibble)
-							; - BIT 4: If set, then list whilst assembling
-							; - BIT 5: If set, then assembler errors are reported
-							; - BIT 6: If set, then place the code starting at address pointed to by O%
-							; - BIT 7: If set, then assemble in ADL mode, otherwise assemble in Z80 mode
-INCREM:			DS		1               ; Auto-Increment Value
+LINENO:         BLKB    3,0               ; Line Number
+TRACEN:         BLKB    3,0               ; Trace Flag
+AUTONO:         BLKB    3,0               ; Auto Flag
+ERRTRP:         BLKB    3,0               ; Error Trap
+ERRTXT:         BLKB    2,0               ; Error Message Pointer
+DATPTR:         BLKB    2,0               ; Data Pointer
+ERL:            BLKB    2,0               ; Error Line
+ERRLIN:         BLKB    3,0               ; The "ON ERROR" Line
+RANDOM:         BLKB    5,0               ; Random Number
+COUNT:          BLKB    1,0               ; Print Position
+WIDTH:          BLKB    1,0               ; Print Width
+ERR:            BLKB    1,0               ; Error Number
+LISTON:         BLKB    1,0               ; LISTO (bottom nibble)
+                                ; - BIT 0: If set, output a space after the line number
+                                ; - BIT 1: If set, then indent FOR/NEXT loops
+                                ; - BIT 2: If set, then indent REPEAT/UNTIL loops
+                                ; - BIT 3: If set, then output to buffer for *EDIT
+                                ; OPT FLAG (top nibble)
+                                ; - BIT 4: If set, then list whilst assembling
+                                ; - BIT 5: If set, then assembler errors are reported
+                                ; - BIT 6: If set, then place the code starting at address pointed to by O%
+                                ; - BIT 7: If set, then assemble in ADL mode, otherwise assemble in Z80 mode
+INCREM:         BLKB    1,0               ; Auto-Increment Value
 ;
+; --------------------------------------------------------------------------------------------
+; BEGIN MODIFIED CODE
+; --------------------------------------------------------------------------------------------
+; Originally in equs.inc
+;
+OC:			EQU     15*4+STAVAR     ; CODE ORIGIN (O%)
+PC:			EQU     16*4+STAVAR     ; PROGRAM COUNTER (P%)
+VDU_BUFFER:		EQU	ACCS		; Storage for VDU commands
+; --------------------------------------------------------------------------------------------
+; END MODIFIED CODE
+; --------------------------------------------------------------------------------------------
+
 ; Extra Agon-implementation specific system variables
 ;
-FLAGS:			DS		1		; Miscellaneous flags
-							; - BIT 7: Set if ESC pressed
-							; - BIT 6: Set to disable ESC
-OSWRCHPT:		DS		2		; Pointer for *EDIT
-OSWRCHCH:		DS		1		; Channel of OSWRCH
-							; - 0: Console
-							; - 1: File
-OSWRCHFH:		DS		1		; File handle for OSWRCHCHN
-KEYDOWN:		DS		1		; Keydown flag
-KEYASCII:		DS		1		; ASCII code of pressed key
-KEYCOUNT:		DS		1		; Counts every time a key is pressed
-R0:			DS		3		; General purpose storage for 8/16 to 24 bit operations
-R1:			DS		3		; 
+FLAGS:          BLKB    1,0       ; Miscellaneous flags
+                                ; - BIT 7: Set if ESC pressed
+                                ; - BIT 6: Set to disable ESC
+OSWRCHPT:       BLKB    2,0       ; Pointer for *EDIT
+OSWRCHCH:       BLKB    1,0       ; Channel of OSWRCH
+                                ; - 0: Console
+                                ; - 1: File
+OSWRCHFH:       BLKB    1,0       ; File handle for OSWRCHCHN
+KEYDOWN:        BLKB    1,0       ; Keydown flag
+KEYASCII:       BLKB    1,0       ; ASCII code of pressed key
+KEYCOUNT:       BLKB    1,0       ; Counts every time a key is pressed
+R0:             BLKB    3,0       ; General purpose storage for 8/16 to 24 bit operations
+R1:             BLKB    3,0
+
 ;
 ; This must be at the end
 ;
-RAM_END:		
+RAM_END:
 			ALIGN	256			
 USER:							; Must be aligned on a page boundary
 	

@@ -45,11 +45,11 @@ GPIOMODE_INTAH:		EQU		7	; Interrupt, Active High
 GPIOMODE_INTFE:		EQU		8	; Interrupt, Falling Edge
 GPIOMODE_INTRE:		EQU		9	; Interrupt, Rising Edge
 	
-; Originally in ram.asm
-;
-OC:			EQU     STAVAR+15*4     ; CODE ORIGIN (O%)
-PC:			EQU     STAVAR+16*4     ; PROGRAM COUNTER (P%)
-VDU_BUFFER:		EQU	ACCS		; Storage for VDU commands
+; ; Originally in ram.asm
+; ;
+; OC:			EQU     STAVAR+15*4     ; CODE ORIGIN (O%)
+; PC:			EQU     STAVAR+16*4     ; PROGRAM COUNTER (P%)
+; VDU_BUFFER:		EQU	ACCS		; Storage for VDU commands
 
 ; Originally in main.asm
 ;
