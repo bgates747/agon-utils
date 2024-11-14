@@ -146,14 +146,25 @@ def build_and_run(
 
 if __name__ == '__main__':
     tgt_dir = 'mos'
-    app_name = 'flower'
-    emulator_dir = '/home/smith/Agon/emulator'
-    # asm_src_dir = 'examples/flower'
-    asm_src_dir = f'/home/smith/Agon/emulator/sdcard/mystuff/agon-utils/examples/flower'
-    tgt_bin_filename = f'{app_name}.bin'
-    copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
-    autoexec_text = []
-    assemble = True
-    copy_sdcard = True
-    run_emulator = False
-    build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
+    emulator_dir = os.path.expanduser('~/Agon/emulator')
+    asm_src_dir = os.path.expanduser('~/Agon/emulator/sdcard/mystuff/agon-utils/examples/flower')
+
+    if False:
+        app_name = 'flower'
+        tgt_bin_filename = f'{app_name}.bin'
+        copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
+        autoexec_text = []
+        assemble = True
+        copy_sdcard = True
+        run_emulator = True
+        build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
+
+    if True:
+        app_name = 'calcbas'
+        tgt_bin_filename = f'{app_name}.bin'
+        copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
+        autoexec_text = []
+        assemble = True
+        copy_sdcard = True
+        run_emulator = True
+        build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
