@@ -155,6 +155,7 @@ _clear_ram:
 
 ; APPLICATION INCLUDES
     include "calcbas.inc"
+    include "mathfpp.inc"
     include "basic/basic.asm" ; must be last so that RAM has room for BASIC operations
 
 ; Storage for the argv array pointers
@@ -209,19 +210,28 @@ main:
 
     ld a,0 ; DEBUG
     ; call dumpMemoryHex ; DEBUG
-    call printNewLine ; DEBUG
-    call dumpRegistersHex ; DEBUG
+    ; call dumpRegistersHex ; DEBUG
     call printString  ; DEBUG
     call printNewLine ; DEBUG
     ; call print_params   ; DEBUG
 
     ld iy,(ix)           ; point to the expression
-    ; call EXPR ; send the expression to the BASIC interpreter for evaluation and execution
-    ; call print_float_dec ; print the result
-
-    ; call printNewLine
+    call EXPR ; send the expression to the BASIC interpreter for evaluation and execution
+    jp p,@print_dec
+    ld hl,ACCS ; result is a string
+    call printString
+    call printNewLine
     jp _main_end_ok     ; return success
-    ; jp _basic_end
+
+@print_dec:
+    call print_float_dec ; print the result
+    call printNewLine
+    jp _main_end_ok     ; return success
+
+    ; call dumpRegistersHex ; DEBUG
+    ; call printNewLine
+    ; call dumpRegistersHex ; DEBUG
+
 
 ; ========== HELPER FUNCTIONS ==========
 ;

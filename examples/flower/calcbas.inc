@@ -16,6 +16,42 @@ str_ixu: db " ix=",0
 str_iyu: db " iy=",0
 
 
+    MACRO PUSH_ALL
+        ex af,af'
+        exx
+        push af
+        push hl
+        push bc
+        push de
+
+        ex af,af'
+        exx
+        push af
+        push hl
+        push bc
+        push de
+        push ix
+        push iy
+    ENDMACRO
+
+    MACRO POP_ALL
+        pop iy
+        pop ix
+        pop de
+        pop bc
+        pop hl
+        pop af
+        ex af,af'
+        exx
+
+        pop de
+        pop bc
+        pop hl
+        pop af
+        ex af,af'
+        exx
+    ENDMACRO
+
 ; Print a 24-bit HEX number
 ; HLU: Number to print
 printHex24:

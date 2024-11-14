@@ -115,19 +115,11 @@ fdiv: equ 57
 ; inputs: HL'H'L'C is the number to print
 ; outputs: number printed to screen
 ;          STROUT null-terminated string representation of the number
-; destroys: nothing
+; destroys: everything
 print_float_dec:
-    PUSH_ALL
-    ld ix,NUMF ; point to the format code buffer
-    ld e,10 ; fractional digits
-    ld (ix+1),e ; store the format code
-    ld d,%000000010
-    ld (ix+2),d ; store the format code
-    ld de,STROUT ; point to the output buffer
-    call STRING ; convert the number back to a string
-    ld hl,STROUT ; point to the string output buffer
+    call STR ; convert the number to a string
+    ld hl,ACCS ; point to the string accumulator
     call printString
-    POP_ALL
     ret
 
 
