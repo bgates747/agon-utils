@@ -53,10 +53,7 @@ _start:
 			XOR 	A
 			LD 	MB, A                   ; Clear to zero so MOS API calls know how to use 24-bit addresses.
 
-; ; intialize BASIC-specific stuff
-; 			LD		(_sps), SP 		; Preserve the 24-bit stack pointer (SPS)
-; 			CALL		_clear_ram
-; ; end of BASIC-specific initialization
+			CALL		_clear_ram ; Clear the BASIC memory allocation
 
 			LD	IX, argv_ptrs		; The argv array pointer address
 			PUSH	IX
@@ -73,7 +70,7 @@ _start:
 			POP	BC
 			POP	AF
 			RET
-	
+
 ; Parse the parameter string into a C array
 ; Parameters
 ; - HL: Address of parameter string
@@ -148,20 +145,20 @@ _skip_spaces:		LD	A, (HL)			; Get the character from the parameter string
 ; BASIC INITIALIZATION CODE FROM basic/init.asm
 ; ========================================
 ;
-; ;Clear the application memory
-; ;
-; _clear_ram:	
-;             push hl
-;             PUSH		BC
-; 			LD		HL, RAM_START		
-; 			LD		DE, RAM_START + 1
-; 			LD		BC, RAM_END - RAM_START - 1
-; 			XOR		A
-; 			LD		(HL), A
-; 			LDIR
-; 			POP		BC
-;             pop hl
-; 			RET
+;Clear the application memory
+;
+_clear_ram:	
+            push hl
+            PUSH		BC
+			LD		HL, RAM_START		
+			LD		DE, RAM_START + 1
+			LD		BC, RAM_END - RAM_START - 1
+			XOR		A
+			LD		(HL), A
+			LDIR
+			POP		BC
+            pop hl
+			RET
 
 ; ========================================
 ; BEGIN APPLICATION CODE
@@ -170,15 +167,18 @@ _skip_spaces:		LD	A, (HL)			; Get the character from the parameter string
 ; API INCLUDES
 
 ; APPLICATION INCLUDES
-    include "temp.inc"
-    include "fpp.inc"
-    ; include "basic/basic.asm" ; must be last so that RAM has room for BASIC operations
+    include "calcbas.inc"
+    include "mathfpp.inc"
 
 ; Storage for the argv array pointers
 min_args: equ 2
 argv_ptrs_max:		EQU	16			; Maximum number of arguments allowed in argv
 argv_ptrs:		    BLKP	argv_ptrs_max, 0		
 _sps:			DS	3			; Storage for the stack pointer (used by BASIC)
+
+; Storage for the arguments, ORDER MATTERS
+arg1: ds 5
+arg2: ds 5
 
 ; GLOBAL MESSAGE STRINGS
 str_usage: ASCIZ "Usage: scratch <args>\r\n"
@@ -200,7 +200,6 @@ _main:
     call printString
                         ; fall through to _main_end_error
 
-ERROR_: ; stand-in for BASIC'S more comprehensive error handling
 _main_end_error:
     ld hl,str_error     ; print error message
     call printString
@@ -214,17 +213,38 @@ _basic_end:			LD		SP, (_sps)		; Restore the stack pointer
 ; end BASIC-specific end code
 
 _main_end_ok:
-    ld hl,str_success   ; print success message
-    call printString
+    ; ld hl,str_success   ; print success message
+    ; call printString
+    call printNewLine
     ld hl,0             ; return 0 for success
     ret
 
 ; ========= BEGIN CUSTOM MAIN LOOP =========
 main:
-    dec c               ; decrement the argument count to skip the program name
-    lea ix,ix+3         ; point to the first real argument (argv_ptrs+3)
     ld hl,(ix)          ; get the first argument in case hl doesn't land here with it
 
+    call store_arg_float1
+    call print_float_dec
+
+    call printInline
+    asciz " * "
+    
+    call store_arg_float2
+    call print_float_dec
+
+    call printInline
+    asciz " = "
+
+    ld ix,arg1
+    call fetch_float_nor
+
+    lea ix,ix+5 ; arg2
+    call fetch_float_alt
+
+    ; call FMUL ; HLH'L'C * DED'E'B --> HLH'L'C
+    ld a,fmul
+    call FPP
+    call print_float_dec
 
     jp _main_end_ok     ; return success
 
@@ -239,7 +259,32 @@ get_arg_float:
     lea ix,ix+3 ; point to the next argument
     push ix ; preserve
     ld ix,(ix)  ; point to argument string
-    call VAL ; convert the string to a float
+    call VAL_FP ; convert the string to a float
+    pop ix ; restore
+    ret ; return with the value in HLH'L'C
+
+; get the next argument after ix as a floating point number and store it in ag1 buffer
+; inputs: ix = pointer to the argument string
+; outputs: HLH'L'C = floating point number, ix points to the next argument
+; destroys: everything except iy, including prime registers
+store_arg_float1:
+    lea ix,ix+3 ; point to the next argument
+    push ix ; preserve
+    ld ix,(ix)  ; point to argument string
+    call VAL_FP ; convert the string to a float
+    ld ix,arg1 ; point to the buffer
+    call store_float_pri ; save the float in arg1 buffer
+    pop ix ; restore
+    ret ; return with the value in HLH'L'C
+
+; same as above, but store the float in arg2 buffer
+store_arg_float2:
+    lea ix,ix+3 ; point to the next argument
+    push ix ; preserve
+    ld ix,(ix)  ; point to argument string
+    call VAL_FP ; convert the string to a float
+    ld ix,arg2 ; point to the buffer
+    call store_float_pri ; save the float in arg2 buffer
     pop ix ; restore
     ret ; return with the value in HLH'L'C
 ;
@@ -330,3 +375,6 @@ debug_print:
     call dumpRegistersHexAll
     call printNewLine
     ret
+
+    include "basic.inc" ; must be last so that RAM has room for BASIC operations
+    ; include "fpp/ram.asm" ; must be final include so dynamic RAM allocation has room

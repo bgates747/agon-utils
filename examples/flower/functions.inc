@@ -53,6 +53,25 @@
                ; 10 cycles total
     ENDMACRO
 
+A_TO_HLU:
+    ; call is 7 cycles
+    ld (@scratch),hl ; 7 cycles
+    ld (@scratch+2),a ; 5 cycles
+    ld hl,(@scratch) ; 7 cycles
+    ret ; 6 cycles
+        ; 25 cycles total
+@scratch: dl 0
+
+    ; TODO: implement this
+    ; MACRO A_TO_HLU
+    ;     push.s af
+    ;     inc sp
+    ;     push.s hl
+    ;     pop hl
+    ;     inc sp
+    ;     inc sp
+    ; ENDMACRO
+
     MACRO PUSH_ALL
         ex af,af'
         exx
@@ -88,25 +107,6 @@
         ex af,af'
         exx
     ENDMACRO
-
-A_TO_HLU:
-    ; call is 7 cycles
-    ld (@scratch),hl ; 7 cycles
-    ld (@scratch+2),a ; 5 cycles
-    ld hl,(@scratch) ; 7 cycles
-    ret ; 6 cycles
-        ; 25 cycles total
-@scratch: dl 0
-
-    ; TODO: implement this
-    ; MACRO A_TO_HLU
-    ;     push.s af
-    ;     inc sp
-    ;     push.s hl
-    ;     pop hl
-    ;     inc sp
-    ;     inc sp
-    ; ENDMACRO
 
 ; Print a zero-terminated string inline with code, e.g.:
 ;
@@ -152,17 +152,7 @@ printNewLine:
 ; Print a 24-bit HEX number
 ; HLU: Number to print
 printHex24:
-	; PUSH	HL      ; 4 cycles
-	; LD		HL, 2   ; 4 cycles
-	; ADD		HL, SP  ; 1 cycle
-	; LD		A, (HL) ; 2 cycles
-	; POP		HL      ; 4 cycles
-    ;                 ; 15 cycles total
-    push hl ; 4 cycles
-    inc sp ; 1 cycle
-    pop af  ; 4 cycles
-    dec sp ; 1 cycle
-            ; 10 cycles total
+    HLU_TO_A
 	CALL	printHex8
 ; Print a 16-bit HEX number
 ; HL: Number to print
@@ -1125,3 +1115,119 @@ dumpMemoryBinRev:
     pop af
 ; all done
     ret
+
+; store HLH'L'C floating point number in a 40-bit buffer
+; inputs: HLH'L'C = floating point number
+;         ix = buffer address
+; outputs: buffer filled with floating point number
+; destroys: nothing
+store_float_pri:
+    ld (ix+0),c
+    ld (ix+3),l
+    ld (ix+4),h
+    exx
+    ld (ix+1),l
+    ld (ix+2),h
+    exx
+    ret
+
+; store DED'E'B floating point number in a 40-bit buffer
+; inputs: DED'E'B = floating point number
+;         ix = buffer address
+; outputs: buffer filled with floating point number
+; destroys: nothing
+store_float_sec:
+    ld (ix+0),b
+    ld (ix+3),e
+    ld (ix+4),d
+    exx
+    ld (ix+1),e
+    ld (ix+2),d
+    exx
+    ret
+
+; fetch HLH'L'C floating point number from a 40-bit buffer
+; inputs: ix = buffer address
+; outputs: HLH'L'C = floating point number
+; destroys: HLH'L'C
+fetch_float_nor:
+    ld c,(ix+0)
+    ld l,(ix+3)
+    ld h,(ix+4)
+    exx
+    ld l,(ix+1)
+    ld h,(ix+2)
+    exx
+    ret
+
+; fetch DED'E'B floating point number from a 40-bit buffer
+; inputs: ix = buffer address
+; outputs: DED'E'B = floating point number
+; destroys: DED'E'B
+fetch_float_alt:
+    ld b,(ix+0)
+    ld e,(ix+3)
+    ld d,(ix+4)
+    exx
+    ld e,(ix+1)
+    ld d,(ix+2)
+    exx
+    ret
+
+; print HLH'L'C floating point number in hex format
+; inputs: HLH'L'C = floating point number
+print_float_hex_nor:
+    call printHex16
+    ld a,'.'
+    rst.lil 10h
+    exx 
+    call printHex16
+    exx
+    ld a,'^'
+    rst.lil 10h
+    ld a,c
+    call printHex8
+    ret
+
+; print DED'E'B floating point number in hex format
+; inputs: DED'E'B = floating point number
+print_float_hex_alt:
+    ex de,hl
+    call printHex16
+    ex de,hl
+    ld a,'.'
+    rst.lil 10h
+    exx 
+    ex de,hl
+    call printHex16
+    ex de,hl
+    exx
+    ld a,'^'
+    rst.lil 10h
+    ld a,b
+    call printHex8
+    ret
+
+print_floats_hex:
+    call print_float_hex_nor
+    ld a,' '
+    rst.lil 10h
+    call print_float_hex_alt
+    ret
+
+; print a floating point number in decimal format
+; inputs: HL'H'L'C is the number to print
+; outputs: number printed to screen
+;          ACCS null-terminated string representation of the number
+; destroys: everything except ix
+print_float_dec:
+print_float_dec_nor:
+    push ix             ; save the pointer to the parameters
+    ld de,ACCS          ; point to the string accumulator
+    ld ix,@G9-1         ; get the format code for the number
+    call STR ; convert the number to a string
+    ld hl,ACCS ; point to the string accumulator
+    call printString
+    pop ix              ; restore the pointer to the parameters
+    ret
+@G9:			DW    9

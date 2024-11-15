@@ -156,7 +156,6 @@ _clear_ram:
 ; APPLICATION INCLUDES
     include "calcbas.inc"
     include "mathfpp.inc"
-    include "basic/basic.asm" ; must be last so that RAM has room for BASIC operations
 
 ; Storage for the argv array pointers
 min_args: equ 2
@@ -197,8 +196,10 @@ _basic_end:			LD		SP, (_sps)		; Restore the stack pointer
 ; end BASIC-specific end code
 
 _main_end_ok:
-    ld hl,str_success   ; print success message
-    call printString
+    ; ld hl,str_success   ; print success message
+    ; call printString
+	call printNewLine
+	call printNewLine
     ld hl,0             ; return 0 for success
     ret
 
@@ -220,12 +221,10 @@ main:
     jp p,@print_dec
     ld hl,ACCS ; result is a string
     call printString
-    call printNewLine
     jp _main_end_ok     ; return success
 
 @print_dec:
     call print_float_dec ; print the result
-    call printNewLine
     jp _main_end_ok     ; return success
 
     ; call dumpRegistersHex ; DEBUG
@@ -335,3 +334,4 @@ get_arg_text:
 ;     call printNewLine
 ;     ret
 
+    include "basic.inc" ; must be last so that RAM has room for BASIC operations
