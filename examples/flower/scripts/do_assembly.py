@@ -215,7 +215,7 @@ if __name__ == '__main__':
         build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
 
     if True:
-        app_name = 'calcbas'
+        app_name = 'temp'
         tgt_bin_filename = f'{app_name}.bin'
         copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
         autoexec_text = []
