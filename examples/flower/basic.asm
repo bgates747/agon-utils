@@ -1,0 +1,8 @@
+    include "fpp/mos_api.inc"
+    include "fpp/macros.inc"
+    include "fpp/equs.inc"
+    include "fpp/eval.asm"
+    include "fpp/exec.asm"
+    include "fpp/fpp.asm"
+    include "fpp/sorry.asm"
+    include "fpp/ram.asm"

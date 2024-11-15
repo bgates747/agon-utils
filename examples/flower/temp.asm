@@ -200,6 +200,7 @@ _main:
     call printString
                         ; fall through to _main_end_error
 
+ERROR_: ; stand-in for BASIC'S more comprehensive error handling
 _main_end_error:
     ld hl,str_error     ; print error message
     call printString
@@ -230,17 +231,17 @@ main:
 
 ; ========== HELPER FUNCTIONS ==========
 ;
-; ; get the next argument after ix as a floating point number
-; ; inputs: ix = pointer to the argument string
-; ; outputs: HLH'L'C = floating point number, ix points to the next argument
-; ; destroys: everything except iy, including prime registers
-; get_arg_float:
-;     lea ix,ix+3 ; point to the next argument
-;     push ix ; preserve
-;     ld ix,(ix)  ; point to argument string
-;     call VAL ; convert the string to a float
-;     pop ix ; restore
-;     ret ; return with the value in HLH'L'C
+; get the next argument after ix as a floating point number
+; inputs: ix = pointer to the argument string
+; outputs: HLH'L'C = floating point number, ix points to the next argument
+; destroys: everything except iy, including prime registers
+get_arg_float:
+    lea ix,ix+3 ; point to the next argument
+    push ix ; preserve
+    ld ix,(ix)  ; point to argument string
+    call VAL ; convert the string to a float
+    pop ix ; restore
+    ret ; return with the value in HLH'L'C
 ;
 ; get the next argument after ix as a string
 ; inputs: ix = pointer to the argument string
