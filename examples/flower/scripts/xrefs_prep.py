@@ -79,13 +79,13 @@ def save_dict_to_file(dictionary, path):
         json.dump(dictionary, f, indent=4)
 
 if __name__ == "__main__":
+    source_directory = "basic"
+
     # List of files to scan for symbol definitions and references
     source_files = [
         "mos_api.inc",
         "macros.inc",
         "ram.asm",
-        "equs_top.inc",
-
         "agon_graphics.asm",
         "agon_sound.asm",
         "basic.asm",
@@ -99,13 +99,21 @@ if __name__ == "__main__":
         "misc.asm",
         "patch.asm",
         "sorry.asm",
-        "user.asm",
-        "equs_bottom.inc",
+
+        "tmp.asm",
+        "tmp1.asm",
+        "tmp2.asm",
+        "tmp3.asm",
     ]
 
     # Paths for the saved dictionaries
-    LABEL_DEFS_PATH = "utils/label_defs.json"
-    LABEL_REFS_PATH = "utils/label_refs.json"
+    LABEL_DEFS_PATH = "label_defs.json"
+    LABEL_REFS_PATH = "label_refs.json"
+
+    # Get current working directory
+    cwd = os.getcwd()
+    # Change to the source directory
+    os.chdir(os.path.join(cwd, source_directory))
 
     # Load files and extract symbol definitions
     files_dict = load_files_to_dict(source_files)
@@ -118,3 +126,6 @@ if __name__ == "__main__":
 
     print(f"Symbol definitions saved to {LABEL_DEFS_PATH}")
     print(f"Symbol references saved to {LABEL_REFS_PATH}")
+
+    # Change back to the original working directory
+    os.chdir(cwd)

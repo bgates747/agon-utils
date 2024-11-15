@@ -22,7 +22,7 @@ def query_label_refs(file_name, label_refs):
     return referenced_labels
 
 def save_references_to_file(file_name, references):
-    """Save the referenced labels to an output file in the utils directory."""
+    """Save the referenced labels to an output file in the basic directory."""
     output_path = os.path.join(OUTPUT_DIR, "referenced_labels.txt")
     with open(output_path, 'w') as f:
         for label, refs in sorted(references.items()):
@@ -34,17 +34,17 @@ def save_references_to_file(file_name, references):
 
 if __name__ == "__main__":
     # Paths to input and output files
-    LABEL_REFS_PATH = "utils/label_refs.json"
-    OUTPUT_DIR = "utils"
+    LABEL_REFS_PATH = "basic/label_refs.json"
+    OUTPUT_DIR = "basic"
 
     # Load label references from the JSON file
     label_refs = load_json(LABEL_REFS_PATH)
 
     # Get the source file name to query from user input
-    file_name = "patch.inc"
+    file_name = "tmp.asm"
 
     # Query all labels referenced in the given source file
     referenced_labels = query_label_refs(file_name, label_refs)
 
-    # Save the results to a file in the utils directory
+    # Save the results to a file in the basic directory
     save_references_to_file(file_name, referenced_labels)
