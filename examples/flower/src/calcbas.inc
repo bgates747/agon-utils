@@ -348,28 +348,13 @@ dumpMemoryHex:
 ;         ix = buffer address
 ; outputs: buffer filled with floating point number
 ; destroys: nothing
-store_float_pri:
+store_float_nor:
     ld (ix+0),c
     ld (ix+3),l
     ld (ix+4),h
     exx
     ld (ix+1),l
     ld (ix+2),h
-    exx
-    ret
-
-; store DED'E'B floating point number in a 40-bit buffer
-; inputs: DED'E'B = floating point number
-;         ix = buffer address
-; outputs: buffer filled with floating point number
-; destroys: nothing
-store_float_sec:
-    ld (ix+0),b
-    ld (ix+3),e
-    ld (ix+4),d
-    exx
-    ld (ix+1),e
-    ld (ix+2),d
     exx
     ret
 
@@ -384,6 +369,21 @@ fetch_float_nor:
     exx
     ld l,(ix+1)
     ld h,(ix+2)
+    exx
+    ret
+
+; store DED'E'B floating point number in a 40-bit buffer
+; inputs: DED'E'B = floating point number
+;         ix = buffer address
+; outputs: buffer filled with floating point number
+; destroys: nothing
+store_float_alt:
+    ld (ix+0),b
+    ld (ix+3),e
+    ld (ix+4),d
+    exx
+    ld (ix+1),e
+    ld (ix+2),d
     exx
     ret
 

@@ -698,7 +698,7 @@ stepRegistersHex:
 @RightShift:
     res 0,(ix+14) ; debounce the key (hopefully)
     ld a,%10000000
-    call multiPurposeDelay
+    ; call multiPurposeDelay
 
 ; restore everything
     ld hl, (uhl)
@@ -1121,28 +1121,13 @@ dumpMemoryBinRev:
 ;         ix = buffer address
 ; outputs: buffer filled with floating point number
 ; destroys: nothing
-store_float_pri:
+store_float_nor:
     ld (ix+0),c
     ld (ix+3),l
     ld (ix+4),h
     exx
     ld (ix+1),l
     ld (ix+2),h
-    exx
-    ret
-
-; store DED'E'B floating point number in a 40-bit buffer
-; inputs: DED'E'B = floating point number
-;         ix = buffer address
-; outputs: buffer filled with floating point number
-; destroys: nothing
-store_float_sec:
-    ld (ix+0),b
-    ld (ix+3),e
-    ld (ix+4),d
-    exx
-    ld (ix+1),e
-    ld (ix+2),d
     exx
     ret
 
@@ -1157,6 +1142,21 @@ fetch_float_nor:
     exx
     ld l,(ix+1)
     ld h,(ix+2)
+    exx
+    ret
+
+; store DED'E'B floating point number in a 40-bit buffer
+; inputs: DED'E'B = floating point number
+;         ix = buffer address
+; outputs: buffer filled with floating point number
+; destroys: nothing
+store_float_alt:
+    ld (ix+0),b
+    ld (ix+3),e
+    ld (ix+4),d
+    exx
+    ld (ix+1),e
+    ld (ix+2),d
     exx
     ret
 
@@ -1177,6 +1177,8 @@ fetch_float_alt:
 ; print HLH'L'C floating point number in hex format
 ; inputs: HLH'L'C = floating point number
 print_float_hex_nor:
+    push bc ; preserve
+    push hl ; preserve
     call printHex16
     ld a,'.'
     rst.lil 10h
@@ -1187,11 +1189,15 @@ print_float_hex_nor:
     rst.lil 10h
     ld a,c
     call printHex8
+    pop bc ; restore
+    pop hl ; restore
     ret
 
 ; print DED'E'B floating point number in hex format
 ; inputs: DED'E'B = floating point number
 print_float_hex_alt:
+    push bc ; preserve
+    push hl ; preserve
     ex de,hl
     call printHex16
     ex de,hl
@@ -1206,6 +1212,8 @@ print_float_hex_alt:
     rst.lil 10h
     ld a,b
     call printHex8
+    pop bc ; restore
+    pop hl ; restore
     ret
 
 print_floats_hex:
@@ -1225,7 +1233,7 @@ print_float_dec_nor:
     push ix             ; save the pointer to the parameters
     ld de,ACCS          ; point to the string accumulator
     ld ix,@G9-1         ; get the format code for the number
-    call STR ; convert the number to a string
+    call STR_FP ; convert the number to a string
     ld hl,ACCS ; point to the string accumulator
     call printString
     pop ix              ; restore the pointer to the parameters

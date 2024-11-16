@@ -1,3 +1,9 @@
+;------------------------------------------------------------------------
+; Scratch area for calculations
+;------------------------------------------------------------------------
+scratch1:	dw24	0	;bit manipulation buffer 1
+scratch2:	dw24	0	;bit manipulation buffer 2
+
 ; absolute value of hlu
 ; returns: abs(hlu), flags set according to the incoming sign of hlu:
 ;         s1,z0,pv0,n1,c0 if hlu was negative
@@ -36,8 +42,8 @@ neg_hlu:
 ; divide hlu by 2, inspired by above
 ;------------------------------------------------------------------------
 hlu_div2:
-	ld		(bitbuf1),hl
-	ld		hl,bitbuf1+2
+	ld		(scratch1),hl
+	ld		hl,scratch1+2
 	rr		(hl)
 	dec		hl
 	rr		(hl)
@@ -45,7 +51,7 @@ hlu_div2:
 	rr		(hl)
 	inc		hl
 	inc		hl
-    ld hl,(bitbuf1)
+    ld hl,(scratch1)
     ret
 
 ; this is my little hack to divide by 16
@@ -201,18 +207,3 @@ rand_8:
     pop bc
     ret
 r_seed: defb $50
-
-; linear interpolation between two 24-bit numbers
-; may be signed or unsigned, and treated as integers or fractional
-; inputs: bc = start value, de = end value, a = interpolation factor
-; outputs: hl = interpolated value, a = multiply overflow to 32 bits (0 if no overflow)
-; destroys: af, hl, de
-interpolate24:
-    push bc ; save start value
-    ex de,hl ; end value to hl
-    or a ; clear carry
-    sbc hl,bc ; hl = end - start
-    call umul24x8 ; hl = (end - start) * interpolation factor
-    pop bc ; get back start value (was hl)
-    add hl,bc ; hl = start + (end - start) * interpolation factor
-    ret

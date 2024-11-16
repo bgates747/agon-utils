@@ -224,13 +224,13 @@ _main_end_ok:
 main:
     ld hl,(ix)          ; get the first argument in case hl doesn't land here with it
 
-    call store_arg_float1
+    call store_arg1_float
     call print_float_dec
 
     call printInline
     asciz " * "
     
-    call store_arg_float2
+    call store_arg2_float
     call print_float_dec
 
     call printInline
@@ -268,7 +268,7 @@ get_arg_float:
 ; inputs: ix = pointer to the argument string
 ; outputs: HLH'L'C = floating point number, ix points to the next argument
 ; destroys: everything except iy, including prime registers
-store_arg_float1:
+store_arg1_float:
     lea ix,ix+3 ; point to the next argument
     push ix ; preserve
     ld ix,(ix)  ; point to argument string
@@ -279,7 +279,7 @@ store_arg_float1:
     ret ; return with the value in HLH'L'C
 
 ; same as above, but store the float in arg2 buffer
-store_arg_float2:
+store_arg2_float:
     lea ix,ix+3 ; point to the next argument
     push ix ; preserve
     ld ix,(ix)  ; point to argument string

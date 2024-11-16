@@ -212,8 +212,8 @@ if __name__ == '__main__':
         expand_lst(lst_filepath, lst_filepath, exclude_comments=False)
         shutil.move(lst_filepath, f'{tgt_bin_dir}/{app_name}.lst')
 
-    if True:
-        app_name = 'calcbas'
+    if False:
+        app_name = 'evalbas'
         tgt_bin_filename = f'{app_name}.bin'
         copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
         autoexec_text = []
@@ -226,7 +226,7 @@ if __name__ == '__main__':
         shutil.move(lst_filepath, f'{tgt_bin_dir}/{app_name}.lst')
 
     if True:
-        app_name = 'temp'
+        app_name = 'calcbas'
         tgt_bin_filename = f'{app_name}.bin'
         copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
         autoexec_text = []

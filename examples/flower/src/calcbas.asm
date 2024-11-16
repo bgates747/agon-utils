@@ -53,10 +53,7 @@ _start:
 			XOR 	A
 			LD 	MB, A                   ; Clear to zero so MOS API calls know how to use 24-bit addresses.
 
-; intialize BASIC-specific stuff
-			LD		(_sps), SP 		; Preserve the 24-bit stack pointer (SPS)
-			CALL		_clear_ram
-; end of BASIC-specific initialization
+			CALL		_clear_ram ; Clear the BASIC memory allocation
 
 			LD	IX, argv_ptrs		; The argv array pointer address
 			PUSH	IX
@@ -73,7 +70,7 @@ _start:
 			POP	BC
 			POP	AF
 			RET
-	
+
 ; Parse the parameter string into a C array
 ; Parameters
 ; - HL: Address of parameter string
@@ -88,13 +85,29 @@ _parse_params:		LD	BC, _exec_name
 ;
 			LD	BC, 1			; C: ARGC = 1 - also clears out top 16 bits of BCU
 			LD	B, argv_ptrs_max - 1	; B: Maximum number of argv_ptrs
-
-; drop hl into (ix) leaving two parameters: 
-; - the app name 
-; - whatever the user entered
-            ld (ix),hl
+;
+_parse_params_1:	
+			PUSH	BC			; Stack ARGC	
+			PUSH	HL			; Stack start address of token
+			CALL	_get_token		; Get the next token
+			LD	A, C			; A: Length of the token in characters
+			POP	DE			; Start address of token (was in HL)
+			POP	BC			; ARGC
+			OR	A			; Check for A=0 (no token found) OR at end of string
+			RET	Z
+;
+			LD	(IX+0), DE		; Store the pointer to the token
+			PUSH	HL			; DE=HL
+			POP	DE
+			CALL	_skip_spaces		; And skip HL past any spaces onto the next character
+			XOR	A
+			LD	(DE), A			; Zero-terminate the token
+			LEA  	IX, IX+3			; Advance to next pointer position
 			INC	C			; Increment ARGC
-            ret
+			LD	A, C			; Check for C >= A
+			CP	B
+			JR	C, _parse_params_1	; And loop
+			RET
 
 ; Get the next token
 ; Parameters:
@@ -153,7 +166,8 @@ _clear_ram:
 
 ; API INCLUDES
 	include "basic.inc"
-    include "calcbas.inc"
+    include "functions.inc"
+	include "maths.inc"
     include "mathfpp.inc"
 
 ; APPLICATION INCLUDES
@@ -163,6 +177,10 @@ min_args: equ 2
 argv_ptrs_max:		EQU	16			; Maximum number of arguments allowed in argv
 argv_ptrs:		    BLKP	argv_ptrs_max, 0		
 _sps:			DS	3			; Storage for the stack pointer (used by BASIC)
+
+; Storage for the arguments, ORDER MATTERS
+arg1: ds 5
+arg2: ds 5
 
 ; GLOBAL MESSAGE STRINGS
 str_usage: ASCIZ "Usage: scratch <args>\r\n"
@@ -199,53 +217,91 @@ _end:			LD		SP, (_sps)		; Restore the stack pointer
 _main_end_ok:
     ; ld hl,str_success   ; print success message
     ; call printString
-	call printNewLine
-	call printNewLine
+    call printNewLine
     ld hl,0             ; return 0 for success
     ret
 
 ; ========= BEGIN CUSTOM MAIN LOOP =========
 main:
-    dec c               ; decrement the argument count to skip the program name
-    lea ix,ix+3         ; point to the first real argument (argv_ptrs+3)
     ld hl,(ix)          ; get the first argument in case hl doesn't land here with it
 
-    ld a,0 ; DEBUG
-    ; call dumpMemoryHex ; DEBUG
-    ; call dumpRegistersHex ; DEBUG
-    call printString  ; DEBUG
-    call printNewLine ; DEBUG
-    ; call print_params   ; DEBUG
+    call store_arg1_float
+    call print_float_dec
 
-    ld iy,(ix)           ; point to the expression
-    call EXPR ; send the expression to the BASIC interpreter for evaluation and execution
-    jp p,@print_dec
-    ld hl,ACCS ; result is a string
-    call printString
+    call printInline
+    asciz " * "
+    
+    call store_arg2_float
+    call print_float_dec
+
+    call printInline
+    asciz " = "
+
+    ld ix,arg1
+    call fetch_float_nor
+
+    ld ix,arg2
+    call fetch_float_alt
+
+    ; call FMUL ; HLH'L'C * DED'E'B --> HLH'L'C
+    ld a,fmul
+    call FPP
+    call print_float_dec
+
+; ; USING THE STACK:
+;     call get_arg_float
+;     call PUSH5
+
+;     call get_arg_float
+;     call POP5
+;     call SWAP
+
+;     call print_floats_hex
+
+;     ld a,fmul
+;     call FPP
+;     call print_float_dec
+
     jp _main_end_ok     ; return success
-
-@print_dec:
-    call print_float_dec ; print the result
-    jp _main_end_ok     ; return success
-
-    ; call dumpRegistersHex ; DEBUG
-    ; call printNewLine
-    ; call dumpRegistersHex ; DEBUG
-
 
 ; ========== HELPER FUNCTIONS ==========
 ;
-; ; get the next argument after ix as a floating point number
-; ; inputs: ix = pointer to the argument string
-; ; outputs: HLH'L'C = floating point number, ix points to the next argument
-; ; destroys: everything except iy, including prime registers
-; get_arg_float:
-;     lea ix,ix+3 ; point to the next argument
-;     push ix ; preserve
-;     ld ix,(ix)  ; point to argument string
-;     call VAL ; convert the string to a float
-;     pop ix ; restore
-;     ret ; return with the value in HLH'L'C
+; get the next argument after ix as a floating point number
+; inputs: ix = pointer to the argument string
+; outputs: HLH'L'C = floating point number, ix points to the next argument
+; destroys: everything except iy, including prime registers
+get_arg_float:
+    lea ix,ix+3 ; point to the next argument
+    push ix ; preserve
+    ld ix,(ix)  ; point to argument string
+    call VAL_FP ; convert the string to a float
+    pop ix ; restore
+    ret ; return with the value in HLH'L'C
+
+; get the next argument after ix as a floating point number and store it in ag1 buffer
+; inputs: ix = pointer to the argument string
+; outputs: HLH'L'C = floating point number, ix points to the next argument
+; destroys: everything except iy, including prime registers
+store_arg1_float:
+    lea ix,ix+3 ; point to the next argument
+    push ix ; preserve
+    ld ix,(ix)  ; point to argument string
+    call VAL_FP ; convert the string to a float
+    ld ix,arg1 ; point to the buffer
+    call store_float_nor ; save the float in arg1 buffer
+    pop ix ; restore
+    ret ; return with the value in HLH'L'C
+
+; same as above, but store the float in arg2 buffer
+store_arg2_float:
+    lea ix,ix+3 ; point to the next argument
+    push ix ; preserve
+    ld ix,(ix)  ; point to argument string
+    call VAL_FP ; convert the string to a float
+    ld ix,arg2 ; point to the buffer
+    call store_float_nor ; save the float in arg2 buffer
+    pop ix ; restore
+    ret ; return with the value in HLH'L'C
 ;
 ; get the next argument after ix as a string
 ; inputs: ix = pointer to the argument string
@@ -256,83 +312,83 @@ get_arg_text:
     ld hl,(ix)  ; get the argument string
     ret
 ;
-; ; match the next argument after ix to the dispatch table at iy
-; ;   - arguments and dispatch entries are zero-terminated, case-sensitive strings
-; ;   - final entry of dispatch table must be a 3-byte zero or bad things will happen
-; ; returns: NO MATCH: iy=dispatch list terminator a=1 and zero flag reset
-; ;          ON MATCH: iy=dispatch address, a=0 and zero flag set
-; ; destroys: a, hl, de, ix, iy, flags
-; match_next:
-;     lea ix,ix+3         ; point to the next argument
-; @loop:
-;     ld hl,(iy)          ; pointer argument dispatch record
-;     sign_hlu            ; check for list terminator
-;     jp z,@no_match      ; if a=0, return error
-;     inc hl              ; skip over jp instruction
-;     inc hl
-;     ld de,(ix)          ; pointer to the argument string
-;     call str_equal      ; compare the argument to the dispatch table entry
-;     jp z,@match         ; if equal, return success
-;     lea iy,iy+3         ; if not equal, bump iy to next dispatch table entry
-;     jp @loop            ; and loop 
-; @no_match:
-;     inc a               ; no match so return a=1 and zero flag reset
-;     ret
-; @match:
-;     ld iy,(iy)          ; get the function pointer
-;     ret                 ; return a=0 and zero flag set
+; match the next argument after ix to the dispatch table at iy
+;   - arguments and dispatch entries are zero-terminated, case-sensitive strings
+;   - final entry of dispatch table must be a 3-byte zero or bad things will happen
+; returns: NO MATCH: iy=dispatch list terminator a=1 and zero flag reset
+;          ON MATCH: iy=dispatch address, a=0 and zero flag set
+; destroys: a, hl, de, ix, iy, flags
+match_next:
+    lea ix,ix+3         ; point to the next argument
+@loop:
+    ld hl,(iy)          ; pointer argument dispatch record
+    sign_hlu            ; check for list terminator
+    jp z,@no_match      ; if a=0, return error
+    inc hl              ; skip over jp instruction
+    inc hl
+    ld de,(ix)          ; pointer to the argument string
+    call str_equal      ; compare the argument to the dispatch table entry
+    jp z,@match         ; if equal, return success
+    lea iy,iy+3         ; if not equal, bump iy to next dispatch table entry
+    jp @loop            ; and loop 
+@no_match:
+    inc a               ; no match so return a=1 and zero flag reset
+    ret
+@match:
+    ld iy,(iy)          ; get the function pointer
+    ret                 ; return a=0 and zero flag set
 
-; ; same as match_next, but prints the parameter if a match is found
-; match_next_and_print:
-;     call match_next
-;     ret nz ; no match found
-;     lea ix,ix-3 
-;     call get_arg_text ; hl points to the operator string
-;     call print_param
-;     ret
+; same as match_next, but prints the parameter if a match is found
+match_next_and_print:
+    call match_next
+    ret nz ; no match found
+    lea ix,ix-3 
+    call get_arg_text ; hl points to the operator string
+    call print_param
+    ret
 
-; ; compare two zero-terminated strings for equality, case-sensitive
-; ; hl: pointer to first string, de: pointer to second string
-; ; returns: z if equal, nz if not equal
-; ; destroys: a, hl, de
-; str_equal:
-;     ld a,(de)           ; get the first character
-;     cp (hl)             ; compare to the second character
-;     ret nz              ; if not equal, return
-;     or a
-;     ret z               ; if equal and zero, return
-;     inc hl              ; next character
-;     inc de
-;     jp str_equal        ; loop until end of string
+; compare two zero-terminated strings for equality, case-sensitive
+; hl: pointer to first string, de: pointer to second string
+; returns: z if equal, nz if not equal
+; destroys: a, hl, de
+str_equal:
+    ld a,(de)           ; get the first character
+    cp (hl)             ; compare to the second character
+    ret nz              ; if not equal, return
+    or a
+    ret z               ; if equal and zero, return
+    inc hl              ; next character
+    inc de
+    jp str_equal        ; loop until end of string
 
-; ; print the parameter string pointed to by ix
-; ; destroys: a, hl
-; print_param:
-;     ld hl,(ix)          ; get the parameter pointer
-;     call printString    ; print the parameter string
-;     ld a,' '            ; print a space separator
-;     rst.lil $10         
-;     ret
+; print the parameter string pointed to by ix
+; destroys: a, hl
+print_param:
+    ld hl,(ix)          ; get the parameter pointer
+    call printString    ; print the parameter string
+    ld a,' '            ; print a space separator
+    rst.lil $10         
+    ret
 
-; ; print the parameters
-; ; inputs: b = number of parameters, ix = pointer to the parameters
-; ; destroys: a, hl, bc
-; print_params:
-;     ld b,c              ; loop counter = number of parameters
-;     push ix             ; save the pointer to the parameters
-; @loop:
-;     push bc             ; save the loop counter
-;     call print_param    ; print the parameter
-;     lea ix,ix+3         ; next parameter pointer
-;     pop bc              ; get back the loop counter
-;     djnz @loop          ; loop until done
-;     pop ix              ; restore the pointer to the parameters
-;     ret
+; print the parameters
+; inputs: b = number of parameters, ix = pointer to the parameters
+; destroys: a, hl, bc
+print_params:
+    ld b,c              ; loop counter = number of parameters
+    push ix             ; save the pointer to the parameters
+@loop:
+    push bc             ; save the loop counter
+    call print_param    ; print the parameter
+    lea ix,ix+3         ; next parameter pointer
+    pop bc              ; get back the loop counter
+    djnz @loop          ; loop until done
+    pop ix              ; restore the pointer to the parameters
+    ret
 
-; debug_print:
-;     call printNewLine
-;     call dumpRegistersHexAll
-;     call printNewLine
-;     ret
+debug_print:
+    call printNewLine
+    call dumpRegistersHexAll
+    call printNewLine
+    ret
 
     include "basic/ram.asm" ; must be last so that RAM has room for BASIC operations
