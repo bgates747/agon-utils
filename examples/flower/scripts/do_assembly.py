@@ -47,25 +47,18 @@ def copy_to_directory(src_dir, tgt_dir, include_pattern=None, recursive=False, d
         print(f'An error occurred while copying files: {e}')
         sys.exit(1)
         
-def run_ez80asm(asm_src_dir,asm_src_filename,tgt_emulator_bin_dir,tgt_bin_filename,original_dir):
-    # Change working directory to the assembly directory
+def run_ez80asm(asm_src_dir,asm_src_filename,tgt_bin_dir,tgt_emulator_bin_dir,tgt_bin_filename,original_dir):
     os.chdir(asm_src_dir)
-
-    # Build the ez80asm command
-    command = [
-        "ez80asm",
-        "-l",
-        asm_src_filename,
-        f'{tgt_emulator_bin_dir}/{tgt_bin_filename}' 
-    ]
-
+    command = ["ez80asm","-l",asm_src_filename,tgt_bin_filename]
     print(f"Assembling with command: {' '.join(command)}")
-
-    # Execute the command
-    result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    print(result.stdout.decode())
-
-    # Restore the original working directory
+    try:
+        result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print(result.stdout.decode())
+    except subprocess.CalledProcessError as e:
+        print(e.output.decode(errors='ignore'))
+        return False
+    shutil.move(tgt_bin_filename, f'{tgt_bin_dir}/{tgt_bin_filename}')
+    shutil.copy2(f'{tgt_bin_dir}/{tgt_bin_filename}', f'{tgt_emulator_bin_dir}/{tgt_bin_filename}')
     os.chdir(original_dir)
 
 def run_fab_emulator(emulator_dir,autoexec_text,original_dir):
@@ -172,25 +165,26 @@ def expand_lst(input_filename, output_filename, exclude_comments=False):
 
 def build_and_run(
     asm_src_dir,
+    tgt_bin_dir,
     emulator_dir,
+    mos_dir,
     assemble,
     copy_sdcard,
     copy_sdcard_include_pattern,
     run_emulator,
     autoexec_text,
     app_name,
-    tgt_dir,
     tgt_bin_filename
 ):
     original_dir = os.getcwd()
 
-    sdcard_tgt_dir = f'/media/smith/AGON/{tgt_dir}'
-    tgt_emulator_bin_dir = f'{emulator_dir}/sdcard/{tgt_dir}'
+    sdcard_tgt_dir = f'/media/smith/AGON/{mos_dir}'
+    tgt_emulator_bin_dir = f'{emulator_dir}/sdcard/{mos_dir}'
     asm_src_filename = f'{app_name}.asm'
 
     # Execute functions based on parameters
     if assemble:
-        run_ez80asm(asm_src_dir,asm_src_filename,tgt_emulator_bin_dir,tgt_bin_filename,original_dir)
+        run_ez80asm(asm_src_dir,asm_src_filename,tgt_bin_dir,tgt_emulator_bin_dir,tgt_bin_filename,original_dir)
     if copy_sdcard:
         if os.path.exists(sdcard_tgt_dir):
             copy_to_directory(tgt_emulator_bin_dir, sdcard_tgt_dir, copy_sdcard_include_pattern)
@@ -200,9 +194,10 @@ def build_and_run(
         run_fab_emulator(emulator_dir,autoexec_text,original_dir)
 
 if __name__ == '__main__':
-    tgt_dir = 'mos'
     emulator_dir = os.path.expanduser('~/Agon/emulator')
-    asm_src_dir = os.path.expanduser('~/Agon/emulator/sdcard/mystuff/agon-utils/examples/flower')
+    asm_src_dir = os.path.expanduser('~/Agon/emulator/sdcard/mystuff/agon-utils/examples/flower/src')
+    tgt_bin_dir = os.path.expanduser('~/Agon/emulator/sdcard/mystuff/agon-utils/examples/flower/tgt')
+    mos_dir = 'mos'
 
     if False:
         app_name = 'flower'
@@ -212,7 +207,10 @@ if __name__ == '__main__':
         assemble = True
         copy_sdcard = False
         run_emulator = True
-        build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
+        build_and_run(asm_src_dir,tgt_bin_dir,emulator_dir,mos_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_bin_filename)
+        lst_filepath = f'{asm_src_dir}/{app_name}.lst'
+        expand_lst(lst_filepath, lst_filepath, exclude_comments=False)
+        shutil.move(lst_filepath, f'{tgt_bin_dir}/{app_name}.lst')
 
     if True:
         app_name = 'calcbas'
@@ -222,9 +220,10 @@ if __name__ == '__main__':
         assemble = True
         copy_sdcard = False
         run_emulator = False
-        build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
+        build_and_run(asm_src_dir,tgt_bin_dir,emulator_dir,mos_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_bin_filename)
         lst_filepath = f'{asm_src_dir}/{app_name}.lst'
         expand_lst(lst_filepath, lst_filepath, exclude_comments=False)
+        shutil.move(lst_filepath, f'{tgt_bin_dir}/{app_name}.lst')
 
     if True:
         app_name = 'temp'
@@ -234,6 +233,7 @@ if __name__ == '__main__':
         assemble = True
         copy_sdcard = False
         run_emulator = False
-        build_and_run(asm_src_dir,emulator_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_dir,tgt_bin_filename)
+        build_and_run(asm_src_dir,tgt_bin_dir,emulator_dir,mos_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_bin_filename)
         lst_filepath = f'{asm_src_dir}/{app_name}.lst'
         expand_lst(lst_filepath, lst_filepath, exclude_comments=False)
+        shutil.move(lst_filepath, f'{tgt_bin_dir}/{app_name}.lst')

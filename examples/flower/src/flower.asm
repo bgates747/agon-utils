@@ -62,7 +62,7 @@ str_success: ASCIZ "Success!\r\n"
 
 min_args: equ 2
 
-_main:
+_main_init:
     ld a,c              ; how many arguments?
     cp min_args         ; not enough?
     jp nc,main          ; if enough, go to main loop

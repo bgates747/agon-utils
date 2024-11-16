@@ -50,7 +50,7 @@ min_args: equ 3
 arg1: ASCIZ "65535.275"
 arg2: ASCIZ "32767.667"
 
-_main:
+_main_init:
 ; TEMP DEBUG CODE
 
     call printInline

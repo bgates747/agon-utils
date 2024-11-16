@@ -60,7 +60,7 @@ _start:
 			CALL	_parse_params		; Parse the parameters
 			POP	IX			; IX: argv	
 			LD	B, 0			;  C: argc
-			CALL	_main			; Start user code
+			CALL	_main_init			; Start user code
 			
 			POP 	AF
 			LD	MB, A
@@ -193,7 +193,7 @@ str_success: ASCIZ "Success!\r\n"
 ; Returns:
 ;  HL: Error code, or 0 if OK
 
-_main:
+_main_init:
     ld a,c              ; how many arguments?
     cp min_args         ; not enough?
     jr nc,main          ; if enough, go to main loop
@@ -209,7 +209,7 @@ _main_end_error:
 
 ; begin BASIC-specific end code
 ; This bit of code is called from STAR_BYE and returns us safely to MOS
-_basic_end:			LD		SP, (_sps)		; Restore the stack pointer 
+_end:			LD		SP, (_sps)		; Restore the stack pointer 
 ; fall through to _main_end_ok
 ; end BASIC-specific end code
 

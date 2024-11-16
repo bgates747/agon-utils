@@ -47,7 +47,7 @@ str_success: ASCIZ "Success!\r\n"
 
 min_args: equ 3
 
-_main:
+_main_init:
     ld a,c              ; how many arguments?
     cp min_args         ; not enough?
     jr nc,main          ; if enough, go to main loop
@@ -61,6 +61,9 @@ _main_end_error:
     ld hl,19            ; return error code 19
     ret
 
+; begin BASIC-specific end code
+; This bit of code is called from STAR_BYE and returns us safely to MOS
+_end:			LD		SP, (_sps)		; Restore the stack pointer 
 _main_end_ok:
     ; ld hl,str_success   ; print success message
     ; call printString
