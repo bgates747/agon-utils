@@ -226,16 +226,21 @@ main:
     ld hl,(ix)          ; get the first argument in case hl doesn't land here with it
 
     call store_arg1_float
+    ; call print_float_hex_nor
     call print_float_dec
+    ; call printHexUIX ; DEBUG
 
     call printInline
     asciz " * "
     
     call store_arg2_float
+    ; call print_float_hex_nor
     call print_float_dec
 
     call printInline
     asciz " = "
+
+    ; call printHexUIX ; DEBUG
 
     ld ix,arg1
     call fetch_float_nor
@@ -243,9 +248,13 @@ main:
     ld ix,arg2
     call fetch_float_alt
 
+    ; call printNewLine
+    ; call dumpRegistersHexAll
+
     ; call FMUL ; HLH'L'C * DED'E'B --> HLH'L'C
     ld a,fmul
     call FPP
+    ; call print_floats_hex
     call print_float_dec
 
 ; ; USING THE STACK:
@@ -261,6 +270,8 @@ main:
 ;     ld a,fmul
 ;     call FPP
 ;     call print_float_dec
+
+    call printNewLine
 
     jp _main_end_ok     ; return success
 

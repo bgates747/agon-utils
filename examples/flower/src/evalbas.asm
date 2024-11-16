@@ -219,6 +219,9 @@ main:
 
     ld iy,(ix)           ; point to the expression
     call EXPR ; send the expression to the BASIC interpreter for evaluation and execution
+	ex af,af' ; results in af'
+	call dumpFlags
+	call dumpRegistersHex
     jp p,@print_dec
     ld hl,ACCS ; result is a string
     call printString

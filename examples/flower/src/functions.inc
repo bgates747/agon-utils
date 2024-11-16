@@ -268,6 +268,31 @@ printHexCDE:
     pop bc
     ret
 
+printHexUIX:
+; store everything in scratch
+    ld (uhl),hl
+    ld (ubc),bc
+    ld (ude),de
+    ld (uix),ix
+    ld (uiy),iy
+    push af ; fml
+
+    ld hl,str_ixu
+    call printString
+    ld hl,(uix)
+    call printHex24
+    call printNewLine
+
+; restore everything
+    ld hl, (uhl)
+    ld bc, (ubc)
+    ld de, (ude)
+    ld ix, (uix)
+    ld iy, (uiy)
+    pop af
+; all done
+    ret
+
 ; Print a 0x HEX prefix
 DisplayHexPrefix:
 	LD	A, '0'
