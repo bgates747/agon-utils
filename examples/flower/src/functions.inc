@@ -1259,6 +1259,8 @@ print_float_dec_nor:
     ld de,ACCS          ; point to the string accumulator
     ld ix,@G9-1         ; get the format code for the number
     call STR_FP ; convert the number to a string
+    ex de,hl            ; point to end of the string
+    ld (hl),0           ; null-terminate the string
     ld hl,ACCS ; point to the string accumulator
     call printString
     pop ix              ; restore the pointer to the parameters
