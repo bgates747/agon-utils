@@ -452,7 +452,7 @@ print_float_dec_nor:
     push ix             ; save the pointer to the parameters
     ld de,ACCS          ; point to the string accumulator
     ld ix,@G9-1         ; get the format code for the number
-    call STR ; convert the number to a string
+    call STR_FP ; convert the number to a string
     ld hl,ACCS ; point to the string accumulator
     call printString
     pop ix              ; restore the pointer to the parameters

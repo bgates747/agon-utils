@@ -152,10 +152,11 @@ _clear_ram:
 ; ========================================
 
 ; API INCLUDES
-
-; APPLICATION INCLUDES
+	include "basic.inc"
     include "calcbas.inc"
     include "mathfpp.inc"
+
+; APPLICATION INCLUDES
 
 ; Storage for the argv array pointers
 min_args: equ 2
@@ -334,4 +335,4 @@ get_arg_text:
 ;     call printNewLine
 ;     ret
 
-    include "basic.inc" ; must be last so that RAM has room for BASIC operations
+    include "basic/ram.asm" ; must be last so that RAM has room for BASIC operations

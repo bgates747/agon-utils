@@ -1,10 +1,8 @@
-    ; include "basic/mos_api.inc"
     include "basic/macros.inc"
     include "basic/equs.inc"
-    ; include "basic/init.asm" ; relevant bits folded into calcbas.asm
     include "basic/eval.asm"
     include "basic/exec.asm"
-    include "fpp.asm"
+    include "basic/fpp.asm"
     include "basic/gpio.asm"
     include "basic/main.asm"
     include "basic/misc.asm"
@@ -13,4 +11,3 @@
     include "basic/agon_graphics.asm"
     include "basic/agon_sound.asm"
     include "basic/interrupts.asm"
-    include "basic/ram.asm"
