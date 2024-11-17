@@ -247,9 +247,74 @@ main:
     ; call FPP
     ; call print_float_dec
 
-; --- DEBUGGING ---
-    LOAD_FLOAT "1.23456789"
+; --- polar_to_cartesian_fpp ---
+
+    call printInline
+    asciz " degrees: "
+    ld iy,arg1
+    call store_arg_iy_float
     call print_float_dec
+
+    call printInline
+    asciz " radians: "
+    call fetch_float_iy_nor
+    ld a,rad
+    call FPP
+    call store_float_iy_nor
+    call print_float_dec
+
+    call printInline
+    asciz " radius: "
+    ld iy,arg2
+    call store_arg_iy_float
+    call print_float_dec
+    call fetch_float_iy_alt
+
+    call polar_to_cartesian_fpp
+    call printNewLine
+    call print_float_dec_nor
+    call printNewLine
+    call print_float_dec_alt 
+
+; --- END polar_to_cartesian_fpp ---
+
+; ; --- TESTING ---
+;     ld iy,arg2
+;     call store_arg_iy_float
+;     call get_arg_float
+;     call fetch_float_iy_alt
+
+;     call print_float_dec_alt
+;     call printNewLine
+;     call print_float_dec_nor
+
+; ; --- END TESTING ---
+
+
+; ; --- DEBUGGING ---
+    ; ld iy,arg1
+    ; call store_arg_iy_float
+    ; call print_float_dec
+    ; call printInline
+    ; asciz " "
+
+    ; ld iy,arg2
+    ; call store_arg_iy_float
+    ; call print_float_dec
+    ; call printInline
+    ; asciz " = "
+
+    ; ld iy,arg1
+    ; call fetch_float_iy_nor
+
+    ; ld iy,arg2
+    ; call fetch_float_iy_alt
+
+    ; ld a,fmul
+    ; call FPP
+    ; call print_float_dec
+
+; ; --- END DEBUGGING ---
 
     jp _main_end_ok     ; return success
 
@@ -279,64 +344,6 @@ store_arg_iy_float:
     call store_float_iy_nor ; save the float in buffer
     pop ix ; restore
     ret ; return with the value in HLH'L'C
-
-; store HLH'L'C floating point number in a 40-bit buffer
-; inputs: HLH'L'C = floating point number
-;         iy = buffer address
-; outputs: buffer filled with floating point number
-; destroys: nothing
-store_float_iy_nor:
-    ld (iy+0),c
-    ld (iy+3),l
-    ld (iy+4),h
-    exx
-    ld (iy+1),l
-    ld (iy+2),h
-    exx
-    ret
-
-; fetch HLH'L'C floating point number from a 40-bit buffer
-; inputs: iy = buffer address
-; outputs: HLH'L'C = floating point number
-; destroys: HLH'L'C
-fetch_float_iy_nor:
-    ld c,(iy+0)
-    ld l,(iy+3)
-    ld h,(iy+4)
-    exx
-    ld l,(iy+1)
-    ld h,(iy+2)
-    exx
-    ret
-
-; store DED'E'B floating point number in a 40-bit buffer
-; inputs: DED'E'B = floating point number
-;         iy = buffer address
-; outputs: buffer filled with floating point number
-; destroys: nothing
-store_float_iy_alt:
-    ld (iy+0),b
-    ld (iy+3),e
-    ld (iy+4),d
-    exx
-    ld (iy+1),e
-    ld (iy+2),d
-    exx
-    ret
-
-; fetch DED'E'B floating point number from a 40-bit buffer
-; inputs: iy = buffer address
-; outputs: DED'E'B = floating point number
-; destroys: DED'E'B
-fetch_float_iy_alt:
-    ld b,(iy+0)
-    ld e,(iy+3)
-    ld d,(iy+4)
-    exx
-    ld e,(iy+1)
-    ld d,(iy+2)
-    exx
-    ret
 ;
 ; get the next argument after ix as a string
 ; inputs: ix = pointer to the argument string

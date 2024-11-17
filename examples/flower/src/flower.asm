@@ -301,7 +301,7 @@ y_prev:             dw32 0x00000000   ; Previous y coordinate
 
 main_loop:
 ; --- clear the screen ---
-    ; call vdu_cls
+    call vdu_cls
 
 ; --- convert input thetas to radians
     ld iy,theta_prime
@@ -352,10 +352,8 @@ main_loop:
     call fetch_float_iy_alt
     ld a,fmul
     call FPP ; HLH'L'C = petals * vectors * periods
-    ld a,int_
-    call FPP ; HLH'L'C = int(petals * vectors * periods)
     ld iy,total_steps
-    call store_float_iy_nor
+    call store_float_iy_nor ; we'll make it an integer after computing step_shrink
 
 ; Calculate shrink per step (linear)
     ; step_shrink = -shrink * radius_scale / total_steps 
@@ -373,6 +371,12 @@ main_loop:
     ld iy,step_shrink
     call store_float_iy_nor
 
+; Make total_steps an integer and store it in uhl
+    ld iy,total_steps
+    call fetch_float_iy_nor
+    call int2hlu ; HLH'L'C = int(total_steps)
+    ld (iy),hl ; uhl = int(total_steps)
+
 ; Initialize radius_prime
     ld iy,radius_scale
     call fetch_float_iy_nor
@@ -384,11 +388,11 @@ main_loop:
     ld de,1024/2 ; y
     call vdu_set_gfx_origin
 
-; ; set initial point and move graphics cursor to it
-;     call calc_point ; ub.c = x, ud.e = y
-;     ld a,plot_pt+mv_abs ; plot mode
-;     call vdu_plot_168
-;     ; fall through to main loop
+; set initial point and move graphics cursor to it
+    call calc_point ; ubc = x, ude = y
+    ld a,plot_pt+mv_abs ; plot mode
+    call vdu_plot
+; fall through to main loop
 
 @loop:
     ; ; Advance theta values
@@ -434,13 +438,21 @@ main_loop:
 ; inputs: theta_prime, theta_petal, radius_prime, depth
 ; outputs: ub.c = x, ud.e = y
 calc_point:
-; ; Calculate the petal radius and total radius 
-;     ; radius_petal = math.cos(theta_petal) * depth
-;     ld hl,(theta_petal)
-;     call cos168 ; uh.l = cos(theta_petal)
-;     ld de,(depth)
-;     call smul168 ; uh.l = radius_petal
-;     ld (radius_petal),hl
+; Calculate the petal radius and total radius 
+    ; radius_petal = math.cos(theta_petal) * depth
+    ; ld hl,(theta_petal)
+    ; call cos168 ; uh.l = cos(theta_petal)
+    ; ld de,(depth)
+    ; call smul168 ; uh.l = radius_petal
+    ; ld (radius_petal),hl
+    ld iy,theta_petal
+    ld a,cos
+    call FPP ; HLH'L'C = cos(theta_petal)
+    ld iy,depth
+    call fetch_float_iy_alt
+    ld a,fmul
+    call FPP ; HLH'L'C = cos(theta_petal) * depth
+    call SWAP ; HLH'L'C <--> DED'E'B
 
 ;     ; radius = radius_prime + radius_petal * radius_prime
 ;     ld de,(radius_prime)
@@ -448,6 +460,15 @@ calc_point:
 ;     add hl,de ; uh.l = radius_prime + radius_petal * radius_prime
 ;     ex de,hl ; de = radius
 ;     ld (radius),de
+    ld iy,radius_prime
+    ld a,fmul
+    call FPP ; HLH'L'C = radius_petal * radius_prime
+    ld iy,radius_prime
+    call fetch_float_iy_alt
+    ld a,fadd
+    call FPP ; HLH'L'C = radius_prime + radius_petal * radius_prime
+    ld iy,radius
+    call store_float_iy_nor
 
 ; ; Convert polar to Cartesian coordinates
 ;     ; x, y = polar_to_cartesian(radius, theta_prime)
@@ -543,64 +564,6 @@ store_arg_iy_float:
     call store_float_iy_nor ; save the float in buffer
     pop ix ; restore
     ret ; return with the value in HLH'L'C
-
-; store HLH'L'C floating point number in a 40-bit buffer
-; inputs: HLH'L'C = floating point number
-;         iy = buffer address
-; outputs: buffer filled with floating point number
-; destroys: nothing
-store_float_iy_nor:
-    ld (iy+0),c
-    ld (iy+3),l
-    ld (iy+4),h
-    exx
-    ld (iy+1),l
-    ld (iy+2),h
-    exx
-    ret
-
-; fetch HLH'L'C floating point number from a 40-bit buffer
-; inputs: iy = buffer address
-; outputs: HLH'L'C = floating point number
-; destroys: HLH'L'C
-fetch_float_iy_nor:
-    ld c,(iy+0)
-    ld l,(iy+3)
-    ld h,(iy+4)
-    exx
-    ld l,(iy+1)
-    ld h,(iy+2)
-    exx
-    ret
-
-; store DED'E'B floating point number in a 40-bit buffer
-; inputs: DED'E'B = floating point number
-;         iy = buffer address
-; outputs: buffer filled with floating point number
-; destroys: nothing
-store_float_iy_alt:
-    ld (iy+0),b
-    ld (iy+3),e
-    ld (iy+4),d
-    exx
-    ld (iy+1),e
-    ld (iy+2),d
-    exx
-    ret
-
-; fetch DED'E'B floating point number from a 40-bit buffer
-; inputs: iy = buffer address
-; outputs: DED'E'B = floating point number
-; destroys: DED'E'B
-fetch_float_iy_alt:
-    ld b,(iy+0)
-    ld e,(iy+3)
-    ld d,(iy+4)
-    exx
-    ld e,(iy+1)
-    ld d,(iy+2)
-    exx
-    ret
 ;
 ; get the next argument after ix as a string
 ; inputs: ix = pointer to the argument string
