@@ -225,53 +225,31 @@ _main_end_ok:
 main:
     ld hl,(ix)          ; get the first argument in case hl doesn't land here with it
 
-    call store_arg1_float
-    ; call print_float_hex_nor
+    ; ld iy,arg1
+    ; call store_arg_iy_float
+    ; call print_float_dec
+    ; call printInline
+    ; asciz " op "
+
+    ; ld iy,arg2
+    ; call store_arg_iy_float
+    ; call print_float_dec
+    ; call printInline
+    ; asciz " = "
+
+    ; ld iy,arg1
+    ; call fetch_float_iy_nor
+
+    ; ld iy,arg2
+    ; call fetch_float_iy_alt
+
+    ; ld a,fmul
+    ; call FPP
+    ; call print_float_dec
+
+; --- DEBUGGING ---
+    LOAD_FLOAT "1.23456789"
     call print_float_dec
-    ; call printHexUIX ; DEBUG
-
-    call printInline
-    asciz " * "
-    
-    call store_arg2_float
-    ; call print_float_hex_nor
-    call print_float_dec
-
-    call printInline
-    asciz " = "
-
-    ; call printHexUIX ; DEBUG
-
-    ld ix,arg1
-    call fetch_float_nor
-
-    ld ix,arg2
-    call fetch_float_alt
-
-    ; call printNewLine
-    ; call dumpRegistersHexAll
-
-    ; call FMUL ; HLH'L'C * DED'E'B --> HLH'L'C
-    ld a,fmul
-    call FPP
-    ; call print_floats_hex
-    call print_float_dec
-
-; ; USING THE STACK:
-;     call get_arg_float
-;     call PUSH5
-
-;     call get_arg_float
-;     call POP5
-;     call SWAP
-
-;     call print_floats_hex
-
-;     ld a,fmul
-;     call FPP
-;     call print_float_dec
-
-    call printNewLine
 
     jp _main_end_ok     ; return success
 
@@ -289,30 +267,76 @@ get_arg_float:
     pop ix ; restore
     ret ; return with the value in HLH'L'C
 
-; get the next argument after ix as a floating point number and store it in ag1 buffer
+; get the next argument after ix as a floating point number and store it in buffer pointed to by iy
 ; inputs: ix = pointer to the argument string
 ; outputs: HLH'L'C = floating point number, ix points to the next argument
 ; destroys: everything except iy, including prime registers
-store_arg1_float:
+store_arg_iy_float:
     lea ix,ix+3 ; point to the next argument
     push ix ; preserve
     ld ix,(ix)  ; point to argument string
     call VAL_FP ; convert the string to a float
-    ld ix,arg1 ; point to the buffer
-    call store_float_nor ; save the float in arg1 buffer
+    call store_float_iy_nor ; save the float in buffer
     pop ix ; restore
     ret ; return with the value in HLH'L'C
 
-; same as above, but store the float in arg2 buffer
-store_arg2_float:
-    lea ix,ix+3 ; point to the next argument
-    push ix ; preserve
-    ld ix,(ix)  ; point to argument string
-    call VAL_FP ; convert the string to a float
-    ld ix,arg2 ; point to the buffer
-    call store_float_nor ; save the float in arg2 buffer
-    pop ix ; restore
-    ret ; return with the value in HLH'L'C
+; store HLH'L'C floating point number in a 40-bit buffer
+; inputs: HLH'L'C = floating point number
+;         iy = buffer address
+; outputs: buffer filled with floating point number
+; destroys: nothing
+store_float_iy_nor:
+    ld (iy+0),c
+    ld (iy+3),l
+    ld (iy+4),h
+    exx
+    ld (iy+1),l
+    ld (iy+2),h
+    exx
+    ret
+
+; fetch HLH'L'C floating point number from a 40-bit buffer
+; inputs: iy = buffer address
+; outputs: HLH'L'C = floating point number
+; destroys: HLH'L'C
+fetch_float_iy_nor:
+    ld c,(iy+0)
+    ld l,(iy+3)
+    ld h,(iy+4)
+    exx
+    ld l,(iy+1)
+    ld h,(iy+2)
+    exx
+    ret
+
+; store DED'E'B floating point number in a 40-bit buffer
+; inputs: DED'E'B = floating point number
+;         iy = buffer address
+; outputs: buffer filled with floating point number
+; destroys: nothing
+store_float_iy_alt:
+    ld (iy+0),b
+    ld (iy+3),e
+    ld (iy+4),d
+    exx
+    ld (iy+1),e
+    ld (iy+2),d
+    exx
+    ret
+
+; fetch DED'E'B floating point number from a 40-bit buffer
+; inputs: iy = buffer address
+; outputs: DED'E'B = floating point number
+; destroys: DED'E'B
+fetch_float_iy_alt:
+    ld b,(iy+0)
+    ld e,(iy+3)
+    ld d,(iy+4)
+    exx
+    ld e,(iy+1)
+    ld d,(iy+2)
+    exx
+    ret
 ;
 ; get the next argument after ix as a string
 ; inputs: ix = pointer to the argument string

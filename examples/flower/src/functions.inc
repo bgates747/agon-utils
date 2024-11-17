@@ -1,3 +1,10 @@
+    MACRO LOAD_FLOAT ARG
+    ld ix,$+11
+    call VAL_FP
+    jp (ix)
+    asciz ARG
+    ENDMACRO
+
     MACRO printChar char
         LD A, char
         RST.LIL 10h
@@ -1202,8 +1209,7 @@ fetch_float_alt:
 ; print HLH'L'C floating point number in hex format
 ; inputs: HLH'L'C = floating point number
 print_float_hex_nor:
-    push bc ; preserve
-    push hl ; preserve
+    PUSH_ALL
     call printHex16
     ld a,'.'
     rst.lil 10h
@@ -1214,15 +1220,13 @@ print_float_hex_nor:
     rst.lil 10h
     ld a,c
     call printHex8
-    pop bc ; restore
-    pop hl ; restore
+    POP_ALL
     ret
 
 ; print DED'E'B floating point number in hex format
 ; inputs: DED'E'B = floating point number
 print_float_hex_alt:
-    push bc ; preserve
-    push hl ; preserve
+    PUSH_ALL
     ex de,hl
     call printHex16
     ex de,hl
@@ -1237,8 +1241,7 @@ print_float_hex_alt:
     rst.lil 10h
     ld a,b
     call printHex8
-    pop bc ; restore
-    pop hl ; restore
+    POP_ALL
     ret
 
 print_floats_hex:
@@ -1266,3 +1269,25 @@ print_float_dec_nor:
     pop ix              ; restore the pointer to the parameters
     ret
 @G9:			DW    9
+
+;PI - Return PI (3.14159265)
+;Result is floating-point numeric.
+;
+pi_alt:			LD      DE,0x490F
+        		EXX
+        		LD      DE,0xDAA2
+        		EXX
+        		LD      B,0x81
+        		XOR     A               ;NUMERIC MARKER
+        		RET
+
+;PI - Return PI * 2 (6.28318531)
+;Result is floating-point numeric.
+;
+pi2_alt:		LD      DE,0x490F
+        		EXX
+        		LD      DE,0xDAA3
+        		EXX
+        		LD      B,0x82
+        		XOR     A               ;NUMERIC MARKER
+        		RET
