@@ -62,6 +62,20 @@ fsub:	EQU 13	; -
 fpow:	EQU 14	; ^
 fdiv:	EQU 15	; /
 
+; --- originally in eval.asm ---
+;SWAP - Swap arguments
+;Exchanges DE,HL D'E',H'L' and B,C
+;Destroys: A,B,C,D,E,H,L,D',E',H',L'
+;
+SWAP:			LD      A,C
+			LD      C,B
+			LD      B,A
+			EX      DE,HL
+			EXX
+			EX      DE,HL
+			EXX
+			RET
+
 ; convert floating point number to integer and store it in HLU
 ; inputs: HLH'L'C = floating point number
 ; outputs: HLU = integer part of the number

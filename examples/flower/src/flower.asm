@@ -71,7 +71,7 @@ _start:
 			XOR 	A
 			LD 	MB, A                   ; Clear to zero so MOS API calls know how to use 24-bit addresses.
 
-			; CALL		_clear_ram ; Clear the BASIC memory allocation
+			CALL		_clear_ram ; Clear the BASIC memory allocation
 
 			LD	IX, argv_ptrs		; The argv array pointer address
 			PUSH	IX
@@ -183,7 +183,7 @@ _clear_ram:
 ; ========================================
 
 ; API INCLUDES
-	include "basic.inc"
+    include "basic/fpp.asm"
     include "functions.inc"
 	include "maths.inc"
     include "mathfpp.inc"
@@ -207,6 +207,53 @@ arg2: ds 5
 str_usage: ASCIZ "Usage: scratch <args>\r\n"
 str_error: ASCIZ "Error!\r\n"
 str_success: ASCIZ "Success!\r\n"
+
+; GLOBAL VARIABLES / DEFAULTS
+; ---- input arguments (float) ----
+input_params_num: equ 5
+input_params:               ; label so we can traverse the table in loops
+petals:             db   0x81           ; 3.03
+                    dw32 0x41EB851E   
+vectors:            db   0x80           ; 1.98
+                    dw32 0x7D70A3D7   
+depth:              db   0x7F           ; 0.6
+                    dw32 0x19999999   
+periods:            db   0x86           ; 66
+                    dw32 0x04000000   
+shrink:             db   0x7F           ; 0.8
+                    dw32 0x4CCCCCCC   
+clock_prime:        db   0x00           ; 1     not used
+                    dw32 0x00000000   
+clock_petal: 	    db   0x00           ; 1     not used
+                    dw32 0x00000000   
+radius_scale: 	    db   0x88           ; 256
+                    dw32 0x00000000   
+
+; ---- main loop parameters (float unless noted otherwise) ----
+step_theta_prime:   db   0x00    ; Step increment for theta_prime in each loop iteration
+                    dw32 0x00000000
+step_theta_petal:   db   0x00    ; Step increment for theta_petal in each loop iteration
+                    dw32 0x00000000
+total_steps:        db   0x00    ; Total number of iterations based on periods and step_theta_prime
+                    dw32 0x00000000
+step_shrink:        db   0x00    ; Step decrement applied to radius in each iteration
+                    dw32 0x00000000
+
+; ---- main loop state variables (float) ----
+theta_prime: 	    db   0x00    ; 
+                    dw32 0x00000000
+theta_petal: 	    db   0x00    ; 
+                    dw32 0x00000000
+radius_prime:       db   0x00    ; Initial radius before shrink factor is applied
+                    dw32 0x00000000
+radius_petal:       db   0x00    ; Radius of the petal circle
+                    dw32 0x00000000
+radius:             db   0x00    ; Total radius of the curve
+                    dw32 0x00000000
+x_prev:             db   0x00    ; Previous x coordinate
+                    dw32 0x00000000
+y_prev:             db   0x00    ; Previous y coordinate
+                    dw32 0x00000000
 
 ; ========= MAIN LOOP ========= 
 ; The main routine
@@ -236,72 +283,26 @@ _end:			LD		SP, (_sps)		; Restore the stack pointer
 ; end BASIC-specific end code
 
 _main_end_ok:
-    ; ld hl,str_success   ; print success message
-    ; call printString
+    call printNewLine
+    ld hl,str_success   ; print success message
+    call printString
     call printNewLine
     ld hl,0             ; return 0 for success
     ret
 
 ; ========= BEGIN CUSTOM MAIN LOOP =========
-main:
+main:    
     dec c               ; decrement the argument count to skip the program name
     call load_input     ; load the input arguments
     call print_input    ; print the input arguments
-    call main_loop      ; run the main loop
-    jp _main_end_ok     ; exit with success
 
-; GLOBAL VARIABLES / DEFAULTS
-; ---- input arguments (float) ----
-input_params_num: equ 5
-input_params:               ; label so we can traverse the table in loops
-petals:             db   0x81           ; 3.03
-                    dw32 0x41EB851E   
-vectors:            db   0x80           ; 1.98
-                    dw32 0x7D70A3D7   
-depth:              db   0x7F           ; 0.6
-                    dw32 0x19999999   
-periods:            db   0x86           ; 66
-                    dw32 0x04000000   
-shrink:             db   0x7F           ; 0.8
-                    dw32 0x4CCCCCCC   
-clock_prime:        db   0x00           ; 1     not used
-                    dw32 0x00000000   
-clock_petal: 	    db   0x00           ; 1     not used
-                    dw32 0x00000000   
-radius_scale: 	    db   0x88           ; 256
-                    dw32 0x00000000   
-
-; ---- main loop parameters (float unless noted otherwise) ----
-                    db   0x00
-step_theta_prime:   dw32 0x00000000   ; Step increment for theta_prime in each loop iteration
-                    db   0x00
-step_theta_petal:   dw32 0x00000000   ; Step increment for theta_petal in each loop iteration
-                    db   0x00
-total_steps:        dw32 0x00000000   ; Total number of iterations based on periods and step_theta_prime
-                    db   0x00
-step_shrink:        dw32 0x00000000   ; Step decrement applied to radius in each iteration
-                    db   0x00
-
-; ---- main loop state variables (float) ----
-                    db   0x00
-theta_prime: 	    dw32 0x00000000   ; 
-                    db   0x00
-theta_petal: 	    dw32 0x00000000   ; 
-                    db   0x00
-radius_prime:       dw32 0x00000000   ; Initial radius before shrink factor is applied
-                    db   0x00
-radius_petal:       dw32 0x00000000   ; Radius of the petal circle
-                    db   0x00
-radius:             dw32 0x00000000   ; Total radius of the curve
-                    db   0x00
-x_prev:             dw32 0x00000000   ; Previous x coordinate
-                    db   0x00
-y_prev:             dw32 0x00000000   ; Previous y coordinate
-                    db   0x00
-
-main_loop:
 ; --- clear the screen ---
-    call vdu_cls
+    ; call vdu_cls
+
+; --- load radius_scale ---
+    LOAD_FLOAT "256" ; HLH'L'C = 256
+    ld iy,radius_scale
+    call store_float_iy_nor
 
 ; --- convert input thetas to radians
     ld iy,theta_prime
@@ -317,7 +318,7 @@ main_loop:
     call store_float_iy_nor
 
 ; --- compute the main loop parameters ---
-; step_theta_prime = 360 degrees / (petals * vectors)
+; step_theta_prime = 2 * pi / (petals * vectors)
     ld iy,petals
     call fetch_float_iy_nor
     ld iy,vectors
@@ -331,7 +332,7 @@ main_loop:
     ld iy,step_theta_prime
     call store_float_iy_nor
 
-; step_theta_petal = 360 degrees / vectors
+; step_theta_petal = 2 * pi / vectors
     ld iy,vectors
     call fetch_float_iy_nor
     call pi2_alt ; DED'E'B = 2 * pi
@@ -389,10 +390,18 @@ main_loop:
     call vdu_set_gfx_origin
 
 ; set initial point and move graphics cursor to it
-    call calc_point ; ubc = x, ude = y
-    ld a,plot_pt+mv_abs ; plot mode
-    call vdu_plot
+    call calc_point ; HLH'L'C = x DED'E'B = y
+    ; ld a,plot_pt+mv_abs ; plot mode
+    ; call vdu_plot
 ; fall through to main loop
+
+; DEBUG
+    call printNewLine
+    call print_float_dec_nor
+    call printNewLine
+    call print_float_dec_alt
+    jp _main_end_ok
+; END DEBUG
 
 @loop:
     ; ; Advance theta values
@@ -432,59 +441,40 @@ main_loop:
     ;     ld hl,total_steps
     ;     dec (hl)
     ;     jp nz,@loop
-    ret
+
+    jp _main_end_ok
 
 ; compute the Cartesian coordinates of the next point on the curve
 ; inputs: theta_prime, theta_petal, radius_prime, depth
-; outputs: ub.c = x, ud.e = y
+; outputs: HLH'L'C = x, DED'E'B = y
 calc_point:
 ; Calculate the petal radius and total radius 
     ; radius_petal = math.cos(theta_petal) * depth
-    ; ld hl,(theta_petal)
-    ; call cos168 ; uh.l = cos(theta_petal)
-    ; ld de,(depth)
-    ; call smul168 ; uh.l = radius_petal
-    ; ld (radius_petal),hl
     ld iy,theta_petal
+    call fetch_float_iy_nor
     ld a,cos
     call FPP ; HLH'L'C = cos(theta_petal)
     ld iy,depth
     call fetch_float_iy_alt
     ld a,fmul
-    call FPP ; HLH'L'C = cos(theta_petal) * depth
-    call SWAP ; HLH'L'C <--> DED'E'B
+    call FPP ; HLH'L'C = radius_petal
 
-;     ; radius = radius_prime + radius_petal * radius_prime
-;     ld de,(radius_prime)
-;     call smul168 ; uh.l = radius_petal * radius_prime
-;     add hl,de ; uh.l = radius_prime + radius_petal * radius_prime
-;     ex de,hl ; de = radius
-;     ld (radius),de
+    ; radius = radius_prime + radius_petal * radius_prime
     ld iy,radius_prime
+    call fetch_float_iy_alt
     ld a,fmul
     call FPP ; HLH'L'C = radius_petal * radius_prime
     ld iy,radius_prime
     call fetch_float_iy_alt
     ld a,fadd
-    call FPP ; HLH'L'C = radius_prime + radius_petal * radius_prime
-    ld iy,radius
-    call store_float_iy_nor
+    call FPP ; HLH'L'C = radius
+    call SWAP ; DED'E'B = radius
 
-; ; Convert polar to Cartesian coordinates
-;     ; x, y = polar_to_cartesian(radius, theta_prime)
-;     ld hl,(theta_prime)
-;     call polar_to_cartesian ; ub.c = x, ud.e = y
-;     ld (x_prev),bc
-;     ld (y_prev),de
+; Convert polar to Cartesian coordinates
+    ld iy,theta_prime
+    call fetch_float_iy_nor ; HLH'L'C = theta_prime
+    call polar_to_cartesian_fpp ; HLH'L'C = x, DED'E'B = y
 
-; ; ; Debug print
-; ;     call print_hex_bc
-; ;     call print_s168_bc
-; ;     call print_hex_de
-; ;     call print_s168_de
-; ;     ; call printNewLine
-
-; ; all done
     ret
 
 
@@ -494,34 +484,35 @@ load_input:
     ld a,c ; put the number of entered arguments in a
     ld b,input_params_num ; loop counter = number of arguments
     cp b ; compare the number of arguments to the number of arguments
-    call nz,args_count_off ; handle discrepancies
-    ; TODO: we may want to branch here according to the result
+    jp nz,args_count_off ; handle discrepancies
     ld iy,input_params  ; point to the arguments table
 @loop:
-        call store_arg_iy_float ; get the next argument and store it
-        lea iy,iy+5  ; point to the next parameter
-        djnz @loop ; loop until done
-        ret
+    push bc ; save the loop counter
+    call store_arg_iy_float ; get the next argument and store it
+    lea iy,iy+5  ; point to the next parameter
+    pop bc ; get back the loop counter
+    djnz @loop ; loop until done
+    ret
 
 print_input:
     ld b,input_params_num ; loop counter = number of arguments
     ld iy,input_params  ; point to the arguments table
 @loop:
-        push bc ; save the loop counter
-        call fetch_float_iy_nor ; fetch the next parameter into HLH'L'C
-        call print_float_dec_nor ; print the parameter
-        ld a,' ' ; print a space separator
-        rst.lil $10
-        lea iy,iy+5  ; point to the next parameter
-        pop bc ; get back the loop counter
-        djnz @loop ; loop until done
-        ret
+    push bc ; save the loop counter
+    call fetch_float_iy_nor ; fetch the next parameter into HLH'L'C
+    call print_float_dec_nor ; print the parameter
+    ld a,' ' ; print a space separator
+    rst.lil $10
+    lea iy,iy+5  ; point to the next parameter
+    pop bc ; get back the loop counter
+    djnz @loop ; loop until done
+    ret
 
 ; --- Specific parameter processing functions ---
 args_count_off:
     ld hl,@str_args_count_off
     call printString
-    ret
+    jp _main_end_error
 @str_args_count_off: db "Argument counts mismatch!\r\n",0
 
 ; ---- text strings ----
