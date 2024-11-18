@@ -87,9 +87,9 @@ int2hlu:
 polar_to_cartesian_fpp:
 ; store input parameters in scratch
     ld iy,@angle
-    call store_float_nor
+    call store_float_iy_nor
     ld iy,@radius
-    call store_float_alt
+    call store_float_iy_alt
 ; compute dy = sin(angle) * radius
     ld a,sin
     call FPP ; HLH'L'C = sin(angle)

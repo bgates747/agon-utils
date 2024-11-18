@@ -390,7 +390,7 @@
                0075 
 0B0052 DD      0076 LD	IX, argv_ptrs		; The argv array pointer address
 0B0053 21 
-0B0054 B8 
+0B0054 D6 
 0B0055 56 
 0B0055 0B   
 0B0057 DD      0077 PUSH	IX
@@ -404,7 +404,7 @@
 0B005F 06      0080 LD	B, 0			;  C: argc
 0B0060 00 
 0B0061 CD      0081 CALL	_main_init			; Start user code
-0B0062 21 
+0B0062 3F 
 0B0063 57 
 0B0064 0B 
                0082 
@@ -15063,7 +15063,7 @@
 0B2FAC 00 
 0B2FAD 00 
 0B2FAE C3    0184** JP	_end
-0B2FAF 3B 
+0B2FAF 59 
 0B2FB0 57 
 0B2FB1 0B 
              0185** ;
@@ -20082,7 +20082,7 @@
 0B3FF6 00 
 0B3FF7 00 
 0B3FF8 C3    0433** JP	_end 			; Jump back to the end routine in init.asm
-0B3FF9 3B 
+0B3FF9 59 
 0B3FFA 57 
 0B3FFB 0B 
              0434** 
@@ -25404,659 +25404,689 @@
               0088* ; store input parameters in scratch
 0B5024 FD     0089* ld iy,@angle
 0B5025 21 
-0B5026 5E 
+0B5026 7C 
 0B5027 50 
 0B5027 0B   
-0B5029 CD     0090* call store_float_nor
-0B502A 6D 
+0B5029 CD     0090* call store_float_iy_nor
+0B502A D3 
 0B502B 50 
 0B502C 0B 
-0B502D ED     0091* lea iy,iy+5 ; @radius
-0B502E 33 
-0B502F 05 
-0B5030 CD     0092* call store_float_alt
-0B5031 91 
-0B5032 50 
-0B5033 0B 
+0B502D FD     0091* ld iy,@radius
+0B502E 21 
+0B502F 81 
+0B5030 50 
+0B5030 0B   
+0B5032 CD     0092* call store_float_iy_alt
+0B5033 F7 
+0B5034 50 
+0B5035 0B 
               0093* ; compute dy = sin(angle) * radius
-0B5034 3E     0094* ld a,sin
-0B5035 1D 
-0B5036 CD     0095* call FPP ; HLH'L'C = sin(angle)
-0B5037 2E 
-0B5038 20 
-0B5039 0B 
-0B503A 3E     0096* ld a,fmul
-0B503B 0A 
-0B503C CD     0097* call FPP ; HLH'L'C = sin(angle) * radius
-0B503D 2E 
-0B503E 20 
-0B503F 0B 
-0B5040 ED     0098* lea iy,iy+5 ; point to scratch
-0B5041 33 
-0B5042 05 
-0B5043 CD     0099* call store_float_iy_nor ; @scratch = dy
-0B5044 B5 
-0B5045 50 
-0B5046 0B 
-              0100* ; compute dx = cos(angle) * radius
-0B5047 FD     0101* ld iy,@angle
-0B5048 21 
-0B5049 5E 
-0B504A 50 
-0B504A 0B   
-0B504C 3E     0102* ld a,cos
-0B504D 14 
-0B504E CD     0103* call FPP ; HLH'L'C = cos(angle)
-0B504F 2E 
-0B5050 20 
-0B5051 0B 
-0B5052 3E     0104* ld a,fmul
-0B5053 0A 
-0B5054 CD     0105* call FPP ; HLH'L'C = cos(angle) * radius
-0B5055 2E 
-0B5056 20 
-0B5057 0B 
-              0106* ; restore dy from @scratch
-0B5058 FD     0107* ld iy,@scratch
-0B5059 21 
-0B505A 68 
+0B5036 3E     0094* ld a,sin
+0B5037 1D 
+0B5038 CD     0095* call FPP ; HLH'L'C = sin(angle)
+0B5039 2E 
+0B503A 20 
+0B503B 0B 
+0B503C FD     0096* ld iy,@radius
+0B503D 21 
+0B503E 81 
+0B503F 50 
+0B503F 0B   
+0B5041 CD     0097* call fetch_float_iy_alt ; DED'E'B = radius
+0B5042 09 
+0B5043 51 
+0B5044 0B 
+0B5045 3E     0098* ld a,fmul
+0B5046 0A 
+0B5047 CD     0099* call FPP ; HLH'L'C = sin(angle) * radius
+0B5048 2E 
+0B5049 20 
+0B504A 0B 
+0B504B FD     0100* ld iy,@scratch
+0B504C 21 
+0B504D 86 
+0B504E 50 
+0B504E 0B   
+0B5050 CD     0101* call store_float_iy_nor ; @scratch = dy
+0B5051 D3 
+0B5052 50 
+0B5053 0B 
+              0102* ; compute dx = cos(angle) * radius
+0B5054 FD     0103* ld iy,@angle
+0B5055 21 
+0B5056 7C 
+0B5057 50 
+0B5057 0B   
+0B5059 CD     0104* call fetch_float_iy_nor
+0B505A E5 
 0B505B 50 
-0B505B 0B   
-0B505D C9     0108* ret
-              0109* 
-              0110* @angle: ds 5
-              0111* @radius: ds 5
-              0112* @scratch: ds 5
-              0113* 
-              0114* ; store HLH'L'C floating point number in a 40-bit buffer
-              0115* ; inputs: HLH'L'C = floating point number
-              0116* ;         ix = buffer address
-              0117* ; outputs: buffer filled with floating point number
-              0118* ; destroys: nothing
-              0119* store_float_nor:
-0B506D DD     0120* ld (ix+0),c
-0B506E 71 
-0B506F 00 
-0B5070 DD     0121* ld (ix+3),l
-0B5071 75 
-0B5072 03 
-0B5073 DD     0122* ld (ix+4),h
-0B5074 74 
-0B5075 04 
-0B5076 D9     0123* exx
-0B5077 DD     0124* ld (ix+1),l
-0B5078 75 
-0B5079 01 
-0B507A DD     0125* ld (ix+2),h
-0B507B 74 
-0B507C 02 
-0B507D D9     0126* exx
-0B507E C9     0127* ret
-              0128* 
-              0129* ; fetch HLH'L'C floating point number from a 40-bit buffer
-              0130* ; inputs: ix = buffer address
-              0131* ; outputs: HLH'L'C = floating point number
-              0132* ; destroys: HLH'L'C
-              0133* fetch_float_nor:
-0B507F DD     0134* ld c,(ix+0)
-0B5080 4E 
-0B5081 00 
-0B5082 DD     0135* ld l,(ix+3)
-0B5083 6E 
-0B5084 03 
-0B5085 DD     0136* ld h,(ix+4)
-0B5086 66 
-0B5087 04 
-0B5088 D9     0137* exx
-0B5089 DD     0138* ld l,(ix+1)
-0B508A 6E 
-0B508B 01 
-0B508C DD     0139* ld h,(ix+2)
-0B508D 66 
-0B508E 02 
-0B508F D9     0140* exx
-0B5090 C9     0141* ret
-              0142* 
-              0143* ; store DED'E'B floating point number in a 40-bit buffer
-              0144* ; inputs: DED'E'B = floating point number
-              0145* ;         ix = buffer address
-              0146* ; outputs: buffer filled with floating point number
-              0147* ; destroys: nothing
-              0148* store_float_alt:
-0B5091 DD     0149* ld (ix+0),b
-0B5092 70 
-0B5093 00 
-0B5094 DD     0150* ld (ix+3),e
-0B5095 73 
-0B5096 03 
-0B5097 DD     0151* ld (ix+4),d
-0B5098 72 
-0B5099 04 
-0B509A D9     0152* exx
-0B509B DD     0153* ld (ix+1),e
-0B509C 73 
-0B509D 01 
-0B509E DD     0154* ld (ix+2),d
-0B509F 72 
-0B50A0 02 
-0B50A1 D9     0155* exx
-0B50A2 C9     0156* ret
-              0157* 
-              0158* ; fetch DED'E'B floating point number from a 40-bit buffer
-              0159* ; inputs: ix = buffer address
-              0160* ; outputs: DED'E'B = floating point number
-              0161* ; destroys: DED'E'B
-              0162* fetch_float_alt:
-0B50A3 DD     0163* ld b,(ix+0)
-0B50A4 46 
-0B50A5 00 
-0B50A6 DD     0164* ld e,(ix+3)
-0B50A7 5E 
-0B50A8 03 
-0B50A9 DD     0165* ld d,(ix+4)
-0B50AA 56 
-0B50AB 04 
-0B50AC D9     0166* exx
-0B50AD DD     0167* ld e,(ix+1)
-0B50AE 5E 
-0B50AF 01 
-0B50B0 DD     0168* ld d,(ix+2)
-0B50B1 56 
-0B50B2 02 
-0B50B3 D9     0169* exx
-0B50B4 C9     0170* ret
-              0171* 
-              0172* 
-              0173* ; store HLH'L'C floating point number in a 40-bit buffer
-              0174* ; inputs: HLH'L'C = floating point number
-              0175* ;         iy = buffer address
-              0176* ; outputs: buffer filled with floating point number
-              0177* ; destroys: nothing
-              0178* store_float_iy_nor:
-0B50B5 FD     0179* ld (iy+0),c
-0B50B6 71 
-0B50B7 00 
-0B50B8 FD     0180* ld (iy+3),l
-0B50B9 75 
-0B50BA 03 
-0B50BB FD     0181* ld (iy+4),h
-0B50BC 74 
-0B50BD 04 
-0B50BE D9     0182* exx
-0B50BF FD     0183* ld (iy+1),l
-0B50C0 75 
-0B50C1 01 
-0B50C2 FD     0184* ld (iy+2),h
-0B50C3 74 
-0B50C4 02 
-0B50C5 D9     0185* exx
-0B50C6 C9     0186* ret
-              0187* 
-              0188* ; fetch HLH'L'C floating point number from a 40-bit buffer
-              0189* ; inputs: iy = buffer address
-              0190* ; outputs: HLH'L'C = floating point number
-              0191* ; destroys: HLH'L'C
-              0192* fetch_float_iy_nor:
-0B50C7 FD     0193* ld c,(iy+0)
-0B50C8 4E 
-0B50C9 00 
-0B50CA FD     0194* ld l,(iy+3)
-0B50CB 6E 
-0B50CC 03 
-0B50CD FD     0195* ld h,(iy+4)
-0B50CE 66 
-0B50CF 04 
-0B50D0 D9     0196* exx
-0B50D1 FD     0197* ld l,(iy+1)
-0B50D2 6E 
-0B50D3 01 
-0B50D4 FD     0198* ld h,(iy+2)
-0B50D5 66 
-0B50D6 02 
-0B50D7 D9     0199* exx
-0B50D8 C9     0200* ret
-              0201* 
-              0202* ; store DED'E'B floating point number in a 40-bit buffer
-              0203* ; inputs: DED'E'B = floating point number
-              0204* ;         iy = buffer address
-              0205* ; outputs: buffer filled with floating point number
-              0206* ; destroys: nothing
-              0207* store_float_iy_alt:
-0B50D9 FD     0208* ld (iy+0),b
-0B50DA 70 
-0B50DB 00 
-0B50DC FD     0209* ld (iy+3),e
-0B50DD 73 
-0B50DE 03 
-0B50DF FD     0210* ld (iy+4),d
-0B50E0 72 
-0B50E1 04 
-0B50E2 D9     0211* exx
-0B50E3 FD     0212* ld (iy+1),e
-0B50E4 73 
-0B50E5 01 
-0B50E6 FD     0213* ld (iy+2),d
-0B50E7 72 
-0B50E8 02 
-0B50E9 D9     0214* exx
-0B50EA C9     0215* ret
-              0216* 
-              0217* ; fetch DED'E'B floating point number from a 40-bit buffer
-              0218* ; inputs: iy = buffer address
-              0219* ; outputs: DED'E'B = floating point number
-              0220* ; destroys: DED'E'B
-              0221* fetch_float_iy_alt:
-0B50EB FD     0222* ld b,(iy+0)
-0B50EC 46 
-0B50ED 00 
-0B50EE FD     0223* ld e,(iy+3)
-0B50EF 5E 
-0B50F0 03 
-0B50F1 FD     0224* ld d,(iy+4)
-0B50F2 56 
-0B50F3 04 
-0B50F4 D9     0225* exx
-0B50F5 FD     0226* ld e,(iy+1)
-0B50F6 5E 
-0B50F7 01 
-0B50F8 FD     0227* ld d,(iy+2)
-0B50F9 56 
-0B50FA 02 
-0B50FB D9     0228* exx
-0B50FC C9     0229* ret
-              0230* 
-              0231* ; print HLH'L'C floating point number in hex format
-              0232* ; inputs: HLH'L'C = floating point number
-              0233* print_float_hex_nor:
-              0234* PUSH_ALL
-0B50FD 08    0001*M ex af,af'
-0B50FE D9    0002*M exx
-0B50FF F5    0003*M push af
-0B5100 E5    0004*M push hl
-0B5101 C5    0005*M push bc
-0B5102 D5    0006*M push de
+0B505C 0B 
+0B505D 3E     0105* ld a,cos
+0B505E 14 
+0B505F CD     0106* call FPP ; HLH'L'C = cos(angle)
+0B5060 2E 
+0B5061 20 
+0B5062 0B 
+0B5063 FD     0107* ld iy,@radius
+0B5064 21 
+0B5065 81 
+0B5066 50 
+0B5066 0B   
+0B5068 CD     0108* call fetch_float_iy_alt ; DED'E'B = radius
+0B5069 09 
+0B506A 51 
+0B506B 0B 
+0B506C 3E     0109* ld a,fmul
+0B506D 0A 
+0B506E CD     0110* call FPP ; HLH'L'C = cos(angle) * radius
+0B506F 2E 
+0B5070 20 
+0B5071 0B 
+              0111* ; restore dy from @scratch
+0B5072 FD     0112* ld iy,@scratch
+0B5073 21 
+0B5074 86 
+0B5075 50 
+0B5075 0B   
+0B5077 CD     0113* call fetch_float_iy_alt
+0B5078 09 
+0B5079 51 
+0B507A 0B 
+0B507B C9     0114* ret
+              0115* 
+              0116* @angle: ds 5
+              0117* @radius: ds 5
+              0118* @scratch: ds 5
+              0119* 
+              0120* ; store HLH'L'C floating point number in a 40-bit buffer
+              0121* ; inputs: HLH'L'C = floating point number
+              0122* ;         ix = buffer address
+              0123* ; outputs: buffer filled with floating point number
+              0124* ; destroys: nothing
+              0125* store_float_nor:
+0B508B DD     0126* ld (ix+0),c
+0B508C 71 
+0B508D 00 
+0B508E DD     0127* ld (ix+3),l
+0B508F 75 
+0B5090 03 
+0B5091 DD     0128* ld (ix+4),h
+0B5092 74 
+0B5093 04 
+0B5094 D9     0129* exx
+0B5095 DD     0130* ld (ix+1),l
+0B5096 75 
+0B5097 01 
+0B5098 DD     0131* ld (ix+2),h
+0B5099 74 
+0B509A 02 
+0B509B D9     0132* exx
+0B509C C9     0133* ret
+              0134* 
+              0135* ; fetch HLH'L'C floating point number from a 40-bit buffer
+              0136* ; inputs: ix = buffer address
+              0137* ; outputs: HLH'L'C = floating point number
+              0138* ; destroys: HLH'L'C
+              0139* fetch_float_nor:
+0B509D DD     0140* ld c,(ix+0)
+0B509E 4E 
+0B509F 00 
+0B50A0 DD     0141* ld l,(ix+3)
+0B50A1 6E 
+0B50A2 03 
+0B50A3 DD     0142* ld h,(ix+4)
+0B50A4 66 
+0B50A5 04 
+0B50A6 D9     0143* exx
+0B50A7 DD     0144* ld l,(ix+1)
+0B50A8 6E 
+0B50A9 01 
+0B50AA DD     0145* ld h,(ix+2)
+0B50AB 66 
+0B50AC 02 
+0B50AD D9     0146* exx
+0B50AE C9     0147* ret
+              0148* 
+              0149* ; store DED'E'B floating point number in a 40-bit buffer
+              0150* ; inputs: DED'E'B = floating point number
+              0151* ;         ix = buffer address
+              0152* ; outputs: buffer filled with floating point number
+              0153* ; destroys: nothing
+              0154* store_float_alt:
+0B50AF DD     0155* ld (ix+0),b
+0B50B0 70 
+0B50B1 00 
+0B50B2 DD     0156* ld (ix+3),e
+0B50B3 73 
+0B50B4 03 
+0B50B5 DD     0157* ld (ix+4),d
+0B50B6 72 
+0B50B7 04 
+0B50B8 D9     0158* exx
+0B50B9 DD     0159* ld (ix+1),e
+0B50BA 73 
+0B50BB 01 
+0B50BC DD     0160* ld (ix+2),d
+0B50BD 72 
+0B50BE 02 
+0B50BF D9     0161* exx
+0B50C0 C9     0162* ret
+              0163* 
+              0164* ; fetch DED'E'B floating point number from a 40-bit buffer
+              0165* ; inputs: ix = buffer address
+              0166* ; outputs: DED'E'B = floating point number
+              0167* ; destroys: DED'E'B
+              0168* fetch_float_alt:
+0B50C1 DD     0169* ld b,(ix+0)
+0B50C2 46 
+0B50C3 00 
+0B50C4 DD     0170* ld e,(ix+3)
+0B50C5 5E 
+0B50C6 03 
+0B50C7 DD     0171* ld d,(ix+4)
+0B50C8 56 
+0B50C9 04 
+0B50CA D9     0172* exx
+0B50CB DD     0173* ld e,(ix+1)
+0B50CC 5E 
+0B50CD 01 
+0B50CE DD     0174* ld d,(ix+2)
+0B50CF 56 
+0B50D0 02 
+0B50D1 D9     0175* exx
+0B50D2 C9     0176* ret
+              0177* 
+              0178* 
+              0179* ; store HLH'L'C floating point number in a 40-bit buffer
+              0180* ; inputs: HLH'L'C = floating point number
+              0181* ;         iy = buffer address
+              0182* ; outputs: buffer filled with floating point number
+              0183* ; destroys: nothing
+              0184* store_float_iy_nor:
+0B50D3 FD     0185* ld (iy+0),c
+0B50D4 71 
+0B50D5 00 
+0B50D6 FD     0186* ld (iy+3),l
+0B50D7 75 
+0B50D8 03 
+0B50D9 FD     0187* ld (iy+4),h
+0B50DA 74 
+0B50DB 04 
+0B50DC D9     0188* exx
+0B50DD FD     0189* ld (iy+1),l
+0B50DE 75 
+0B50DF 01 
+0B50E0 FD     0190* ld (iy+2),h
+0B50E1 74 
+0B50E2 02 
+0B50E3 D9     0191* exx
+0B50E4 C9     0192* ret
+              0193* 
+              0194* ; fetch HLH'L'C floating point number from a 40-bit buffer
+              0195* ; inputs: iy = buffer address
+              0196* ; outputs: HLH'L'C = floating point number
+              0197* ; destroys: HLH'L'C
+              0198* fetch_float_iy_nor:
+0B50E5 FD     0199* ld c,(iy+0)
+0B50E6 4E 
+0B50E7 00 
+0B50E8 FD     0200* ld l,(iy+3)
+0B50E9 6E 
+0B50EA 03 
+0B50EB FD     0201* ld h,(iy+4)
+0B50EC 66 
+0B50ED 04 
+0B50EE D9     0202* exx
+0B50EF FD     0203* ld l,(iy+1)
+0B50F0 6E 
+0B50F1 01 
+0B50F2 FD     0204* ld h,(iy+2)
+0B50F3 66 
+0B50F4 02 
+0B50F5 D9     0205* exx
+0B50F6 C9     0206* ret
+              0207* 
+              0208* ; store DED'E'B floating point number in a 40-bit buffer
+              0209* ; inputs: DED'E'B = floating point number
+              0210* ;         iy = buffer address
+              0211* ; outputs: buffer filled with floating point number
+              0212* ; destroys: nothing
+              0213* store_float_iy_alt:
+0B50F7 FD     0214* ld (iy+0),b
+0B50F8 70 
+0B50F9 00 
+0B50FA FD     0215* ld (iy+3),e
+0B50FB 73 
+0B50FC 03 
+0B50FD FD     0216* ld (iy+4),d
+0B50FE 72 
+0B50FF 04 
+0B5100 D9     0217* exx
+0B5101 FD     0218* ld (iy+1),e
+0B5102 73 
+0B5103 01 
+0B5104 FD     0219* ld (iy+2),d
+0B5105 72 
+0B5106 02 
+0B5107 D9     0220* exx
+0B5108 C9     0221* ret
+              0222* 
+              0223* ; fetch DED'E'B floating point number from a 40-bit buffer
+              0224* ; inputs: iy = buffer address
+              0225* ; outputs: DED'E'B = floating point number
+              0226* ; destroys: DED'E'B
+              0227* fetch_float_iy_alt:
+0B5109 FD     0228* ld b,(iy+0)
+0B510A 46 
+0B510B 00 
+0B510C FD     0229* ld e,(iy+3)
+0B510D 5E 
+0B510E 03 
+0B510F FD     0230* ld d,(iy+4)
+0B5110 56 
+0B5111 04 
+0B5112 D9     0231* exx
+0B5113 FD     0232* ld e,(iy+1)
+0B5114 5E 
+0B5115 01 
+0B5116 FD     0233* ld d,(iy+2)
+0B5117 56 
+0B5118 02 
+0B5119 D9     0234* exx
+0B511A C9     0235* ret
+              0236* 
+              0237* ; print HLH'L'C floating point number in hex format
+              0238* ; inputs: HLH'L'C = floating point number
+              0239* print_float_hex_nor:
+              0240* PUSH_ALL
+0B511B 08    0001*M ex af,af'
+0B511C D9    0002*M exx
+0B511D F5    0003*M push af
+0B511E E5    0004*M push hl
+0B511F C5    0005*M push bc
+0B5120 D5    0006*M push de
              0007*M 
-0B5103 08    0008*M ex af,af'
-0B5104 D9    0009*M exx
-0B5105 F5    0010*M push af
-0B5106 E5    0011*M push hl
-0B5107 C5    0012*M push bc
-0B5108 D5    0013*M push de
-0B5109 DD    0014*M push ix
-0B510A E5 
-0B510B FD    0015*M push iy
-0B510C E5 
-0B510D CD     0235* call printHex16
-0B510E 49 
-0B510F 49 
-0B5110 0B 
-0B5111 3E     0236* ld a,'.'
-0B5112 2E 
-0B5113 5B     0237* rst.lil 10h
-0B5114 D7 
-0B5115 D9     0238* exx
-0B5116 CD     0239* call printHex16
-0B5117 49 
-0B5118 49 
-0B5119 0B 
-0B511A D9     0240* exx
-0B511B 3E     0241* ld a,'^'
-0B511C 5E 
-0B511D 5B     0242* rst.lil 10h
-0B511E D7 
-0B511F 79     0243* ld a,c
-0B5120 CD     0244* call printHex8
-0B5121 4F 
-0B5122 49 
-0B5123 0B 
-              0245* POP_ALL
-0B5124 FD    0001*M pop iy
-0B5125 E1 
-0B5126 DD    0002*M pop ix
-0B5127 E1 
-0B5128 D1    0003*M pop de
-0B5129 C1    0004*M pop bc
-0B512A E1    0005*M pop hl
-0B512B F1    0006*M pop af
-0B512C 08    0007*M ex af,af'
-0B512D D9    0008*M exx
+0B5121 08    0008*M ex af,af'
+0B5122 D9    0009*M exx
+0B5123 F5    0010*M push af
+0B5124 E5    0011*M push hl
+0B5125 C5    0012*M push bc
+0B5126 D5    0013*M push de
+0B5127 DD    0014*M push ix
+0B5128 E5 
+0B5129 FD    0015*M push iy
+0B512A E5 
+0B512B CD     0241* call printHex16
+0B512C 49 
+0B512D 49 
+0B512E 0B 
+0B512F 3E     0242* ld a,'.'
+0B5130 2E 
+0B5131 5B     0243* rst.lil 10h
+0B5132 D7 
+0B5133 D9     0244* exx
+0B5134 CD     0245* call printHex16
+0B5135 49 
+0B5136 49 
+0B5137 0B 
+0B5138 D9     0246* exx
+0B5139 3E     0247* ld a,'^'
+0B513A 5E 
+0B513B 5B     0248* rst.lil 10h
+0B513C D7 
+0B513D 79     0249* ld a,c
+0B513E CD     0250* call printHex8
+0B513F 4F 
+0B5140 49 
+0B5141 0B 
+              0251* POP_ALL
+0B5142 FD    0001*M pop iy
+0B5143 E1 
+0B5144 DD    0002*M pop ix
+0B5145 E1 
+0B5146 D1    0003*M pop de
+0B5147 C1    0004*M pop bc
+0B5148 E1    0005*M pop hl
+0B5149 F1    0006*M pop af
+0B514A 08    0007*M ex af,af'
+0B514B D9    0008*M exx
              0009*M 
-0B512E D1    0010*M pop de
-0B512F C1    0011*M pop bc
-0B5130 E1    0012*M pop hl
-0B5131 F1    0013*M pop af
-0B5132 08    0014*M ex af,af'
-0B5133 D9    0015*M exx
-0B5134 C9     0246* ret
-              0247* 
-              0248* ; print DED'E'B floating point number in hex format
-              0249* ; inputs: DED'E'B = floating point number
-              0250* print_float_hex_alt:
-              0251* PUSH_ALL
-0B5135 08    0001*M ex af,af'
-0B5136 D9    0002*M exx
-0B5137 F5    0003*M push af
-0B5138 E5    0004*M push hl
-0B5139 C5    0005*M push bc
-0B513A D5    0006*M push de
+0B514C D1    0010*M pop de
+0B514D C1    0011*M pop bc
+0B514E E1    0012*M pop hl
+0B514F F1    0013*M pop af
+0B5150 08    0014*M ex af,af'
+0B5151 D9    0015*M exx
+0B5152 C9     0252* ret
+              0253* 
+              0254* ; print DED'E'B floating point number in hex format
+              0255* ; inputs: DED'E'B = floating point number
+              0256* print_float_hex_alt:
+              0257* PUSH_ALL
+0B5153 08    0001*M ex af,af'
+0B5154 D9    0002*M exx
+0B5155 F5    0003*M push af
+0B5156 E5    0004*M push hl
+0B5157 C5    0005*M push bc
+0B5158 D5    0006*M push de
              0007*M 
-0B513B 08    0008*M ex af,af'
-0B513C D9    0009*M exx
-0B513D F5    0010*M push af
-0B513E E5    0011*M push hl
-0B513F C5    0012*M push bc
-0B5140 D5    0013*M push de
-0B5141 DD    0014*M push ix
-0B5142 E5 
-0B5143 FD    0015*M push iy
-0B5144 E5 
-0B5145 EB     0252* ex de,hl
-0B5146 CD     0253* call printHex16
-0B5147 49 
-0B5148 49 
-0B5149 0B 
-0B514A EB     0254* ex de,hl
-0B514B 3E     0255* ld a,'.'
-0B514C 2E 
-0B514D 5B     0256* rst.lil 10h
-0B514E D7 
-0B514F D9     0257* exx
-0B5150 EB     0258* ex de,hl
-0B5151 CD     0259* call printHex16
-0B5152 49 
-0B5153 49 
-0B5154 0B 
-0B5155 EB     0260* ex de,hl
-0B5156 D9     0261* exx
-0B5157 3E     0262* ld a,'^'
-0B5158 5E 
-0B5159 5B     0263* rst.lil 10h
-0B515A D7 
-0B515B 78     0264* ld a,b
-0B515C CD     0265* call printHex8
-0B515D 4F 
-0B515E 49 
-0B515F 0B 
-              0266* POP_ALL
-0B5160 FD    0001*M pop iy
-0B5161 E1 
-0B5162 DD    0002*M pop ix
-0B5163 E1 
-0B5164 D1    0003*M pop de
-0B5165 C1    0004*M pop bc
-0B5166 E1    0005*M pop hl
-0B5167 F1    0006*M pop af
-0B5168 08    0007*M ex af,af'
-0B5169 D9    0008*M exx
-             0009*M 
-0B516A D1    0010*M pop de
-0B516B C1    0011*M pop bc
-0B516C E1    0012*M pop hl
-0B516D F1    0013*M pop af
-0B516E 08    0014*M ex af,af'
-0B516F D9    0015*M exx
-0B5170 C9     0267* ret
-              0268* 
-              0269* print_floats_hex:
-0B5171 CD     0270* call print_float_hex_nor
-0B5172 FD 
-0B5173 50 
-0B5174 0B 
-0B5175 3E     0271* ld a,' '
-0B5176 20 
-0B5177 5B     0272* rst.lil 10h
+0B5159 08    0008*M ex af,af'
+0B515A D9    0009*M exx
+0B515B F5    0010*M push af
+0B515C E5    0011*M push hl
+0B515D C5    0012*M push bc
+0B515E D5    0013*M push de
+0B515F DD    0014*M push ix
+0B5160 E5 
+0B5161 FD    0015*M push iy
+0B5162 E5 
+0B5163 EB     0258* ex de,hl
+0B5164 CD     0259* call printHex16
+0B5165 49 
+0B5166 49 
+0B5167 0B 
+0B5168 EB     0260* ex de,hl
+0B5169 3E     0261* ld a,'.'
+0B516A 2E 
+0B516B 5B     0262* rst.lil 10h
+0B516C D7 
+0B516D D9     0263* exx
+0B516E EB     0264* ex de,hl
+0B516F CD     0265* call printHex16
+0B5170 49 
+0B5171 49 
+0B5172 0B 
+0B5173 EB     0266* ex de,hl
+0B5174 D9     0267* exx
+0B5175 3E     0268* ld a,'^'
+0B5176 5E 
+0B5177 5B     0269* rst.lil 10h
 0B5178 D7 
-0B5179 CD     0273* call print_float_hex_alt
-0B517A 35 
-0B517B 51 
-0B517C 0B 
-0B517D C9     0274* ret
-              0275* 
-              0276* ; print a floating point number in decimal format
-              0277* ; inputs: HL'H'L'C is the number to print
-              0278* ; outputs: number printed to screen
-              0279* ;          ACCS null-terminated string representation of the number
-              0280* ; destroys: everything except ix
-              0281* print_float_dec:
-              0282* print_float_dec_nor:
-0B517E DD     0283* push ix             ; preserve
-0B517F E5 
-              0284* 
-              0285* ; back up floats in normal and alternate registers
-0B5180 DD     0286* ld ix,@float_nor
-0B5181 21 
-0B5182 C1 
-0B5183 51 
-0B5183 0B   
-0B5185 CD     0287* call store_float_nor
-0B5186 6D 
-0B5187 50 
-0B5188 0B 
-0B5189 DD     0288* ld ix,@float_alt
-0B518A 21 
-0B518B C6 
-0B518C 51 
-0B518C 0B   
-0B518E CD     0289* call store_float_alt
-0B518F 91 
-0B5190 50 
-0B5191 0B 
-              0290* 
-              0291* ; convert the number to a string
-0B5192 11     0292* ld de,ACCS          ; point to the string accumulator
-0B5193 00 
-0B5194 5B 
-0B5195 0B 
-0B5196 DD     0293* ld ix,@G9-1         ; get the format code for the number
-0B5197 21 
-0B5198 BE 
+0B5179 78     0270* ld a,b
+0B517A CD     0271* call printHex8
+0B517B 4F 
+0B517C 49 
+0B517D 0B 
+              0272* POP_ALL
+0B517E FD    0001*M pop iy
+0B517F E1 
+0B5180 DD    0002*M pop ix
+0B5181 E1 
+0B5182 D1    0003*M pop de
+0B5183 C1    0004*M pop bc
+0B5184 E1    0005*M pop hl
+0B5185 F1    0006*M pop af
+0B5186 08    0007*M ex af,af'
+0B5187 D9    0008*M exx
+             0009*M 
+0B5188 D1    0010*M pop de
+0B5189 C1    0011*M pop bc
+0B518A E1    0012*M pop hl
+0B518B F1    0013*M pop af
+0B518C 08    0014*M ex af,af'
+0B518D D9    0015*M exx
+0B518E C9     0273* ret
+              0274* 
+              0275* print_floats_hex:
+0B518F CD     0276* call print_float_hex_nor
+0B5190 1B 
+0B5191 51 
+0B5192 0B 
+0B5193 3E     0277* ld a,' '
+0B5194 20 
+0B5195 5B     0278* rst.lil 10h
+0B5196 D7 
+0B5197 CD     0279* call print_float_hex_alt
+0B5198 53 
 0B5199 51 
-0B5199 0B   
-0B519B CD     0294* call STR_FP         ; convert the number to a string
-0B519C 2D 
-0B519D 28 
-0B519E 0B 
-0B519F EB     0295* ex de,hl            ; point to end of the string
-0B51A0 36     0296* ld (hl),0           ; null-terminate the string
-0B51A1 00 
-0B51A2 21     0297* ld hl,ACCS          ; point to the string accumulator
-0B51A3 00 
-0B51A4 5B 
-0B51A5 0B 
-0B51A6 CD     0298* call printString
-0B51A7 21 
-0B51A8 49 
-0B51A9 0B 
-              0299* 
-              0300* ; restore floats in normal and alternate registers
-0B51AA DD     0301* ld ix,@float_nor
-0B51AB 21 
-0B51AC C1 
-0B51AD 51 
-0B51AD 0B   
-0B51AF CD     0302* call fetch_float_nor
-0B51B0 7F 
-0B51B1 50 
-0B51B2 0B 
-0B51B3 DD     0303* ld ix,@float_alt
-0B51B4 21 
-0B51B5 C6 
-0B51B6 51 
-0B51B6 0B   
-0B51B8 CD     0304* call fetch_float_alt
-0B51B9 A3 
-0B51BA 50 
-0B51BB 0B 
+0B519A 0B 
+0B519B C9     0280* ret
+              0281* 
+              0282* ; print a floating point number in decimal format
+              0283* ; inputs: HL'H'L'C is the number to print
+              0284* ; outputs: number printed to screen
+              0285* ;          ACCS null-terminated string representation of the number
+              0286* ; destroys: everything except ix
+              0287* print_float_dec:
+              0288* print_float_dec_nor:
+0B519C DD     0289* push ix             ; preserve
+0B519D E5 
+              0290* 
+              0291* ; back up floats in normal and alternate registers
+0B519E DD     0292* ld ix,@float_nor
+0B519F 21 
+0B51A0 DF 
+0B51A1 51 
+0B51A1 0B   
+0B51A3 CD     0293* call store_float_nor
+0B51A4 8B 
+0B51A5 50 
+0B51A6 0B 
+0B51A7 DD     0294* ld ix,@float_alt
+0B51A8 21 
+0B51A9 E4 
+0B51AA 51 
+0B51AA 0B   
+0B51AC CD     0295* call store_float_alt
+0B51AD AF 
+0B51AE 50 
+0B51AF 0B 
+              0296* 
+              0297* ; convert the number to a string
+0B51B0 11     0298* ld de,ACCS          ; point to the string accumulator
+0B51B1 00 
+0B51B2 5B 
+0B51B3 0B 
+0B51B4 DD     0299* ld ix,@G9-1         ; get the format code for the number
+0B51B5 21 
+0B51B6 DC 
+0B51B7 51 
+0B51B7 0B   
+0B51B9 CD     0300* call STR_FP         ; convert the number to a string
+0B51BA 2D 
+0B51BB 28 
+0B51BC 0B 
+0B51BD EB     0301* ex de,hl            ; point to end of the string
+0B51BE 36     0302* ld (hl),0           ; null-terminate the string
+0B51BF 00 
+0B51C0 21     0303* ld hl,ACCS          ; point to the string accumulator
+0B51C1 00 
+0B51C2 5B 
+0B51C3 0B 
+0B51C4 CD     0304* call printString
+0B51C5 21 
+0B51C6 49 
+0B51C7 0B 
               0305* 
-              0306* ; cleanup and go home
-0B51BC DD     0307* pop ix              ; restore
-0B51BD E1 
-0B51BE C9     0308* ret
-0B51BF 09     0309* @G9:			DW    9
-0B51C0 00 
-              0310* @float_nor: ds 5
-              0311* @float_alt: ds 5
-              0312* 
-              0313* print_float_dec_alt:
-0B51CB CD     0314* CALL SWAP
-0B51CC 9B 
-0B51CD 08 
-0B51CE 0B 
-0B51CF CD     0315* CALL print_float_dec_nor
-0B51D0 7E 
-0B51D1 51 
-0B51D2 0B 
-0B51D3 CD     0316* CALL SWAP
-0B51D4 9B 
-0B51D5 08 
-0B51D6 0B 
-0B51D7 C9     0317* ret
+              0306* ; restore floats in normal and alternate registers
+0B51C8 DD     0307* ld ix,@float_nor
+0B51C9 21 
+0B51CA DF 
+0B51CB 51 
+0B51CB 0B   
+0B51CD CD     0308* call fetch_float_nor
+0B51CE 9D 
+0B51CF 50 
+0B51D0 0B 
+0B51D1 DD     0309* ld ix,@float_alt
+0B51D2 21 
+0B51D3 E4 
+0B51D4 51 
+0B51D4 0B   
+0B51D6 CD     0310* call fetch_float_alt
+0B51D7 C1 
+0B51D8 50 
+0B51D9 0B 
+              0311* 
+              0312* ; cleanup and go home
+0B51DA DD     0313* pop ix              ; restore
+0B51DB E1 
+0B51DC C9     0314* ret
+0B51DD 09     0315* @G9:			DW    9
+0B51DE 00 
+              0316* @float_nor: ds 5
+              0317* @float_alt: ds 5
               0318* 
-              0319* ;PI - Return PI (3.14159265)
-              0320* ;Result is floating-point numeric.
-              0321* ;
-0B51D8 11     0322* pi_alt:			LD      DE,0x490F
-0B51D9 0F 
-0B51DA 49 
-0B51DB 00 
-0B51DC D9     0323* EXX
-0B51DD 11     0324* LD      DE,0xDAA2
-0B51DE A2 
-0B51DF DA 
-0B51E0 00 
-0B51E1 D9     0325* EXX
-0B51E2 06     0326* LD      B,0x81
-0B51E3 81 
-0B51E4 AF     0327* XOR     A               ;NUMERIC MARKER
-0B51E5 C9     0328* RET
-              0329* 
-              0330* ;PI - Return PI * 2 (6.28318531)
-              0331* ;Result is floating-point numeric.
-              0332* ;
-0B51E6 11     0333* pi2_alt:		LD      DE,0x490F
-0B51E7 0F 
-0B51E8 49 
-0B51E9 00 
-0B51EA D9     0334* EXX
-0B51EB 11     0335* LD      DE,0xDAA3
-0B51EC A3 
-0B51ED DA 
-0B51EE 00 
-0B51EF D9     0336* EXX
-0B51F0 06     0337* LD      B,0x82
-0B51F1 82 
-0B51F2 AF     0338* XOR     A               ;NUMERIC MARKER
-0B51F3 C9     0339* RET
+              0319* print_float_dec_alt:
+0B51E9 CD     0320* CALL SWAP
+0B51EA 9B 
+0B51EB 08 
+0B51EC 0B 
+0B51ED CD     0321* CALL print_float_dec_nor
+0B51EE 9C 
+0B51EF 51 
+0B51F0 0B 
+0B51F1 CD     0322* CALL SWAP
+0B51F2 9B 
+0B51F3 08 
+0B51F4 0B 
+0B51F5 C9     0323* ret
+              0324* 
+              0325* ;PI - Return PI (3.14159265)
+              0326* ;Result is floating-point numeric.
+              0327* ;
+0B51F6 11     0328* pi_alt:			LD      DE,0x490F
+0B51F7 0F 
+0B51F8 49 
+0B51F9 00 
+0B51FA D9     0329* EXX
+0B51FB 11     0330* LD      DE,0xDAA2
+0B51FC A2 
+0B51FD DA 
+0B51FE 00 
+0B51FF D9     0331* EXX
+0B5200 06     0332* LD      B,0x81
+0B5201 81 
+0B5202 AF     0333* XOR     A               ;NUMERIC MARKER
+0B5203 C9     0334* RET
+              0335* 
+              0336* ;PI - Return PI * 2 (6.28318531)
+              0337* ;Result is floating-point numeric.
+              0338* ;
+0B5204 11     0339* pi2_alt:		LD      DE,0x490F
+0B5205 0F 
+0B5206 49 
+0B5207 00 
+0B5208 D9     0340* EXX
+0B5209 11     0341* LD      DE,0xDAA3
+0B520A A3 
+0B520B DA 
+0B520C 00 
+0B520D D9     0342* EXX
+0B520E 06     0343* LD      B,0x82
+0B520F 82 
+0B5210 AF     0344* XOR     A               ;NUMERIC MARKER
+0B5211 C9     0345* RET
                0190 include "vdu.inc"
               0001* 
               0002* ; VDU 30: Home cursor
               0003* vdu_home_cursor:
-0B51F4 3E     0004* ld a,30
-0B51F5 1E 
-0B51F6 5B     0005* rst.lil $10
-0B51F7 D7 
-0B51F8 C9     0006* ret
+0B5212 3E     0004* ld a,30
+0B5213 1E 
+0B5214 5B     0005* rst.lil $10
+0B5215 D7 
+0B5216 C9     0006* ret
               0007* 
               0008* cursor_on:
-0B51F9 21     0009* ld hl,@cmd
-0B51FA 04 
-0B51FB 52 
-0B51FC 0B 
-0B51FD 01     0010* ld bc,@end-@cmd
-0B51FE 03 
-0B51FF 00 
-0B5200 00 
-0B5201 5B     0011* rst.lil $18
-0B5202 DF 
-0B5203 C9     0012* ret
+0B5217 21     0009* ld hl,@cmd
+0B5218 22 
+0B5219 52 
+0B521A 0B 
+0B521B 01     0010* ld bc,@end-@cmd
+0B521C 03 
+0B521D 00 
+0B521E 00 
+0B521F 5B     0011* rst.lil $18
+0B5220 DF 
+0B5221 C9     0012* ret
               0013* @cmd:
-0B5204 17     0014* db 23,1,1
-0B5205 01 
-0B5206 01 
+0B5222 17     0014* db 23,1,1
+0B5223 01 
+0B5224 01 
               0015* @end:
               0016* 
               0017* cursor_off:
-0B5207 21     0018* ld hl,@cmd
-0B5208 12 
-0B5209 52 
-0B520A 0B 
-0B520B 01     0019* ld bc,@end-@cmd
-0B520C 03 
-0B520D 00 
-0B520E 00 
-0B520F 5B     0020* rst.lil $18
-0B5210 DF 
-0B5211 C9     0021* ret
+0B5225 21     0018* ld hl,@cmd
+0B5226 30 
+0B5227 52 
+0B5228 0B 
+0B5229 01     0019* ld bc,@end-@cmd
+0B522A 03 
+0B522B 00 
+0B522C 00 
+0B522D 5B     0020* rst.lil $18
+0B522E DF 
+0B522F C9     0021* ret
               0022* @cmd:
-0B5212 17     0023* db 23,1,0
-0B5213 01 
-0B5214 00 
+0B5230 17     0023* db 23,1,0
+0B5231 01 
+0B5232 00 
               0024* @end:
               0025* 
               0026* ; VDU 9: Move cursor forward one character
               0027* vdu_cursor_forward:
-0B5215 3E     0028* ld a,9
-0B5216 09 
-0B5217 5B     0029* rst.lil $10
-0B5218 D7 
-0B5219 C9     0030* ret
+0B5233 3E     0028* ld a,9
+0B5234 09 
+0B5235 5B     0029* rst.lil $10
+0B5236 D7 
+0B5237 C9     0030* ret
               0031* 
               0032* ; VDU 31, x, y: Move text cursor to x, y text position (TAB(x, y))
               0033* ; inputs: c=x, b=y 8-bit unsigned integers
               0034* vdu_move_cursor:
-0B521A ED     0035* ld (@x0),bc
-0B521B 43 
-0B521C 2B 
-0B521D 52 
-0B521D 0B   
-0B521F 21     0036* ld hl,@cmd
-0B5220 2A 
-0B5221 52 
-0B5222 0B 
-0B5223 01     0037* ld bc,@end-@cmd
-0B5224 03 
-0B5225 00 
-0B5226 00 
-0B5227 5B     0038* rst.lil $18
-0B5228 DF 
-0B5229 C9     0039* ret
-0B522A 1F     0040* @cmd: 	db 31
-0B522B 00     0041* @x0:	db 0
-0B522C 00     0042* @y0: 	db 0
-0B522D 00     0043* @end: 	db 0 ; padding
+0B5238 ED     0035* ld (@x0),bc
+0B5239 43 
+0B523A 49 
+0B523B 52 
+0B523B 0B   
+0B523D 21     0036* ld hl,@cmd
+0B523E 48 
+0B523F 52 
+0B5240 0B 
+0B5241 01     0037* ld bc,@end-@cmd
+0B5242 03 
+0B5243 00 
+0B5244 00 
+0B5245 5B     0038* rst.lil $18
+0B5246 DF 
+0B5247 C9     0039* ret
+0B5248 1F     0040* @cmd: 	db 31
+0B5249 00     0041* @x0:	db 0
+0B524A 00     0042* @y0: 	db 0
+0B524B 00     0043* @end: 	db 0 ; padding
               0044* 
               0045* ; VDU 12: Clear text area (CLS)
               0046* vdu_cls:
-0B522E 3E     0047* ld a,12
-0B522F 0C 
-0B5230 5B     0048* rst.lil $10
-0B5231 D7 
-0B5232 C9     0049* ret
+0B524C 3E     0047* ld a,12
+0B524D 0C 
+0B524E 5B     0048* rst.lil $10
+0B524F D7 
+0B5250 C9     0049* ret
               0050* 
               0051* vdu_flip:
-0B5233 21     0052* ld hl,@cmd
-0B5234 3E 
-0B5235 52 
-0B5236 0B 
-0B5237 01     0053* ld bc,@end-@cmd
-0B5238 03 
-0B5239 00 
-0B523A 00 
-0B523B 5B     0054* rst.lil $18
-0B523C DF 
-0B523D C9     0055* ret
-0B523E 17     0056* @cmd: db 23,0,0xC3
-0B523F 00 
-0B5240 C3 
+0B5251 21     0052* ld hl,@cmd
+0B5252 5C 
+0B5253 52 
+0B5254 0B 
+0B5255 01     0053* ld bc,@end-@cmd
+0B5256 03 
+0B5257 00 
+0B5258 00 
+0B5259 5B     0054* rst.lil $18
+0B525A DF 
+0B525B C9     0055* ret
+0B525C 17     0056* @cmd: db 23,0,0xC3
+0B525D 00 
+0B525E C3 
               0057* @end:
               0058* 
               0059* ; VDU 16: Clear graphics area (CLG)
               0060* vdu_clg:
-0B5241 3E     0061* ld a,16
-0B5242 10 
-0B5243 5B     0062* rst.lil $10
-0B5244 D7 
-0B5245 C9     0063* ret
+0B525F 3E     0061* ld a,16
+0B5260 10 
+0B5261 5B     0062* rst.lil $10
+0B5262 D7 
+0B5263 C9     0063* ret
               0064* 
               0065* ; COLOUR MODES
               0066* ; Mode	Effect
@@ -26071,51 +26101,51 @@
               0075* 
               0076* ; VDU 17, colour: Define text colour (COLOUR)
               0077* vdu_colour_text:
-0B5246 32     0078* ld (@arg),a
-0B5247 56 
-0B5248 52 
-0B5249 0B 
-0B524A 21     0079* ld hl,@cmd
-0B524B 55 
-0B524C 52 
-0B524D 0B 
-0B524E 01     0080* ld bc,@end-@cmd
-0B524F 02 
-0B5250 00 
-0B5251 00 
-0B5252 5B     0081* rst.lil $18
-0B5253 DF 
-0B5254 C9     0082* ret
-0B5255 11     0083* @cmd: db 17
-0B5256 00     0084* @arg: db 0
+0B5264 32     0078* ld (@arg),a
+0B5265 74 
+0B5266 52 
+0B5267 0B 
+0B5268 21     0079* ld hl,@cmd
+0B5269 73 
+0B526A 52 
+0B526B 0B 
+0B526C 01     0080* ld bc,@end-@cmd
+0B526D 02 
+0B526E 00 
+0B526F 00 
+0B5270 5B     0081* rst.lil $18
+0B5271 DF 
+0B5272 C9     0082* ret
+0B5273 11     0083* @cmd: db 17
+0B5274 00     0084* @arg: db 0
               0085* @end:
               0086* 
               0087* ; VDU 18, mode, colour: Set graphics colour (GCOL mode, colour)
               0088* ; inputs: a=mode, c=colour (add 128 to set background colour)
               0089* vdu_gcol:
-0B5257 32     0090* ld (@mode),a
-0B5258 6C 
-0B5259 52 
-0B525A 0B 
-0B525B 79     0091* ld a,c
-0B525C 32     0092* ld (@col),a
-0B525D 6D 
-0B525E 52 
-0B525F 0B 
-0B5260 21     0093* ld hl,@cmd
-0B5261 6B 
-0B5262 52 
-0B5263 0B 
-0B5264 01     0094* ld bc,@end-@cmd
-0B5265 03 
-0B5266 00 
-0B5267 00 
-0B5268 5B     0095* rst.lil $18
-0B5269 DF 
-0B526A C9     0096* ret
-0B526B 12     0097* @cmd:  db 18
-0B526C 00     0098* @mode: db 0
-0B526D 00     0099* @col:  db 0
+0B5275 32     0090* ld (@mode),a
+0B5276 8A 
+0B5277 52 
+0B5278 0B 
+0B5279 79     0091* ld a,c
+0B527A 32     0092* ld (@col),a
+0B527B 8B 
+0B527C 52 
+0B527D 0B 
+0B527E 21     0093* ld hl,@cmd
+0B527F 89 
+0B5280 52 
+0B5281 0B 
+0B5282 01     0094* ld bc,@end-@cmd
+0B5283 03 
+0B5284 00 
+0B5285 00 
+0B5286 5B     0095* rst.lil $18
+0B5287 DF 
+0B5288 C9     0096* ret
+0B5289 12     0097* @cmd:  db 18
+0B528A 00     0098* @mode: db 0
+0B528B 00     0099* @col:  db 0
               0100* @end:
               0101* 
               0102* 
@@ -26125,55 +26155,55 @@
               0106* ; outputs; nothing
               0107* ; destroys: a might make it out alive
               0108* vdu_set_txt_viewport:
-0B526E ED     0109* ld (@lb),bc
-0B526F 43 
-0B5270 84 
-0B5271 52 
-0B5271 0B   
-0B5273 ED     0110* ld (@rt),de
-0B5274 53 
-0B5275 86 
-0B5276 52 
-0B5276 0B   
-0B5278 21     0111* ld hl,@cmd
-0B5279 83 
-0B527A 52 
-0B527B 0B 
-0B527C 01     0112* ld bc,@end-@cmd
-0B527D 05 
-0B527E 00 
-0B527F 00 
-0B5280 5B     0113* rst.lil $18
-0B5281 DF 
-0B5282 C9     0114* ret
-0B5283 1C     0115* @cmd:   db 28 ; set text viewport command
-0B5284 00     0116* @lb: 	dw 0x0000 ; set by bc
-0B5285 00 
-0B5286 00     0117* @rt: 	dw 0x0000 ; set by de
-0B5287 00 
-0B5288 00     0118* @end:   db 0x00	  ; padding
+0B528C ED     0109* ld (@lb),bc
+0B528D 43 
+0B528E A2 
+0B528F 52 
+0B528F 0B   
+0B5291 ED     0110* ld (@rt),de
+0B5292 53 
+0B5293 A4 
+0B5294 52 
+0B5294 0B   
+0B5296 21     0111* ld hl,@cmd
+0B5297 A1 
+0B5298 52 
+0B5299 0B 
+0B529A 01     0112* ld bc,@end-@cmd
+0B529B 05 
+0B529C 00 
+0B529D 00 
+0B529E 5B     0113* rst.lil $18
+0B529F DF 
+0B52A0 C9     0114* ret
+0B52A1 1C     0115* @cmd:   db 28 ; set text viewport command
+0B52A2 00     0116* @lb: 	dw 0x0000 ; set by bc
+0B52A3 00 
+0B52A4 00     0117* @rt: 	dw 0x0000 ; set by de
+0B52A5 00 
+0B52A6 00     0118* @end:   db 0x00	  ; padding
               0119* 
               0120* ; Wait for VBLANK interrupt
               0121* vdu_vblank:
-0B5289 DD     0122* PUSH 	IX
-0B528A E5 
+0B52A7 DD     0122* PUSH 	IX
+0B52A8 E5 
               0123* MOSCALL	mos_sysvars
-0B528B 3E    0001*M LD	A, function
-0B528C 08 
-0B528D 49    0002*M RST.LIS	08h
-0B528E CF 
-0B528F DD     0124* LD	A, (IX + sysvar_time + 0)
-0B5290 7E 
-0B5291 00 
+0B52A9 3E    0001*M LD	A, function
+0B52AA 08 
+0B52AB 49    0002*M RST.LIS	08h
+0B52AC CF 
+0B52AD DD     0124* LD	A, (IX + sysvar_time + 0)
+0B52AE 7E 
+0B52AF 00 
               0125* @wait:
-0B5292 DD     0126* CP 	A, (IX + sysvar_time + 0)
-0B5293 BE 
-0B5294 00 
-0B5295 28     0127* JR	Z, @wait
-0B5296 FB 
-0B5297 DD     0128* POP	IX
-0B5298 E1 
-0B5299 C9     0129* RET
+0B52B0 DD     0126* CP 	A, (IX + sysvar_time + 0)
+0B52B1 BE 
+0B52B2 00 
+0B52B3 28     0127* JR	Z, @wait
+0B52B4 FB 
+0B52B5 DD     0128* POP	IX
+0B52B6 E1 
+0B52B7 C9     0129* RET
               0130* 
               0131* ; VDU 29, x; y;: Set graphics origin
               0132* ; This command sets the graphics origin.
@@ -26182,33 +26212,33 @@
               0135* ; outputs; nothing
               0136* ; destroys: a might make it out alive
               0137* vdu_set_gfx_origin:
-0B529A ED     0138* ld (@x0),bc
-0B529B 43 
-0B529C B0 
-0B529D 52 
-0B529D 0B   
-0B529F ED     0139* ld (@y0),de
-0B52A0 53 
-0B52A1 B2 
-0B52A2 52 
-0B52A2 0B   
-0B52A4 21     0140* ld hl,@cmd
-0B52A5 AF 
-0B52A6 52 
-0B52A7 0B 
-0B52A8 01     0141* ld bc,@end-@cmd
-0B52A9 05 
-0B52AA 00 
-0B52AB 00 
-0B52AC 5B     0142* rst.lil $18
-0B52AD DF 
-0B52AE C9     0143* ret
-0B52AF 1D     0144* @cmd:   db 29 ; set graphics origin command
-0B52B0 00     0145* @x0: 	dw 0x0000 ; set by bc
-0B52B1 00 
-0B52B2 00     0146* @y0: 	dw 0x0000 ; set by de
-0B52B3 00 
-0B52B4 00     0147* @end:   db 0x00	  ; padding
+0B52B8 ED     0138* ld (@x0),bc
+0B52B9 43 
+0B52BA CE 
+0B52BB 52 
+0B52BB 0B   
+0B52BD ED     0139* ld (@y0),de
+0B52BE 53 
+0B52BF D0 
+0B52C0 52 
+0B52C0 0B   
+0B52C2 21     0140* ld hl,@cmd
+0B52C3 CD 
+0B52C4 52 
+0B52C5 0B 
+0B52C6 01     0141* ld bc,@end-@cmd
+0B52C7 05 
+0B52C8 00 
+0B52C9 00 
+0B52CA 5B     0142* rst.lil $18
+0B52CB DF 
+0B52CC C9     0143* ret
+0B52CD 1D     0144* @cmd:   db 29 ; set graphics origin command
+0B52CE 00     0145* @x0: 	dw 0x0000 ; set by bc
+0B52CF 00 
+0B52D0 00     0146* @y0: 	dw 0x0000 ; set by de
+0B52D1 00 
+0B52D2 00     0147* @end:   db 0x00	  ; padding
               0148* 
               0149* ; VDU 24, left; bottom; right; top;: Set graphics viewport
               0150* ; NOTE: the order of the y-coordinate parameters are inverted
@@ -26217,47 +26247,47 @@
               0153* ; outputs; nothing
               0154* ; destroys: a might make it out alive
               0155* vdu_set_gfx_viewport:
-0B52B5 ED     0156* ld (@x0),bc
-0B52B6 43 
-0B52B7 D5 
-0B52B8 52 
-0B52B8 0B   
-0B52BA FD     0157* ld (@y1),iy
-0B52BB 22 
-0B52BC D7 
-0B52BD 52 
-0B52BD 0B   
-0B52BF DD     0158* ld (@x1),ix
-0B52C0 22 
-0B52C1 D9 
-0B52C2 52 
-0B52C2 0B   
-0B52C4 ED     0159* ld (@y0),de
-0B52C5 53 
-0B52C6 DB 
-0B52C7 52 
-0B52C7 0B   
-0B52C9 21     0160* ld hl,@cmd
-0B52CA D4 
-0B52CB 52 
-0B52CC 0B 
-0B52CD 01     0161* ld bc,@end-@cmd
-0B52CE 09 
-0B52CF 00 
-0B52D0 00 
-0B52D1 5B     0162* rst.lil $18
-0B52D2 DF 
-0B52D3 C9     0163* ret
-0B52D4 18     0164* @cmd:   db 24 ; set graphics viewport command
-0B52D5 00     0165* @x0: 	dw 0x0000 ; set by bc
-0B52D6 00 
-0B52D7 00     0166* @y1: 	dw 0x0000 ; set by iy
-0B52D8 00 
-0B52D9 00     0167* @x1: 	dw 0x0000 ; set by ix
-0B52DA 00 
-0B52DB 00     0168* @y0: 	dw 0x0000 ; set by de
-0B52DC 00 
-0B52DD 00     0169* @end:   db 0x00	  ; padding
+0B52D3 ED     0156* ld (@x0),bc
+0B52D4 43 
+0B52D5 F3 
+0B52D6 52 
+0B52D6 0B   
+0B52D8 FD     0157* ld (@y1),iy
+0B52D9 22 
+0B52DA F5 
+0B52DB 52 
+0B52DB 0B   
+0B52DD DD     0158* ld (@x1),ix
+0B52DE 22 
+0B52DF F7 
+0B52E0 52 
+0B52E0 0B   
+0B52E2 ED     0159* ld (@y0),de
+0B52E3 53 
+0B52E4 F9 
+0B52E5 52 
+0B52E5 0B   
+0B52E7 21     0160* ld hl,@cmd
+0B52E8 F2 
+0B52E9 52 
+0B52EA 0B 
+0B52EB 01     0161* ld bc,@end-@cmd
+0B52EC 09 
+0B52ED 00 
+0B52EE 00 
+0B52EF 5B     0162* rst.lil $18
+0B52F0 DF 
+0B52F1 C9     0163* ret
+0B52F2 18     0164* @cmd:   db 24 ; set graphics viewport command
+0B52F3 00     0165* @x0: 	dw 0x0000 ; set by bc
+0B52F4 00 
+0B52F5 00     0166* @y1: 	dw 0x0000 ; set by iy
+0B52F6 00 
+0B52F7 00     0167* @x1: 	dw 0x0000 ; set by ix
+0B52F8 00 
+0B52F9 00     0168* @y0: 	dw 0x0000 ; set by de
+0B52FA 00 
+0B52FB 00     0169* @end:   db 0x00	  ; padding
               0170* 
               0171* ; SCREEN MODES
               0172* ; ===============================
@@ -26302,74 +26332,74 @@
               0211* ; 3     640   240   64    60hz
               0212* ; ---   ----  ----  ----  -------
               0213* vdu_set_screen_mode:
-0B52DE 32     0214* ld (@arg),a
-0B52DF EE 
-0B52E0 52 
-0B52E1 0B 
-0B52E2 21     0215* ld hl,@cmd
-0B52E3 ED 
-0B52E4 52 
-0B52E5 0B 
-0B52E6 01     0216* ld bc,@end-@cmd
-0B52E7 02 
-0B52E8 00 
-0B52E9 00 
-0B52EA 5B     0217* rst.lil $18
-0B52EB DF 
-0B52EC C9     0218* ret
-0B52ED 16     0219* @cmd: db 22 ; set screen mode
-0B52EE 00     0220* @arg: db 0  ; screen mode parameter
+0B52FC 32     0214* ld (@arg),a
+0B52FD 0C 
+0B52FE 53 
+0B52FF 0B 
+0B5300 21     0215* ld hl,@cmd
+0B5301 0B 
+0B5302 53 
+0B5303 0B 
+0B5304 01     0216* ld bc,@end-@cmd
+0B5305 02 
+0B5306 00 
+0B5307 00 
+0B5308 5B     0217* rst.lil $18
+0B5309 DF 
+0B530A C9     0218* ret
+0B530B 16     0219* @cmd: db 22 ; set screen mode
+0B530C 00     0220* @arg: db 0  ; screen mode parameter
               0221* @end:
               0222* 
               0223* ; VDU 23, 0, &C0, n: Turn logical screen scaling on and off *
               0224* ; inputs: a is scaling mode, 1=on, 0=off
               0225* ; note: default setting on boot is scaling ON
               0226* vdu_set_scaling:
-0B52EF 32     0227* ld (@arg),a
-0B52F0 01 
-0B52F1 53 
-0B52F2 0B 
-0B52F3 21     0228* ld hl,@cmd
-0B52F4 FE 
-0B52F5 52 
-0B52F6 0B 
-0B52F7 01     0229* ld bc,@end-@cmd
-0B52F8 04 
-0B52F9 00 
-0B52FA 00 
-0B52FB 5B     0230* rst.lil $18
-0B52FC DF 
-0B52FD C9     0231* ret
-0B52FE 17     0232* @cmd: db 23,0,0xC0
-0B52FF 00 
-0B5300 C0 
-0B5301 00     0233* @arg: db 0  ; scaling on/off
+0B530D 32     0227* ld (@arg),a
+0B530E 1F 
+0B530F 53 
+0B5310 0B 
+0B5311 21     0228* ld hl,@cmd
+0B5312 1C 
+0B5313 53 
+0B5314 0B 
+0B5315 01     0229* ld bc,@end-@cmd
+0B5316 04 
+0B5317 00 
+0B5318 00 
+0B5319 5B     0230* rst.lil $18
+0B531A DF 
+0B531B C9     0231* ret
+0B531C 17     0232* @cmd: db 23,0,0xC0
+0B531D 00 
+0B531E C0 
+0B531F 00     0233* @arg: db 0  ; scaling on/off
               0234* @end:
               0235* 
               0236* ; VDU 23, 27, &20, bufferId; : Select bitmap (using a buffer ID)
               0237* ; inputs: hl=bufferId
               0238* vdu_buff_select:
-0B5302 22     0239* ld (@bufferId),hl
-0B5303 14 
-0B5304 53 
-0B5305 0B 
-0B5306 21     0240* ld hl,@cmd
-0B5307 11 
-0B5308 53 
-0B5309 0B 
-0B530A 01     0241* ld bc,@end-@cmd
-0B530B 05 
-0B530C 00 
-0B530D 00 
-0B530E 5B     0242* rst.lil $18
-0B530F DF 
-0B5310 C9     0243* ret
-0B5311 17     0244* @cmd: db 23,27,0x20
-0B5312 1B 
-0B5313 20 
-0B5314 00     0245* @bufferId: dw 0x0000
-0B5315 00 
-0B5316 00     0246* @end: db 0x00 ; padding
+0B5320 22     0239* ld (@bufferId),hl
+0B5321 32 
+0B5322 53 
+0B5323 0B 
+0B5324 21     0240* ld hl,@cmd
+0B5325 2F 
+0B5326 53 
+0B5327 0B 
+0B5328 01     0241* ld bc,@end-@cmd
+0B5329 05 
+0B532A 00 
+0B532B 00 
+0B532C 5B     0242* rst.lil $18
+0B532D DF 
+0B532E C9     0243* ret
+0B532F 17     0244* @cmd: db 23,27,0x20
+0B5330 1B 
+0B5331 20 
+0B5332 00     0245* @bufferId: dw 0x0000
+0B5333 00 
+0B5334 00     0246* @end: db 0x00 ; padding
               0247* 
               0248* ; VDU 23, 27, &21, w; h; format: Create bitmap from selected buffer
               0249* ; inputs: a=format; bc=width; de=height
@@ -26380,61 +26410,61 @@
               0254* ; 2 	Mono/Mask (1-bit per pixel)
               0255* ; 3 	Reserved for internal use by VDP (“native” format)
               0256* vdu_bmp_create:
-0B5317 ED     0257* ld (@width),bc
-0B5318 43 
-0B5319 33 
-0B531A 53 
-0B531A 0B   
-0B531C ED     0258* ld (@height),de
-0B531D 53 
-0B531E 35 
-0B531F 53 
-0B531F 0B   
-0B5321 32     0259* ld (@fmt),a
-0B5322 37 
-0B5323 53 
-0B5324 0B 
-0B5325 21     0260* ld hl,@cmd
-0B5326 30 
-0B5327 53 
-0B5328 0B 
-0B5329 01     0261* ld bc,@end-@cmd
-0B532A 08 
-0B532B 00 
-0B532C 00 
-0B532D 5B     0262* rst.lil $18
-0B532E DF 
-0B532F C9     0263* ret
-0B5330 17     0264* @cmd:       db 23,27,0x21
-0B5331 1B 
-0B5332 21 
-0B5333 00     0265* @width:     dw 0x0000
-0B5334 00 
-0B5335 00     0266* @height:    dw 0x0000
-0B5336 00 
-0B5337 00     0267* @fmt:       db 0x00
+0B5335 ED     0257* ld (@width),bc
+0B5336 43 
+0B5337 51 
+0B5338 53 
+0B5338 0B   
+0B533A ED     0258* ld (@height),de
+0B533B 53 
+0B533C 53 
+0B533D 53 
+0B533D 0B   
+0B533F 32     0259* ld (@fmt),a
+0B5340 55 
+0B5341 53 
+0B5342 0B 
+0B5343 21     0260* ld hl,@cmd
+0B5344 4E 
+0B5345 53 
+0B5346 0B 
+0B5347 01     0261* ld bc,@end-@cmd
+0B5348 08 
+0B5349 00 
+0B534A 00 
+0B534B 5B     0262* rst.lil $18
+0B534C DF 
+0B534D C9     0263* ret
+0B534E 17     0264* @cmd:       db 23,27,0x21
+0B534F 1B 
+0B5350 21 
+0B5351 00     0265* @width:     dw 0x0000
+0B5352 00 
+0B5353 00     0266* @height:    dw 0x0000
+0B5354 00 
+0B5355 00     0267* @fmt:       db 0x00
               0268* @end:
               0269* 
               0270* ; load an rgba2222 image file to a working buffer and make it an rgba8888 bitmap in a target buffer
               0271* ; inputs: bc,de image width,height ; hl = targetBufferId ; ix = file size ; iy = pointer to filename
               0272* vdu_load_img_rgba2_to_8:
               0273* ; backup the target buffer id and image dimensions
-0B5338 E5     0274* push hl
-0B5339 D5     0275* push de
-0B533A C5     0276* push bc
+0B5356 E5     0274* push hl
+0B5357 D5     0275* push de
+0B5358 C5     0276* push bc
               0277* ; load the rgba2 image to working buffer 65534
-0B533B 21     0278* ld hl,65534 ; temporary working buffer id
-0B533C FE 
-0B533D FF 
-0B533E 00 
-0B533F CD     0279* call vdu_load_buffer_from_file
-0B5340 42 
-0B5341 54 
-0B5342 0B 
+0B5359 21     0278* ld hl,65534 ; temporary working buffer id
+0B535A FE 
+0B535B FF 
+0B535C 00 
+0B535D CD     0279* call vdu_load_buffer_from_file
+0B535E 60 
+0B535F 54 
+0B5360 0B 
               0280* ; restore the image dimensions and target buffer id
-0B5343 C1     0281* pop bc
-0B5344 D1     0282* pop de
-0B5345 E1     0283* pop hl
+0B5361 C1     0281* pop bc
+0B5362 D1     0282* pop de
+0B5363 E1     0283* pop hl
               0284* ; fall through to vdu_rgba2_to_8
               0285* 
               0286* ; https://discord.com/channels/1158535358624039014/1158536711148675072/1257757461729771771
@@ -26451,317 +26481,317 @@
               0297* ; prerequisites: rgba2 image data loaded into workingBufferId 65534
               0298* vdu_rgba2_to_8:
               0299* ; load the image dimensions and buffer id parameters
-0B5346 ED     0300* ld (@width),bc
-0B5347 43 
-0B5348 A2 
-0B5349 53 
-0B5349 0B   
-0B534B ED     0301* ld (@height),de
-0B534C 53 
-0B534D A4 
-0B534E 53 
-0B534E 0B   
-0B5350 22     0302* ld (@bufferId0),hl
-0B5351 87 
-0B5352 53 
-0B5353 0B 
-0B5354 22     0303* ld (@bufferId2),hl
-0B5355 94 
-0B5356 53 
-0B5357 0B 
-0B5358 22     0304* ld (@bufferId1),hl
-0B5359 9D 
-0B535A 53 
-0B535B 0B 
-              0305* ; clean up bytes that got stomped on by the ID loads
-0B535C 3E     0306* ld a,0x48
-0B535D 48 
-0B535E 32     0307* ld (@bufferId0+2),a
-0B535F 89 
-0B5360 53 
-0B5361 0B 
-0B5362 3E     0308* ld a,23
-0B5363 17 
-0B5364 32     0309* ld (@bufferId1+2),a
-0B5365 9F 
-0B5366 53 
-0B5367 0B 
-0B5368 3E     0310* ld a,24
-0B5369 18 
-0B536A 32     0311* ld (@bufferId2+2),a
-0B536B 96 
+0B5364 ED     0300* ld (@width),bc
+0B5365 43 
+0B5366 C0 
+0B5367 53 
+0B5367 0B   
+0B5369 ED     0301* ld (@height),de
+0B536A 53 
+0B536B C2 
 0B536C 53 
-0B536D 0B 
-0B536E AF     0312* xor a
-0B536F 32     0313* ld (@height+2),a
-0B5370 A6 
-0B5371 53 
-0B5372 0B 
+0B536C 0B   
+0B536E 22     0302* ld (@bufferId0),hl
+0B536F A5 
+0B5370 53 
+0B5371 0B 
+0B5372 22     0303* ld (@bufferId2),hl
+0B5373 B2 
+0B5374 53 
+0B5375 0B 
+0B5376 22     0304* ld (@bufferId1),hl
+0B5377 BB 
+0B5378 53 
+0B5379 0B 
+              0305* ; clean up bytes that got stomped on by the ID loads
+0B537A 3E     0306* ld a,0x48
+0B537B 48 
+0B537C 32     0307* ld (@bufferId0+2),a
+0B537D A7 
+0B537E 53 
+0B537F 0B 
+0B5380 3E     0308* ld a,23
+0B5381 17 
+0B5382 32     0309* ld (@bufferId1+2),a
+0B5383 BD 
+0B5384 53 
+0B5385 0B 
+0B5386 3E     0310* ld a,24
+0B5387 18 
+0B5388 32     0311* ld (@bufferId2+2),a
+0B5389 B4 
+0B538A 53 
+0B538B 0B 
+0B538C AF     0312* xor a
+0B538D 32     0313* ld (@height+2),a
+0B538E C4 
+0B538F 53 
+0B5390 0B 
               0314* ; send the vdu command strings
-0B5373 21     0315* ld hl,@beg
-0B5374 7E 
-0B5375 53 
-0B5376 0B 
-0B5377 01     0316* ld bc,@end-@beg
-0B5378 29 
-0B5379 00 
-0B537A 00 
-0B537B 5B     0317* rst.lil $18
-0B537C DF 
-0B537D C9     0318* ret
+0B5391 21     0315* ld hl,@beg
+0B5392 9C 
+0B5393 53 
+0B5394 0B 
+0B5395 01     0316* ld bc,@end-@beg
+0B5396 29 
+0B5397 00 
+0B5398 00 
+0B5399 5B     0317* rst.lil $18
+0B539A DF 
+0B539B C9     0318* ret
               0319* @beg:
               0320* ; Command 14: Consolidate blocks in a buffer
               0321* ; VDU 23, 0, &A0, bufferId; 14
-0B537E 17     0322* db 23,0,0xA0
-0B537F 00 
-0B5380 A0 
-0B5381 FE     0323* dw 65534 ; workingBufferId
-0B5382 FF 
-0B5383 0E     0324* db 14 ; consolidate blocks
+0B539C 17     0322* db 23,0,0xA0
+0B539D 00 
+0B539E A0 
+0B539F FE     0323* dw 65534 ; workingBufferId
+0B53A0 FF 
+0B53A1 0E     0324* db 14 ; consolidate blocks
               0325* ; the "expand bitmap" command is:
               0326* ; VDU 23,0,&A0,targetBufferID%;&48,2,sourceBufferId%;0,&7F,&BF,&FF
-0B5384 17     0327* db 23,0,0xA0
-0B5385 00 
-0B5386 A0 
-0B5387 00     0328* @bufferId0: dw 0x0000 ; targetBufferId
-0B5388 00 
-0B5389 48     0329* db 0x48 ; given as decimal command 72 in the docs
-0B538A 02     0330* db 2 ; options mask: %00000011 is the number of bits per pixel in the source bitmap
-0B538B FE     0331* dw 65534 ; sourceBufferId
-0B538C FF 
-0B538D 00     0332* db 0x00,0x7F,0xBF,0xFF ; expanding to bytes by bit-shifting?
-0B538E 7F 
-0B538F BF 
-0B5390 FF 
+0B53A2 17     0327* db 23,0,0xA0
+0B53A3 00 
+0B53A4 A0 
+0B53A5 00     0328* @bufferId0: dw 0x0000 ; targetBufferId
+0B53A6 00 
+0B53A7 48     0329* db 0x48 ; given as decimal command 72 in the docs
+0B53A8 02     0330* db 2 ; options mask: %00000011 is the number of bits per pixel in the source bitmap
+0B53A9 FE     0331* dw 65534 ; sourceBufferId
+0B53AA FF 
+0B53AB 00     0332* db 0x00,0x7F,0xBF,0xFF ; expanding to bytes by bit-shifting?
+0B53AC 7F 
+0B53AD BF 
+0B53AE FF 
               0333* ; reverse the byte order to fix endian-ness:
               0334* ; Command 24: Reverse the order of data of blocks within a buffer
               0335* ; VDU 23, 0, &A0, bufferId; 24, options, [valueSize;] [chunkSize;]
               0336* ; VDU 23,0,&A0,targetBufferID%;24,4,4;
-0B5391 17     0337* db 23,0,0xA0
-0B5392 00 
-0B5393 A0 
-0B5394 00     0338* @bufferId2:    dw 0x0000 ; targetBufferId
-0B5395 00 
-0B5396 18     0339* db 24 ; reverse byte order
-0B5397 04     0340* db 4 ; option: Reverse data of the value size within chunk of data of the specified size
-0B5398 04     0341* dw 4 ; size (4 bytes)
-0B5399 00 
+0B53AF 17     0337* db 23,0,0xA0
+0B53B0 00 
+0B53B1 A0 
+0B53B2 00     0338* @bufferId2:    dw 0x0000 ; targetBufferId
+0B53B3 00 
+0B53B4 18     0339* db 24 ; reverse byte order
+0B53B5 04     0340* db 4 ; option: Reverse data of the value size within chunk of data of the specified size
+0B53B6 04     0341* dw 4 ; size (4 bytes)
+0B53B7 00 
               0342* ; finally you'd need to set that buffer to be an RGBA8888 format bitmap:
               0343* ; VDU 23,27,&20,targetBufferID%;
-0B539A 17     0344* db 23,27,0x20 ; select bitmap
-0B539B 1B 
-0B539C 20 
-0B539D 00     0345* @bufferId1: dw 0x0000 ; targetBufferId
-0B539E 00 
+0B53B8 17     0344* db 23,27,0x20 ; select bitmap
+0B53B9 1B 
+0B53BA 20 
+0B53BB 00     0345* @bufferId1: dw 0x0000 ; targetBufferId
+0B53BC 00 
               0346* ; VDU 23,27,&21,width%;height%;0
-0B539F 17     0347* db 23,27,0x21 ; create bitmap from buffer
-0B53A0 1B 
-0B53A1 21 
-0B53A2 00     0348* @width: dw 0x0000
-0B53A3 00 
-0B53A4 00     0349* @height: dw 0x0000
-0B53A5 00 
-0B53A6 00     0350* db 0x00 ; rgba8888 format
+0B53BD 17     0347* db 23,27,0x21 ; create bitmap from buffer
+0B53BE 1B 
+0B53BF 21 
+0B53C0 00     0348* @width: dw 0x0000
+0B53C1 00 
+0B53C2 00     0349* @height: dw 0x0000
+0B53C3 00 
+0B53C4 00     0350* db 0x00 ; rgba8888 format
               0351* @end:
               0352* 
               0353* ; scratch variables
-0B53A7 00     0354* bufferId0: dl 0x000000
-0B53A8 00 
-0B53A9 00 
-0B53AA 00     0355* bufferId1: dl 0x000000
-0B53AB 00 
-0B53AC 00 
+0B53C5 00     0354* bufferId0: dl 0x000000
+0B53C6 00 
+0B53C7 00 
+0B53C8 00     0355* bufferId1: dl 0x000000
+0B53C9 00 
+0B53CA 00 
               0356* 
               0357* ; load a vdu buffer from local memory
               0358* ; inputs: hl = bufferId ; bc = length ; de = pointer to data
               0359* vdu_load_buffer:
-0B53AD ED     0360* ld (@length),bc
-0B53AE 43 
-0B53AF D6 
-0B53B0 53 
-0B53B0 0B   
-0B53B2 D5     0361* push de ; save data pointer
+0B53CB ED     0360* ld (@length),bc
+0B53CC 43 
+0B53CD F4 
+0B53CE 53 
+0B53CE 0B   
+0B53D0 D5     0361* push de ; save data pointer
               0362* ; send the vdu command string
-0B53B3 7D     0363* ld a,l
-0B53B4 32     0364* ld (@bufferId),a
-0B53B5 D3 
-0B53B6 53 
-0B53B7 0B 
-0B53B8 7C     0365* ld a,h
-0B53B9 32     0366* ld (@bufferId+1),a
-0B53BA D4 
-0B53BB 53 
-0B53BC 0B 
-0B53BD 21     0367* ld hl,@cmd
-0B53BE D0 
-0B53BF 53 
-0B53C0 0B 
-0B53C1 01     0368* ld bc,@end-@cmd
-0B53C2 08 
-0B53C3 00 
-0B53C4 00 
-0B53C5 5B     0369* rst.lil $18
-0B53C6 DF 
+0B53D1 7D     0363* ld a,l
+0B53D2 32     0364* ld (@bufferId),a
+0B53D3 F1 
+0B53D4 53 
+0B53D5 0B 
+0B53D6 7C     0365* ld a,h
+0B53D7 32     0366* ld (@bufferId+1),a
+0B53D8 F2 
+0B53D9 53 
+0B53DA 0B 
+0B53DB 21     0367* ld hl,@cmd
+0B53DC EE 
+0B53DD 53 
+0B53DE 0B 
+0B53DF 01     0368* ld bc,@end-@cmd
+0B53E0 08 
+0B53E1 00 
+0B53E2 00 
+0B53E3 5B     0369* rst.lil $18
+0B53E4 DF 
               0370* ; send the buffer data
-0B53C7 E1     0371* pop hl ; pointer to data
-0B53C8 ED     0372* ld bc,(@length)
-0B53C9 4B 
-0B53CA D6 
-0B53CB 53 
-0B53CB 0B   
-0B53CD 5B     0373* rst.lil $18 ; send it
-0B53CE DF 
-0B53CF C9     0374* ret
+0B53E5 E1     0371* pop hl ; pointer to data
+0B53E6 ED     0372* ld bc,(@length)
+0B53E7 4B 
+0B53E8 F4 
+0B53E9 53 
+0B53E9 0B   
+0B53EB 5B     0373* rst.lil $18 ; send it
+0B53EC DF 
+0B53ED C9     0374* ret
               0375* ; Upload data :: VDU 23, 0 &A0, bufferId; 0, length; <buffer-data>
-0B53D0 17     0376* @cmd:       db 23,0,0xA0
-0B53D1 00 
-0B53D2 A0 
-0B53D3 00     0377* @bufferId:	dw 0x0000
-0B53D4 00 
-0B53D5 00     0378* db 0 ; load buffer
-0B53D6 00     0379* @length:	dw 0x0000
-0B53D7 00 
-0B53D8 00     0380* @end: db 0 ; padding
+0B53EE 17     0376* @cmd:       db 23,0,0xA0
+0B53EF 00 
+0B53F0 A0 
+0B53F1 00     0377* @bufferId:	dw 0x0000
+0B53F2 00 
+0B53F3 00     0378* db 0 ; load buffer
+0B53F4 00     0379* @length:	dw 0x0000
+0B53F5 00 
+0B53F6 00     0380* @end: db 0 ; padding
               0381* 
               0382* ; clear a buffer
               0383* ; inputs: hl = bufferId
               0384* vdu_clear_buffer:
-0B53D9 7D     0385* ld a,l
-0B53DA 32     0386* ld (@bufferId),a
-0B53DB F1 
-0B53DC 53 
-0B53DD 0B 
-0B53DE 7C     0387* ld a,h
-0B53DF 32     0388* ld (@bufferId+1),a
-0B53E0 F2 
-0B53E1 53 
-0B53E2 0B 
-0B53E3 21     0389* ld hl,@cmd
-0B53E4 EE 
-0B53E5 53 
-0B53E6 0B 
-0B53E7 01     0390* ld bc,@end-@cmd
-0B53E8 06 
-0B53E9 00 
-0B53EA 00 
-0B53EB 5B     0391* rst.lil $18
-0B53EC DF 
-0B53ED C9     0392* ret
-0B53EE 17     0393* @cmd:       db 23,0,0xA0
-0B53EF 00 
-0B53F0 A0 
-0B53F1 00     0394* @bufferId:	dw 0x0000
-0B53F2 00 
-0B53F3 02     0395* db 2 ; clear buffer
+0B53F7 7D     0385* ld a,l
+0B53F8 32     0386* ld (@bufferId),a
+0B53F9 0F 
+0B53FA 54 
+0B53FB 0B 
+0B53FC 7C     0387* ld a,h
+0B53FD 32     0388* ld (@bufferId+1),a
+0B53FE 10 
+0B53FF 54 
+0B5400 0B 
+0B5401 21     0389* ld hl,@cmd
+0B5402 0C 
+0B5403 54 
+0B5404 0B 
+0B5405 01     0390* ld bc,@end-@cmd
+0B5406 06 
+0B5407 00 
+0B5408 00 
+0B5409 5B     0391* rst.lil $18
+0B540A DF 
+0B540B C9     0392* ret
+0B540C 17     0393* @cmd:       db 23,0,0xA0
+0B540D 00 
+0B540E A0 
+0B540F 00     0394* @bufferId:	dw 0x0000
+0B5410 00 
+0B5411 02     0395* db 2 ; clear buffer
               0396* @end:
               0397* 
               0398* vdu_clear_all_buffers:
               0399* ; clear all buffers
-0B53F4 21     0400* ld hl,@beg
-0B53F5 FF 
-0B53F6 53 
-0B53F7 0B 
-0B53F8 01     0401* ld bc,@end-@beg
-0B53F9 06 
-0B53FA 00 
-0B53FB 00 
-0B53FC 5B     0402* rst.lil $18
-0B53FD DF 
-0B53FE C9     0403* ret
-0B53FF 17     0404* @beg: db 23,0,$A0
-0B5400 00 
-0B5401 A0 
-0B5402 FF     0405* dw -1 ; clear all buffers
-0B5403 FF 
-0B5404 02     0406* db 2  ; command 2: clear a buffer
+0B5412 21     0400* ld hl,@beg
+0B5413 1D 
+0B5414 54 
+0B5415 0B 
+0B5416 01     0401* ld bc,@end-@beg
+0B5417 06 
+0B5418 00 
+0B5419 00 
+0B541A 5B     0402* rst.lil $18
+0B541B DF 
+0B541C C9     0403* ret
+0B541D 17     0404* @beg: db 23,0,$A0
+0B541E 00 
+0B541F A0 
+0B5420 FF     0405* dw -1 ; clear all buffers
+0B5421 FF 
+0B5422 02     0406* db 2  ; command 2: clear a buffer
               0407* @end:
               0408* 
               0409* ; Command 14: Consolidate blocks in a buffer
               0410* vdu_consolidate_buffer:
               0411* ; set parameters for vdu call
-0B5405 7D     0412* ld a,l
-0B5406 32     0413* ld (@bufferId),a
-0B5407 1D 
-0B5408 54 
-0B5409 0B 
-0B540A 7C     0414* ld a,h
-0B540B 32     0415* ld (@bufferId+1),a
-0B540C 1E 
-0B540D 54 
-0B540E 0B 
-0B540F 21     0416* ld hl,@beg
-0B5410 1A 
-0B5411 54 
-0B5412 0B 
-0B5413 01     0417* ld bc,@end-@beg
-0B5414 06 
-0B5415 00 
-0B5416 00 
-0B5417 5B     0418* rst.lil $18
-0B5418 DF 
-0B5419 C9     0419* ret
+0B5423 7D     0412* ld a,l
+0B5424 32     0413* ld (@bufferId),a
+0B5425 3B 
+0B5426 54 
+0B5427 0B 
+0B5428 7C     0414* ld a,h
+0B5429 32     0415* ld (@bufferId+1),a
+0B542A 3C 
+0B542B 54 
+0B542C 0B 
+0B542D 21     0416* ld hl,@beg
+0B542E 38 
+0B542F 54 
+0B5430 0B 
+0B5431 01     0417* ld bc,@end-@beg
+0B5432 06 
+0B5433 00 
+0B5434 00 
+0B5435 5B     0418* rst.lil $18
+0B5436 DF 
+0B5437 C9     0419* ret
               0420* ; VDU 23, 0, &A0, bufferId; 14
-0B541A 17     0421* @beg: db 23,0,0xA0
-0B541B 00 
-0B541C A0 
-0B541D 00     0422* @bufferId: dw 0x0000
-0B541E 00 
-0B541F 0E     0423* db 14
+0B5438 17     0421* @beg: db 23,0,0xA0
+0B5439 00 
+0B543A A0 
+0B543B 00     0422* @bufferId: dw 0x0000
+0B543C 00 
+0B543D 0E     0423* db 14
               0424* @end:
               0425* 
               0426* ; load an image file to a buffer and make it a bitmap
               0427* ; inputs: a = image type ; bc,de image width,height ; hl = bufferId ; ix = file size ; iy = pointer to filename
               0428* vdu_load_img:
               0429* ; back up image type and dimension parameters
-0B5420 22     0430* ld (bufferId0),hl
-0B5421 A7 
-0B5422 53 
-0B5423 0B 
-0B5424 F5     0431* push af
-0B5425 C5     0432* push bc
-0B5426 D5     0433* push de
-              0434* ; load the image
-0B5427 CD     0435* call vdu_load_buffer_from_file
-0B5428 42 
-0B5429 54 
-0B542A 0B 
-              0436* ; now make it a bitmap
-0B542B 2A     0437* ld hl,(bufferId0)
-0B542C A7 
-0B542D 53 
-0B542E 0B 
-0B542F CD     0438* call vdu_consolidate_buffer
-0B5430 05 
-0B5431 54 
-0B5432 0B 
-0B5433 2A     0439* ld hl,(bufferId0)
-0B5434 A7 
-0B5435 53 
-0B5436 0B 
-0B5437 CD     0440* call vdu_buff_select
-0B5438 02 
-0B5439 53 
-0B543A 0B 
-0B543B D1     0441* pop de ; image height
-0B543C C1     0442* pop bc ; image width
-0B543D F1     0443* pop af ; image type
-0B543E C3     0444* jp vdu_bmp_create ; will return to caller from there
-0B543F 17 
+0B543E 22     0430* ld (bufferId0),hl
+0B543F C5 
 0B5440 53 
 0B5441 0B 
+0B5442 F5     0431* push af
+0B5443 C5     0432* push bc
+0B5444 D5     0433* push de
+              0434* ; load the image
+0B5445 CD     0435* call vdu_load_buffer_from_file
+0B5446 60 
+0B5447 54 
+0B5448 0B 
+              0436* ; now make it a bitmap
+0B5449 2A     0437* ld hl,(bufferId0)
+0B544A C5 
+0B544B 53 
+0B544C 0B 
+0B544D CD     0438* call vdu_consolidate_buffer
+0B544E 23 
+0B544F 54 
+0B5450 0B 
+0B5451 2A     0439* ld hl,(bufferId0)
+0B5452 C5 
+0B5453 53 
+0B5454 0B 
+0B5455 CD     0440* call vdu_buff_select
+0B5456 20 
+0B5457 53 
+0B5458 0B 
+0B5459 D1     0441* pop de ; image height
+0B545A C1     0442* pop bc ; image width
+0B545B F1     0443* pop af ; image type
+0B545C C3     0444* jp vdu_bmp_create ; will return to caller from there
+0B545D 35 
+0B545E 53 
+0B545F 0B 
               0445* 
               0446* ; inputs: hl = bufferId; iy = pointer to filename
               0447* vdu_load_buffer_from_file:
-0B5442 22     0448* ld (bufferId0),hl
-0B5443 A7 
-0B5444 53 
-0B5445 0B 
+0B5460 22     0448* ld (bufferId0),hl
+0B5461 C5 
+0B5462 53 
+0B5463 0B 
               0449* 
               0450* ; clear target buffer
-0B5446 CD     0451* call vdu_clear_buffer
-0B5447 D9 
-0B5448 53 
-0B5449 0B 
+0B5464 CD     0451* call vdu_clear_buffer
+0B5465 F7 
+0B5466 53 
+0B5467 0B 
               0452* 
               0453* ; open the file in read mode
               0454* ; Open a file
@@ -26769,20 +26799,20 @@
               0456* ;   C: Mode
               0457* ; Returns:
               0458* ;   A: Filehandle, or 0 if couldn't open
-0B544A FD     0459* push iy ; pointer to filename
-0B544B E5 
-0B544C E1     0460* pop hl
-0B544D 0E     0461* ld c,fa_read
-0B544E 01 
+0B5468 FD     0459* push iy ; pointer to filename
+0B5469 E5 
+0B546A E1     0460* pop hl
+0B546B 0E     0461* ld c,fa_read
+0B546C 01 
               0462* MOSCALL mos_fopen
-0B544F 3E    0001*M LD	A, function
-0B5450 0A 
-0B5451 49    0002*M RST.LIS	08h
-0B5452 CF 
-0B5453 32     0463* ld (@filehandle),a
-0B5454 8E 
-0B5455 54 
-0B5456 0B 
+0B546D 3E    0001*M LD	A, function
+0B546E 0A 
+0B546F 49    0002*M RST.LIS	08h
+0B5470 CF 
+0B5471 32     0463* ld (@filehandle),a
+0B5472 AC 
+0B5473 54 
+0B5474 0B 
               0464* 
               0465* @read_file:
               0466* ; Read a block of data from a file
@@ -26791,24 +26821,24 @@
               0469* ; DEU: Number of bytes to read
               0470* ; Returns:
               0471* ; DEU: Number of bytes read
-0B5457 3A     0472* ld a,(@filehandle)
-0B5458 8E 
-0B5459 54 
-0B545A 0B 
-0B545B 4F     0473* ld c,a
-0B545C 21     0474* ld hl,filedata
-0B545D 00 
-0B545E E0 
-0B545F B7 
-0B5460 11     0475* ld de,8192 ; max we can read into onboard sram at one time
-0B5461 00 
-0B5462 20 
-0B5463 00 
+0B5475 3A     0472* ld a,(@filehandle)
+0B5476 AC 
+0B5477 54 
+0B5478 0B 
+0B5479 4F     0473* ld c,a
+0B547A 21     0474* ld hl,filedata
+0B547B 00 
+0B547C E0 
+0B547D B7 
+0B547E 11     0475* ld de,8192 ; max we can read into onboard sram at one time
+0B547F 00 
+0B5480 20 
+0B5481 00 
               0476* MOSCALL mos_fread
-0B5464 3E    0001*M LD	A, function
-0B5465 1A 
-0B5466 49    0002*M RST.LIS	08h
-0B5467 CF 
+0B5482 3E    0001*M LD	A, function
+0B5483 1A 
+0B5484 49    0002*M RST.LIS	08h
+0B5485 CF 
               0477* 
               0478* ; ; DEBUG: print chunk size
               0479* ;     push de
@@ -26817,132 +26847,92 @@
               0482* ;     call printNewLine
               0483* 
               0484* ; test de for zero bytes read
-0B5468 21     0485* ld hl,0
-0B5469 00 
-0B546A 00 
-0B546B 00 
-0B546C AF     0486* xor a ; clear carry
-0B546D ED     0487* sbc hl,de
-0B546E 52 
-0B546F CA     0488* jp z,@close_file
-0B5470 85 
-0B5471 54 
-0B5472 0B 
+0B5486 21     0485* ld hl,0
+0B5487 00 
+0B5488 00 
+0B5489 00 
+0B548A AF     0486* xor a ; clear carry
+0B548B ED     0487* sbc hl,de
+0B548C 52 
+0B548D CA     0488* jp z,@close_file
+0B548E A3 
+0B548F 54 
+0B5490 0B 
               0489* 
               0490* ; load a vdu buffer from local memory
               0491* ; inputs: hl = bufferId ; bc = length ; de = pointer to data
-0B5473 2A     0492* ld hl,(bufferId0)
-0B5474 A7 
-0B5475 53 
-0B5476 0B 
-0B5477 D5     0493* push de ; chunksize
-0B5478 C1     0494* pop bc
-0B5479 11     0495* ld de,filedata
-0B547A 00 
-0B547B E0 
-0B547C B7 
-0B547D CD     0496* call vdu_load_buffer
-0B547E AD 
-0B547F 53 
-0B5480 0B 
+0B5491 2A     0492* ld hl,(bufferId0)
+0B5492 C5 
+0B5493 53 
+0B5494 0B 
+0B5495 D5     0493* push de ; chunksize
+0B5496 C1     0494* pop bc
+0B5497 11     0495* ld de,filedata
+0B5498 00 
+0B5499 E0 
+0B549A B7 
+0B549B CD     0496* call vdu_load_buffer
+0B549C CB 
+0B549D 53 
+0B549E 0B 
               0497* 
               0498* ; ; print progress breadcrumbs
               0499* ;     ld a,'.'
               0500* ;     rst.lil 10h
               0501* 
               0502* ; read the next block
-0B5481 C3     0503* jp @read_file
-0B5482 57 
-0B5483 54 
-0B5484 0B 
+0B549F C3     0503* jp @read_file
+0B54A0 75 
+0B54A1 54 
+0B54A2 0B 
               0504* 
               0505* ; close the file
               0506* @close_file:
-0B5485 3A     0507* ld a,(@filehandle)
-0B5486 8E 
-0B5487 54 
-0B5488 0B 
+0B54A3 3A     0507* ld a,(@filehandle)
+0B54A4 AC 
+0B54A5 54 
+0B54A6 0B 
               0508* MOSCALL mos_fclose
-0B5489 3E    0001*M LD	A, function
-0B548A 0B 
-0B548B 49    0002*M RST.LIS	08h
-0B548C CF 
-0B548D C9     0509* ret ; vdu_load_buffer_from_file
+0B54A7 3E    0001*M LD	A, function
+0B54A8 0B 
+0B54A9 49    0002*M RST.LIS	08h
+0B54AA CF 
+0B54AB C9     0509* ret ; vdu_load_buffer_from_file
               0510* 
-0B548E 00     0511* @filehandle: db 0 ; file handle
-0B548F 00     0512* @fil: dl 0 ; pointer to FIL struct
-0B5490 00 
-0B5491 00 
+0B54AC 00     0511* @filehandle: db 0 ; file handle
+0B54AD 00     0512* @fil: dl 0 ; pointer to FIL struct
+0B54AE 00 
+0B54AF 00 
               0513* 
-0B5492 00     0514* @chunkpointer: dl 0 ; pointer to current chunk
-0B5493 00 
-0B5494 00 
+0B54B0 00     0514* @chunkpointer: dl 0 ; pointer to current chunk
+0B54B1 00 
+0B54B2 00 
               0515* 
               0516* ; File information structure (FILINFO)
               0517* @filinfo:
-0B5495 00     0518* @filinfo_fsize:    blkb 4, 0   ; File size (4 bytes)
-0B5496 00 
-0B5497 00 
-0B5498 00 
-0B5499 00     0519* @filinfo_fdate:    blkb 2, 0   ; Modified date (2 bytes)
-0B549A 00 
-0B549B 00     0520* @filinfo_ftime:    blkb 2, 0   ; Modified time (2 bytes)
-0B549C 00 
-0B549D 00     0521* @filinfo_fattrib:  blkb 1, 0   ; File attribute (1 byte)
-0B549E 00     0522* @filinfo_altname:  blkb 13, 0  ; Alternative file name (13 bytes)
-0B549F 00 
-0B54A0 00 
-0B54A1 00 
-0B54A1 00   
-0B54A2 00 
-0B54A3 00 
-0B54A4 00 
-0B54A4 00   
-0B54A5 00 
-0B54A6 00 
-0B54A7 00 
-0B54A7 00   
-0B54AB 00     0523* @filinfo_fname:    blkb 256, 0 ; Primary file name (256 bytes)
-0B54AC 00 
-0B54AD 00 
-0B54AE 00 
-0B54AE 00   
-0B54AF 00 
-0B54B0 00 
-0B54B1 00 
-0B54B1 00   
-0B54B2 00 
-0B54B3 00 
+0B54B3 00     0518* @filinfo_fsize:    blkb 4, 0   ; File size (4 bytes)
 0B54B4 00 
-0B54B4 00   
 0B54B5 00 
 0B54B6 00 
-0B54B7 00 
-0B54B7 00   
+0B54B7 00     0519* @filinfo_fdate:    blkb 2, 0   ; Modified date (2 bytes)
 0B54B8 00 
-0B54B9 00 
+0B54B9 00     0520* @filinfo_ftime:    blkb 2, 0   ; Modified time (2 bytes)
 0B54BA 00 
-0B54BA 00   
-0B54BB 00 
-0B54BC 00 
+0B54BB 00     0521* @filinfo_fattrib:  blkb 1, 0   ; File attribute (1 byte)
+0B54BC 00     0522* @filinfo_altname:  blkb 13, 0  ; Alternative file name (13 bytes)
 0B54BD 00 
-0B54BD 00   
 0B54BE 00 
 0B54BF 00 
+0B54BF 00   
 0B54C0 00 
-0B54C0 00   
 0B54C1 00 
 0B54C2 00 
+0B54C2 00   
 0B54C3 00 
-0B54C3 00   
 0B54C4 00 
 0B54C5 00 
-0B54C6 00 
-0B54C6 00   
-0B54C7 00 
-0B54C8 00 
-0B54C9 00 
-0B54C9 00   
+0B54C5 00   
+0B54C9 00     0523* @filinfo_fname:    blkb 256, 0 ; Primary file name (256 bytes)
 0B54CA 00 
 0B54CB 00 
 0B54CC 00 
@@ -27158,6 +27148,46 @@
 0B5569 00 
 0B556A 00 
 0B556B 00 
+0B556B 00   
+0B556C 00 
+0B556D 00 
+0B556E 00 
+0B556E 00   
+0B556F 00 
+0B5570 00 
+0B5571 00 
+0B5571 00   
+0B5572 00 
+0B5573 00 
+0B5574 00 
+0B5574 00   
+0B5575 00 
+0B5576 00 
+0B5577 00 
+0B5577 00   
+0B5578 00 
+0B5579 00 
+0B557A 00 
+0B557A 00   
+0B557B 00 
+0B557C 00 
+0B557D 00 
+0B557D 00   
+0B557E 00 
+0B557F 00 
+0B5580 00 
+0B5580 00   
+0B5581 00 
+0B5582 00 
+0B5583 00 
+0B5583 00   
+0B5584 00 
+0B5585 00 
+0B5586 00 
+0B5586 00   
+0B5587 00 
+0B5588 00 
+0B5589 00 
                0191 include "vdu_plot.inc"
               0001* ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
               0002* ; PLOT code 	(Decimal) 	Effect
@@ -27289,78 +27319,78 @@
               0128* ; VDU 25, mode, x; y;: PLOT command
               0129* ; inputs: a=mode, bc=x0, de=y0
               0130* vdu_plot:
-0B55AB 32     0131* ld (@mode),a
-0B55AC C5 
-0B55AD 55 
-0B55AE 0B 
-0B55AF ED     0132* ld (@x0),bc
-0B55B0 43 
-0B55B1 C6 
-0B55B2 55 
-0B55B2 0B   
-0B55B4 ED     0133* ld (@y0),de
-0B55B5 53 
-0B55B6 C8 
-0B55B7 55 
-0B55B7 0B   
-0B55B9 21     0134* ld hl,@cmd
-0B55BA C4 
-0B55BB 55 
-0B55BC 0B 
-0B55BD 01     0135* ld bc,@end-@cmd
-0B55BE 06 
-0B55BF 00 
-0B55C0 00 
-0B55C1 5B     0136* rst.lil $18
-0B55C2 DF 
-0B55C3 C9     0137* ret
-0B55C4 19     0138* @cmd:   db 25
-0B55C5 00     0139* @mode:  db 0
-0B55C6 00     0140* @x0: 	dw 0
-0B55C7 00 
-0B55C8 00     0141* @y0: 	dw 0
-0B55C9 00 
-0B55CA 00     0142* @end:   db 0 ; extra byte to soak up deu
+0B55C9 32     0131* ld (@mode),a
+0B55CA E3 
+0B55CB 55 
+0B55CC 0B 
+0B55CD ED     0132* ld (@x0),bc
+0B55CE 43 
+0B55CF E4 
+0B55D0 55 
+0B55D0 0B   
+0B55D2 ED     0133* ld (@y0),de
+0B55D3 53 
+0B55D4 E6 
+0B55D5 55 
+0B55D5 0B   
+0B55D7 21     0134* ld hl,@cmd
+0B55D8 E2 
+0B55D9 55 
+0B55DA 0B 
+0B55DB 01     0135* ld bc,@end-@cmd
+0B55DC 06 
+0B55DD 00 
+0B55DE 00 
+0B55DF 5B     0136* rst.lil $18
+0B55E0 DF 
+0B55E1 C9     0137* ret
+0B55E2 19     0138* @cmd:   db 25
+0B55E3 00     0139* @mode:  db 0
+0B55E4 00     0140* @x0: 	dw 0
+0B55E5 00 
+0B55E6 00     0141* @y0: 	dw 0
+0B55E7 00 
+0B55E8 00     0142* @end:   db 0 ; extra byte to soak up deu
               0143* 
               0144* ; VDU 25, mode, x; y;: PLOT command
               0145* ; USING 16.8 FIXED POINT COORDINATES
               0146* ; inputs: a=mode, ub.c=x0, ud.e=y0
               0147* vdu_plot_168:
-0B55CB ED     0148* ld (@y0-1),de ; load in reverse order to avoid stomping on inputs
-0B55CC 53 
-0B55CD E7 
-0B55CE 55 
-0B55CE 0B   
-0B55D0 ED     0149* ld (@x0-1),bc ; integer portion only
-0B55D1 43 
-0B55D2 E5 
-0B55D3 55 
-0B55D3 0B   
-0B55D5 32     0150* ld (@mode),a  ; load this order b/c we shifted bc right
-0B55D6 E5 
-0B55D7 55 
-0B55D8 0B 
-0B55D9 21     0151* ld hl,@cmd
-0B55DA E4 
-0B55DB 55 
-0B55DC 0B 
-0B55DD 01     0152* ld bc,@end-@cmd
-0B55DE 06 
-0B55DF 00 
-0B55E0 00 
-0B55E1 5B     0153* rst.lil $18
-0B55E2 DF 
+0B55E9 ED     0148* ld (@y0-1),de ; load in reverse order to avoid stomping on inputs
+0B55EA 53 
+0B55EB 05 
+0B55EC 56 
+0B55EC 0B   
+0B55EE ED     0149* ld (@x0-1),bc ; integer portion only
+0B55EF 43 
+0B55F0 03 
+0B55F1 56 
+0B55F1 0B   
+0B55F3 32     0150* ld (@mode),a  ; load this order b/c we shifted bc right
+0B55F4 03 
+0B55F5 56 
+0B55F6 0B 
+0B55F7 21     0151* ld hl,@cmd
+0B55F8 02 
+0B55F9 56 
+0B55FA 0B 
+0B55FB 01     0152* ld bc,@end-@cmd
+0B55FC 06 
+0B55FD 00 
+0B55FE 00 
+0B55FF 5B     0153* rst.lil $18
+0B5600 DF 
               0154* ; ld hl,@cmd
               0155* ; ld a,6
               0156* ; call dumpMemoryHex
               0157* ; call printNewLine
-0B55E3 C9     0158* ret
-0B55E4 19     0159* @cmd:   db 25
-0B55E5 00     0160* @mode:  db 0
-0B55E6 00     0161* @x0: 	dw 0
-0B55E7 00 
-0B55E8 00     0162* @y0: 	dw 0
-0B55E9 00 
+0B5601 C9     0158* ret
+0B5602 19     0159* @cmd:   db 25
+0B5603 00     0160* @mode:  db 0
+0B5604 00     0161* @x0: 	dw 0
+0B5605 00 
+0B5606 00     0162* @y0: 	dw 0
+0B5607 00 
               0163* @end:  ; no padding required b/c we shifted de right
               0164* 
               0165* ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
@@ -27369,34 +27399,34 @@
               0168* ; inputs: bc=x0, de=y0
               0169* ; prerequisites: vdu_buff_select
               0170* vdu_plot_bmp:
-0B55EA ED     0171* ld (@x0),bc
-0B55EB 43 
-0B55EC 01 
-0B55ED 56 
-0B55ED 0B   
-0B55EF ED     0172* ld (@y0),de
-0B55F0 53 
-0B55F1 03 
-0B55F2 56 
-0B55F2 0B   
-0B55F4 21     0173* ld hl,@cmd
-0B55F5 FF 
-0B55F6 55 
-0B55F7 0B 
-0B55F8 01     0174* ld bc,@end-@cmd
-0B55F9 06 
-0B55FA 00 
-0B55FB 00 
-0B55FC 5B     0175* rst.lil $18
-0B55FD DF 
-0B55FE C9     0176* ret
-0B55FF 19     0177* @cmd:   db 25
-0B5600 ED     0178* @mode:  db plot_bmp+dr_abs_fg ; 0xED
-0B5601 00     0179* @x0: 	dw 0x0000
-0B5602 00 
-0B5603 00     0180* @y0: 	dw 0x0000
-0B5604 00 
-0B5605 00     0181* @end:   db 0x00 ; padding
+0B5608 ED     0171* ld (@x0),bc
+0B5609 43 
+0B560A 1F 
+0B560B 56 
+0B560B 0B   
+0B560D ED     0172* ld (@y0),de
+0B560E 53 
+0B560F 21 
+0B5610 56 
+0B5610 0B   
+0B5612 21     0173* ld hl,@cmd
+0B5613 1D 
+0B5614 56 
+0B5615 0B 
+0B5616 01     0174* ld bc,@end-@cmd
+0B5617 06 
+0B5618 00 
+0B5619 00 
+0B561A 5B     0175* rst.lil $18
+0B561B DF 
+0B561C C9     0176* ret
+0B561D 19     0177* @cmd:   db 25
+0B561E ED     0178* @mode:  db plot_bmp+dr_abs_fg ; 0xED
+0B561F 00     0179* @x0: 	dw 0x0000
+0B5620 00 
+0B5621 00     0180* @y0: 	dw 0x0000
+0B5622 00 
+0B5623 00     0181* @end:   db 0x00 ; padding
               0182* 
               0183* ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
               0184* ; &E8-&EF 	232-239 	Bitmap plot §
@@ -27410,202 +27440,202 @@
               0192* vdu_plot_bmp168:
               0193* ; populate in the reverse of normal to keep the
               0194* ; inputs from stomping on each other
-0B5606 ED     0195* ld (@y0-1),de
-0B5607 53 
-0B5608 24 
-0B5609 56 
-0B5609 0B   
-0B560B ED     0196* ld (@x0-1),bc
-0B560C 43 
-0B560D 22 
-0B560E 56 
-0B560E 0B   
-0B5610 3E     0197* ld a,plot_bmp+dr_abs_fg ; 0xED
-0B5611 ED 
-0B5612 32     0198* ld (@mode),a ; restore the mode byte that got stomped on by bcu
-0B5613 22 
-0B5614 56 
-0B5615 0B 
-0B5616 21     0199* ld hl,@cmd
-0B5617 21 
-0B5618 56 
-0B5619 0B 
-0B561A 01     0200* ld bc,@end-@cmd
-0B561B 06 
-0B561C 00 
-0B561D 00 
-0B561E 5B     0201* rst.lil $18
-0B561F DF 
-0B5620 C9     0202* ret
-0B5621 19     0203* @cmd:   db 25
-0B5622 ED     0204* @mode:  db plot_bmp+dr_abs_fg ; 0xED
-0B5623 00     0205* @x0: 	dw 0x0000
-0B5624 00 
-0B5625 00     0206* @y0: 	dw 0x0000
-0B5626 00 
+0B5624 ED     0195* ld (@y0-1),de
+0B5625 53 
+0B5626 42 
+0B5627 56 
+0B5627 0B   
+0B5629 ED     0196* ld (@x0-1),bc
+0B562A 43 
+0B562B 40 
+0B562C 56 
+0B562C 0B   
+0B562E 3E     0197* ld a,plot_bmp+dr_abs_fg ; 0xED
+0B562F ED 
+0B5630 32     0198* ld (@mode),a ; restore the mode byte that got stomped on by bcu
+0B5631 40 
+0B5632 56 
+0B5633 0B 
+0B5634 21     0199* ld hl,@cmd
+0B5635 3F 
+0B5636 56 
+0B5637 0B 
+0B5638 01     0200* ld bc,@end-@cmd
+0B5639 06 
+0B563A 00 
+0B563B 00 
+0B563C 5B     0201* rst.lil $18
+0B563D DF 
+0B563E C9     0202* ret
+0B563F 19     0203* @cmd:   db 25
+0B5640 ED     0204* @mode:  db plot_bmp+dr_abs_fg ; 0xED
+0B5641 00     0205* @x0: 	dw 0x0000
+0B5642 00 
+0B5643 00     0206* @y0: 	dw 0x0000
+0B5644 00 
               0207* @end:  ; no padding required b/c we shifted de right
               0208* 
               0209* ; draw a filled rectangle
               0210* vdu_plot_rf:
-0B5627 ED     0211* ld (@x0),bc
-0B5628 43 
-0B5629 4E 
-0B562A 56 
-0B562A 0B   
-0B562C ED     0212* ld (@y0),de
-0B562D 53 
-0B562E 50 
-0B562F 56 
-0B562F 0B   
-0B5631 DD     0213* ld (@x1),ix
-0B5632 22 
-0B5633 54 
-0B5634 56 
-0B5634 0B   
-0B5636 FD     0214* ld (@y1),iy
-0B5637 22 
-0B5638 56 
-0B5639 56 
-0B5639 0B   
-0B563B 3E     0215* ld a,25 ; we have to reload the 2nd plot command
-0B563C 19 
-0B563D 32     0216* ld (@cmd1),a ; because the 24-bit y0 load stomped on it
-0B563E 52 
-0B563F 56 
-0B5640 0B 
-0B5641 21     0217* ld hl,@cmd0
-0B5642 4C 
-0B5643 56 
-0B5644 0B 
-0B5645 01     0218* ld bc,@end-@cmd0
-0B5646 0C 
-0B5647 00 
-0B5648 00 
-0B5649 5B     0219* rst.lil $18
-0B564A DF 
-0B564B C9     0220* ret
-0B564C 19     0221* @cmd0:  db 25 ; plot
-0B564D 04     0222* @arg0:  db plot_sl_both+mv_abs
-0B564E 00     0223* @x0:    dw 0x0000
-0B564F 00 
-0B5650 00     0224* @y0:    dw 0x0000
-0B5651 00 
-0B5652 19     0225* @cmd1:  db 25 ; plot
-0B5653 65     0226* @arg1:  db plot_rf+dr_abs_fg
-0B5654 00     0227* @x1:    dw 0x0000
-0B5655 00 
-0B5656 00     0228* @y1:    dw 0x0000
-0B5657 00 
-0B5658 00     0229* @end:   db 0x00 ; padding
+0B5645 ED     0211* ld (@x0),bc
+0B5646 43 
+0B5647 6C 
+0B5648 56 
+0B5648 0B   
+0B564A ED     0212* ld (@y0),de
+0B564B 53 
+0B564C 6E 
+0B564D 56 
+0B564D 0B   
+0B564F DD     0213* ld (@x1),ix
+0B5650 22 
+0B5651 72 
+0B5652 56 
+0B5652 0B   
+0B5654 FD     0214* ld (@y1),iy
+0B5655 22 
+0B5656 74 
+0B5657 56 
+0B5657 0B   
+0B5659 3E     0215* ld a,25 ; we have to reload the 2nd plot command
+0B565A 19 
+0B565B 32     0216* ld (@cmd1),a ; because the 24-bit y0 load stomped on it
+0B565C 70 
+0B565D 56 
+0B565E 0B 
+0B565F 21     0217* ld hl,@cmd0
+0B5660 6A 
+0B5661 56 
+0B5662 0B 
+0B5663 01     0218* ld bc,@end-@cmd0
+0B5664 0C 
+0B5665 00 
+0B5666 00 
+0B5667 5B     0219* rst.lil $18
+0B5668 DF 
+0B5669 C9     0220* ret
+0B566A 19     0221* @cmd0:  db 25 ; plot
+0B566B 04     0222* @arg0:  db plot_sl_both+mv_abs
+0B566C 00     0223* @x0:    dw 0x0000
+0B566D 00 
+0B566E 00     0224* @y0:    dw 0x0000
+0B566F 00 
+0B5670 19     0225* @cmd1:  db 25 ; plot
+0B5671 65     0226* @arg1:  db plot_rf+dr_abs_fg
+0B5672 00     0227* @x1:    dw 0x0000
+0B5673 00 
+0B5674 00     0228* @y1:    dw 0x0000
+0B5675 00 
+0B5676 00     0229* @end:   db 0x00 ; padding
               0230* 
               0231* ; draw a filled circle
               0232* vdu_plot_cf:
-0B5659 ED     0233* ld (@x0),bc
-0B565A 43 
-0B565B 80 
-0B565C 56 
-0B565C 0B   
-0B565E ED     0234* ld (@y0),de
-0B565F 53 
-0B5660 82 
-0B5661 56 
-0B5661 0B   
-0B5663 DD     0235* ld (@x1),ix
-0B5664 22 
-0B5665 86 
-0B5666 56 
-0B5666 0B   
-0B5668 FD     0236* ld (@y1),iy
-0B5669 22 
-0B566A 88 
-0B566B 56 
-0B566B 0B   
-0B566D 3E     0237* ld a,25 ; we have to reload the 2nd plot command
-0B566E 19 
-0B566F 32     0238* ld (@cmd1),a ; because the 24-bit y0 load stomped on it
-0B5670 84 
-0B5671 56 
-0B5672 0B 
-0B5673 21     0239* ld hl,@cmd0
-0B5674 7E 
-0B5675 56 
-0B5676 0B 
-0B5677 01     0240* ld bc,@end-@cmd0
-0B5678 0C 
-0B5679 00 
-0B567A 00 
-0B567B 5B     0241* rst.lil $18
-0B567C DF 
-0B567D C9     0242* ret
-0B567E 19     0243* @cmd0:  db 25 ; plot
-0B567F 04     0244* @arg0:  db plot_sl_both+mv_abs
-0B5680 00     0245* @x0:    dw 0x0000
-0B5681 00 
-0B5682 00     0246* @y0:    dw 0x0000
-0B5683 00 
-0B5684 19     0247* @cmd1:  db 25 ; plot
-0B5685 9D     0248* @arg1:  db plot_cf+dr_abs_fg
-0B5686 00     0249* @x1:    dw 0x0000
-0B5687 00 
-0B5688 00     0250* @y1:    dw 0x0000
-0B5689 00 
-0B568A 00     0251* @end:   db 0x00 ; padding
+0B5677 ED     0233* ld (@x0),bc
+0B5678 43 
+0B5679 9E 
+0B567A 56 
+0B567A 0B   
+0B567C ED     0234* ld (@y0),de
+0B567D 53 
+0B567E A0 
+0B567F 56 
+0B567F 0B   
+0B5681 DD     0235* ld (@x1),ix
+0B5682 22 
+0B5683 A4 
+0B5684 56 
+0B5684 0B   
+0B5686 FD     0236* ld (@y1),iy
+0B5687 22 
+0B5688 A6 
+0B5689 56 
+0B5689 0B   
+0B568B 3E     0237* ld a,25 ; we have to reload the 2nd plot command
+0B568C 19 
+0B568D 32     0238* ld (@cmd1),a ; because the 24-bit y0 load stomped on it
+0B568E A2 
+0B568F 56 
+0B5690 0B 
+0B5691 21     0239* ld hl,@cmd0
+0B5692 9C 
+0B5693 56 
+0B5694 0B 
+0B5695 01     0240* ld bc,@end-@cmd0
+0B5696 0C 
+0B5697 00 
+0B5698 00 
+0B5699 5B     0241* rst.lil $18
+0B569A DF 
+0B569B C9     0242* ret
+0B569C 19     0243* @cmd0:  db 25 ; plot
+0B569D 04     0244* @arg0:  db plot_sl_both+mv_abs
+0B569E 00     0245* @x0:    dw 0x0000
+0B569F 00 
+0B56A0 00     0246* @y0:    dw 0x0000
+0B56A1 00 
+0B56A2 19     0247* @cmd1:  db 25 ; plot
+0B56A3 9D     0248* @arg1:  db plot_cf+dr_abs_fg
+0B56A4 00     0249* @x1:    dw 0x0000
+0B56A5 00 
+0B56A6 00     0250* @y1:    dw 0x0000
+0B56A7 00 
+0B56A8 00     0251* @end:   db 0x00 ; padding
               0252* 
               0253* ; VDU 25, mode, x; y;: PLOT command
               0254* ; inputs: a=mode, ix=x0, iy=y0
               0255* plot:
-0B568B 32     0256* ld (@mode),a
-0B568C A5 
-0B568D 56 
-0B568E 0B 
-0B568F DD     0257* ld (@x0),ix
-0B5690 22 
-0B5691 A6 
-0B5692 56 
-0B5692 0B   
-0B5694 FD     0258* ld (@y0),iy
-0B5695 22 
-0B5696 A8 
-0B5697 56 
-0B5697 0B   
-0B5699 21     0259* ld hl,@cmd
-0B569A A4 
-0B569B 56 
-0B569C 0B 
-0B569D 01     0260* ld bc,@end-@cmd
-0B569E 06 
-0B569F 00 
-0B56A0 00 
-0B56A1 5B     0261* rst.lil $18
-0B56A2 DF 
-0B56A3 C9     0262* ret
-0B56A4 19     0263* @cmd:   db 25
-0B56A5 00     0264* @mode:  db 0
-0B56A6 00     0265* @x0: 	dw 0
-0B56A7 00 
-0B56A8 00     0266* @y0: 	dw 0
-0B56A9 00 
-0B56AA 00     0267* @end:   db 0 ; padding
+0B56A9 32     0256* ld (@mode),a
+0B56AA C3 
+0B56AB 56 
+0B56AC 0B 
+0B56AD DD     0257* ld (@x0),ix
+0B56AE 22 
+0B56AF C4 
+0B56B0 56 
+0B56B0 0B   
+0B56B2 FD     0258* ld (@y0),iy
+0B56B3 22 
+0B56B4 C6 
+0B56B5 56 
+0B56B5 0B   
+0B56B7 21     0259* ld hl,@cmd
+0B56B8 C2 
+0B56B9 56 
+0B56BA 0B 
+0B56BB 01     0260* ld bc,@end-@cmd
+0B56BC 06 
+0B56BD 00 
+0B56BE 00 
+0B56BF 5B     0261* rst.lil $18
+0B56C0 DF 
+0B56C1 C9     0262* ret
+0B56C2 19     0263* @cmd:   db 25
+0B56C3 00     0264* @mode:  db 0
+0B56C4 00     0265* @x0: 	dw 0
+0B56C5 00 
+0B56C6 00     0266* @y0: 	dw 0
+0B56C7 00 
+0B56C8 00     0267* @end:   db 0 ; padding
               0268* 
               0269* ; VDU 5: Write text at graphics cursor
               0270* ; inputs: hl = pointer to text, ix=x0, iy=y0
               0271* ; prerequisites: gcol foreground set, VDU 5 set
               0272* plot_text:
-0B56AB E5     0273* push hl ; save text pointer
+0B56C9 E5     0273* push hl ; save text pointer
               0274* ; move graphics cursor to x0, y0
-0B56AC 3E     0275* ld a,plot_pt+mv_abs
-0B56AD 44 
-0B56AE CD     0276* call plot
-0B56AF 8B 
-0B56B0 56 
-0B56B1 0B 
+0B56CA 3E     0275* ld a,plot_pt+mv_abs
+0B56CB 44 
+0B56CC CD     0276* call plot
+0B56CD A9 
+0B56CE 56 
+0B56CF 0B 
               0277* ; write text
-0B56B2 E1     0278* pop hl ; restore text pointer
-0B56B3 CD     0279* call printString
-0B56B4 21 
-0B56B5 49 
-0B56B6 0B 
-0B56B7 C9     0280* ret
+0B56D0 E1     0278* pop hl ; restore text pointer
+0B56D1 CD     0279* call printString
+0B56D2 21 
+0B56D3 49 
+0B56D4 0B 
+0B56D5 C9     0280* ret
                0192 include "files.inc"
               0001* ; load to onboard 8k sram
               0002* filedata: equ 0xB7E000; Directory object structure (DIR)
@@ -27615,47 +27645,7 @@
                0196 ; Storage for the argv array pointers
                0197 min_args: equ 2
                0198 argv_ptrs_max:		EQU	16			; Maximum number of arguments allowed in argv
-0B56B8 00      0199 argv_ptrs:		    BLKP	argv_ptrs_max, 0
-0B56B9 00 
-0B56BA 00 
-0B56BB 00 
-0B56BB 00   
-0B56BC 00 
-0B56BD 00 
-0B56BE 00 
-0B56BE 00   
-0B56BF 00 
-0B56C0 00 
-0B56C1 00 
-0B56C1 00   
-0B56C2 00 
-0B56C3 00 
-0B56C4 00 
-0B56C4 00   
-0B56C5 00 
-0B56C6 00 
-0B56C7 00 
-0B56C7 00   
-0B56C8 00 
-0B56C9 00 
-0B56CA 00 
-0B56CA 00   
-0B56CB 00 
-0B56CC 00 
-0B56CD 00 
-0B56CD 00   
-0B56CE 00 
-0B56CF 00 
-0B56D0 00 
-0B56D0 00   
-0B56D1 00 
-0B56D2 00 
-0B56D3 00 
-0B56D3 00   
-0B56D4 00 
-0B56D5 00 
-0B56D6 00 
-0B56D6 00   
+0B56D6 00      0199 argv_ptrs:		    BLKP	argv_ptrs_max, 0
 0B56D7 00 
 0B56D8 00 
 0B56D9 00 
@@ -27663,6 +27653,46 @@
 0B56DA 00 
 0B56DB 00 
 0B56DC 00 
+0B56DC 00   
+0B56DD 00 
+0B56DE 00 
+0B56DF 00 
+0B56DF 00   
+0B56E0 00 
+0B56E1 00 
+0B56E2 00 
+0B56E2 00   
+0B56E3 00 
+0B56E4 00 
+0B56E5 00 
+0B56E5 00   
+0B56E6 00 
+0B56E7 00 
+0B56E8 00 
+0B56E8 00   
+0B56E9 00 
+0B56EA 00 
+0B56EB 00 
+0B56EB 00   
+0B56EC 00 
+0B56ED 00 
+0B56EE 00 
+0B56EE 00   
+0B56EF 00 
+0B56F0 00 
+0B56F1 00 
+0B56F1 00   
+0B56F2 00 
+0B56F3 00 
+0B56F4 00 
+0B56F4 00   
+0B56F5 00 
+0B56F6 00 
+0B56F7 00 
+0B56F7 00   
+0B56F8 00 
+0B56F9 00 
+0B56FA 00 
                0200 _sps:			DS	3			; Storage for the stack pointer (used by BASIC)
                0201 
                0202 ; Storage for the arguments, ORDER MATTERS
@@ -27670,50 +27700,50 @@
                0204 arg2: ds 5
                0205 
                0206 ; GLOBAL MESSAGE STRINGS
-0B56F5 55      0207 str_usage: ASCIZ "Usage: scratch <args>\r\n"
-0B56F6 73 
-0B56F7 61 
-0B56F8 67 
-0B56F8 65   
-0B56F9 3A 
-0B56FA 20 
-0B56FB 73 
-0B56FB 63   
-0B56FC 72 
-0B56FD 61 
-0B56FE 74 
-0B56FE 63   
-0B56FF 68 
-0B5700 20 
-0B5701 3C 
-0B5701 61   
-0B5702 72 
-0B5703 67 
-0B5704 73 
-0B5704 3E   
-0B5705 0D 
-0B5706 0A 
-0B5707 00 
-0B570D 45      0208 str_error: ASCIZ "Error!\r\n"
-0B570E 72 
-0B570F 72 
-0B5710 6F 
-0B5710 72   
-0B5711 21 
-0B5712 0D 
-0B5713 0A 
-0B5713 00   
-0B5716 53      0209 str_success: ASCIZ "Success!\r\n"
-0B5717 75 
-0B5718 63 
-0B5719 63 
-0B5719 65   
-0B571A 73 
-0B571B 73 
-0B571C 21 
-0B571C 0D   
-0B571D 0A 
-0B571E 00 
+0B5713 55      0207 str_usage: ASCIZ "Usage: scratch <args>\r\n"
+0B5714 73 
+0B5715 61 
+0B5716 67 
+0B5716 65   
+0B5717 3A 
+0B5718 20 
+0B5719 73 
+0B5719 63   
+0B571A 72 
+0B571B 61 
+0B571C 74 
+0B571C 63   
+0B571D 68 
+0B571E 20 
+0B571F 3C 
+0B571F 61   
+0B5720 72 
+0B5721 67 
+0B5722 73 
+0B5722 3E   
+0B5723 0D 
+0B5724 0A 
+0B5725 00 
+0B572B 45      0208 str_error: ASCIZ "Error!\r\n"
+0B572C 72 
+0B572D 72 
+0B572E 6F 
+0B572E 72   
+0B572F 21 
+0B5730 0D 
+0B5731 0A 
+0B5731 00   
+0B5734 53      0209 str_success: ASCIZ "Success!\r\n"
+0B5735 75 
+0B5736 63 
+0B5737 63 
+0B5737 65   
+0B5738 73 
+0B5739 73 
+0B573A 21 
+0B573A 0D   
+0B573B 0A 
+0B573C 00 
                0210 
                0211 ; ========= MAIN LOOP =========
                0212 ; The main routine
@@ -27723,485 +27753,485 @@
                0216 ;  HL: Error code, or 0 if OK
                0217 
                0218 _main_init:
-0B5721 79      0219 ld a,c              ; how many arguments?
-0B5722 FE      0220 cp min_args         ; not enough?
-0B5723 02 
-0B5724 30      0221 jr nc,main          ; if enough, go to main loop
-0B5725 23 
-0B5726 21      0222 ld hl,str_usage     ; if not enough, print usage
-0B5727 F5 
-0B5728 56 
-0B5729 0B 
-0B572A CD      0223 call printString
-0B572B 21 
-0B572C 49 
-0B572D 0B 
+0B573F 79      0219 ld a,c              ; how many arguments?
+0B5740 FE      0220 cp min_args         ; not enough?
+0B5741 02 
+0B5742 30      0221 jr nc,main          ; if enough, go to main loop
+0B5743 23 
+0B5744 21      0222 ld hl,str_usage     ; if not enough, print usage
+0B5745 13 
+0B5746 57 
+0B5747 0B 
+0B5748 CD      0223 call printString
+0B5749 21 
+0B574A 49 
+0B574B 0B 
                0224 ; fall through to _main_end_error
                0225 
                0226 _main_end_error:
-0B572E 21      0227 ld hl,str_error     ; print error message
-0B572F 0D 
-0B5730 57 
-0B5731 0B 
-0B5732 CD      0228 call printString
-0B5733 21 
-0B5734 49 
-0B5735 0B 
-0B5736 21      0229 ld hl,19            ; return error code 19
-0B5737 13 
-0B5738 00 
-0B5739 00 
-0B573A C9      0230 ret
+0B574C 21      0227 ld hl,str_error     ; print error message
+0B574D 2B 
+0B574E 57 
+0B574F 0B 
+0B5750 CD      0228 call printString
+0B5751 21 
+0B5752 49 
+0B5753 0B 
+0B5754 21      0229 ld hl,19            ; return error code 19
+0B5755 13 
+0B5756 00 
+0B5757 00 
+0B5758 C9      0230 ret
                0231 
                0232 ; begin BASIC-specific end code
                0233 ; This bit of code is called from STAR_BYE and returns us safely to MOS
-0B573B ED      0234 _end:			LD		SP, (_sps)		; Restore the stack pointer
-0B573C 7B 
-0B573D E8 
-0B573E 56 
-0B573E 0B   
+0B5759 ED      0234 _end:			LD		SP, (_sps)		; Restore the stack pointer
+0B575A 7B 
+0B575B 06 
+0B575C 57 
+0B575C 0B   
                0235 ; fall through to _main_end_ok
                0236 ; end BASIC-specific end code
                0237 
                0238 _main_end_ok:
                0239 ; ld hl,str_success   ; print success message
                0240 ; call printString
-0B5740 CD      0241 call printNewLine
-0B5741 36 
-0B5742 49 
-0B5743 0B 
-0B5744 21      0242 ld hl,0             ; return 0 for success
-0B5745 00 
-0B5746 00 
-0B5747 00 
-0B5748 C9      0243 ret
+0B575E CD      0241 call printNewLine
+0B575F 36 
+0B5760 49 
+0B5761 0B 
+0B5762 21      0242 ld hl,0             ; return 0 for success
+0B5763 00 
+0B5764 00 
+0B5765 00 
+0B5766 C9      0243 ret
                0244 
                0245 ; ========= BEGIN CUSTOM MAIN LOOP =========
                0246 main:
-0B5749 0D      0247 dec c               ; decrement the argument count to skip the program name
-0B574A CD      0248 call load_input     ; load the input arguments
-0B574B 13 
-0B574C 59 
-0B574D 0B 
-0B574E CD      0249 call print_input    ; print the input arguments
-0B574F 2A 
-0B5750 59 
-0B5751 0B 
-0B5752 CD      0250 call main_loop      ; run the main loop
-0B5753 BB 
-0B5754 57 
-0B5755 0B 
-0B5756 C3      0251 jp _main_end_ok     ; exit with success
-0B5757 40 
-0B5758 57 
-0B5759 0B 
+0B5767 0D      0247 dec c               ; decrement the argument count to skip the program name
+0B5768 CD      0248 call load_input     ; load the input arguments
+0B5769 31 
+0B576A 59 
+0B576B 0B 
+0B576C CD      0249 call print_input    ; print the input arguments
+0B576D 48 
+0B576E 59 
+0B576F 0B 
+0B5770 CD      0250 call main_loop      ; run the main loop
+0B5771 D9 
+0B5772 57 
+0B5773 0B 
+0B5774 C3      0251 jp _main_end_ok     ; exit with success
+0B5775 5E 
+0B5776 57 
+0B5777 0B 
                0252 
                0253 ; GLOBAL VARIABLES / DEFAULTS
                0254 ; ---- input arguments (float) ----
                0255 input_params_num: equ 5
                0256 input_params:               ; label so we can traverse the table in loops
-0B575A 81      0257 petals:             db   0x81           ; 3.03
-0B575B 1E      0258 dw32 0x41EB851E
-0B575C 85 
-0B575D EB 
-0B575E 41 
-0B575F 80      0259 vectors:            db   0x80           ; 1.98
-0B5760 D7      0260 dw32 0x7D70A3D7
-0B5761 A3 
-0B5762 70 
-0B5763 7D 
-0B5764 7F      0261 depth:              db   0x7F           ; 0.6
-0B5765 99      0262 dw32 0x19999999
-0B5766 99 
-0B5767 99 
-0B5768 19 
-0B5769 86      0263 periods:            db   0x86           ; 66
-0B576A 00      0264 dw32 0x04000000
-0B576B 00 
-0B576C 00 
-0B576D 04 
-0B576E 7F      0265 shrink:             db   0x7F           ; 0.8
-0B576F CC      0266 dw32 0x4CCCCCCC
-0B5770 CC 
-0B5771 CC 
-0B5772 4C 
-0B5773 00      0267 clock_prime:        db   0x00           ; 1     not used
-0B5774 00      0268 dw32 0x00000000
-0B5775 00 
-0B5776 00 
-0B5777 00 
-0B5778 00      0269 clock_petal: 	    db   0x00           ; 1     not used
-0B5779 00      0270 dw32 0x00000000
-0B577A 00 
-0B577B 00 
-0B577C 00 
-0B577D 88      0271 radius_scale: 	    db   0x88           ; 256
-0B577E 00      0272 dw32 0x00000000
-0B577F 00 
-0B5780 00 
-0B5781 00 
-               0273 
-               0274 ; ---- main loop parameters (float unless noted otherwise) ----
-0B5782 00      0275 db   0x00
-0B5783 00      0276 step_theta_prime:   dw32 0x00000000   ; Step increment for theta_prime in each loop iteration
-0B5784 00 
-0B5785 00 
-0B5786 00 
-0B5787 00      0277 db   0x00
-0B5788 00      0278 step_theta_petal:   dw32 0x00000000   ; Step increment for theta_petal in each loop iteration
+0B5778 81      0257 petals:             db   0x81           ; 3.03
+0B5779 1E      0258 dw32 0x41EB851E
+0B577A 85 
+0B577B EB 
+0B577C 41 
+0B577D 80      0259 vectors:            db   0x80           ; 1.98
+0B577E D7      0260 dw32 0x7D70A3D7
+0B577F A3 
+0B5780 70 
+0B5781 7D 
+0B5782 7F      0261 depth:              db   0x7F           ; 0.6
+0B5783 99      0262 dw32 0x19999999
+0B5784 99 
+0B5785 99 
+0B5786 19 
+0B5787 86      0263 periods:            db   0x86           ; 66
+0B5788 00      0264 dw32 0x04000000
 0B5789 00 
 0B578A 00 
-0B578B 00 
-0B578C 00      0279 db   0x00
-0B578D 00      0280 total_steps:        dw32 0x00000000   ; Total number of iterations based on periods and step_theta_prime
-0B578E 00 
-0B578F 00 
-0B5790 00 
-0B5791 00      0281 db   0x00
-0B5792 00      0282 step_shrink:        dw32 0x00000000   ; Step decrement applied to radius in each iteration
+0B578B 04 
+0B578C 7F      0265 shrink:             db   0x7F           ; 0.8
+0B578D CC      0266 dw32 0x4CCCCCCC
+0B578E CC 
+0B578F CC 
+0B5790 4C 
+0B5791 00      0267 clock_prime:        db   0x00           ; 1     not used
+0B5792 00      0268 dw32 0x00000000
 0B5793 00 
 0B5794 00 
 0B5795 00 
-0B5796 00      0283 db   0x00
-               0284 
-               0285 ; ---- main loop state variables (float) ----
-0B5797 00      0286 db   0x00
-0B5798 00      0287 theta_prime: 	    dw32 0x00000000   ;
+0B5796 00      0269 clock_petal: 	    db   0x00           ; 1     not used
+0B5797 00      0270 dw32 0x00000000
+0B5798 00 
 0B5799 00 
 0B579A 00 
-0B579B 00 
-0B579C 00      0288 db   0x00
-0B579D 00      0289 theta_petal: 	    dw32 0x00000000   ;
+0B579B 88      0271 radius_scale: 	    db   0x88           ; 256
+0B579C 00      0272 dw32 0x00000000
+0B579D 00 
 0B579E 00 
 0B579F 00 
-0B57A0 00 
-0B57A1 00      0290 db   0x00
-0B57A2 00      0291 radius_prime:       dw32 0x00000000   ; Initial radius before shrink factor is applied
+               0273 
+               0274 ; ---- main loop parameters (float unless noted otherwise) ----
+0B57A0 00      0275 db   0x00
+0B57A1 00      0276 step_theta_prime:   dw32 0x00000000   ; Step increment for theta_prime in each loop iteration
+0B57A2 00 
 0B57A3 00 
 0B57A4 00 
-0B57A5 00 
-0B57A6 00      0292 db   0x00
-0B57A7 00      0293 radius_petal:       dw32 0x00000000   ; Radius of the petal circle
+0B57A5 00      0277 db   0x00
+0B57A6 00      0278 step_theta_petal:   dw32 0x00000000   ; Step increment for theta_petal in each loop iteration
+0B57A7 00 
 0B57A8 00 
 0B57A9 00 
-0B57AA 00 
-0B57AB 00      0294 db   0x00
-0B57AC 00      0295 radius:             dw32 0x00000000   ; Total radius of the curve
+0B57AA 00      0279 db   0x00
+0B57AB 00      0280 total_steps:        dw32 0x00000000   ; Total number of iterations based on periods and step_theta_prime
+0B57AC 00 
 0B57AD 00 
 0B57AE 00 
-0B57AF 00 
-0B57B0 00      0296 db   0x00
-0B57B1 00      0297 x_prev:             dw32 0x00000000   ; Previous x coordinate
+0B57AF 00      0281 db   0x00
+0B57B0 00      0282 step_shrink:        dw32 0x00000000   ; Step decrement applied to radius in each iteration
+0B57B1 00 
 0B57B2 00 
 0B57B3 00 
-0B57B4 00 
-0B57B5 00      0298 db   0x00
-0B57B6 00      0299 y_prev:             dw32 0x00000000   ; Previous y coordinate
+0B57B4 00      0283 db   0x00
+               0284 
+               0285 ; ---- main loop state variables (float) ----
+0B57B5 00      0286 db   0x00
+0B57B6 00      0287 theta_prime: 	    dw32 0x00000000   ;
 0B57B7 00 
 0B57B8 00 
 0B57B9 00 
-0B57BA 00      0300 db   0x00
+0B57BA 00      0288 db   0x00
+0B57BB 00      0289 theta_petal: 	    dw32 0x00000000   ;
+0B57BC 00 
+0B57BD 00 
+0B57BE 00 
+0B57BF 00      0290 db   0x00
+0B57C0 00      0291 radius_prime:       dw32 0x00000000   ; Initial radius before shrink factor is applied
+0B57C1 00 
+0B57C2 00 
+0B57C3 00 
+0B57C4 00      0292 db   0x00
+0B57C5 00      0293 radius_petal:       dw32 0x00000000   ; Radius of the petal circle
+0B57C6 00 
+0B57C7 00 
+0B57C8 00 
+0B57C9 00      0294 db   0x00
+0B57CA 00      0295 radius:             dw32 0x00000000   ; Total radius of the curve
+0B57CB 00 
+0B57CC 00 
+0B57CD 00 
+0B57CE 00      0296 db   0x00
+0B57CF 00      0297 x_prev:             dw32 0x00000000   ; Previous x coordinate
+0B57D0 00 
+0B57D1 00 
+0B57D2 00 
+0B57D3 00      0298 db   0x00
+0B57D4 00      0299 y_prev:             dw32 0x00000000   ; Previous y coordinate
+0B57D5 00 
+0B57D6 00 
+0B57D7 00 
+0B57D8 00      0300 db   0x00
                0301 
                0302 main_loop:
                0303 ; --- clear the screen ---
-0B57BB CD      0304 call vdu_cls
-0B57BC 2E 
-0B57BD 52 
-0B57BE 0B 
+0B57D9 CD      0304 call vdu_cls
+0B57DA 4C 
+0B57DB 52 
+0B57DC 0B 
                0305 
                0306 ; --- convert input thetas to radians
-0B57BF FD      0307 ld iy,theta_prime
-0B57C0 21 
-0B57C1 98 
-0B57C2 57 
-0B57C2 0B   
-0B57C4 CD      0308 call fetch_float_iy_nor
-0B57C5 C7 
-0B57C6 50 
-0B57C7 0B 
-0B57C8 3E      0309 ld a,rad
-0B57C9 1B 
-0B57CA CD      0310 call FPP
-0B57CB 2E 
-0B57CC 20 
-0B57CD 0B 
-0B57CE CD      0311 call store_float_iy_nor
-0B57CF B5 
-0B57D0 50 
-0B57D1 0B 
+0B57DD FD      0307 ld iy,theta_prime
+0B57DE 21 
+0B57DF B6 
+0B57E0 57 
+0B57E0 0B   
+0B57E2 CD      0308 call fetch_float_iy_nor
+0B57E3 E5 
+0B57E4 50 
+0B57E5 0B 
+0B57E6 3E      0309 ld a,rad
+0B57E7 1B 
+0B57E8 CD      0310 call FPP
+0B57E9 2E 
+0B57EA 20 
+0B57EB 0B 
+0B57EC CD      0311 call store_float_iy_nor
+0B57ED D3 
+0B57EE 50 
+0B57EF 0B 
                0312 
-0B57D2 FD      0313 ld iy,theta_petal
-0B57D3 21 
-0B57D4 9D 
-0B57D5 57 
-0B57D5 0B   
-0B57D7 CD      0314 call fetch_float_iy_nor
-0B57D8 C7 
-0B57D9 50 
-0B57DA 0B 
-0B57DB 3E      0315 ld a,rad
-0B57DC 1B 
-0B57DD CD      0316 call FPP
-0B57DE 2E 
-0B57DF 20 
-0B57E0 0B 
-0B57E1 CD      0317 call store_float_iy_nor
-0B57E2 B5 
-0B57E3 50 
-0B57E4 0B 
+0B57F0 FD      0313 ld iy,theta_petal
+0B57F1 21 
+0B57F2 BB 
+0B57F3 57 
+0B57F3 0B   
+0B57F5 CD      0314 call fetch_float_iy_nor
+0B57F6 E5 
+0B57F7 50 
+0B57F8 0B 
+0B57F9 3E      0315 ld a,rad
+0B57FA 1B 
+0B57FB CD      0316 call FPP
+0B57FC 2E 
+0B57FD 20 
+0B57FE 0B 
+0B57FF CD      0317 call store_float_iy_nor
+0B5800 D3 
+0B5801 50 
+0B5802 0B 
                0318 
                0319 ; --- compute the main loop parameters ---
                0320 ; step_theta_prime = 360 degrees / (petals * vectors)
-0B57E5 FD      0321 ld iy,petals
-0B57E6 21 
-0B57E7 5A 
-0B57E8 57 
-0B57E8 0B   
-0B57EA CD      0322 call fetch_float_iy_nor
-0B57EB C7 
-0B57EC 50 
-0B57ED 0B 
-0B57EE FD      0323 ld iy,vectors
-0B57EF 21 
-0B57F0 5F 
-0B57F1 57 
-0B57F1 0B   
-0B57F3 CD      0324 call fetch_float_iy_alt
-0B57F4 EB 
-0B57F5 50 
-0B57F6 0B 
-0B57F7 3E      0325 ld a,fmul
-0B57F8 0A 
-0B57F9 CD      0326 call FPP ; HLH'L'C = petals * vectors
-0B57FA 2E 
-0B57FB 20 
-0B57FC 0B 
-0B57FD CD      0327 call pi2_alt ; DED'E'B = 2 * pi
-0B57FE E6 
-0B57FF 51 
-0B5800 0B 
-0B5801 CD      0328 call SWAP ; HLH'L'C <--> DED'E'B
-0B5802 9B 
-0B5803 08 
-0B5804 0B 
-0B5805 3E      0329 ld a,fdiv
-0B5806 0F 
-0B5807 CD      0330 call FPP ; HLH'L'C = 2 * pi / (petals * vectors)
-0B5808 2E 
-0B5809 20 
-0B580A 0B 
-0B580B FD      0331 ld iy,step_theta_prime
-0B580C 21 
-0B580D 83 
-0B580E 57 
-0B580E 0B   
-0B5810 CD      0332 call store_float_iy_nor
-0B5811 B5 
-0B5812 50 
-0B5813 0B 
+0B5803 FD      0321 ld iy,petals
+0B5804 21 
+0B5805 78 
+0B5806 57 
+0B5806 0B   
+0B5808 CD      0322 call fetch_float_iy_nor
+0B5809 E5 
+0B580A 50 
+0B580B 0B 
+0B580C FD      0323 ld iy,vectors
+0B580D 21 
+0B580E 7D 
+0B580F 57 
+0B580F 0B   
+0B5811 CD      0324 call fetch_float_iy_alt
+0B5812 09 
+0B5813 51 
+0B5814 0B 
+0B5815 3E      0325 ld a,fmul
+0B5816 0A 
+0B5817 CD      0326 call FPP ; HLH'L'C = petals * vectors
+0B5818 2E 
+0B5819 20 
+0B581A 0B 
+0B581B CD      0327 call pi2_alt ; DED'E'B = 2 * pi
+0B581C 04 
+0B581D 52 
+0B581E 0B 
+0B581F CD      0328 call SWAP ; HLH'L'C <--> DED'E'B
+0B5820 9B 
+0B5821 08 
+0B5822 0B 
+0B5823 3E      0329 ld a,fdiv
+0B5824 0F 
+0B5825 CD      0330 call FPP ; HLH'L'C = 2 * pi / (petals * vectors)
+0B5826 2E 
+0B5827 20 
+0B5828 0B 
+0B5829 FD      0331 ld iy,step_theta_prime
+0B582A 21 
+0B582B A1 
+0B582C 57 
+0B582C 0B   
+0B582E CD      0332 call store_float_iy_nor
+0B582F D3 
+0B5830 50 
+0B5831 0B 
                0333 
                0334 ; step_theta_petal = 360 degrees / vectors
-0B5814 FD      0335 ld iy,vectors
-0B5815 21 
-0B5816 5F 
-0B5817 57 
-0B5817 0B   
-0B5819 CD      0336 call fetch_float_iy_nor
-0B581A C7 
-0B581B 50 
-0B581C 0B 
-0B581D CD      0337 call pi2_alt ; DED'E'B = 2 * pi
-0B581E E6 
-0B581F 51 
-0B5820 0B 
-0B5821 CD      0338 call SWAP ; HLH'L'C <--> DED'E'B
-0B5822 9B 
-0B5823 08 
-0B5824 0B 
-0B5825 3E      0339 ld a,fdiv
-0B5826 0F 
-0B5827 CD      0340 call FPP ; HLH'L'C = 2 * pi / vectors
-0B5828 2E 
-0B5829 20 
-0B582A 0B 
-0B582B FD      0341 ld iy,step_theta_petal
-0B582C 21 
-0B582D 88 
-0B582E 57 
-0B582E 0B   
-0B5830 CD      0342 call store_float_iy_nor
-0B5831 B5 
-0B5832 50 
-0B5833 0B 
+0B5832 FD      0335 ld iy,vectors
+0B5833 21 
+0B5834 7D 
+0B5835 57 
+0B5835 0B   
+0B5837 CD      0336 call fetch_float_iy_nor
+0B5838 E5 
+0B5839 50 
+0B583A 0B 
+0B583B CD      0337 call pi2_alt ; DED'E'B = 2 * pi
+0B583C 04 
+0B583D 52 
+0B583E 0B 
+0B583F CD      0338 call SWAP ; HLH'L'C <--> DED'E'B
+0B5840 9B 
+0B5841 08 
+0B5842 0B 
+0B5843 3E      0339 ld a,fdiv
+0B5844 0F 
+0B5845 CD      0340 call FPP ; HLH'L'C = 2 * pi / vectors
+0B5846 2E 
+0B5847 20 
+0B5848 0B 
+0B5849 FD      0341 ld iy,step_theta_petal
+0B584A 21 
+0B584B A6 
+0B584C 57 
+0B584C 0B   
+0B584E CD      0342 call store_float_iy_nor
+0B584F D3 
+0B5850 50 
+0B5851 0B 
                0343 
                0344 ; total_steps = int(petals * vectors * periods)
-0B5834 FD      0345 ld iy,petals
-0B5835 21 
-0B5836 5A 
-0B5837 57 
-0B5837 0B   
-0B5839 CD      0346 call fetch_float_iy_nor
-0B583A C7 
-0B583B 50 
-0B583C 0B 
-0B583D FD      0347 ld iy,vectors
-0B583E 21 
-0B583F 5F 
-0B5840 57 
-0B5840 0B   
-0B5842 CD      0348 call fetch_float_iy_alt
-0B5843 EB 
-0B5844 50 
-0B5845 0B 
-0B5846 3E      0349 ld a,fmul
-0B5847 0A 
-0B5848 CD      0350 call FPP ; HLH'L'C = petals * vectors
-0B5849 2E 
-0B584A 20 
-0B584B 0B 
-0B584C FD      0351 ld iy,periods
-0B584D 21 
-0B584E 69 
-0B584F 57 
-0B584F 0B   
-0B5851 CD      0352 call fetch_float_iy_alt
-0B5852 EB 
-0B5853 50 
-0B5854 0B 
-0B5855 3E      0353 ld a,fmul
-0B5856 0A 
-0B5857 CD      0354 call FPP ; HLH'L'C = petals * vectors * periods
-0B5858 2E 
-0B5859 20 
+0B5852 FD      0345 ld iy,petals
+0B5853 21 
+0B5854 78 
+0B5855 57 
+0B5855 0B   
+0B5857 CD      0346 call fetch_float_iy_nor
+0B5858 E5 
+0B5859 50 
 0B585A 0B 
-0B585B FD      0355 ld iy,total_steps
+0B585B FD      0347 ld iy,vectors
 0B585C 21 
-0B585D 8D 
+0B585D 7D 
 0B585E 57 
 0B585E 0B   
-0B5860 CD      0356 call store_float_iy_nor ; we'll make it an integer after computing step_shrink
-0B5861 B5 
-0B5862 50 
+0B5860 CD      0348 call fetch_float_iy_alt
+0B5861 09 
+0B5862 51 
 0B5863 0B 
+0B5864 3E      0349 ld a,fmul
+0B5865 0A 
+0B5866 CD      0350 call FPP ; HLH'L'C = petals * vectors
+0B5867 2E 
+0B5868 20 
+0B5869 0B 
+0B586A FD      0351 ld iy,periods
+0B586B 21 
+0B586C 87 
+0B586D 57 
+0B586D 0B   
+0B586F CD      0352 call fetch_float_iy_alt
+0B5870 09 
+0B5871 51 
+0B5872 0B 
+0B5873 3E      0353 ld a,fmul
+0B5874 0A 
+0B5875 CD      0354 call FPP ; HLH'L'C = petals * vectors * periods
+0B5876 2E 
+0B5877 20 
+0B5878 0B 
+0B5879 FD      0355 ld iy,total_steps
+0B587A 21 
+0B587B AB 
+0B587C 57 
+0B587C 0B   
+0B587E CD      0356 call store_float_iy_nor ; we'll make it an integer after computing step_shrink
+0B587F D3 
+0B5880 50 
+0B5881 0B 
                0357 
                0358 ; Calculate shrink per step (linear)
                0359 ; step_shrink = -shrink * radius_scale / total_steps
-0B5864 FD      0360 ld iy,shrink
-0B5865 21 
-0B5866 6E 
-0B5867 57 
-0B5867 0B   
-0B5869 CD      0361 call fetch_float_iy_nor
-0B586A C7 
-0B586B 50 
-0B586C 0B 
-0B586D FD      0362 ld iy,radius_scale
-0B586E 21 
-0B586F 7D 
-0B5870 57 
-0B5870 0B   
-0B5872 CD      0363 call fetch_float_iy_alt
-0B5873 EB 
-0B5874 50 
-0B5875 0B 
-0B5876 3E      0364 ld a,fmul
-0B5877 0A 
-0B5878 CD      0365 call FPP ; HLH'L'C = shrink * radius_scale
-0B5879 2E 
-0B587A 20 
-0B587B 0B 
-0B587C FD      0366 ld iy,total_steps
-0B587D 21 
-0B587E 8D 
-0B587F 57 
-0B587F 0B   
-0B5881 CD      0367 call fetch_float_iy_alt
-0B5882 EB 
-0B5883 50 
-0B5884 0B 
-0B5885 3E      0368 ld a,fdiv
-0B5886 0F 
-0B5887 CD      0369 call FPP ; HLH'L'C = shrink * radius_scale / total_steps
-0B5888 2E 
-0B5889 20 
+0B5882 FD      0360 ld iy,shrink
+0B5883 21 
+0B5884 8C 
+0B5885 57 
+0B5885 0B   
+0B5887 CD      0361 call fetch_float_iy_nor
+0B5888 E5 
+0B5889 50 
 0B588A 0B 
-0B588B CD      0370 call NEGATE ; HLH'L'C = -shrink * radius_scale / total_steps
-0B588C 9E 
-0B588D 2A 
-0B588E 0B 
-0B588F FD      0371 ld iy,step_shrink
-0B5890 21 
-0B5891 92 
-0B5892 57 
-0B5892 0B   
-0B5894 CD      0372 call store_float_iy_nor
-0B5895 B5 
-0B5896 50 
-0B5897 0B 
+0B588B FD      0362 ld iy,radius_scale
+0B588C 21 
+0B588D 9B 
+0B588E 57 
+0B588E 0B   
+0B5890 CD      0363 call fetch_float_iy_alt
+0B5891 09 
+0B5892 51 
+0B5893 0B 
+0B5894 3E      0364 ld a,fmul
+0B5895 0A 
+0B5896 CD      0365 call FPP ; HLH'L'C = shrink * radius_scale
+0B5897 2E 
+0B5898 20 
+0B5899 0B 
+0B589A FD      0366 ld iy,total_steps
+0B589B 21 
+0B589C AB 
+0B589D 57 
+0B589D 0B   
+0B589F CD      0367 call fetch_float_iy_alt
+0B58A0 09 
+0B58A1 51 
+0B58A2 0B 
+0B58A3 3E      0368 ld a,fdiv
+0B58A4 0F 
+0B58A5 CD      0369 call FPP ; HLH'L'C = shrink * radius_scale / total_steps
+0B58A6 2E 
+0B58A7 20 
+0B58A8 0B 
+0B58A9 CD      0370 call NEGATE ; HLH'L'C = -shrink * radius_scale / total_steps
+0B58AA 9E 
+0B58AB 2A 
+0B58AC 0B 
+0B58AD FD      0371 ld iy,step_shrink
+0B58AE 21 
+0B58AF B0 
+0B58B0 57 
+0B58B0 0B   
+0B58B2 CD      0372 call store_float_iy_nor
+0B58B3 D3 
+0B58B4 50 
+0B58B5 0B 
                0373 
                0374 ; Make total_steps an integer and store it in uhl
-0B5898 FD      0375 ld iy,total_steps
-0B5899 21 
-0B589A 8D 
-0B589B 57 
-0B589B 0B   
-0B589D CD      0376 call fetch_float_iy_nor
-0B589E C7 
-0B589F 50 
-0B58A0 0B 
-0B58A1 CD      0377 call int2hlu ; HLH'L'C = int(total_steps)
-0B58A2 12 
-0B58A3 50 
-0B58A4 0B 
-0B58A5 FD      0378 ld (iy),hl ; uhl = int(total_steps)
-0B58A6 2F 
-0B58A7 00 
+0B58B6 FD      0375 ld iy,total_steps
+0B58B7 21 
+0B58B8 AB 
+0B58B9 57 
+0B58B9 0B   
+0B58BB CD      0376 call fetch_float_iy_nor
+0B58BC E5 
+0B58BD 50 
+0B58BE 0B 
+0B58BF CD      0377 call int2hlu ; HLH'L'C = int(total_steps)
+0B58C0 12 
+0B58C1 50 
+0B58C2 0B 
+0B58C3 FD      0378 ld (iy),hl ; uhl = int(total_steps)
+0B58C4 2F 
+0B58C5 00 
                0379 
                0380 ; Initialize radius_prime
-0B58A8 FD      0381 ld iy,radius_scale
-0B58A9 21 
-0B58AA 7D 
-0B58AB 57 
-0B58AB 0B   
-0B58AD CD      0382 call fetch_float_iy_nor
-0B58AE C7 
-0B58AF 50 
-0B58B0 0B 
-0B58B1 FD      0383 ld iy,radius_prime
-0B58B2 21 
-0B58B3 A2 
-0B58B4 57 
-0B58B4 0B   
-0B58B6 CD      0384 call store_float_iy_nor
-0B58B7 B5 
-0B58B8 50 
-0B58B9 0B 
+0B58C6 FD      0381 ld iy,radius_scale
+0B58C7 21 
+0B58C8 9B 
+0B58C9 57 
+0B58C9 0B   
+0B58CB CD      0382 call fetch_float_iy_nor
+0B58CC E5 
+0B58CD 50 
+0B58CE 0B 
+0B58CF FD      0383 ld iy,radius_prime
+0B58D0 21 
+0B58D1 C0 
+0B58D2 57 
+0B58D2 0B   
+0B58D4 CD      0384 call store_float_iy_nor
+0B58D5 D3 
+0B58D6 50 
+0B58D7 0B 
                0385 
                0386 ; Set screen origin to the center
-0B58BA 01      0387 ld bc,1280/2 ; x
-0B58BB 80 
-0B58BC 02 
-0B58BD 00 
-0B58BE 11      0388 ld de,1024/2 ; y
-0B58BF 00 
-0B58C0 02 
-0B58C1 00 
-0B58C2 CD      0389 call vdu_set_gfx_origin
-0B58C3 9A 
-0B58C4 52 
-0B58C5 0B 
+0B58D8 01      0387 ld bc,1280/2 ; x
+0B58D9 80 
+0B58DA 02 
+0B58DB 00 
+0B58DC 11      0388 ld de,1024/2 ; y
+0B58DD 00 
+0B58DE 02 
+0B58DF 00 
+0B58E0 CD      0389 call vdu_set_gfx_origin
+0B58E1 B8 
+0B58E2 52 
+0B58E3 0B 
                0390 
                0391 ; set initial point and move graphics cursor to it
-0B58C6 CD      0392 call calc_point ; ubc = x, ude = y
-0B58C7 D1 
-0B58C8 58 
-0B58C9 0B 
-0B58CA 3E      0393 ld a,plot_pt+mv_abs ; plot mode
-0B58CB 44 
-0B58CC CD      0394 call vdu_plot
-0B58CD AB 
-0B58CE 55 
-0B58CF 0B 
+0B58E4 CD      0392 call calc_point ; ubc = x, ude = y
+0B58E5 EF 
+0B58E6 58 
+0B58E7 0B 
+0B58E8 3E      0393 ld a,plot_pt+mv_abs ; plot mode
+0B58E9 44 
+0B58EA CD      0394 call vdu_plot
+0B58EB C9 
+0B58EC 55 
+0B58ED 0B 
                0395 ; fall through to main loop
                0396 
                0397 @loop:
@@ -28242,7 +28272,7 @@
                0432 ;     ld hl,total_steps
                0433 ;     dec (hl)
                0434 ;     jp nz,@loop
-0B58D0 C9      0435 ret
+0B58EE C9      0435 ret
                0436 
                0437 ; compute the Cartesian coordinates of the next point on the curve
                0438 ; inputs: theta_prime, theta_petal, radius_prime, depth
@@ -28255,36 +28285,36 @@
                0445 ; ld de,(depth)
                0446 ; call smul168 ; uh.l = radius_petal
                0447 ; ld (radius_petal),hl
-0B58D1 FD      0448 ld iy,theta_petal
-0B58D2 21 
-0B58D3 9D 
-0B58D4 57 
-0B58D4 0B   
-0B58D6 3E      0449 ld a,cos
-0B58D7 14 
-0B58D8 CD      0450 call FPP ; HLH'L'C = cos(theta_petal)
-0B58D9 2E 
-0B58DA 20 
-0B58DB 0B 
-0B58DC FD      0451 ld iy,depth
-0B58DD 21 
-0B58DE 64 
-0B58DF 57 
-0B58DF 0B   
-0B58E1 CD      0452 call fetch_float_iy_alt
-0B58E2 EB 
-0B58E3 50 
-0B58E4 0B 
-0B58E5 3E      0453 ld a,fmul
-0B58E6 0A 
-0B58E7 CD      0454 call FPP ; HLH'L'C = cos(theta_petal) * depth
-0B58E8 2E 
-0B58E9 20 
-0B58EA 0B 
-0B58EB CD      0455 call SWAP ; HLH'L'C <--> DED'E'B
-0B58EC 9B 
-0B58ED 08 
-0B58EE 0B 
+0B58EF FD      0448 ld iy,theta_petal
+0B58F0 21 
+0B58F1 BB 
+0B58F2 57 
+0B58F2 0B   
+0B58F4 3E      0449 ld a,cos
+0B58F5 14 
+0B58F6 CD      0450 call FPP ; HLH'L'C = cos(theta_petal)
+0B58F7 2E 
+0B58F8 20 
+0B58F9 0B 
+0B58FA FD      0451 ld iy,depth
+0B58FB 21 
+0B58FC 82 
+0B58FD 57 
+0B58FD 0B   
+0B58FF CD      0452 call fetch_float_iy_alt
+0B5900 09 
+0B5901 51 
+0B5902 0B 
+0B5903 3E      0453 ld a,fmul
+0B5904 0A 
+0B5905 CD      0454 call FPP ; HLH'L'C = cos(theta_petal) * depth
+0B5906 2E 
+0B5907 20 
+0B5908 0B 
+0B5909 CD      0455 call SWAP ; HLH'L'C <--> DED'E'B
+0B590A 9B 
+0B590B 08 
+0B590C 0B 
                0456 
                0457 ;     ; radius = radius_prime + radius_petal * radius_prime
                0458 ;     ld de,(radius_prime)
@@ -28292,41 +28322,41 @@
                0460 ;     add hl,de ; uh.l = radius_prime + radius_petal * radius_prime
                0461 ;     ex de,hl ; de = radius
                0462 ;     ld (radius),de
-0B58EF FD      0463 ld iy,radius_prime
-0B58F0 21 
-0B58F1 A2 
-0B58F2 57 
-0B58F2 0B   
-0B58F4 3E      0464 ld a,fmul
-0B58F5 0A 
-0B58F6 CD      0465 call FPP ; HLH'L'C = radius_petal * radius_prime
-0B58F7 2E 
-0B58F8 20 
-0B58F9 0B 
-0B58FA FD      0466 ld iy,radius_prime
-0B58FB 21 
-0B58FC A2 
-0B58FD 57 
-0B58FD 0B   
-0B58FF CD      0467 call fetch_float_iy_alt
-0B5900 EB 
-0B5901 50 
-0B5902 0B 
-0B5903 3E      0468 ld a,fadd
-0B5904 0B 
-0B5905 CD      0469 call FPP ; HLH'L'C = radius_prime + radius_petal * radius_prime
-0B5906 2E 
-0B5907 20 
-0B5908 0B 
-0B5909 FD      0470 ld iy,radius
-0B590A 21 
-0B590B AC 
-0B590C 57 
-0B590C 0B   
-0B590E CD      0471 call store_float_iy_nor
-0B590F B5 
-0B5910 50 
-0B5911 0B 
+0B590D FD      0463 ld iy,radius_prime
+0B590E 21 
+0B590F C0 
+0B5910 57 
+0B5910 0B   
+0B5912 3E      0464 ld a,fmul
+0B5913 0A 
+0B5914 CD      0465 call FPP ; HLH'L'C = radius_petal * radius_prime
+0B5915 2E 
+0B5916 20 
+0B5917 0B 
+0B5918 FD      0466 ld iy,radius_prime
+0B5919 21 
+0B591A C0 
+0B591B 57 
+0B591B 0B   
+0B591D CD      0467 call fetch_float_iy_alt
+0B591E 09 
+0B591F 51 
+0B5920 0B 
+0B5921 3E      0468 ld a,fadd
+0B5922 0B 
+0B5923 CD      0469 call FPP ; HLH'L'C = radius_prime + radius_petal * radius_prime
+0B5924 2E 
+0B5925 20 
+0B5926 0B 
+0B5927 FD      0470 ld iy,radius
+0B5928 21 
+0B5929 CA 
+0B592A 57 
+0B592A 0B   
+0B592C CD      0471 call store_float_iy_nor
+0B592D D3 
+0B592E 50 
+0B592F 0B 
                0472 
                0473 ; ; Convert polar to Cartesian coordinates
                0474 ;     ; x, y = polar_to_cartesian(radius, theta_prime)
@@ -28343,250 +28373,250 @@
                0485 ; ;     ; call printNewLine
                0486 
                0487 ; ; all done
-0B5912 C9      0488 ret
+0B5930 C9      0488 ret
                0489 
                0490 
                0491 ; --- Load arguments ---
                0492 ; --------------------------------
                0493 load_input:
-0B5913 79      0494 ld a,c ; put the number of entered arguments in a
-0B5914 06      0495 ld b,input_params_num ; loop counter = number of arguments
-0B5915 05 
-0B5916 B8      0496 cp b ; compare the number of arguments to the number of arguments
-0B5917 C4      0497 call nz,args_count_off ; handle discrepancies
-0B5918 45 
-0B5919 59 
-0B591A 0B 
+0B5931 79      0494 ld a,c ; put the number of entered arguments in a
+0B5932 06      0495 ld b,input_params_num ; loop counter = number of arguments
+0B5933 05 
+0B5934 B8      0496 cp b ; compare the number of arguments to the number of arguments
+0B5935 C4      0497 call nz,args_count_off ; handle discrepancies
+0B5936 63 
+0B5937 59 
+0B5938 0B 
                0498 ; TODO: we may want to branch here according to the result
-0B591B FD      0499 ld iy,input_params  ; point to the arguments table
-0B591C 21 
-0B591D 5A 
-0B591E 57 
-0B591E 0B   
+0B5939 FD      0499 ld iy,input_params  ; point to the arguments table
+0B593A 21 
+0B593B 78 
+0B593C 57 
+0B593C 0B   
                0500 @loop:
-0B5920 CD      0501 call store_arg_iy_float ; get the next argument and store it
-0B5921 04 
-0B5922 5A 
-0B5923 0B 
-0B5924 ED      0502 lea iy,iy+5  ; point to the next parameter
-0B5925 33 
-0B5926 05 
-0B5927 10      0503 djnz @loop ; loop until done
-0B5928 F7 
-0B5929 C9      0504 ret
+0B593E CD      0501 call store_arg_iy_float ; get the next argument and store it
+0B593F 22 
+0B5940 5A 
+0B5941 0B 
+0B5942 ED      0502 lea iy,iy+5  ; point to the next parameter
+0B5943 33 
+0B5944 05 
+0B5945 10      0503 djnz @loop ; loop until done
+0B5946 F7 
+0B5947 C9      0504 ret
                0505 
                0506 print_input:
-0B592A 06      0507 ld b,input_params_num ; loop counter = number of arguments
-0B592B 05 
-0B592C FD      0508 ld iy,input_params  ; point to the arguments table
-0B592D 21 
-0B592E 5A 
-0B592F 57 
-0B592F 0B   
+0B5948 06      0507 ld b,input_params_num ; loop counter = number of arguments
+0B5949 05 
+0B594A FD      0508 ld iy,input_params  ; point to the arguments table
+0B594B 21 
+0B594C 78 
+0B594D 57 
+0B594D 0B   
                0509 @loop:
-0B5931 C5      0510 push bc ; save the loop counter
-0B5932 CD      0511 call fetch_float_iy_nor ; fetch the next parameter into HLH'L'C
-0B5933 C7 
-0B5934 50 
-0B5935 0B 
-0B5936 CD      0512 call print_float_dec_nor ; print the parameter
-0B5937 7E 
-0B5938 51 
-0B5939 0B 
-0B593A 3E      0513 ld a,' ' ; print a space separator
-0B593B 20 
-0B593C 5B      0514 rst.lil $10
-0B593D D7 
-0B593E ED      0515 lea iy,iy+5  ; point to the next parameter
-0B593F 33 
-0B5940 05 
-0B5941 C1      0516 pop bc ; get back the loop counter
-0B5942 10      0517 djnz @loop ; loop until done
-0B5943 ED 
-0B5944 C9      0518 ret
+0B594F C5      0510 push bc ; save the loop counter
+0B5950 CD      0511 call fetch_float_iy_nor ; fetch the next parameter into HLH'L'C
+0B5951 E5 
+0B5952 50 
+0B5953 0B 
+0B5954 CD      0512 call print_float_dec_nor ; print the parameter
+0B5955 9C 
+0B5956 51 
+0B5957 0B 
+0B5958 3E      0513 ld a,' ' ; print a space separator
+0B5959 20 
+0B595A 5B      0514 rst.lil $10
+0B595B D7 
+0B595C ED      0515 lea iy,iy+5  ; point to the next parameter
+0B595D 33 
+0B595E 05 
+0B595F C1      0516 pop bc ; get back the loop counter
+0B5960 10      0517 djnz @loop ; loop until done
+0B5961 ED 
+0B5962 C9      0518 ret
                0519 
                0520 ; --- Specific parameter processing functions ---
                0521 args_count_off:
-0B5945 21      0522 ld hl,@str_args_count_off
-0B5946 4E 
-0B5947 59 
-0B5948 0B 
-0B5949 CD      0523 call printString
-0B594A 21 
-0B594B 49 
-0B594C 0B 
-0B594D C9      0524 ret
-0B594E 41      0525 @str_args_count_off: db "Argument counts mismatch!\r\n",0
-0B594F 72 
-0B5950 67 
-0B5951 75 
-0B5951 6D   
-0B5952 65 
-0B5953 6E 
-0B5954 74 
-0B5954 20   
-0B5955 63 
-0B5956 6F 
-0B5957 75 
-0B5957 6E   
-0B5958 74 
-0B5959 73 
-0B595A 20 
-0B595A 6D   
-0B595B 69 
-0B595C 73 
-0B595D 6D 
-0B595D 61   
-0B595E 74 
-0B595F 63 
-0B5960 68 
-0B5960 21   
-0B5961 0D 
-0B5962 0A 
-0B5963 00 
+0B5963 21      0522 ld hl,@str_args_count_off
+0B5964 6C 
+0B5965 59 
+0B5966 0B 
+0B5967 CD      0523 call printString
+0B5968 21 
+0B5969 49 
+0B596A 0B 
+0B596B C9      0524 ret
+0B596C 41      0525 @str_args_count_off: db "Argument counts mismatch!\r\n",0
+0B596D 72 
+0B596E 67 
+0B596F 75 
+0B596F 6D   
+0B5970 65 
+0B5971 6E 
+0B5972 74 
+0B5972 20   
+0B5973 63 
+0B5974 6F 
+0B5975 75 
+0B5975 6E   
+0B5976 74 
+0B5977 73 
+0B5978 20 
+0B5978 6D   
+0B5979 69 
+0B597A 73 
+0B597B 6D 
+0B597B 61   
+0B597C 74 
+0B597D 63 
+0B597E 68 
+0B597E 21   
+0B597F 0D 
+0B5980 0A 
+0B5981 00 
                0526 
                0527 ; ---- text strings ----
-0B596A 73      0528 str_step_theta_prime: ASCIZ "step_theta_prime: "
-0B596B 74 
-0B596C 65 
-0B596D 70 
-0B596D 5F   
-0B596E 74 
-0B596F 68 
-0B5970 65 
-0B5970 74   
-0B5971 61 
-0B5972 5F 
-0B5973 70 
-0B5973 72   
-0B5974 69 
-0B5975 6D 
-0B5976 65 
-0B5976 3A   
-0B5977 20 
-0B5978 00 
-0B597D 73      0529 str_step_theta_petal: ASCIZ "step_theta_petal: "
-0B597E 74 
-0B597F 65 
-0B5980 70 
-0B5980 5F   
-0B5981 74 
-0B5982 68 
-0B5983 65 
-0B5983 74   
-0B5984 61 
-0B5985 5F 
-0B5986 70 
-0B5986 65   
-0B5987 74 
-0B5988 61 
-0B5989 6C 
-0B5989 3A   
-0B598A 20 
-0B598B 00 
-0B5990 74      0530 str_total_steps: ASCIZ "total_steps: "
-0B5991 6F 
-0B5992 74 
-0B5993 61 
-0B5993 6C   
-0B5994 5F 
-0B5995 73 
-0B5996 74 
-0B5996 65   
-0B5997 70 
-0B5998 73 
-0B5999 3A 
-0B5999 20   
-0B599A 00 
-0B599E 73      0531 str_step_shrink: ASCIZ "step_shrink: "
+0B5988 73      0528 str_step_theta_prime: ASCIZ "step_theta_prime: "
+0B5989 74 
+0B598A 65 
+0B598B 70 
+0B598B 5F   
+0B598C 74 
+0B598D 68 
+0B598E 65 
+0B598E 74   
+0B598F 61 
+0B5990 5F 
+0B5991 70 
+0B5991 72   
+0B5992 69 
+0B5993 6D 
+0B5994 65 
+0B5994 3A   
+0B5995 20 
+0B5996 00 
+0B599B 73      0529 str_step_theta_petal: ASCIZ "step_theta_petal: "
+0B599C 74 
+0B599D 65 
+0B599E 70 
+0B599E 5F   
 0B599F 74 
-0B59A0 65 
-0B59A1 70 
-0B59A1 5F   
-0B59A2 73 
-0B59A3 68 
-0B59A4 72 
-0B59A4 69   
-0B59A5 6E 
-0B59A6 6B 
-0B59A7 3A 
-0B59A7 20   
-0B59A8 00 
+0B59A0 68 
+0B59A1 65 
+0B59A1 74   
+0B59A2 61 
+0B59A3 5F 
+0B59A4 70 
+0B59A4 65   
+0B59A5 74 
+0B59A6 61 
+0B59A7 6C 
+0B59A7 3A   
+0B59A8 20 
+0B59A9 00 
+0B59AE 74      0530 str_total_steps: ASCIZ "total_steps: "
+0B59AF 6F 
+0B59B0 74 
+0B59B1 61 
+0B59B1 6C   
+0B59B2 5F 
+0B59B3 73 
+0B59B4 74 
+0B59B4 65   
+0B59B5 70 
+0B59B6 73 
+0B59B7 3A 
+0B59B7 20   
+0B59B8 00 
+0B59BC 73      0531 str_step_shrink: ASCIZ "step_shrink: "
+0B59BD 74 
+0B59BE 65 
+0B59BF 70 
+0B59BF 5F   
+0B59C0 73 
+0B59C1 68 
+0B59C2 72 
+0B59C2 69   
+0B59C3 6E 
+0B59C4 6B 
+0B59C5 3A 
+0B59C5 20   
+0B59C6 00 
                0532 
-0B59AC 74      0533 str_theta_prime: ASCIZ "theta_prime: "
-0B59AD 68 
-0B59AE 65 
-0B59AF 74 
-0B59AF 61   
-0B59B0 5F 
-0B59B1 70 
-0B59B2 72 
-0B59B2 69   
-0B59B3 6D 
-0B59B4 65 
-0B59B5 3A 
-0B59B5 20   
-0B59B6 00 
-0B59BA 72      0534 str_radius_prime: ASCIZ "radius_prime: "
-0B59BB 61 
-0B59BC 64 
-0B59BD 69 
-0B59BD 75   
-0B59BE 73 
-0B59BF 5F 
-0B59C0 70 
-0B59C0 72   
-0B59C1 69 
-0B59C2 6D 
-0B59C3 65 
-0B59C3 3A   
-0B59C4 20 
-0B59C5 00 
-0B59C9 72      0535 str_radius_petal: ASCIZ "radius_petal: "
-0B59CA 61 
-0B59CB 64 
-0B59CC 69 
-0B59CC 75   
-0B59CD 73 
+0B59CA 74      0533 str_theta_prime: ASCIZ "theta_prime: "
+0B59CB 68 
+0B59CC 65 
+0B59CD 74 
+0B59CD 61   
 0B59CE 5F 
 0B59CF 70 
-0B59CF 65   
-0B59D0 74 
-0B59D1 61 
-0B59D2 6C 
-0B59D2 3A   
-0B59D3 20 
+0B59D0 72 
+0B59D0 69   
+0B59D1 6D 
+0B59D2 65 
+0B59D3 3A 
+0B59D3 20   
 0B59D4 00 
-0B59D8 74      0536 str_theta_petal: ASCIZ "theta_petal: "
-0B59D9 68 
-0B59DA 65 
-0B59DB 74 
-0B59DB 61   
-0B59DC 5F 
-0B59DD 70 
-0B59DE 65 
-0B59DE 74   
-0B59DF 61 
-0B59E0 6C 
-0B59E1 3A 
-0B59E1 20   
-0B59E2 00 
+0B59D8 72      0534 str_radius_prime: ASCIZ "radius_prime: "
+0B59D9 61 
+0B59DA 64 
+0B59DB 69 
+0B59DB 75   
+0B59DC 73 
+0B59DD 5F 
+0B59DE 70 
+0B59DE 72   
+0B59DF 69 
+0B59E0 6D 
+0B59E1 65 
+0B59E1 3A   
+0B59E2 20 
+0B59E3 00 
+0B59E7 72      0535 str_radius_petal: ASCIZ "radius_petal: "
+0B59E8 61 
+0B59E9 64 
+0B59EA 69 
+0B59EA 75   
+0B59EB 73 
+0B59EC 5F 
+0B59ED 70 
+0B59ED 65   
+0B59EE 74 
+0B59EF 61 
+0B59F0 6C 
+0B59F0 3A   
+0B59F1 20 
+0B59F2 00 
+0B59F6 74      0536 str_theta_petal: ASCIZ "theta_petal: "
+0B59F7 68 
+0B59F8 65 
+0B59F9 74 
+0B59F9 61   
+0B59FA 5F 
+0B59FB 70 
+0B59FC 65 
+0B59FC 74   
+0B59FD 61 
+0B59FE 6C 
+0B59FF 3A 
+0B59FF 20   
+0B5A00 00 
                0537 
-0B59E6 72      0538 str_radius: ASCIZ "radius: "
-0B59E7 61 
-0B59E8 64 
-0B59E9 69 
-0B59E9 75   
-0B59EA 73 
-0B59EB 3A 
-0B59EC 20 
-0B59EC 00   
-0B59EF 78      0539 str_xy: ASCIZ "x,y: "
-0B59F0 2C 
-0B59F1 79 
-0B59F2 3A 
-0B59F2 20   
-0B59F3 00 
+0B5A04 72      0538 str_radius: ASCIZ "radius: "
+0B5A05 61 
+0B5A06 64 
+0B5A07 69 
+0B5A07 75   
+0B5A08 73 
+0B5A09 3A 
+0B5A0A 20 
+0B5A0A 00   
+0B5A0D 78      0539 str_xy: ASCIZ "x,y: "
+0B5A0E 2C 
+0B5A0F 79 
+0B5A10 3A 
+0B5A10 20   
+0B5A11 00 
                0540 
                0541 ; ========== HELPER FUNCTIONS ==========
                0542 ;
@@ -28595,59 +28625,59 @@
                0545 ; outputs: HLH'L'C = floating point number, ix points to the next argument
                0546 ; destroys: everything except iy, including prime registers
                0547 get_arg_float:
-0B59F5 ED      0548 lea ix,ix+3 ; point to the next argument
-0B59F6 32 
-0B59F7 03 
-0B59F8 DD      0549 push ix ; preserve
-0B59F9 E5 
-0B59FA DD      0550 ld ix,(ix)  ; point to argument string
-0B59FB 37 
-0B59FC 00 
-0B59FD CD      0551 call VAL_FP ; convert the string to a float
-0B59FE A5 
-0B59FF 24 
-0B5A00 0B 
-0B5A01 DD      0552 pop ix ; restore
-0B5A02 E1 
-0B5A03 C9      0553 ret ; return with the value in HLH'L'C
+0B5A13 ED      0548 lea ix,ix+3 ; point to the next argument
+0B5A14 32 
+0B5A15 03 
+0B5A16 DD      0549 push ix ; preserve
+0B5A17 E5 
+0B5A18 DD      0550 ld ix,(ix)  ; point to argument string
+0B5A19 37 
+0B5A1A 00 
+0B5A1B CD      0551 call VAL_FP ; convert the string to a float
+0B5A1C A5 
+0B5A1D 24 
+0B5A1E 0B 
+0B5A1F DD      0552 pop ix ; restore
+0B5A20 E1 
+0B5A21 C9      0553 ret ; return with the value in HLH'L'C
                0554 
                0555 ; get the next argument after ix as a floating point number and store it in buffer pointed to by iy
                0556 ; inputs: ix = pointer to the argument string
                0557 ; outputs: HLH'L'C = floating point number, ix points to the next argument
                0558 ; destroys: everything except iy, including prime registers
                0559 store_arg_iy_float:
-0B5A04 ED      0560 lea ix,ix+3 ; point to the next argument
-0B5A05 32 
-0B5A06 03 
-0B5A07 DD      0561 push ix ; preserve
-0B5A08 E5 
-0B5A09 DD      0562 ld ix,(ix)  ; point to argument string
-0B5A0A 37 
-0B5A0B 00 
-0B5A0C CD      0563 call VAL_FP ; convert the string to a float
-0B5A0D A5 
-0B5A0E 24 
-0B5A0F 0B 
-0B5A10 CD      0564 call store_float_iy_nor ; save the float in buffer
-0B5A11 B5 
-0B5A12 50 
-0B5A13 0B 
-0B5A14 DD      0565 pop ix ; restore
-0B5A15 E1 
-0B5A16 C9      0566 ret ; return with the value in HLH'L'C
+0B5A22 ED      0560 lea ix,ix+3 ; point to the next argument
+0B5A23 32 
+0B5A24 03 
+0B5A25 DD      0561 push ix ; preserve
+0B5A26 E5 
+0B5A27 DD      0562 ld ix,(ix)  ; point to argument string
+0B5A28 37 
+0B5A29 00 
+0B5A2A CD      0563 call VAL_FP ; convert the string to a float
+0B5A2B A5 
+0B5A2C 24 
+0B5A2D 0B 
+0B5A2E CD      0564 call store_float_iy_nor ; save the float in buffer
+0B5A2F D3 
+0B5A30 50 
+0B5A31 0B 
+0B5A32 DD      0565 pop ix ; restore
+0B5A33 E1 
+0B5A34 C9      0566 ret ; return with the value in HLH'L'C
                0567 ;
                0568 ; get the next argument after ix as a string
                0569 ; inputs: ix = pointer to the argument string
                0570 ; outputs: HL = pointer to the argument string, ix points to the next argument
                0571 ; destroys: a, h, l, f
                0572 get_arg_text:
-0B5A17 ED      0573 lea ix,ix+3 ; point to the next argument
-0B5A18 32 
-0B5A19 03 
-0B5A1A DD      0574 ld hl,(ix)  ; get the argument string
-0B5A1B 27 
-0B5A1C 00 
-0B5A1D C9      0575 ret
+0B5A35 ED      0573 lea ix,ix+3 ; point to the next argument
+0B5A36 32 
+0B5A37 03 
+0B5A38 DD      0574 ld hl,(ix)  ; get the argument string
+0B5A39 27 
+0B5A3A 00 
+0B5A3B C9      0575 ret
                0576 ;
                0577 ; match the next argument after ix to the dispatch table at iy
                0578 ;   - arguments and dispatch entries are zero-terminated, case-sensitive strings
@@ -28656,141 +28686,141 @@
                0581 ;          ON MATCH: iy=dispatch address, a=0 and zero flag set
                0582 ; destroys: a, hl, de, ix, iy, flags
                0583 match_next:
-0B5A1E ED      0584 lea ix,ix+3         ; point to the next argument
-0B5A1F 32 
-0B5A20 03 
+0B5A3C ED      0584 lea ix,ix+3         ; point to the next argument
+0B5A3D 32 
+0B5A3E 03 
                0585 @loop:
-0B5A21 FD      0586 ld hl,(iy)          ; pointer argument dispatch record
-0B5A22 27 
-0B5A23 00 
+0B5A3F FD      0586 ld hl,(iy)          ; pointer argument dispatch record
+0B5A40 27 
+0B5A41 00 
                0587 sign_hlu            ; check for list terminator
-0B5A24 19     0001M add hl,de
-0B5A25 B7     0002M or a
-0B5A26 ED     0003M sbc hl,de
-0B5A27 52 
-0B5A28 CA      0588 jp z,@no_match      ; if a=0, return error
-0B5A29 40 
-0B5A2A 5A 
-0B5A2B 0B 
-0B5A2C 23      0589 inc hl              ; skip over jp instruction
-0B5A2D 23      0590 inc hl
-0B5A2E DD      0591 ld de,(ix)          ; pointer to the argument string
-0B5A2F 17 
-0B5A30 00 
-0B5A31 CD      0592 call str_equal      ; compare the argument to the dispatch table entry
-0B5A32 57 
-0B5A33 5A 
-0B5A34 0B 
-0B5A35 CA      0593 jp z,@match         ; if equal, return success
-0B5A36 42 
-0B5A37 5A 
-0B5A38 0B 
-0B5A39 ED      0594 lea iy,iy+3         ; if not equal, bump iy to next dispatch table entry
-0B5A3A 33 
-0B5A3B 03 
-0B5A3C C3      0595 jp @loop            ; and loop
-0B5A3D 21 
-0B5A3E 5A 
-0B5A3F 0B 
+0B5A42 19     0001M add hl,de
+0B5A43 B7     0002M or a
+0B5A44 ED     0003M sbc hl,de
+0B5A45 52 
+0B5A46 CA      0588 jp z,@no_match      ; if a=0, return error
+0B5A47 5E 
+0B5A48 5A 
+0B5A49 0B 
+0B5A4A 23      0589 inc hl              ; skip over jp instruction
+0B5A4B 23      0590 inc hl
+0B5A4C DD      0591 ld de,(ix)          ; pointer to the argument string
+0B5A4D 17 
+0B5A4E 00 
+0B5A4F CD      0592 call str_equal      ; compare the argument to the dispatch table entry
+0B5A50 75 
+0B5A51 5A 
+0B5A52 0B 
+0B5A53 CA      0593 jp z,@match         ; if equal, return success
+0B5A54 60 
+0B5A55 5A 
+0B5A56 0B 
+0B5A57 ED      0594 lea iy,iy+3         ; if not equal, bump iy to next dispatch table entry
+0B5A58 33 
+0B5A59 03 
+0B5A5A C3      0595 jp @loop            ; and loop
+0B5A5B 3F 
+0B5A5C 5A 
+0B5A5D 0B 
                0596 @no_match:
-0B5A40 3C      0597 inc a               ; no match so return a=1 and zero flag reset
-0B5A41 C9      0598 ret
+0B5A5E 3C      0597 inc a               ; no match so return a=1 and zero flag reset
+0B5A5F C9      0598 ret
                0599 @match:
-0B5A42 FD      0600 ld iy,(iy)          ; get the function pointer
-0B5A43 37 
-0B5A44 00 
-0B5A45 C9      0601 ret                 ; return a=0 and zero flag set
+0B5A60 FD      0600 ld iy,(iy)          ; get the function pointer
+0B5A61 37 
+0B5A62 00 
+0B5A63 C9      0601 ret                 ; return a=0 and zero flag set
                0602 
                0603 ; same as match_next, but prints the parameter if a match is found
                0604 match_next_and_print:
-0B5A46 CD      0605 call match_next
-0B5A47 1E 
-0B5A48 5A 
-0B5A49 0B 
-0B5A4A C0      0606 ret nz ; no match found
-0B5A4B ED      0607 lea ix,ix-3
-0B5A4C 32 
-0B5A4D FD 
-0B5A4E CD      0608 call get_arg_text ; hl points to the operator string
-0B5A4F 17 
-0B5A50 5A 
-0B5A51 0B 
-0B5A52 CD      0609 call print_param
-0B5A53 62 
-0B5A54 5A 
-0B5A55 0B 
-0B5A56 C9      0610 ret
+0B5A64 CD      0605 call match_next
+0B5A65 3C 
+0B5A66 5A 
+0B5A67 0B 
+0B5A68 C0      0606 ret nz ; no match found
+0B5A69 ED      0607 lea ix,ix-3
+0B5A6A 32 
+0B5A6B FD 
+0B5A6C CD      0608 call get_arg_text ; hl points to the operator string
+0B5A6D 35 
+0B5A6E 5A 
+0B5A6F 0B 
+0B5A70 CD      0609 call print_param
+0B5A71 80 
+0B5A72 5A 
+0B5A73 0B 
+0B5A74 C9      0610 ret
                0611 
                0612 ; compare two zero-terminated strings for equality, case-sensitive
                0613 ; hl: pointer to first string, de: pointer to second string
                0614 ; returns: z if equal, nz if not equal
                0615 ; destroys: a, hl, de
                0616 str_equal:
-0B5A57 1A      0617 ld a,(de)           ; get the first character
-0B5A58 BE      0618 cp (hl)             ; compare to the second character
-0B5A59 C0      0619 ret nz              ; if not equal, return
-0B5A5A B7      0620 or a
-0B5A5B C8      0621 ret z               ; if equal and zero, return
-0B5A5C 23      0622 inc hl              ; next character
-0B5A5D 13      0623 inc de
-0B5A5E C3      0624 jp str_equal        ; loop until end of string
-0B5A5F 57 
-0B5A60 5A 
-0B5A61 0B 
+0B5A75 1A      0617 ld a,(de)           ; get the first character
+0B5A76 BE      0618 cp (hl)             ; compare to the second character
+0B5A77 C0      0619 ret nz              ; if not equal, return
+0B5A78 B7      0620 or a
+0B5A79 C8      0621 ret z               ; if equal and zero, return
+0B5A7A 23      0622 inc hl              ; next character
+0B5A7B 13      0623 inc de
+0B5A7C C3      0624 jp str_equal        ; loop until end of string
+0B5A7D 75 
+0B5A7E 5A 
+0B5A7F 0B 
                0625 
                0626 ; print the parameter string pointed to by ix
                0627 ; destroys: a, hl
                0628 print_param:
-0B5A62 DD      0629 ld hl,(ix)          ; get the parameter pointer
-0B5A63 27 
-0B5A64 00 
-0B5A65 CD      0630 call printString    ; print the parameter string
-0B5A66 21 
-0B5A67 49 
-0B5A68 0B 
-0B5A69 3E      0631 ld a,' '            ; print a space separator
-0B5A6A 20 
-0B5A6B 5B      0632 rst.lil $10
-0B5A6C D7 
-0B5A6D C9      0633 ret
+0B5A80 DD      0629 ld hl,(ix)          ; get the parameter pointer
+0B5A81 27 
+0B5A82 00 
+0B5A83 CD      0630 call printString    ; print the parameter string
+0B5A84 21 
+0B5A85 49 
+0B5A86 0B 
+0B5A87 3E      0631 ld a,' '            ; print a space separator
+0B5A88 20 
+0B5A89 5B      0632 rst.lil $10
+0B5A8A D7 
+0B5A8B C9      0633 ret
                0634 
                0635 ; print the parameters
                0636 ; inputs: b = number of parameters, ix = pointer to the parameters
                0637 ; destroys: a, hl, bc
                0638 print_params:
-0B5A6E 41      0639 ld b,c              ; loop counter = number of parameters
-0B5A6F DD      0640 push ix             ; save the pointer to the parameters
-0B5A70 E5 
+0B5A8C 41      0639 ld b,c              ; loop counter = number of parameters
+0B5A8D DD      0640 push ix             ; save the pointer to the parameters
+0B5A8E E5 
                0641 @loop:
-0B5A71 C5      0642 push bc             ; save the loop counter
-0B5A72 CD      0643 call print_param    ; print the parameter
-0B5A73 62 
-0B5A74 5A 
-0B5A75 0B 
-0B5A76 ED      0644 lea ix,ix+3         ; next parameter pointer
-0B5A77 32 
-0B5A78 03 
-0B5A79 C1      0645 pop bc              ; get back the loop counter
-0B5A7A 10      0646 djnz @loop          ; loop until done
-0B5A7B F5 
-0B5A7C DD      0647 pop ix              ; restore the pointer to the parameters
-0B5A7D E1 
-0B5A7E C9      0648 ret
+0B5A8F C5      0642 push bc             ; save the loop counter
+0B5A90 CD      0643 call print_param    ; print the parameter
+0B5A91 80 
+0B5A92 5A 
+0B5A93 0B 
+0B5A94 ED      0644 lea ix,ix+3         ; next parameter pointer
+0B5A95 32 
+0B5A96 03 
+0B5A97 C1      0645 pop bc              ; get back the loop counter
+0B5A98 10      0646 djnz @loop          ; loop until done
+0B5A99 F5 
+0B5A9A DD      0647 pop ix              ; restore the pointer to the parameters
+0B5A9B E1 
+0B5A9C C9      0648 ret
                0649 
                0650 debug_print:
-0B5A7F CD      0651 call printNewLine
-0B5A80 36 
-0B5A81 49 
-0B5A82 0B 
-0B5A83 CD      0652 call dumpRegistersHexAll
-0B5A84 76 
-0B5A85 4D 
-0B5A86 0B 
-0B5A87 CD      0653 call printNewLine
-0B5A88 36 
-0B5A89 49 
-0B5A8A 0B 
-0B5A8B C9      0654 ret
+0B5A9D CD      0651 call printNewLine
+0B5A9E 36 
+0B5A9F 49 
+0B5AA0 0B 
+0B5AA1 CD      0652 call dumpRegistersHexAll
+0B5AA2 76 
+0B5AA3 4D 
+0B5AA4 0B 
+0B5AA5 CD      0653 call printNewLine
+0B5AA6 36 
+0B5AA7 49 
+0B5AA8 0B 
+0B5AA9 C9      0654 ret
                0655 
                0656 include "basic/ram.asm" ; must be last so that RAM has room for BASIC operations
               0001* ;
@@ -28854,47 +28884,7 @@
               0059* ; XDEF	USER
               0060* 
               0061* end_binary: ;  for assemble.py to know where to truncate the binary file
-0B5A8C FF     0062* ALIGN 		256		; ACCS, BUFFER & STAVAR must be on page boundaries
-0B5A8D FF 
-0B5A8E FF 
-0B5A8F FF 
-0B5A8F FF   
-0B5A90 FF 
-0B5A91 FF 
-0B5A92 FF 
-0B5A92 FF   
-0B5A93 FF 
-0B5A94 FF 
-0B5A95 FF 
-0B5A95 FF   
-0B5A96 FF 
-0B5A97 FF 
-0B5A98 FF 
-0B5A98 FF   
-0B5A99 FF 
-0B5A9A FF 
-0B5A9B FF 
-0B5A9B FF   
-0B5A9C FF 
-0B5A9D FF 
-0B5A9E FF 
-0B5A9E FF   
-0B5A9F FF 
-0B5AA0 FF 
-0B5AA1 FF 
-0B5AA1 FF   
-0B5AA2 FF 
-0B5AA3 FF 
-0B5AA4 FF 
-0B5AA4 FF   
-0B5AA5 FF 
-0B5AA6 FF 
-0B5AA7 FF 
-0B5AA7 FF   
-0B5AA8 FF 
-0B5AA9 FF 
-0B5AAA FF 
-0B5AAA FF   
+0B5AAA FF     0062* ALIGN 		256		; ACCS, BUFFER & STAVAR must be on page boundaries
 0B5AAB FF 
 0B5AAC FF 
 0B5AAD FF 
@@ -28970,6 +28960,16 @@
 0B5AE1 FF 
 0B5AE2 FF 
 0B5AE3 FF 
+0B5AE3 FF   
+0B5AE4 FF 
+0B5AE5 FF 
+0B5AE6 FF 
+0B5AE6 FF   
+0B5AE7 FF 
+0B5AE8 FF 
+0B5AE9 FF 
+0B5AE9 FF   
+0B5AEA FF 
               0063* RAM_START:
               0064* ;
 0B5B00 00     0065* ACCS:           BLKB    256,0             ; String Accumulator

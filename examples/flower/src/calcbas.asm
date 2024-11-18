@@ -267,9 +267,11 @@ main:
     asciz " radius: "
     ld iy,arg2
     call store_arg_iy_float
-    call print_float_dec
     call fetch_float_iy_alt
+    call print_float_dec_alt
 
+    ld iy,arg1
+    call fetch_float_iy_nor
     call polar_to_cartesian_fpp
     call printNewLine
     call print_float_dec_nor
