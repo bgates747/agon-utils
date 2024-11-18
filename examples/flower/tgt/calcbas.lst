@@ -375,7 +375,7 @@
                0057 
 0B0056 DD      0058 LD	IX, argv_ptrs		; The argv array pointer address
 0B0057 21 
-0B0058 C7 
+0B0058 CF 
 0B0059 17 
 0B0059 0B   
 0B005B DD      0059 PUSH	IX
@@ -389,7 +389,7 @@
 0B0063 06      0062 LD	B, 0			;  C: argc
 0B0064 00 
 0B0065 CD      0063 CALL	_main_init			; Start user code
-0B0066 30 
+0B0066 38 
 0B0067 18 
 0B0068 0B 
                0064 
@@ -6980,7 +6980,7 @@
               0025* deg:	EQU 21	; DEG
               0026* exp:	EQU 22	; EXP
               0027* int_:	EQU 23	; INT
-              0028* ln:	EQU 24	; LN
+              0028* ln:	    EQU 24	; LN
               0029* log:	EQU 25	; LOG
               0030* notk:	EQU 26	; NOT
               0031* rad:	EQU 27	; RAD
@@ -6991,7 +6991,7 @@
               0036* zero:	EQU 32	; ZERO
               0037* fone:	EQU 33	; FONE
               0038* true:	EQU 34	; TRUE
-              0039* pi:	EQU 35	; PI
+              0039* pi:	    EQU 35	; PI
               0040* val:	EQU 36	; VAL
               0041* str:	EQU 37	; STR$
               0042* sfix:	EQU 38	; FIX
@@ -7031,666 +7031,682 @@
 0B15C5 D9     0076* EXX
 0B15C6 C9     0077* RET
               0078* 
-              0079* ; convert floating point number to integer and store it in HLU
-              0080* ; inputs: HLH'L'C = floating point number
-              0081* ; outputs: HLU = integer part of the number
-              0082* ; destroys: all except DEU and U'D'E', index registers
-              0083* int2hlu:
-0B15C7 3E     0084* ld a,int_
-0B15C8 17 
-0B15C9 CD     0085* call FPP
-0B15CA D2 
-0B15CB 00 
-0B15CC 0B 
-0B15CD 7D     0086* ld a,l
-0B15CE F5     0087* push af
-0B15CF D9     0088* exx
-0B15D0 E5     0089* push hl
-0B15D1 D9     0090* exx
-0B15D2 E1     0091* pop hl
-0B15D3 F1     0092* pop af
-0B15D4 CD     0093* call A_TO_HLU
-0B15D5 B7 
-0B15D6 0E 
-0B15D7 0B 
-0B15D8 C9     0094* ret
-              0095* 
-              0096* ; convert polar coordinates to cartesian coordinates as deltas from the origin
-              0097* ; inputs: HLH'L'C = angle in radians
-              0098* ;         DED'E'B = radius
-              0099* ; outputs: HLH'L'C = dx
-              0100* ;          DED'E'B = dy
-              0101* polar_to_cartesian_fpp:
-              0102* ; store input parameters in scratch
-0B15D9 FD     0103* ld iy,@angle
-0B15DA 21 
-0B15DB 31 
-0B15DC 16 
-0B15DC 0B   
-0B15DE CD     0104* call store_float_iy_nor
-0B15DF 88 
-0B15E0 16 
-0B15E1 0B 
-0B15E2 FD     0105* ld iy,@radius
-0B15E3 21 
-0B15E4 36 
-0B15E5 16 
-0B15E5 0B   
-0B15E7 CD     0106* call store_float_iy_alt
-0B15E8 AC 
-0B15E9 16 
-0B15EA 0B 
-              0107* ; compute dy = sin(angle) * radius
-0B15EB 3E     0108* ld a,sin
-0B15EC 1D 
-0B15ED CD     0109* call FPP ; HLH'L'C = sin(angle)
-0B15EE D2 
-0B15EF 00 
-0B15F0 0B 
-0B15F1 FD     0110* ld iy,@radius
-0B15F2 21 
-0B15F3 36 
-0B15F4 16 
-0B15F4 0B   
-0B15F6 CD     0111* call fetch_float_iy_alt ; DED'E'B = radius
-0B15F7 BE 
-0B15F8 16 
-0B15F9 0B 
-0B15FA 3E     0112* ld a,fmul
-0B15FB 0A 
-0B15FC CD     0113* call FPP ; HLH'L'C = sin(angle) * radius
-0B15FD D2 
-0B15FE 00 
-0B15FF 0B 
-0B1600 FD     0114* ld iy,@scratch
-0B1601 21 
-0B1602 3B 
-0B1603 16 
-0B1603 0B   
-0B1605 CD     0115* call store_float_iy_nor ; @scratch = dy
-0B1606 88 
-0B1607 16 
-0B1608 0B 
-              0116* ; compute dx = cos(angle) * radius
-0B1609 FD     0117* ld iy,@angle
-0B160A 21 
-0B160B 31 
-0B160C 16 
-0B160C 0B   
-0B160E CD     0118* call fetch_float_iy_nor
-0B160F 9A 
-0B1610 16 
-0B1611 0B 
-0B1612 3E     0119* ld a,cos
-0B1613 14 
-0B1614 CD     0120* call FPP ; HLH'L'C = cos(angle)
-0B1615 D2 
-0B1616 00 
-0B1617 0B 
-0B1618 FD     0121* ld iy,@radius
-0B1619 21 
-0B161A 36 
-0B161B 16 
-0B161B 0B   
-0B161D CD     0122* call fetch_float_iy_alt ; DED'E'B = radius
-0B161E BE 
-0B161F 16 
-0B1620 0B 
-0B1621 3E     0123* ld a,fmul
-0B1622 0A 
-0B1623 CD     0124* call FPP ; HLH'L'C = cos(angle) * radius
-0B1624 D2 
-0B1625 00 
-0B1626 0B 
-              0125* ; restore dy from @scratch
-0B1627 FD     0126* ld iy,@scratch
-0B1628 21 
-0B1629 3B 
-0B162A 16 
-0B162A 0B   
-0B162C CD     0127* call fetch_float_iy_alt
-0B162D BE 
-0B162E 16 
-0B162F 0B 
-0B1630 C9     0128* ret
-              0129* 
-              0130* @angle: ds 5
-              0131* @radius: ds 5
-              0132* @scratch: ds 5
-              0133* 
-              0134* ; store HLH'L'C floating point number in a 40-bit buffer
-              0135* ; inputs: HLH'L'C = floating point number
-              0136* ;         ix = buffer address
-              0137* ; outputs: buffer filled with floating point number
-              0138* ; destroys: nothing
-              0139* store_float_nor:
-0B1640 DD     0140* ld (ix+0),c
-0B1641 71 
-0B1642 00 
-0B1643 DD     0141* ld (ix+3),l
-0B1644 75 
-0B1645 03 
-0B1646 DD     0142* ld (ix+4),h
-0B1647 74 
-0B1648 04 
-0B1649 D9     0143* exx
-0B164A DD     0144* ld (ix+1),l
-0B164B 75 
-0B164C 01 
-0B164D DD     0145* ld (ix+2),h
-0B164E 74 
-0B164F 02 
-0B1650 D9     0146* exx
-0B1651 C9     0147* ret
-              0148* 
-              0149* ; fetch HLH'L'C floating point number from a 40-bit buffer
-              0150* ; inputs: ix = buffer address
-              0151* ; outputs: HLH'L'C = floating point number
-              0152* ; destroys: HLH'L'C
-              0153* fetch_float_nor:
-0B1652 DD     0154* ld c,(ix+0)
-0B1653 4E 
-0B1654 00 
-0B1655 DD     0155* ld l,(ix+3)
-0B1656 6E 
-0B1657 03 
-0B1658 DD     0156* ld h,(ix+4)
-0B1659 66 
-0B165A 04 
-0B165B D9     0157* exx
-0B165C DD     0158* ld l,(ix+1)
-0B165D 6E 
-0B165E 01 
-0B165F DD     0159* ld h,(ix+2)
-0B1660 66 
-0B1661 02 
-0B1662 D9     0160* exx
-0B1663 C9     0161* ret
-              0162* 
-              0163* ; store DED'E'B floating point number in a 40-bit buffer
-              0164* ; inputs: DED'E'B = floating point number
-              0165* ;         ix = buffer address
-              0166* ; outputs: buffer filled with floating point number
-              0167* ; destroys: nothing
-              0168* store_float_alt:
-0B1664 DD     0169* ld (ix+0),b
-0B1665 70 
-0B1666 00 
-0B1667 DD     0170* ld (ix+3),e
-0B1668 73 
-0B1669 03 
-0B166A DD     0171* ld (ix+4),d
-0B166B 72 
-0B166C 04 
-0B166D D9     0172* exx
-0B166E DD     0173* ld (ix+1),e
-0B166F 73 
-0B1670 01 
-0B1671 DD     0174* ld (ix+2),d
-0B1672 72 
-0B1673 02 
-0B1674 D9     0175* exx
-0B1675 C9     0176* ret
-              0177* 
-              0178* ; fetch DED'E'B floating point number from a 40-bit buffer
-              0179* ; inputs: ix = buffer address
-              0180* ; outputs: DED'E'B = floating point number
-              0181* ; destroys: DED'E'B
-              0182* fetch_float_alt:
-0B1676 DD     0183* ld b,(ix+0)
-0B1677 46 
-0B1678 00 
-0B1679 DD     0184* ld e,(ix+3)
-0B167A 5E 
-0B167B 03 
-0B167C DD     0185* ld d,(ix+4)
-0B167D 56 
-0B167E 04 
-0B167F D9     0186* exx
-0B1680 DD     0187* ld e,(ix+1)
-0B1681 5E 
-0B1682 01 
-0B1683 DD     0188* ld d,(ix+2)
-0B1684 56 
-0B1685 02 
-0B1686 D9     0189* exx
-0B1687 C9     0190* ret
-              0191* 
-              0192* 
-              0193* ; store HLH'L'C floating point number in a 40-bit buffer
-              0194* ; inputs: HLH'L'C = floating point number
-              0195* ;         iy = buffer address
-              0196* ; outputs: buffer filled with floating point number
-              0197* ; destroys: nothing
-              0198* store_float_iy_nor:
-0B1688 FD     0199* ld (iy+0),c
-0B1689 71 
-0B168A 00 
-0B168B FD     0200* ld (iy+3),l
-0B168C 75 
-0B168D 03 
-0B168E FD     0201* ld (iy+4),h
-0B168F 74 
-0B1690 04 
-0B1691 D9     0202* exx
-0B1692 FD     0203* ld (iy+1),l
-0B1693 75 
-0B1694 01 
-0B1695 FD     0204* ld (iy+2),h
-0B1696 74 
-0B1697 02 
-0B1698 D9     0205* exx
-0B1699 C9     0206* ret
-              0207* 
-              0208* ; fetch HLH'L'C floating point number from a 40-bit buffer
-              0209* ; inputs: iy = buffer address
-              0210* ; outputs: HLH'L'C = floating point number
-              0211* ; destroys: HLH'L'C
-              0212* fetch_float_iy_nor:
-0B169A FD     0213* ld c,(iy+0)
-0B169B 4E 
-0B169C 00 
-0B169D FD     0214* ld l,(iy+3)
-0B169E 6E 
-0B169F 03 
-0B16A0 FD     0215* ld h,(iy+4)
-0B16A1 66 
-0B16A2 04 
-0B16A3 D9     0216* exx
-0B16A4 FD     0217* ld l,(iy+1)
-0B16A5 6E 
-0B16A6 01 
-0B16A7 FD     0218* ld h,(iy+2)
-0B16A8 66 
-0B16A9 02 
-0B16AA D9     0219* exx
-0B16AB C9     0220* ret
-              0221* 
-              0222* ; store DED'E'B floating point number in a 40-bit buffer
-              0223* ; inputs: DED'E'B = floating point number
-              0224* ;         iy = buffer address
-              0225* ; outputs: buffer filled with floating point number
-              0226* ; destroys: nothing
-              0227* store_float_iy_alt:
-0B16AC FD     0228* ld (iy+0),b
-0B16AD 70 
-0B16AE 00 
-0B16AF FD     0229* ld (iy+3),e
-0B16B0 73 
-0B16B1 03 
-0B16B2 FD     0230* ld (iy+4),d
-0B16B3 72 
-0B16B4 04 
-0B16B5 D9     0231* exx
-0B16B6 FD     0232* ld (iy+1),e
-0B16B7 73 
-0B16B8 01 
-0B16B9 FD     0233* ld (iy+2),d
-0B16BA 72 
-0B16BB 02 
-0B16BC D9     0234* exx
-0B16BD C9     0235* ret
-              0236* 
-              0237* ; fetch DED'E'B floating point number from a 40-bit buffer
-              0238* ; inputs: iy = buffer address
-              0239* ; outputs: DED'E'B = floating point number
-              0240* ; destroys: DED'E'B
-              0241* fetch_float_iy_alt:
-0B16BE FD     0242* ld b,(iy+0)
-0B16BF 46 
-0B16C0 00 
-0B16C1 FD     0243* ld e,(iy+3)
-0B16C2 5E 
-0B16C3 03 
-0B16C4 FD     0244* ld d,(iy+4)
-0B16C5 56 
-0B16C6 04 
-0B16C7 D9     0245* exx
-0B16C8 FD     0246* ld e,(iy+1)
-0B16C9 5E 
-0B16CA 01 
-0B16CB FD     0247* ld d,(iy+2)
-0B16CC 56 
-0B16CD 02 
-0B16CE D9     0248* exx
-0B16CF C9     0249* ret
-              0250* 
-              0251* ; print HLH'L'C floating point number in hex format
-              0252* ; inputs: HLH'L'C = floating point number
-              0253* print_float_hex_nor:
-              0254* PUSH_ALL
-0B16D0 08    0001*M ex af,af'
-0B16D1 D9    0002*M exx
-0B16D2 F5    0003*M push af
-0B16D3 E5    0004*M push hl
-0B16D4 C5    0005*M push bc
-0B16D5 D5    0006*M push de
+              0079* ; same as original INT_FP_ but doesn't call ADD1_FP for negative numbers
+              0080* ; also preserves B, which keeps any float stored in DED'E'B intact
+              0081* ; af will also return differently from the original
+              0082* ;INT - Floor function
+              0083* ;Result is integer numeric.
+              0084* ;
+              0085* int_fp_:
+0B15C7 C5     0086* push bc ; preserve b
+0B15C8 3E     0087* ld a,int_
+0B15C9 17 
+0B15CA CD     0088* call FPP
+0B15CB D2 
+0B15CC 00 
+0B15CD 0B 
+0B15CE F1     0089* pop af ; restore b to a
+0B15CF 47     0090* ld b,a ; restore b
+0B15D0 C9     0091* RET
+              0092* 
+              0093* ; convert floating point number to integer and store it in HLU
+              0094* ; inputs: HLH'L'C = floating point number
+              0095* ; outputs: HLU = integer part of the number
+              0096* ; destroys: all except DEU and U'D'E', index registers
+              0097* int2hlu:
+0B15D1 CD     0098* call int_fp_
+0B15D2 C7 
+0B15D3 15 
+0B15D4 0B 
+0B15D5 7D     0099* ld a,l
+0B15D6 F5     0100* push af
+0B15D7 D9     0101* exx
+0B15D8 E5     0102* push hl
+0B15D9 D9     0103* exx
+0B15DA E1     0104* pop hl
+0B15DB F1     0105* pop af
+0B15DC CD     0106* call A_TO_HLU
+0B15DD B7 
+0B15DE 0E 
+0B15DF 0B 
+0B15E0 C9     0107* ret
+              0108* 
+              0109* ; convert polar coordinates to cartesian coordinates as deltas from the origin
+              0110* ; inputs: HLH'L'C = angle in radians
+              0111* ;         DED'E'B = radius
+              0112* ; outputs: HLH'L'C = dx
+              0113* ;          DED'E'B = dy
+              0114* polar_to_cartesian_fpp:
+              0115* ; store input parameters in scratch
+0B15E1 FD     0116* ld iy,@angle
+0B15E2 21 
+0B15E3 39 
+0B15E4 16 
+0B15E4 0B   
+0B15E6 CD     0117* call store_float_iy_nor
+0B15E7 90 
+0B15E8 16 
+0B15E9 0B 
+0B15EA FD     0118* ld iy,@radius
+0B15EB 21 
+0B15EC 3E 
+0B15ED 16 
+0B15ED 0B   
+0B15EF CD     0119* call store_float_iy_alt
+0B15F0 B4 
+0B15F1 16 
+0B15F2 0B 
+              0120* ; compute dy = sin(angle) * radius
+0B15F3 3E     0121* ld a,sin
+0B15F4 1D 
+0B15F5 CD     0122* call FPP ; HLH'L'C = sin(angle)
+0B15F6 D2 
+0B15F7 00 
+0B15F8 0B 
+0B15F9 FD     0123* ld iy,@radius
+0B15FA 21 
+0B15FB 3E 
+0B15FC 16 
+0B15FC 0B   
+0B15FE CD     0124* call fetch_float_iy_alt ; DED'E'B = radius
+0B15FF C6 
+0B1600 16 
+0B1601 0B 
+0B1602 3E     0125* ld a,fmul
+0B1603 0A 
+0B1604 CD     0126* call FPP ; HLH'L'C = sin(angle) * radius
+0B1605 D2 
+0B1606 00 
+0B1607 0B 
+0B1608 FD     0127* ld iy,@scratch
+0B1609 21 
+0B160A 43 
+0B160B 16 
+0B160B 0B   
+0B160D CD     0128* call store_float_iy_nor ; @scratch = dy
+0B160E 90 
+0B160F 16 
+0B1610 0B 
+              0129* ; compute dx = cos(angle) * radius
+0B1611 FD     0130* ld iy,@angle
+0B1612 21 
+0B1613 39 
+0B1614 16 
+0B1614 0B   
+0B1616 CD     0131* call fetch_float_iy_nor
+0B1617 A2 
+0B1618 16 
+0B1619 0B 
+0B161A 3E     0132* ld a,cos
+0B161B 14 
+0B161C CD     0133* call FPP ; HLH'L'C = cos(angle)
+0B161D D2 
+0B161E 00 
+0B161F 0B 
+0B1620 FD     0134* ld iy,@radius
+0B1621 21 
+0B1622 3E 
+0B1623 16 
+0B1623 0B   
+0B1625 CD     0135* call fetch_float_iy_alt ; DED'E'B = radius
+0B1626 C6 
+0B1627 16 
+0B1628 0B 
+0B1629 3E     0136* ld a,fmul
+0B162A 0A 
+0B162B CD     0137* call FPP ; HLH'L'C = cos(angle) * radius
+0B162C D2 
+0B162D 00 
+0B162E 0B 
+              0138* ; restore dy from @scratch
+0B162F FD     0139* ld iy,@scratch
+0B1630 21 
+0B1631 43 
+0B1632 16 
+0B1632 0B   
+0B1634 CD     0140* call fetch_float_iy_alt
+0B1635 C6 
+0B1636 16 
+0B1637 0B 
+0B1638 C9     0141* ret
+              0142* 
+              0143* @angle: ds 5
+              0144* @radius: ds 5
+              0145* @scratch: ds 5
+              0146* 
+              0147* ; store HLH'L'C floating point number in a 40-bit buffer
+              0148* ; inputs: HLH'L'C = floating point number
+              0149* ;         ix = buffer address
+              0150* ; outputs: buffer filled with floating point number
+              0151* ; destroys: nothing
+              0152* store_float_nor:
+0B1648 DD     0153* ld (ix+0),c
+0B1649 71 
+0B164A 00 
+0B164B DD     0154* ld (ix+3),l
+0B164C 75 
+0B164D 03 
+0B164E DD     0155* ld (ix+4),h
+0B164F 74 
+0B1650 04 
+0B1651 D9     0156* exx
+0B1652 DD     0157* ld (ix+1),l
+0B1653 75 
+0B1654 01 
+0B1655 DD     0158* ld (ix+2),h
+0B1656 74 
+0B1657 02 
+0B1658 D9     0159* exx
+0B1659 C9     0160* ret
+              0161* 
+              0162* ; fetch HLH'L'C floating point number from a 40-bit buffer
+              0163* ; inputs: ix = buffer address
+              0164* ; outputs: HLH'L'C = floating point number
+              0165* ; destroys: HLH'L'C
+              0166* fetch_float_nor:
+0B165A DD     0167* ld c,(ix+0)
+0B165B 4E 
+0B165C 00 
+0B165D DD     0168* ld l,(ix+3)
+0B165E 6E 
+0B165F 03 
+0B1660 DD     0169* ld h,(ix+4)
+0B1661 66 
+0B1662 04 
+0B1663 D9     0170* exx
+0B1664 DD     0171* ld l,(ix+1)
+0B1665 6E 
+0B1666 01 
+0B1667 DD     0172* ld h,(ix+2)
+0B1668 66 
+0B1669 02 
+0B166A D9     0173* exx
+0B166B C9     0174* ret
+              0175* 
+              0176* ; store DED'E'B floating point number in a 40-bit buffer
+              0177* ; inputs: DED'E'B = floating point number
+              0178* ;         ix = buffer address
+              0179* ; outputs: buffer filled with floating point number
+              0180* ; destroys: nothing
+              0181* store_float_alt:
+0B166C DD     0182* ld (ix+0),b
+0B166D 70 
+0B166E 00 
+0B166F DD     0183* ld (ix+3),e
+0B1670 73 
+0B1671 03 
+0B1672 DD     0184* ld (ix+4),d
+0B1673 72 
+0B1674 04 
+0B1675 D9     0185* exx
+0B1676 DD     0186* ld (ix+1),e
+0B1677 73 
+0B1678 01 
+0B1679 DD     0187* ld (ix+2),d
+0B167A 72 
+0B167B 02 
+0B167C D9     0188* exx
+0B167D C9     0189* ret
+              0190* 
+              0191* ; fetch DED'E'B floating point number from a 40-bit buffer
+              0192* ; inputs: ix = buffer address
+              0193* ; outputs: DED'E'B = floating point number
+              0194* ; destroys: DED'E'B
+              0195* fetch_float_alt:
+0B167E DD     0196* ld b,(ix+0)
+0B167F 46 
+0B1680 00 
+0B1681 DD     0197* ld e,(ix+3)
+0B1682 5E 
+0B1683 03 
+0B1684 DD     0198* ld d,(ix+4)
+0B1685 56 
+0B1686 04 
+0B1687 D9     0199* exx
+0B1688 DD     0200* ld e,(ix+1)
+0B1689 5E 
+0B168A 01 
+0B168B DD     0201* ld d,(ix+2)
+0B168C 56 
+0B168D 02 
+0B168E D9     0202* exx
+0B168F C9     0203* ret
+              0204* 
+              0205* 
+              0206* ; store HLH'L'C floating point number in a 40-bit buffer
+              0207* ; inputs: HLH'L'C = floating point number
+              0208* ;         iy = buffer address
+              0209* ; outputs: buffer filled with floating point number
+              0210* ; destroys: nothing
+              0211* store_float_iy_nor:
+0B1690 FD     0212* ld (iy+0),c
+0B1691 71 
+0B1692 00 
+0B1693 FD     0213* ld (iy+3),l
+0B1694 75 
+0B1695 03 
+0B1696 FD     0214* ld (iy+4),h
+0B1697 74 
+0B1698 04 
+0B1699 D9     0215* exx
+0B169A FD     0216* ld (iy+1),l
+0B169B 75 
+0B169C 01 
+0B169D FD     0217* ld (iy+2),h
+0B169E 74 
+0B169F 02 
+0B16A0 D9     0218* exx
+0B16A1 C9     0219* ret
+              0220* 
+              0221* ; fetch HLH'L'C floating point number from a 40-bit buffer
+              0222* ; inputs: iy = buffer address
+              0223* ; outputs: HLH'L'C = floating point number
+              0224* ; destroys: HLH'L'C
+              0225* fetch_float_iy_nor:
+0B16A2 FD     0226* ld c,(iy+0)
+0B16A3 4E 
+0B16A4 00 
+0B16A5 FD     0227* ld l,(iy+3)
+0B16A6 6E 
+0B16A7 03 
+0B16A8 FD     0228* ld h,(iy+4)
+0B16A9 66 
+0B16AA 04 
+0B16AB D9     0229* exx
+0B16AC FD     0230* ld l,(iy+1)
+0B16AD 6E 
+0B16AE 01 
+0B16AF FD     0231* ld h,(iy+2)
+0B16B0 66 
+0B16B1 02 
+0B16B2 D9     0232* exx
+0B16B3 C9     0233* ret
+              0234* 
+              0235* ; store DED'E'B floating point number in a 40-bit buffer
+              0236* ; inputs: DED'E'B = floating point number
+              0237* ;         iy = buffer address
+              0238* ; outputs: buffer filled with floating point number
+              0239* ; destroys: nothing
+              0240* store_float_iy_alt:
+0B16B4 FD     0241* ld (iy+0),b
+0B16B5 70 
+0B16B6 00 
+0B16B7 FD     0242* ld (iy+3),e
+0B16B8 73 
+0B16B9 03 
+0B16BA FD     0243* ld (iy+4),d
+0B16BB 72 
+0B16BC 04 
+0B16BD D9     0244* exx
+0B16BE FD     0245* ld (iy+1),e
+0B16BF 73 
+0B16C0 01 
+0B16C1 FD     0246* ld (iy+2),d
+0B16C2 72 
+0B16C3 02 
+0B16C4 D9     0247* exx
+0B16C5 C9     0248* ret
+              0249* 
+              0250* ; fetch DED'E'B floating point number from a 40-bit buffer
+              0251* ; inputs: iy = buffer address
+              0252* ; outputs: DED'E'B = floating point number
+              0253* ; destroys: DED'E'B
+              0254* fetch_float_iy_alt:
+0B16C6 FD     0255* ld b,(iy+0)
+0B16C7 46 
+0B16C8 00 
+0B16C9 FD     0256* ld e,(iy+3)
+0B16CA 5E 
+0B16CB 03 
+0B16CC FD     0257* ld d,(iy+4)
+0B16CD 56 
+0B16CE 04 
+0B16CF D9     0258* exx
+0B16D0 FD     0259* ld e,(iy+1)
+0B16D1 5E 
+0B16D2 01 
+0B16D3 FD     0260* ld d,(iy+2)
+0B16D4 56 
+0B16D5 02 
+0B16D6 D9     0261* exx
+0B16D7 C9     0262* ret
+              0263* 
+              0264* ; print HLH'L'C floating point number in hex format
+              0265* ; inputs: HLH'L'C = floating point number
+              0266* print_float_hex_nor:
+              0267* PUSH_ALL
+0B16D8 08    0001*M ex af,af'
+0B16D9 D9    0002*M exx
+0B16DA F5    0003*M push af
+0B16DB E5    0004*M push hl
+0B16DC C5    0005*M push bc
+0B16DD D5    0006*M push de
              0007*M 
-0B16D6 08    0008*M ex af,af'
-0B16D7 D9    0009*M exx
-0B16D8 F5    0010*M push af
-0B16D9 E5    0011*M push hl
-0B16DA C5    0012*M push bc
-0B16DB D5    0013*M push de
-0B16DC DD    0014*M push ix
-0B16DD E5 
-0B16DE FD    0015*M push iy
-0B16DF E5 
-0B16E0 CD     0255* call printHex16
-0B16E1 F6 
-0B16E2 0E 
-0B16E3 0B 
-0B16E4 3E     0256* ld a,'.'
-0B16E5 2E 
-0B16E6 5B     0257* rst.lil 10h
-0B16E7 D7 
-0B16E8 D9     0258* exx
-0B16E9 CD     0259* call printHex16
-0B16EA F6 
-0B16EB 0E 
-0B16EC 0B 
-0B16ED D9     0260* exx
-0B16EE 3E     0261* ld a,'^'
-0B16EF 5E 
-0B16F0 5B     0262* rst.lil 10h
-0B16F1 D7 
-0B16F2 79     0263* ld a,c
-0B16F3 CD     0264* call printHex8
-0B16F4 FC 
-0B16F5 0E 
-0B16F6 0B 
-              0265* POP_ALL
-0B16F7 FD    0001*M pop iy
-0B16F8 E1 
-0B16F9 DD    0002*M pop ix
-0B16FA E1 
-0B16FB D1    0003*M pop de
-0B16FC C1    0004*M pop bc
-0B16FD E1    0005*M pop hl
-0B16FE F1    0006*M pop af
-0B16FF 08    0007*M ex af,af'
-0B1700 D9    0008*M exx
+0B16DE 08    0008*M ex af,af'
+0B16DF D9    0009*M exx
+0B16E0 F5    0010*M push af
+0B16E1 E5    0011*M push hl
+0B16E2 C5    0012*M push bc
+0B16E3 D5    0013*M push de
+0B16E4 DD    0014*M push ix
+0B16E5 E5 
+0B16E6 FD    0015*M push iy
+0B16E7 E5 
+0B16E8 CD     0268* call printHex16
+0B16E9 F6 
+0B16EA 0E 
+0B16EB 0B 
+0B16EC 3E     0269* ld a,'.'
+0B16ED 2E 
+0B16EE 5B     0270* rst.lil 10h
+0B16EF D7 
+0B16F0 D9     0271* exx
+0B16F1 CD     0272* call printHex16
+0B16F2 F6 
+0B16F3 0E 
+0B16F4 0B 
+0B16F5 D9     0273* exx
+0B16F6 3E     0274* ld a,'^'
+0B16F7 5E 
+0B16F8 5B     0275* rst.lil 10h
+0B16F9 D7 
+0B16FA 79     0276* ld a,c
+0B16FB CD     0277* call printHex8
+0B16FC FC 
+0B16FD 0E 
+0B16FE 0B 
+              0278* POP_ALL
+0B16FF FD    0001*M pop iy
+0B1700 E1 
+0B1701 DD    0002*M pop ix
+0B1702 E1 
+0B1703 D1    0003*M pop de
+0B1704 C1    0004*M pop bc
+0B1705 E1    0005*M pop hl
+0B1706 F1    0006*M pop af
+0B1707 08    0007*M ex af,af'
+0B1708 D9    0008*M exx
              0009*M 
-0B1701 D1    0010*M pop de
-0B1702 C1    0011*M pop bc
-0B1703 E1    0012*M pop hl
-0B1704 F1    0013*M pop af
-0B1705 08    0014*M ex af,af'
-0B1706 D9    0015*M exx
-0B1707 C9     0266* ret
-              0267* 
-              0268* ; print DED'E'B floating point number in hex format
-              0269* ; inputs: DED'E'B = floating point number
-              0270* print_float_hex_alt:
-              0271* PUSH_ALL
-0B1708 08    0001*M ex af,af'
-0B1709 D9    0002*M exx
-0B170A F5    0003*M push af
-0B170B E5    0004*M push hl
-0B170C C5    0005*M push bc
-0B170D D5    0006*M push de
+0B1709 D1    0010*M pop de
+0B170A C1    0011*M pop bc
+0B170B E1    0012*M pop hl
+0B170C F1    0013*M pop af
+0B170D 08    0014*M ex af,af'
+0B170E D9    0015*M exx
+0B170F C9     0279* ret
+              0280* 
+              0281* ; print DED'E'B floating point number in hex format
+              0282* ; inputs: DED'E'B = floating point number
+              0283* print_float_hex_alt:
+              0284* PUSH_ALL
+0B1710 08    0001*M ex af,af'
+0B1711 D9    0002*M exx
+0B1712 F5    0003*M push af
+0B1713 E5    0004*M push hl
+0B1714 C5    0005*M push bc
+0B1715 D5    0006*M push de
              0007*M 
-0B170E 08    0008*M ex af,af'
-0B170F D9    0009*M exx
-0B1710 F5    0010*M push af
-0B1711 E5    0011*M push hl
-0B1712 C5    0012*M push bc
-0B1713 D5    0013*M push de
-0B1714 DD    0014*M push ix
-0B1715 E5 
-0B1716 FD    0015*M push iy
-0B1717 E5 
-0B1718 EB     0272* ex de,hl
-0B1719 CD     0273* call printHex16
-0B171A F6 
-0B171B 0E 
-0B171C 0B 
-0B171D EB     0274* ex de,hl
-0B171E 3E     0275* ld a,'.'
-0B171F 2E 
-0B1720 5B     0276* rst.lil 10h
-0B1721 D7 
-0B1722 D9     0277* exx
-0B1723 EB     0278* ex de,hl
-0B1724 CD     0279* call printHex16
-0B1725 F6 
-0B1726 0E 
-0B1727 0B 
-0B1728 EB     0280* ex de,hl
-0B1729 D9     0281* exx
-0B172A 3E     0282* ld a,'^'
-0B172B 5E 
-0B172C 5B     0283* rst.lil 10h
-0B172D D7 
-0B172E 78     0284* ld a,b
-0B172F CD     0285* call printHex8
-0B1730 FC 
-0B1731 0E 
-0B1732 0B 
-              0286* POP_ALL
-0B1733 FD    0001*M pop iy
-0B1734 E1 
-0B1735 DD    0002*M pop ix
-0B1736 E1 
-0B1737 D1    0003*M pop de
-0B1738 C1    0004*M pop bc
-0B1739 E1    0005*M pop hl
-0B173A F1    0006*M pop af
-0B173B 08    0007*M ex af,af'
-0B173C D9    0008*M exx
+0B1716 08    0008*M ex af,af'
+0B1717 D9    0009*M exx
+0B1718 F5    0010*M push af
+0B1719 E5    0011*M push hl
+0B171A C5    0012*M push bc
+0B171B D5    0013*M push de
+0B171C DD    0014*M push ix
+0B171D E5 
+0B171E FD    0015*M push iy
+0B171F E5 
+0B1720 EB     0285* ex de,hl
+0B1721 CD     0286* call printHex16
+0B1722 F6 
+0B1723 0E 
+0B1724 0B 
+0B1725 EB     0287* ex de,hl
+0B1726 3E     0288* ld a,'.'
+0B1727 2E 
+0B1728 5B     0289* rst.lil 10h
+0B1729 D7 
+0B172A D9     0290* exx
+0B172B EB     0291* ex de,hl
+0B172C CD     0292* call printHex16
+0B172D F6 
+0B172E 0E 
+0B172F 0B 
+0B1730 EB     0293* ex de,hl
+0B1731 D9     0294* exx
+0B1732 3E     0295* ld a,'^'
+0B1733 5E 
+0B1734 5B     0296* rst.lil 10h
+0B1735 D7 
+0B1736 78     0297* ld a,b
+0B1737 CD     0298* call printHex8
+0B1738 FC 
+0B1739 0E 
+0B173A 0B 
+              0299* POP_ALL
+0B173B FD    0001*M pop iy
+0B173C E1 
+0B173D DD    0002*M pop ix
+0B173E E1 
+0B173F D1    0003*M pop de
+0B1740 C1    0004*M pop bc
+0B1741 E1    0005*M pop hl
+0B1742 F1    0006*M pop af
+0B1743 08    0007*M ex af,af'
+0B1744 D9    0008*M exx
              0009*M 
-0B173D D1    0010*M pop de
-0B173E C1    0011*M pop bc
-0B173F E1    0012*M pop hl
-0B1740 F1    0013*M pop af
-0B1741 08    0014*M ex af,af'
-0B1742 D9    0015*M exx
-0B1743 C9     0287* ret
-              0288* 
-              0289* print_floats_hex:
-0B1744 CD     0290* call print_float_hex_nor
-0B1745 D0 
-0B1746 16 
-0B1747 0B 
-0B1748 3E     0291* ld a,' '
-0B1749 20 
-0B174A 5B     0292* rst.lil 10h
-0B174B D7 
-0B174C CD     0293* call print_float_hex_alt
-0B174D 08 
-0B174E 17 
+0B1745 D1    0010*M pop de
+0B1746 C1    0011*M pop bc
+0B1747 E1    0012*M pop hl
+0B1748 F1    0013*M pop af
+0B1749 08    0014*M ex af,af'
+0B174A D9    0015*M exx
+0B174B C9     0300* ret
+              0301* 
+              0302* print_floats_hex:
+0B174C CD     0303* call print_float_hex_nor
+0B174D D8 
+0B174E 16 
 0B174F 0B 
-0B1750 C9     0294* ret
-              0295* 
-              0296* ; print a floating point number in decimal format
-              0297* ; inputs: HL'H'L'C is the number to print
-              0298* ; outputs: number printed to screen
-              0299* ;          ACCS null-terminated string representation of the number
-              0300* ; destroys: everything except ix
-              0301* print_float_dec:
-              0302* print_float_dec_nor:
-0B1751 DD     0303* push ix             ; preserve
-0B1752 E5 
-              0304* 
-              0305* ; back up floats in normal and alternate registers
-0B1753 DD     0306* ld ix,@float_nor
-0B1754 21 
-0B1755 94 
+0B1750 3E     0304* ld a,' '
+0B1751 20 
+0B1752 5B     0305* rst.lil 10h
+0B1753 D7 
+0B1754 CD     0306* call print_float_hex_alt
+0B1755 10 
 0B1756 17 
-0B1756 0B   
-0B1758 CD     0307* call store_float_nor
-0B1759 40 
-0B175A 16 
-0B175B 0B 
-0B175C DD     0308* ld ix,@float_alt
-0B175D 21 
-0B175E 99 
-0B175F 17 
-0B175F 0B   
-0B1761 CD     0309* call store_float_alt
-0B1762 64 
-0B1763 16 
-0B1764 0B 
-              0310* 
-              0311* ; convert the number to a string
-0B1765 11     0312* ld de,ACCS          ; point to the string accumulator
-0B1766 00 
-0B1767 1A 
-0B1768 0B 
-0B1769 DD     0313* ld ix,@G9-1         ; get the format code for the number
-0B176A 21 
-0B176B 91 
-0B176C 17 
-0B176C 0B   
-0B176E CD     0314* call STR_FP         ; convert the number to a string
-0B176F D1 
-0B1770 08 
-0B1771 0B 
-0B1772 EB     0315* ex de,hl            ; point to end of the string
-0B1773 36     0316* ld (hl),0           ; null-terminate the string
-0B1774 00 
-0B1775 21     0317* ld hl,ACCS          ; point to the string accumulator
-0B1776 00 
-0B1777 1A 
-0B1778 0B 
-0B1779 CD     0318* call printString
-0B177A CE 
-0B177B 0E 
-0B177C 0B 
-              0319* 
-              0320* ; restore floats in normal and alternate registers
-0B177D DD     0321* ld ix,@float_nor
-0B177E 21 
-0B177F 94 
-0B1780 17 
-0B1780 0B   
-0B1782 CD     0322* call fetch_float_nor
-0B1783 52 
-0B1784 16 
-0B1785 0B 
-0B1786 DD     0323* ld ix,@float_alt
-0B1787 21 
-0B1788 99 
-0B1789 17 
-0B1789 0B   
-0B178B CD     0324* call fetch_float_alt
-0B178C 76 
-0B178D 16 
-0B178E 0B 
-              0325* 
-              0326* ; cleanup and go home
-0B178F DD     0327* pop ix              ; restore
-0B1790 E1 
-0B1791 C9     0328* ret
-0B1792 09     0329* @G9:			DW    9
-0B1793 00 
-              0330* @float_nor: ds 5
-              0331* @float_alt: ds 5
+0B1757 0B 
+0B1758 C9     0307* ret
+              0308* 
+              0309* ; print a floating point number in decimal format
+              0310* ; inputs: HL'H'L'C is the number to print
+              0311* ; outputs: number printed to screen
+              0312* ;          ACCS null-terminated string representation of the number
+              0313* ; destroys: everything except ix
+              0314* print_float_dec:
+              0315* print_float_dec_nor:
+0B1759 DD     0316* push ix             ; preserve
+0B175A E5 
+              0317* 
+              0318* ; back up floats in normal and alternate registers
+0B175B DD     0319* ld ix,@float_nor
+0B175C 21 
+0B175D 9C 
+0B175E 17 
+0B175E 0B   
+0B1760 CD     0320* call store_float_nor
+0B1761 48 
+0B1762 16 
+0B1763 0B 
+0B1764 DD     0321* ld ix,@float_alt
+0B1765 21 
+0B1766 A1 
+0B1767 17 
+0B1767 0B   
+0B1769 CD     0322* call store_float_alt
+0B176A 6C 
+0B176B 16 
+0B176C 0B 
+              0323* 
+              0324* ; convert the number to a string
+0B176D 11     0325* ld de,ACCS          ; point to the string accumulator
+0B176E 00 
+0B176F 1A 
+0B1770 0B 
+0B1771 DD     0326* ld ix,@G9-1         ; get the format code for the number
+0B1772 21 
+0B1773 99 
+0B1774 17 
+0B1774 0B   
+0B1776 CD     0327* call STR_FP         ; convert the number to a string
+0B1777 D1 
+0B1778 08 
+0B1779 0B 
+0B177A EB     0328* ex de,hl            ; point to end of the string
+0B177B 36     0329* ld (hl),0           ; null-terminate the string
+0B177C 00 
+0B177D 21     0330* ld hl,ACCS          ; point to the string accumulator
+0B177E 00 
+0B177F 1A 
+0B1780 0B 
+0B1781 CD     0331* call printString
+0B1782 CE 
+0B1783 0E 
+0B1784 0B 
               0332* 
-              0333* print_float_dec_alt:
-0B179E CD     0334* CALL SWAP
-0B179F BF 
-0B17A0 15 
-0B17A1 0B 
-0B17A2 CD     0335* CALL print_float_dec_nor
-0B17A3 51 
-0B17A4 17 
-0B17A5 0B 
-0B17A6 CD     0336* CALL SWAP
+              0333* ; restore floats in normal and alternate registers
+0B1785 DD     0334* ld ix,@float_nor
+0B1786 21 
+0B1787 9C 
+0B1788 17 
+0B1788 0B   
+0B178A CD     0335* call fetch_float_nor
+0B178B 5A 
+0B178C 16 
+0B178D 0B 
+0B178E DD     0336* ld ix,@float_alt
+0B178F 21 
+0B1790 A1 
+0B1791 17 
+0B1791 0B   
+0B1793 CD     0337* call fetch_float_alt
+0B1794 7E 
+0B1795 16 
+0B1796 0B 
+              0338* 
+              0339* ; cleanup and go home
+0B1797 DD     0340* pop ix              ; restore
+0B1798 E1 
+0B1799 C9     0341* ret
+0B179A 09     0342* @G9:			DW    9
+0B179B 00 
+              0343* @float_nor: ds 5
+              0344* @float_alt: ds 5
+              0345* 
+              0346* print_float_dec_alt:
+0B17A6 CD     0347* CALL SWAP
 0B17A7 BF 
 0B17A8 15 
 0B17A9 0B 
-0B17AA C9     0337* ret
-              0338* 
-              0339* ;PI - Return PI (3.14159265)
-              0340* ;Result is floating-point numeric.
-              0341* ;
-0B17AB 11     0342* pi_alt:			LD      DE,0x490F
-0B17AC 0F 
-0B17AD 49 
-0B17AE 00 
-0B17AF D9     0343* EXX
-0B17B0 11     0344* LD      DE,0xDAA2
-0B17B1 A2 
-0B17B2 DA 
-0B17B3 00 
-0B17B4 D9     0345* EXX
-0B17B5 06     0346* LD      B,0x81
-0B17B6 81 
-0B17B7 AF     0347* XOR     A               ;NUMERIC MARKER
-0B17B8 C9     0348* RET
-              0349* 
-              0350* ;PI - Return PI * 2 (6.28318531)
-              0351* ;Result is floating-point numeric.
-              0352* ;
-0B17B9 11     0353* pi2_alt:		LD      DE,0x490F
-0B17BA 0F 
-0B17BB 49 
-0B17BC 00 
-0B17BD D9     0354* EXX
-0B17BE 11     0355* LD      DE,0xDAA3
-0B17BF A3 
-0B17C0 DA 
-0B17C1 00 
-0B17C2 D9     0356* EXX
-0B17C3 06     0357* LD      B,0x82
-0B17C4 82 
-0B17C5 AF     0358* XOR     A               ;NUMERIC MARKER
-0B17C6 C9     0359* RET
+0B17AA CD     0348* CALL print_float_dec_nor
+0B17AB 59 
+0B17AC 17 
+0B17AD 0B 
+0B17AE CD     0349* CALL SWAP
+0B17AF BF 
+0B17B0 15 
+0B17B1 0B 
+0B17B2 C9     0350* ret
+              0351* 
+              0352* ;PI - Return PI (3.14159265)
+              0353* ;Result is floating-point numeric.
+              0354* ;
+0B17B3 11     0355* pi_alt:			LD      DE,0x490F
+0B17B4 0F 
+0B17B5 49 
+0B17B6 00 
+0B17B7 D9     0356* EXX
+0B17B8 11     0357* LD      DE,0xDAA2
+0B17B9 A2 
+0B17BA DA 
+0B17BB 00 
+0B17BC D9     0358* EXX
+0B17BD 06     0359* LD      B,0x81
+0B17BE 81 
+0B17BF AF     0360* XOR     A               ;NUMERIC MARKER
+0B17C0 C9     0361* RET
+              0362* 
+              0363* ;PI - Return PI * 2 (6.28318531)
+              0364* ;Result is floating-point numeric.
+              0365* ;
+0B17C1 11     0366* pi2_alt:		LD      DE,0x490F
+0B17C2 0F 
+0B17C3 49 
+0B17C4 00 
+0B17C5 D9     0367* EXX
+0B17C6 11     0368* LD      DE,0xDAA3
+0B17C7 A3 
+0B17C8 DA 
+0B17C9 00 
+0B17CA D9     0369* EXX
+0B17CB 06     0370* LD      B,0x82
+0B17CC 82 
+0B17CD AF     0371* XOR     A               ;NUMERIC MARKER
+0B17CE C9     0372* RET
                0172 
                0173 ; APPLICATION INCLUDES
                0174 
                0175 ; Storage for the argv array pointers
                0176 min_args: equ 2
                0177 argv_ptrs_max:		EQU	16			; Maximum number of arguments allowed in argv
-0B17C7 00      0178 argv_ptrs:		    BLKP	argv_ptrs_max, 0
-0B17C8 00 
-0B17C9 00 
-0B17CA 00 
-0B17CA 00   
-0B17CB 00 
-0B17CC 00 
-0B17CD 00 
-0B17CD 00   
-0B17CE 00 
-0B17CF 00 
+0B17CF 00      0178 argv_ptrs:		    BLKP	argv_ptrs_max, 0
 0B17D0 00 
-0B17D0 00   
 0B17D1 00 
 0B17D2 00 
+0B17D2 00   
 0B17D3 00 
-0B17D3 00   
 0B17D4 00 
 0B17D5 00 
+0B17D5 00   
 0B17D6 00 
-0B17D6 00   
 0B17D7 00 
 0B17D8 00 
+0B17D8 00   
 0B17D9 00 
-0B17D9 00   
 0B17DA 00 
 0B17DB 00 
+0B17DB 00   
 0B17DC 00 
-0B17DC 00   
 0B17DD 00 
 0B17DE 00 
+0B17DE 00   
 0B17DF 00 
-0B17DF 00   
 0B17E0 00 
 0B17E1 00 
+0B17E1 00   
 0B17E2 00 
-0B17E2 00   
 0B17E3 00 
 0B17E4 00 
+0B17E4 00   
 0B17E5 00 
-0B17E5 00   
 0B17E6 00 
 0B17E7 00 
+0B17E7 00   
 0B17E8 00 
-0B17E8 00   
 0B17E9 00 
 0B17EA 00 
+0B17EA 00   
 0B17EB 00 
+0B17EC 00 
+0B17ED 00 
+0B17ED 00   
+0B17EE 00 
+0B17EF 00 
+0B17F0 00 
+0B17F0 00   
+0B17F1 00 
+0B17F2 00 
+0B17F3 00 
                0179 _sps:			DS	3			; Storage for the stack pointer (used by BASIC)
                0180 
                0181 ; Storage for the arguments, ORDER MATTERS
@@ -7698,50 +7714,50 @@
                0183 arg2: ds 5
                0184 
                0185 ; GLOBAL MESSAGE STRINGS
-0B1804 55      0186 str_usage: ASCIZ "Usage: scratch <args>\r\n"
-0B1805 73 
-0B1806 61 
-0B1807 67 
-0B1807 65   
-0B1808 3A 
-0B1809 20 
-0B180A 73 
-0B180A 63   
-0B180B 72 
-0B180C 61 
-0B180D 74 
-0B180D 63   
-0B180E 68 
-0B180F 20 
-0B1810 3C 
-0B1810 61   
-0B1811 72 
-0B1812 67 
-0B1813 73 
-0B1813 3E   
-0B1814 0D 
-0B1815 0A 
-0B1816 00 
-0B181C 45      0187 str_error: ASCIZ "Error!\r\n"
-0B181D 72 
-0B181E 72 
-0B181F 6F 
-0B181F 72   
-0B1820 21 
-0B1821 0D 
-0B1822 0A 
-0B1822 00   
-0B1825 53      0188 str_success: ASCIZ "Success!\r\n"
-0B1826 75 
-0B1827 63 
-0B1828 63 
-0B1828 65   
-0B1829 73 
-0B182A 73 
-0B182B 21 
-0B182B 0D   
-0B182C 0A 
-0B182D 00 
+0B180C 55      0186 str_usage: ASCIZ "Usage: scratch <args>\r\n"
+0B180D 73 
+0B180E 61 
+0B180F 67 
+0B180F 65   
+0B1810 3A 
+0B1811 20 
+0B1812 73 
+0B1812 63   
+0B1813 72 
+0B1814 61 
+0B1815 74 
+0B1815 63   
+0B1816 68 
+0B1817 20 
+0B1818 3C 
+0B1818 61   
+0B1819 72 
+0B181A 67 
+0B181B 73 
+0B181B 3E   
+0B181C 0D 
+0B181D 0A 
+0B181E 00 
+0B1824 45      0187 str_error: ASCIZ "Error!\r\n"
+0B1825 72 
+0B1826 72 
+0B1827 6F 
+0B1827 72   
+0B1828 21 
+0B1829 0D 
+0B182A 0A 
+0B182A 00   
+0B182D 53      0188 str_success: ASCIZ "Success!\r\n"
+0B182E 75 
+0B182F 63 
+0B1830 63 
+0B1830 65   
+0B1831 73 
+0B1832 73 
+0B1833 21 
+0B1833 0D   
+0B1834 0A 
+0B1835 00 
                0189 
                0190 ; ========= MAIN LOOP =========
                0191 ; The main routine
@@ -7751,64 +7767,64 @@
                0195 ;  HL: Error code, or 0 if OK
                0196 
                0197 _main_init:
-0B1830 79      0198 ld a,c              ; how many arguments?
-0B1831 FE      0199 cp min_args         ; not enough?
-0B1832 02 
-0B1833 30      0200 jr nc,main          ; if enough, go to main loop
-0B1834 23 
-0B1835 21      0201 ld hl,str_usage     ; if not enough, print usage
-0B1836 04 
-0B1837 18 
-0B1838 0B 
-0B1839 CD      0202 call printString
-0B183A CE 
-0B183B 0E 
-0B183C 0B 
-               0203 ; fall through to _main_end_error
-               0204 
-               0205 _main_end_error:
-0B183D 21      0206 ld hl,str_error     ; print error message
-0B183E 1C 
+0B1838 79      0198 ld a,c              ; how many arguments?
+0B1839 FE      0199 cp min_args         ; not enough?
+0B183A 02 
+0B183B 30      0200 jr nc,main          ; if enough, go to main loop
+0B183C 23 
+0B183D 21      0201 ld hl,str_usage     ; if not enough, print usage
+0B183E 0C 
 0B183F 18 
 0B1840 0B 
-0B1841 CD      0207 call printString
+0B1841 CD      0202 call printString
 0B1842 CE 
 0B1843 0E 
 0B1844 0B 
-0B1845 21      0208 ld hl,19            ; return error code 19
-0B1846 13 
-0B1847 00 
-0B1848 00 
-0B1849 C9      0209 ret
+               0203 ; fall through to _main_end_error
+               0204 
+               0205 _main_end_error:
+0B1845 21      0206 ld hl,str_error     ; print error message
+0B1846 24 
+0B1847 18 
+0B1848 0B 
+0B1849 CD      0207 call printString
+0B184A CE 
+0B184B 0E 
+0B184C 0B 
+0B184D 21      0208 ld hl,19            ; return error code 19
+0B184E 13 
+0B184F 00 
+0B1850 00 
+0B1851 C9      0209 ret
                0210 
                0211 ; begin BASIC-specific end code
                0212 ; This bit of code is called from STAR_BYE and returns us safely to MOS
-0B184A ED      0213 _end:			LD		SP, (_sps)		; Restore the stack pointer
-0B184B 7B 
-0B184C F7 
-0B184D 17 
-0B184D 0B   
+0B1852 ED      0213 _end:			LD		SP, (_sps)		; Restore the stack pointer
+0B1853 7B 
+0B1854 FF 
+0B1855 17 
+0B1855 0B   
                0214 ; fall through to _main_end_ok
                0215 ; end BASIC-specific end code
                0216 
                0217 _main_end_ok:
                0218 ; ld hl,str_success   ; print success message
                0219 ; call printString
-0B184F CD      0220 call printNewLine
-0B1850 E3 
-0B1851 0E 
-0B1852 0B 
-0B1853 21      0221 ld hl,0             ; return 0 for success
-0B1854 00 
-0B1855 00 
-0B1856 00 
-0B1857 C9      0222 ret
+0B1857 CD      0220 call printNewLine
+0B1858 E3 
+0B1859 0E 
+0B185A 0B 
+0B185B 21      0221 ld hl,0             ; return 0 for success
+0B185C 00 
+0B185D 00 
+0B185E 00 
+0B185F C9      0222 ret
                0223 
                0224 ; ========= BEGIN CUSTOM MAIN LOOP =========
                0225 main:
-0B1858 DD      0226 ld hl,(ix)          ; get the first argument in case hl doesn't land here with it
-0B1859 27 
-0B185A 00 
+0B1860 DD      0226 ld hl,(ix)          ; get the first argument in case hl doesn't land here with it
+0B1861 27 
+0B1862 00 
                0227 
                0228 ; ld iy,arg1
                0229 ; call store_arg_iy_float
@@ -7832,383 +7848,388 @@
                0247 ; call FPP
                0248 ; call print_float_dec
                0249 
-               0250 ; --- polar_to_cartesian_fpp ---
-               0251 
-0B185B CD      0252 call printInline
-0B185C C7 
-0B185D 0E 
-0B185E 0B 
-0B185F 20      0253 asciz " degrees: "
-0B1860 64 
-0B1861 65 
-0B1862 67 
-0B1862 72   
-0B1863 65 
-0B1864 65 
-0B1865 73 
-0B1865 3A   
-0B1866 20 
-0B1867 00 
-0B186A FD      0254 ld iy,arg1
-0B186B 21 
-0B186C FA 
-0B186D 17 
-0B186D 0B   
-0B186F CD      0255 call store_arg_iy_float
-0B1870 E7 
-0B1871 18 
-0B1872 0B 
-0B1873 CD      0256 call print_float_dec
-0B1874 51 
-0B1875 17 
-0B1876 0B 
-               0257 
-0B1877 CD      0258 call printInline
-0B1878 C7 
-0B1879 0E 
-0B187A 0B 
-0B187B 20      0259 asciz " radians: "
-0B187C 72 
-0B187D 61 
-0B187E 64 
-0B187E 69   
-0B187F 61 
-0B1880 6E 
-0B1881 73 
-0B1881 3A   
-0B1882 20 
-0B1883 00 
-0B1886 CD      0260 call fetch_float_iy_nor
-0B1887 9A 
-0B1888 16 
-0B1889 0B 
-0B188A 3E      0261 ld a,rad
-0B188B 1B 
-0B188C CD      0262 call FPP
-0B188D D2 
-0B188E 00 
+               0250 ; --- inthlu ---
+0B1863 FD      0251 ld iy,arg1
+0B1864 21 
+0B1865 02 
+0B1866 18 
+0B1866 0B   
+0B1868 CD      0252 call store_arg_iy_float
+0B1869 B7 
+0B186A 18 
+0B186B 0B 
+0B186C CD      0253 call print_float_hex_nor
+0B186D D8 
+0B186E 16 
+0B186F 0B 
+0B1870 3E      0254 ld a,' '
+0B1871 20 
+0B1872 5B      0255 rst.lil $10
+0B1873 D7 
+0B1874 CD      0256 call print_float_dec_nor
+0B1875 59 
+0B1876 17 
+0B1877 0B 
+0B1878 CD      0257 call printNewLine
+0B1879 E3 
+0B187A 0E 
+0B187B 0B 
+               0258 
+0B187C CD      0259 call fetch_float_iy_alt
+0B187D C6 
+0B187E 16 
+0B187F 0B 
+               0260 
+0B1880 CD      0261 call int_fp_
+0B1881 C7 
+0B1882 15 
+0B1883 0B 
+0B1884 CD      0262 call print_float_hex_nor
+0B1885 D8 
+0B1886 16 
+0B1887 0B 
+0B1888 3E      0263 ld a,' '
+0B1889 20 
+0B188A 5B      0264 rst.lil $10
+0B188B D7 
+0B188C CD      0265 call print_float_dec_nor
+0B188D 59 
+0B188E 17 
 0B188F 0B 
-0B1890 CD      0263 call store_float_iy_nor
-0B1891 88 
-0B1892 16 
+0B1890 CD      0266 call printNewLine
+0B1891 E3 
+0B1892 0E 
 0B1893 0B 
-0B1894 CD      0264 call print_float_dec
-0B1895 51 
+               0267 
+0B1894 CD      0268 call print_float_hex_alt
+0B1895 10 
 0B1896 17 
 0B1897 0B 
-               0265 
-0B1898 CD      0266 call printInline
-0B1899 C7 
-0B189A 0E 
-0B189B 0B 
-0B189C 20      0267 asciz " radius: "
-0B189D 72 
-0B189E 61 
-0B189F 64 
-0B189F 69   
-0B18A0 75 
-0B18A1 73 
-0B18A2 3A 
-0B18A2 20   
-0B18A3 00 
-0B18A6 FD      0268 ld iy,arg2
-0B18A7 21 
-0B18A8 FF 
-0B18A9 17 
-0B18A9 0B   
-0B18AB CD      0269 call store_arg_iy_float
-0B18AC E7 
-0B18AD 18 
-0B18AE 0B 
-0B18AF CD      0270 call fetch_float_iy_alt
-0B18B0 BE 
-0B18B1 16 
-0B18B2 0B 
-0B18B3 CD      0271 call print_float_dec_alt
-0B18B4 9E 
-0B18B5 17 
-0B18B6 0B 
-               0272 
-0B18B7 FD      0273 ld iy,arg1
-0B18B8 21 
-0B18B9 FA 
-0B18BA 17 
-0B18BA 0B   
-0B18BC CD      0274 call fetch_float_iy_nor
-0B18BD 9A 
-0B18BE 16 
-0B18BF 0B 
-0B18C0 CD      0275 call polar_to_cartesian_fpp
-0B18C1 D9 
-0B18C2 15 
-0B18C3 0B 
-0B18C4 CD      0276 call printNewLine
-0B18C5 E3 
-0B18C6 0E 
-0B18C7 0B 
-0B18C8 CD      0277 call print_float_dec_nor
-0B18C9 51 
-0B18CA 17 
-0B18CB 0B 
-0B18CC CD      0278 call printNewLine
-0B18CD E3 
-0B18CE 0E 
-0B18CF 0B 
-0B18D0 CD      0279 call print_float_dec_alt
-0B18D1 9E 
-0B18D2 17 
-0B18D3 0B 
-               0280 
-               0281 ; --- END polar_to_cartesian_fpp ---
-               0282 
-               0283 ; ; --- TESTING ---
-               0284 ;     ld iy,arg2
-               0285 ;     call store_arg_iy_float
-               0286 ;     call get_arg_float
-               0287 ;     call fetch_float_iy_alt
-               0288 
-               0289 ;     call print_float_dec_alt
-               0290 ;     call printNewLine
-               0291 ;     call print_float_dec_nor
-               0292 
-               0293 ; ; --- END TESTING ---
+0B1898 3E      0269 ld a,' '
+0B1899 20 
+0B189A 5B      0270 rst.lil $10
+0B189B D7 
+0B189C CD      0271 call print_float_dec_alt
+0B189D A6 
+0B189E 17 
+0B189F 0B 
+0B18A0 CD      0272 call printNewLine
+0B18A1 E3 
+0B18A2 0E 
+0B18A3 0B 
+               0273 
+               0274 
+               0275 ; ; --- inthlu ---
+               0276 ;     ld iy,arg1
+               0277 ;     call store_arg_iy_float
+               0278 ;     call print_float_hex_nor
+               0279 ;     ld a,' '
+               0280 ;     rst.lil $10
+               0281 ;     call print_float_dec
+               0282 ;     call printInline
+               0283 ;     asciz " int: "
+               0284 
+               0285 ;     ld iy,arg1
+               0286 ;     call fetch_float_iy_nor
+               0287 ;     call int_fp_
+               0288 ;     ld iy,arg2
+               0289 ;     call store_float_iy_nor
+               0290 ;     call print_float_hex_nor
+               0291 ;     ld a,' '
+               0292 ;     rst.lil $10
+               0293 ;     call print_float_dec
                0294 
-               0295 
-               0296 ; ; --- DEBUGGING ---
-               0297 ; ld iy,arg1
-               0298 ; call store_arg_iy_float
-               0299 ; call print_float_dec
-               0300 ; call printInline
-               0301 ; asciz " "
-               0302 
-               0303 ; ld iy,arg2
-               0304 ; call store_arg_iy_float
-               0305 ; call print_float_dec
-               0306 ; call printInline
-               0307 ; asciz " = "
-               0308 
-               0309 ; ld iy,arg1
-               0310 ; call fetch_float_iy_nor
-               0311 
-               0312 ; ld iy,arg2
-               0313 ; call fetch_float_iy_alt
-               0314 
-               0315 ; ld a,fmul
-               0316 ; call FPP
-               0317 ; call print_float_dec
-               0318 
-               0319 ; ; --- END DEBUGGING ---
+               0295 ;     call printInline
+               0296 ;     asciz " hlu: "
+               0297 ;     ld iy,arg2
+               0298 ;     call fetch_float_iy_nor
+               0299 ;     call int2hlu
+               0300 ;     call printHex24
+               0301 ;     ld a,' '
+               0302 ;     rst.lil $10
+               0303 ;     call printDec
+               0304 
+               0305 ; ; --- polar_to_cartesian_fpp ---
+               0306 
+               0307 ;     call printInline
+               0308 ;     asciz " degrees: "
+               0309 ;     ld iy,arg1
+               0310 ;     call store_arg_iy_float
+               0311 ;     call print_float_dec
+               0312 
+               0313 ;     call printInline
+               0314 ;     asciz " radians: "
+               0315 ;     call fetch_float_iy_nor
+               0316 ;     ld a,rad
+               0317 ;     call FPP
+               0318 ;     call store_float_iy_nor
+               0319 ;     call print_float_dec
                0320 
-0B18D4 C3      0321 jp _main_end_ok     ; return success
-0B18D5 4F 
-0B18D6 18 
-0B18D7 0B 
-               0322 
-               0323 ; ========== HELPER FUNCTIONS ==========
-               0324 ;
-               0325 ; get the next argument after ix as a floating point number
-               0326 ; inputs: ix = pointer to the argument string
-               0327 ; outputs: HLH'L'C = floating point number, ix points to the next argument
-               0328 ; destroys: everything except iy, including prime registers
-               0329 get_arg_float:
-0B18D8 ED      0330 lea ix,ix+3 ; point to the next argument
-0B18D9 32 
-0B18DA 03 
-0B18DB DD      0331 push ix ; preserve
-0B18DC E5 
-0B18DD DD      0332 ld ix,(ix)  ; point to argument string
-0B18DE 37 
-0B18DF 00 
-0B18E0 CD      0333 call VAL_FP ; convert the string to a float
-0B18E1 49 
-0B18E2 05 
-0B18E3 0B 
-0B18E4 DD      0334 pop ix ; restore
-0B18E5 E1 
-0B18E6 C9      0335 ret ; return with the value in HLH'L'C
-               0336 
-               0337 ; get the next argument after ix as a floating point number and store it in buffer pointed to by iy
-               0338 ; inputs: ix = pointer to the argument string
-               0339 ; outputs: HLH'L'C = floating point number, ix points to the next argument
-               0340 ; destroys: everything except iy, including prime registers
-               0341 store_arg_iy_float:
-0B18E7 ED      0342 lea ix,ix+3 ; point to the next argument
-0B18E8 32 
-0B18E9 03 
-0B18EA DD      0343 push ix ; preserve
-0B18EB E5 
-0B18EC DD      0344 ld ix,(ix)  ; point to argument string
-0B18ED 37 
-0B18EE 00 
-0B18EF CD      0345 call VAL_FP ; convert the string to a float
-0B18F0 49 
-0B18F1 05 
+               0321 ;     call printInline
+               0322 ;     asciz " radius: "
+               0323 ;     ld iy,arg2
+               0324 ;     call store_arg_iy_float
+               0325 ;     call fetch_float_iy_alt
+               0326 ;     call print_float_dec_alt
+               0327 
+               0328 ;     ld iy,arg1
+               0329 ;     call fetch_float_iy_nor
+               0330 ;     call polar_to_cartesian_fpp
+               0331 ;     call printNewLine
+               0332 ;     call print_float_dec_nor
+               0333 ;     call printNewLine
+               0334 ;     call print_float_dec_alt
+               0335 
+               0336 ; --- END polar_to_cartesian_fpp ---
+               0337 
+               0338 ; ; --- TESTING ---
+               0339 ;     ld iy,arg2
+               0340 ;     call store_arg_iy_float
+               0341 ;     call get_arg_float
+               0342 ;     call fetch_float_iy_alt
+               0343 
+               0344 ;     call print_float_dec_alt
+               0345 ;     call printNewLine
+               0346 ;     call print_float_dec_nor
+               0347 
+               0348 ; ; --- END TESTING ---
+               0349 
+               0350 
+               0351 ; ; --- DEBUGGING ---
+               0352 ; ld iy,arg1
+               0353 ; call store_arg_iy_float
+               0354 ; call print_float_dec
+               0355 ; call printInline
+               0356 ; asciz " "
+               0357 
+               0358 ; ld iy,arg2
+               0359 ; call store_arg_iy_float
+               0360 ; call print_float_dec
+               0361 ; call printInline
+               0362 ; asciz " = "
+               0363 
+               0364 ; ld iy,arg1
+               0365 ; call fetch_float_iy_nor
+               0366 
+               0367 ; ld iy,arg2
+               0368 ; call fetch_float_iy_alt
+               0369 
+               0370 ; ld a,fmul
+               0371 ; call FPP
+               0372 ; call print_float_dec
+               0373 
+               0374 ; ; --- END DEBUGGING ---
+               0375 
+0B18A4 C3      0376 jp _main_end_ok     ; return success
+0B18A5 57 
+0B18A6 18 
+0B18A7 0B 
+               0377 
+               0378 ; ========== HELPER FUNCTIONS ==========
+               0379 ;
+               0380 ; get the next argument after ix as a floating point number
+               0381 ; inputs: ix = pointer to the argument string
+               0382 ; outputs: HLH'L'C = floating point number, ix points to the next argument
+               0383 ; destroys: everything except iy, including prime registers
+               0384 get_arg_float:
+0B18A8 ED      0385 lea ix,ix+3 ; point to the next argument
+0B18A9 32 
+0B18AA 03 
+0B18AB DD      0386 push ix ; preserve
+0B18AC E5 
+0B18AD DD      0387 ld ix,(ix)  ; point to argument string
+0B18AE 37 
+0B18AF 00 
+0B18B0 CD      0388 call VAL_FP ; convert the string to a float
+0B18B1 49 
+0B18B2 05 
+0B18B3 0B 
+0B18B4 DD      0389 pop ix ; restore
+0B18B5 E1 
+0B18B6 C9      0390 ret ; return with the value in HLH'L'C
+               0391 
+               0392 ; get the next argument after ix as a floating point number and store it in buffer pointed to by iy
+               0393 ; inputs: ix = pointer to the argument string
+               0394 ; outputs: HLH'L'C = floating point number, ix points to the next argument
+               0395 ; destroys: everything except iy, including prime registers
+               0396 store_arg_iy_float:
+0B18B7 ED      0397 lea ix,ix+3 ; point to the next argument
+0B18B8 32 
+0B18B9 03 
+0B18BA DD      0398 push ix ; preserve
+0B18BB E5 
+0B18BC DD      0399 ld ix,(ix)  ; point to argument string
+0B18BD 37 
+0B18BE 00 
+0B18BF CD      0400 call VAL_FP ; convert the string to a float
+0B18C0 49 
+0B18C1 05 
+0B18C2 0B 
+0B18C3 CD      0401 call store_float_iy_nor ; save the float in buffer
+0B18C4 90 
+0B18C5 16 
+0B18C6 0B 
+0B18C7 DD      0402 pop ix ; restore
+0B18C8 E1 
+0B18C9 C9      0403 ret ; return with the value in HLH'L'C
+               0404 ;
+               0405 ; get the next argument after ix as a string
+               0406 ; inputs: ix = pointer to the argument string
+               0407 ; outputs: HL = pointer to the argument string, ix points to the next argument
+               0408 ; destroys: a, h, l, f
+               0409 get_arg_text:
+0B18CA ED      0410 lea ix,ix+3 ; point to the next argument
+0B18CB 32 
+0B18CC 03 
+0B18CD DD      0411 ld hl,(ix)  ; get the argument string
+0B18CE 27 
+0B18CF 00 
+0B18D0 C9      0412 ret
+               0413 ;
+               0414 ; match the next argument after ix to the dispatch table at iy
+               0415 ;   - arguments and dispatch entries are zero-terminated, case-sensitive strings
+               0416 ;   - final entry of dispatch table must be a 3-byte zero or bad things will happen
+               0417 ; returns: NO MATCH: iy=dispatch list terminator a=1 and zero flag reset
+               0418 ;          ON MATCH: iy=dispatch address, a=0 and zero flag set
+               0419 ; destroys: a, hl, de, ix, iy, flags
+               0420 match_next:
+0B18D1 ED      0421 lea ix,ix+3         ; point to the next argument
+0B18D2 32 
+0B18D3 03 
+               0422 @loop:
+0B18D4 FD      0423 ld hl,(iy)          ; pointer argument dispatch record
+0B18D5 27 
+0B18D6 00 
+               0424 sign_hlu            ; check for list terminator
+0B18D7 19     0001M add hl,de
+0B18D8 B7     0002M or a
+0B18D9 ED     0003M sbc hl,de
+0B18DA 52 
+0B18DB CA      0425 jp z,@no_match      ; if a=0, return error
+0B18DC F3 
+0B18DD 18 
+0B18DE 0B 
+0B18DF 23      0426 inc hl              ; skip over jp instruction
+0B18E0 23      0427 inc hl
+0B18E1 DD      0428 ld de,(ix)          ; pointer to the argument string
+0B18E2 17 
+0B18E3 00 
+0B18E4 CD      0429 call str_equal      ; compare the argument to the dispatch table entry
+0B18E5 0A 
+0B18E6 19 
+0B18E7 0B 
+0B18E8 CA      0430 jp z,@match         ; if equal, return success
+0B18E9 F5 
+0B18EA 18 
+0B18EB 0B 
+0B18EC ED      0431 lea iy,iy+3         ; if not equal, bump iy to next dispatch table entry
+0B18ED 33 
+0B18EE 03 
+0B18EF C3      0432 jp @loop            ; and loop
+0B18F0 D4 
+0B18F1 18 
 0B18F2 0B 
-0B18F3 CD      0346 call store_float_iy_nor ; save the float in buffer
-0B18F4 88 
-0B18F5 16 
-0B18F6 0B 
-0B18F7 DD      0347 pop ix ; restore
-0B18F8 E1 
-0B18F9 C9      0348 ret ; return with the value in HLH'L'C
-               0349 ;
-               0350 ; get the next argument after ix as a string
-               0351 ; inputs: ix = pointer to the argument string
-               0352 ; outputs: HL = pointer to the argument string, ix points to the next argument
-               0353 ; destroys: a, h, l, f
-               0354 get_arg_text:
-0B18FA ED      0355 lea ix,ix+3 ; point to the next argument
-0B18FB 32 
-0B18FC 03 
-0B18FD DD      0356 ld hl,(ix)  ; get the argument string
-0B18FE 27 
-0B18FF 00 
-0B1900 C9      0357 ret
-               0358 ;
-               0359 ; match the next argument after ix to the dispatch table at iy
-               0360 ;   - arguments and dispatch entries are zero-terminated, case-sensitive strings
-               0361 ;   - final entry of dispatch table must be a 3-byte zero or bad things will happen
-               0362 ; returns: NO MATCH: iy=dispatch list terminator a=1 and zero flag reset
-               0363 ;          ON MATCH: iy=dispatch address, a=0 and zero flag set
-               0364 ; destroys: a, hl, de, ix, iy, flags
-               0365 match_next:
-0B1901 ED      0366 lea ix,ix+3         ; point to the next argument
-0B1902 32 
-0B1903 03 
-               0367 @loop:
-0B1904 FD      0368 ld hl,(iy)          ; pointer argument dispatch record
-0B1905 27 
-0B1906 00 
-               0369 sign_hlu            ; check for list terminator
-0B1907 19     0001M add hl,de
-0B1908 B7     0002M or a
-0B1909 ED     0003M sbc hl,de
-0B190A 52 
-0B190B CA      0370 jp z,@no_match      ; if a=0, return error
-0B190C 23 
-0B190D 19 
-0B190E 0B 
-0B190F 23      0371 inc hl              ; skip over jp instruction
-0B1910 23      0372 inc hl
-0B1911 DD      0373 ld de,(ix)          ; pointer to the argument string
-0B1912 17 
-0B1913 00 
-0B1914 CD      0374 call str_equal      ; compare the argument to the dispatch table entry
-0B1915 3A 
-0B1916 19 
-0B1917 0B 
-0B1918 CA      0375 jp z,@match         ; if equal, return success
-0B1919 25 
-0B191A 19 
+               0433 @no_match:
+0B18F3 3C      0434 inc a               ; no match so return a=1 and zero flag reset
+0B18F4 C9      0435 ret
+               0436 @match:
+0B18F5 FD      0437 ld iy,(iy)          ; get the function pointer
+0B18F6 37 
+0B18F7 00 
+0B18F8 C9      0438 ret                 ; return a=0 and zero flag set
+               0439 
+               0440 ; same as match_next, but prints the parameter if a match is found
+               0441 match_next_and_print:
+0B18F9 CD      0442 call match_next
+0B18FA D1 
+0B18FB 18 
+0B18FC 0B 
+0B18FD C0      0443 ret nz ; no match found
+0B18FE ED      0444 lea ix,ix-3
+0B18FF 32 
+0B1900 FD 
+0B1901 CD      0445 call get_arg_text ; hl points to the operator string
+0B1902 CA 
+0B1903 18 
+0B1904 0B 
+0B1905 CD      0446 call print_param
+0B1906 15 
+0B1907 19 
+0B1908 0B 
+0B1909 C9      0447 ret
+               0448 
+               0449 ; compare two zero-terminated strings for equality, case-sensitive
+               0450 ; hl: pointer to first string, de: pointer to second string
+               0451 ; returns: z if equal, nz if not equal
+               0452 ; destroys: a, hl, de
+               0453 str_equal:
+0B190A 1A      0454 ld a,(de)           ; get the first character
+0B190B BE      0455 cp (hl)             ; compare to the second character
+0B190C C0      0456 ret nz              ; if not equal, return
+0B190D B7      0457 or a
+0B190E C8      0458 ret z               ; if equal and zero, return
+0B190F 23      0459 inc hl              ; next character
+0B1910 13      0460 inc de
+0B1911 C3      0461 jp str_equal        ; loop until end of string
+0B1912 0A 
+0B1913 19 
+0B1914 0B 
+               0462 
+               0463 ; print the parameter string pointed to by ix
+               0464 ; destroys: a, hl
+               0465 print_param:
+0B1915 DD      0466 ld hl,(ix)          ; get the parameter pointer
+0B1916 27 
+0B1917 00 
+0B1918 CD      0467 call printString    ; print the parameter string
+0B1919 CE 
+0B191A 0E 
 0B191B 0B 
-0B191C ED      0376 lea iy,iy+3         ; if not equal, bump iy to next dispatch table entry
-0B191D 33 
-0B191E 03 
-0B191F C3      0377 jp @loop            ; and loop
-0B1920 04 
-0B1921 19 
-0B1922 0B 
-               0378 @no_match:
-0B1923 3C      0379 inc a               ; no match so return a=1 and zero flag reset
-0B1924 C9      0380 ret
-               0381 @match:
-0B1925 FD      0382 ld iy,(iy)          ; get the function pointer
-0B1926 37 
-0B1927 00 
-0B1928 C9      0383 ret                 ; return a=0 and zero flag set
-               0384 
-               0385 ; same as match_next, but prints the parameter if a match is found
-               0386 match_next_and_print:
-0B1929 CD      0387 call match_next
-0B192A 01 
-0B192B 19 
-0B192C 0B 
-0B192D C0      0388 ret nz ; no match found
-0B192E ED      0389 lea ix,ix-3
-0B192F 32 
-0B1930 FD 
-0B1931 CD      0390 call get_arg_text ; hl points to the operator string
-0B1932 FA 
-0B1933 18 
-0B1934 0B 
-0B1935 CD      0391 call print_param
-0B1936 45 
-0B1937 19 
-0B1938 0B 
-0B1939 C9      0392 ret
-               0393 
-               0394 ; compare two zero-terminated strings for equality, case-sensitive
-               0395 ; hl: pointer to first string, de: pointer to second string
-               0396 ; returns: z if equal, nz if not equal
-               0397 ; destroys: a, hl, de
-               0398 str_equal:
-0B193A 1A      0399 ld a,(de)           ; get the first character
-0B193B BE      0400 cp (hl)             ; compare to the second character
-0B193C C0      0401 ret nz              ; if not equal, return
-0B193D B7      0402 or a
-0B193E C8      0403 ret z               ; if equal and zero, return
-0B193F 23      0404 inc hl              ; next character
-0B1940 13      0405 inc de
-0B1941 C3      0406 jp str_equal        ; loop until end of string
-0B1942 3A 
-0B1943 19 
-0B1944 0B 
-               0407 
-               0408 ; print the parameter string pointed to by ix
-               0409 ; destroys: a, hl
-               0410 print_param:
-0B1945 DD      0411 ld hl,(ix)          ; get the parameter pointer
-0B1946 27 
-0B1947 00 
-0B1948 CD      0412 call printString    ; print the parameter string
-0B1949 CE 
-0B194A 0E 
-0B194B 0B 
-0B194C 3E      0413 ld a,' '            ; print a space separator
-0B194D 20 
-0B194E 5B      0414 rst.lil $10
-0B194F D7 
-0B1950 C9      0415 ret
-               0416 
-               0417 ; print the parameters
-               0418 ; inputs: b = number of parameters, ix = pointer to the parameters
-               0419 ; destroys: a, hl, bc
-               0420 print_params:
-0B1951 41      0421 ld b,c              ; loop counter = number of parameters
-0B1952 DD      0422 push ix             ; save the pointer to the parameters
-0B1953 E5 
-               0423 @loop:
-0B1954 C5      0424 push bc             ; save the loop counter
-0B1955 CD      0425 call print_param    ; print the parameter
-0B1956 45 
-0B1957 19 
-0B1958 0B 
-0B1959 ED      0426 lea ix,ix+3         ; next parameter pointer
-0B195A 32 
-0B195B 03 
-0B195C C1      0427 pop bc              ; get back the loop counter
-0B195D 10      0428 djnz @loop          ; loop until done
-0B195E F5 
-0B195F DD      0429 pop ix              ; restore the pointer to the parameters
-0B1960 E1 
-0B1961 C9      0430 ret
-               0431 
-               0432 debug_print:
-0B1962 CD      0433 call printNewLine
-0B1963 E3 
-0B1964 0E 
-0B1965 0B 
-0B1966 CD      0434 call dumpRegistersHexAll
-0B1967 23 
-0B1968 13 
-0B1969 0B 
-0B196A CD      0435 call printNewLine
-0B196B E3 
-0B196C 0E 
-0B196D 0B 
-0B196E C9      0436 ret
-               0437 
-               0438 include "basic/ram.asm" ; must be last so that RAM has room for BASIC operations
+0B191C 3E      0468 ld a,' '            ; print a space separator
+0B191D 20 
+0B191E 5B      0469 rst.lil $10
+0B191F D7 
+0B1920 C9      0470 ret
+               0471 
+               0472 ; print the parameters
+               0473 ; inputs: b = number of parameters, ix = pointer to the parameters
+               0474 ; destroys: a, hl, bc
+               0475 print_params:
+0B1921 41      0476 ld b,c              ; loop counter = number of parameters
+0B1922 DD      0477 push ix             ; save the pointer to the parameters
+0B1923 E5 
+               0478 @loop:
+0B1924 C5      0479 push bc             ; save the loop counter
+0B1925 CD      0480 call print_param    ; print the parameter
+0B1926 15 
+0B1927 19 
+0B1928 0B 
+0B1929 ED      0481 lea ix,ix+3         ; next parameter pointer
+0B192A 32 
+0B192B 03 
+0B192C C1      0482 pop bc              ; get back the loop counter
+0B192D 10      0483 djnz @loop          ; loop until done
+0B192E F5 
+0B192F DD      0484 pop ix              ; restore the pointer to the parameters
+0B1930 E1 
+0B1931 C9      0485 ret
+               0486 
+               0487 debug_print:
+0B1932 CD      0488 call printNewLine
+0B1933 E3 
+0B1934 0E 
+0B1935 0B 
+0B1936 CD      0489 call dumpRegistersHexAll
+0B1937 23 
+0B1938 13 
+0B1939 0B 
+0B193A CD      0490 call printNewLine
+0B193B E3 
+0B193C 0E 
+0B193D 0B 
+0B193E C9      0491 ret
+               0492 
+               0493 include "basic/ram.asm" ; must be last so that RAM has room for BASIC operations
               0001* ;
               0002* ; Title:	BBC Basic Interpreter - Z80 version
               0003* ;		RAM Module for BBC Basic Interpreter
@@ -8270,7 +8291,71 @@
               0059* ; XDEF	USER
               0060* 
               0061* end_binary: ;  for assemble.py to know where to truncate the binary file
-0B196F FF     0062* ALIGN 		256		; ACCS, BUFFER & STAVAR must be on page boundaries
+0B193F FF     0062* ALIGN 		256		; ACCS, BUFFER & STAVAR must be on page boundaries
+0B1940 FF 
+0B1941 FF 
+0B1942 FF 
+0B1942 FF   
+0B1943 FF 
+0B1944 FF 
+0B1945 FF 
+0B1945 FF   
+0B1946 FF 
+0B1947 FF 
+0B1948 FF 
+0B1948 FF   
+0B1949 FF 
+0B194A FF 
+0B194B FF 
+0B194B FF   
+0B194C FF 
+0B194D FF 
+0B194E FF 
+0B194E FF   
+0B194F FF 
+0B1950 FF 
+0B1951 FF 
+0B1951 FF   
+0B1952 FF 
+0B1953 FF 
+0B1954 FF 
+0B1954 FF   
+0B1955 FF 
+0B1956 FF 
+0B1957 FF 
+0B1957 FF   
+0B1958 FF 
+0B1959 FF 
+0B195A FF 
+0B195A FF   
+0B195B FF 
+0B195C FF 
+0B195D FF 
+0B195D FF   
+0B195E FF 
+0B195F FF 
+0B1960 FF 
+0B1960 FF   
+0B1961 FF 
+0B1962 FF 
+0B1963 FF 
+0B1963 FF   
+0B1964 FF 
+0B1965 FF 
+0B1966 FF 
+0B1966 FF   
+0B1967 FF 
+0B1968 FF 
+0B1969 FF 
+0B1969 FF   
+0B196A FF 
+0B196B FF 
+0B196C FF 
+0B196C FF   
+0B196D FF 
+0B196E FF 
+0B196F FF 
+0B196F FF   
 0B1970 FF 
 0B1971 FF 
 0B1972 FF 
@@ -8399,22 +8484,6 @@
 0B19CE FF 
 0B19CF FF 
 0B19CF FF   
-0B19D0 FF 
-0B19D1 FF 
-0B19D2 FF 
-0B19D2 FF   
-0B19D3 FF 
-0B19D4 FF 
-0B19D5 FF 
-0B19D5 FF   
-0B19D6 FF 
-0B19D7 FF 
-0B19D8 FF 
-0B19D8 FF   
-0B19D9 FF 
-0B19DA FF 
-0B19DB FF 
-0B19DB FF   
               0063* RAM_START:
               0064* ;
 0B1A00 00     0065* ACCS:           BLKB    256,0             ; String Accumulator

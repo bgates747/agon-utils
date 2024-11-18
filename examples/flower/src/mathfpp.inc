@@ -25,7 +25,7 @@ cos:	EQU 20	; COS
 deg:	EQU 21	; DEG
 exp:	EQU 22	; EXP
 int_:	EQU 23	; INT
-ln:	EQU 24	; LN
+ln:	    EQU 24	; LN
 log:	EQU 25	; LOG
 notk:	EQU 26	; NOT
 rad:	EQU 27	; RAD
@@ -36,7 +36,7 @@ tan:	EQU 31	; TAN
 zero:	EQU 32	; ZERO
 fone:	EQU 33	; FONE
 true:	EQU 34	; TRUE
-pi:	EQU 35	; PI
+pi:	    EQU 35	; PI
 val:	EQU 36	; VAL
 str:	EQU 37	; STR$
 sfix:	EQU 38	; FIX
@@ -76,13 +76,26 @@ SWAP:			LD      A,C
 			EXX
 			RET
 
+; same as original INT_FP_ but doesn't call ADD1_FP for negative numbers
+; also preserves B, which keeps any float stored in DED'E'B intact
+; af will also return differently from the original
+;INT - Floor function
+;Result is integer numeric.
+;
+int_fp_:		
+                push bc ; preserve b
+                ld a,int_
+                call FPP
+                pop af ; restore b to a
+                ld b,a ; restore b
+        		RET
+
 ; convert floating point number to integer and store it in HLU
 ; inputs: HLH'L'C = floating point number
 ; outputs: HLU = integer part of the number
 ; destroys: all except DEU and U'D'E', index registers
 int2hlu:
-    ld a,int_
-    call FPP
+    call int_fp_
     ld a,l
     push af
     exx

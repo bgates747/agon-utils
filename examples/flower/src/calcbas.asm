@@ -247,36 +247,91 @@ main:
     ; call FPP
     ; call print_float_dec
 
-; --- polar_to_cartesian_fpp ---
-
-    call printInline
-    asciz " degrees: "
+; --- inthlu ---
     ld iy,arg1
     call store_arg_iy_float
-    call print_float_dec
-
-    call printInline
-    asciz " radians: "
-    call fetch_float_iy_nor
-    ld a,rad
-    call FPP
-    call store_float_iy_nor
-    call print_float_dec
-
-    call printInline
-    asciz " radius: "
-    ld iy,arg2
-    call store_arg_iy_float
-    call fetch_float_iy_alt
-    call print_float_dec_alt
-
-    ld iy,arg1
-    call fetch_float_iy_nor
-    call polar_to_cartesian_fpp
-    call printNewLine
+    call print_float_hex_nor
+    ld a,' '
+    rst.lil $10
     call print_float_dec_nor
     call printNewLine
-    call print_float_dec_alt 
+
+    call fetch_float_iy_alt
+
+    call int_fp_
+    call print_float_hex_nor
+    ld a,' '
+    rst.lil $10
+    call print_float_dec_nor
+    call printNewLine
+
+    call print_float_hex_alt
+    ld a,' '
+    rst.lil $10
+    call print_float_dec_alt
+    call printNewLine
+
+
+; ; --- inthlu ---
+;     ld iy,arg1
+;     call store_arg_iy_float
+;     call print_float_hex_nor
+;     ld a,' '
+;     rst.lil $10
+;     call print_float_dec
+;     call printInline
+;     asciz " int: "
+
+;     ld iy,arg1
+;     call fetch_float_iy_nor
+;     call int_fp_
+;     ld iy,arg2
+;     call store_float_iy_nor
+;     call print_float_hex_nor
+;     ld a,' '
+;     rst.lil $10
+;     call print_float_dec
+
+;     call printInline
+;     asciz " hlu: "
+;     ld iy,arg2
+;     call fetch_float_iy_nor
+;     call int2hlu
+;     call printHex24
+;     ld a,' '
+;     rst.lil $10
+;     call printDec
+
+; ; --- polar_to_cartesian_fpp ---
+
+;     call printInline
+;     asciz " degrees: "
+;     ld iy,arg1
+;     call store_arg_iy_float
+;     call print_float_dec
+
+;     call printInline
+;     asciz " radians: "
+;     call fetch_float_iy_nor
+;     ld a,rad
+;     call FPP
+;     call store_float_iy_nor
+;     call print_float_dec
+
+;     call printInline
+;     asciz " radius: "
+;     ld iy,arg2
+;     call store_arg_iy_float
+;     call fetch_float_iy_alt
+;     call print_float_dec_alt
+
+;     ld iy,arg1
+;     call fetch_float_iy_nor
+;     call polar_to_cartesian_fpp
+;     call printNewLine
+;     call print_float_dec_nor
+;     call printNewLine
+;     call print_float_dec_alt 
 
 ; --- END polar_to_cartesian_fpp ---
 

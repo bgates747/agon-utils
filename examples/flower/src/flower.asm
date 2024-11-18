@@ -346,6 +346,9 @@ main:
     call SWAP ; HLH'L'C <--> DED'E'B
     ld a,fdiv
     call FPP ; HLH'L'C = 2 * pi / vectors
+    call pi2_alt ; DED'E'B = 2 * pi
+    ld a,fmod
+    call FPP ; HLH'L'C = 2 * pi % vectors
     ld iy,step_theta_petal
     call store_float_iy_nor
 
@@ -393,6 +396,7 @@ main:
 
 ; set initial point and move graphics cursor to it
     call calc_point ; HLH'L'C = x DED'E'B = y
+    ld a,plot_pt+mv_abs
     call vdu_plot_float
 
 ; fall through to main loop
@@ -451,15 +455,21 @@ main:
 ; inputs: a=mode, HL'H'L'C=x, DE'D'E'B=y
 vdu_plot_float:
     ld (@mode),a
-    ld a,int_
-    CALL FPP
+
     call int2hlu
     ld (@x0),hl
+
+    ; call printDec
+    ; ld a,','
+    ; rst.lil $10
+
     call SWAP
-    ld a,int_
-    CALL FPP
     call int2hlu
     ld (@y0),hl
+
+    ; call printDec
+    ; call printNewLine
+
 	ld hl,@cmd
 	ld bc,@end-@cmd
 	rst.lil $18
