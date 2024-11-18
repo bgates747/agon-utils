@@ -7085,7 +7085,7 @@
               0112* ; convert floating point number to integer and store it in HLU
               0113* ; inputs: HLH'L'C = floating point number
               0114* ; outputs: HLU = integer part of the number
-              0115* ; destroys: all except DEU and U'D'E', index registers
+              0115* ; destroys: all except DEU and U'D'E'B, index registers
               0116* int2hlu:
 0B15F3 CD     0117* call int_fp_
 0B15F4 E9 

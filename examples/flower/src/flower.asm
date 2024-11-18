@@ -286,7 +286,7 @@ _main_end_ok:
     ; call printNewLine
     ; ld hl,str_success   ; print success message
     ; call printString
-    ; call printNewLine
+    call printNewLine
     ld hl,0             ; return 0 for success
     ret
 
@@ -294,12 +294,13 @@ _main_end_ok:
 main:    
     dec c               ; decrement the argument count to skip the program name
     call load_input     ; load the input arguments
-    call print_input    ; print the input arguments
 
 ; --- clear the screen ---
     ld a,19
     call vdu_set_screen_mode
     call vdu_cls
+
+    call print_input    ; print the input arguments
 
 ; Set screen origin to the center
     ld bc,1280/2 ; x
@@ -392,6 +393,21 @@ main:
     ld iy,step_shrink
     call store_float_iy_nor
 
+; Make total_steps an integer and store it in uhl
+    ld iy,total_steps
+    call fetch_float_iy_nor
+    call int2hlu ; UHL = int(total_steps)
+    ld (iy),hl
+
+; Initialize radius_prime
+    ld iy,radius_scale
+    call fetch_float_iy_nor
+    ld iy,radius_prime
+    call store_float_iy_nor
+
+; set initial point and move graphics cursor to it
+    call calc_point ; HLH'L'C = x DED'E'B = y
+
 ; ; DEBUG
 ;     call printNewLine
 ;     call print_float_dec_nor
@@ -402,20 +418,6 @@ main:
 ;     jp _main_end_ok
 ; ; END DEBUG
 
-; Make total_steps an integer and store it in uhl
-    ld iy,total_steps
-    call fetch_float_iy_nor
-    call int2hlu ; HLH'L'C = int(total_steps)
-    ld (iy),hl ; uhl = int(total_steps)
-
-; Initialize radius_prime
-    ld iy,radius_scale
-    call fetch_float_iy_nor
-    ld iy,radius_prime
-    call store_float_iy_nor
-
-; set initial point and move graphics cursor to it
-    call calc_point ; HLH'L'C = x DED'E'B = y
     ld a,plot_pt+mv_abs
     call vdu_plot_float
 
@@ -457,9 +459,20 @@ main:
     call vdu_plot_float
 
 ; Decrement the loop counter
-    ld hl,total_steps
-    dec (hl)
-    jp nz,@loop
+; ; DEBUG
+;     ld c,0 ; x
+;     ld b,1 ; y
+;     call vdu_move_cursor
+;     ld hl,(total_steps)
+;     call printDec
+; ; END DEBUG
+
+    ld hl,(total_steps)
+    ld de,-1
+    and a ; clear carry
+    adc hl,de
+    ld (total_steps),hl
+    jp p,@loop
 
     jp _main_end_ok
 

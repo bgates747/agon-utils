@@ -112,7 +112,7 @@ int_fp_:
 ; convert floating point number to integer and store it in HLU
 ; inputs: HLH'L'C = floating point number
 ; outputs: HLU = integer part of the number
-; destroys: all except DEU and U'D'E', index registers
+; destroys: all except DEU and U'D'E'B, index registers
 int2hlu:
     call int_fp_
     ld a,l
