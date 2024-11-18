@@ -1,9 +1,3 @@
-    MACRO LOAD_FLOAT ARG
-    ld ix,$+11
-    call VAL_FP
-    jp (ix)
-    asciz ARG
-    ENDMACRO
 
     MACRO printChar char
         LD A, char

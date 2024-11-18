@@ -62,6 +62,13 @@ fsub:	EQU 13	; -
 fpow:	EQU 14	; ^
 fdiv:	EQU 15	; /
 
+    MACRO LOAD_FLOAT ARG
+    ld ix,$+11
+    call val_fp ; convert the string to a float
+    jp (ix)
+    asciz ARG
+    ENDMACRO
+
 ; --- originally in eval.asm ---
 ;SWAP - Swap arguments
 ;Exchanges DE,HL D'E',H'L' and B,C
@@ -76,19 +83,31 @@ SWAP:			LD      A,C
 			EXX
 			RET
 
-; same as original INT_FP_ but doesn't call ADD1_FP for negative numbers
-; also preserves B, which keeps any float stored in DED'E'B intact
+; same as VAL_FP in fpp.asm, but preserves any float stored in DED'E'B
+val_fp:
+    push iy ; preserve
+    ld iy,@val
+    call store_float_iy_alt
+    ld a,val
+    call FPP ; string converted to float in HLH'L'C
+    ld iy,@val
+    call fetch_float_iy_alt
+    pop iy ; restore
+    ret
+@val: ds 5
+
+; same as INT_FP_ in fpp.asm but preserves B, which keeps any float stored in DED'E'B intact
 ; af will also return differently from the original
 ;INT - Floor function
 ;Result is integer numeric.
 ;
 int_fp_:		
-                push bc ; preserve b
-                ld a,int_
-                call FPP
-                pop af ; restore b to a
-                ld b,a ; restore b
-        		RET
+    push bc ; preserve b
+    ld a,int_
+    call FPP
+    pop af ; restore b to a
+    ld b,a ; restore b
+    RET
 
 ; convert floating point number to integer and store it in HLU
 ; inputs: HLH'L'C = floating point number

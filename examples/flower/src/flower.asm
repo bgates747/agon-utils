@@ -332,6 +332,7 @@ main:
     call fetch_float_iy_alt
     ld a,fmul
     call FPP ; HLH'L'C = petals * vectors
+
     call pi2_alt ; DED'E'B = 2 * pi
     call SWAP ; HLH'L'C <--> DED'E'B
     ld a,fdiv
@@ -346,9 +347,10 @@ main:
     call SWAP ; HLH'L'C <--> DED'E'B
     ld a,fdiv
     call FPP ; HLH'L'C = 2 * pi / vectors
-    call pi2_alt ; DED'E'B = 2 * pi
-    ld a,fmod
-    call FPP ; HLH'L'C = 2 * pi % vectors
+; fmod rounds to the nearest integer, so we leave it out until we can find a better solution
+    ; call pi2_alt ; DED'E'B = 2 * pi
+    ; ld a,fmod
+    ; call FPP ; HLH'L'C = 2 * pi % vectors
     ld iy,step_theta_petal
     call store_float_iy_nor
 
@@ -359,6 +361,7 @@ main:
     call fetch_float_iy_alt
     ld a,fmul
     call FPP ; HLH'L'C = petals * vectors
+
     ld iy,periods
     call fetch_float_iy_alt
     ld a,fmul
@@ -374,13 +377,30 @@ main:
     call fetch_float_iy_alt
     ld a,fmul
     call FPP ; HLH'L'C = shrink * radius_scale
+
     ld iy,total_steps
     call fetch_float_iy_alt
     ld a,fdiv
     call FPP ; HLH'L'C = shrink * radius_scale / total_steps
-    call NEGATE ; HLH'L'C = -shrink * radius_scale / total_steps
+
+    ; call NEG_ ; HLH'L'C = -shrink * radius_scale / total_steps
+; NEG_ is not working as expected, so we'll just subtract from zero
+    call SWAP
+    LOAD_FLOAT "0"
+    ld a,fsub
+    call FPP ; HLH'L'C = -shrink * radius_scale / total_steps
     ld iy,step_shrink
     call store_float_iy_nor
+
+; ; DEBUG
+;     call printNewLine
+;     call print_float_dec_nor
+;     ld a,' '
+;     rst.lil $10
+;     call print_float_dec_alt
+;     call printNewLine
+;     jp _main_end_ok
+; ; END DEBUG
 
 ; Make total_steps an integer and store it in uhl
     ld iy,total_steps
@@ -400,14 +420,6 @@ main:
     call vdu_plot_float
 
 ; fall through to main loop
-
-; ; DEBUG
-;     call printNewLine
-;     call print_float_dec_nor
-;     call printNewLine
-;     call print_float_dec_alt
-;     jp _main_end_ok
-; ; END DEBUG
 
 @loop:
 ; Advance thetas
@@ -575,7 +587,7 @@ get_arg_float:
     lea ix,ix+3 ; point to the next argument
     push ix ; preserve
     ld ix,(ix)  ; point to argument string
-    call VAL_FP ; convert the string to a float
+    call val_fp ; convert the string to a float
     pop ix ; restore
     ret ; return with the value in HLH'L'C
 
@@ -587,7 +599,7 @@ store_arg_iy_float:
     lea ix,ix+3 ; point to the next argument
     push ix ; preserve
     ld ix,(ix)  ; point to argument string
-    call VAL_FP ; convert the string to a float
+    call val_fp ; convert the string to a float
     call store_float_iy_nor ; save the float in buffer
     pop ix ; restore
     ret ; return with the value in HLH'L'C

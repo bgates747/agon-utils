@@ -247,30 +247,34 @@ main:
     ; call FPP
     ; call print_float_dec
 
-; --- inthlu ---
+; --- LOAD_FLOAT ---
     ld iy,arg1
     call store_arg_iy_float
-    call print_float_hex_nor
-    ld a,' '
-    rst.lil $10
+    call SWAP
+
+    ; ld iy,arg2
+    ; call store_arg_iy_float
+
+    LOAD_FLOAT "256.599999"
+    ld iy,arg2
+    call store_float_iy_nor
+
     call print_float_dec_nor
-    call printNewLine
-
-    call fetch_float_iy_alt
-
-    call int_fp_
-    call print_float_hex_nor
-    ld a,' '
-    rst.lil $10
-    call print_float_dec_nor
-    call printNewLine
-
-    call print_float_hex_alt
     ld a,' '
     rst.lil $10
     call print_float_dec_alt
     call printNewLine
 
+    ; ld iy,arg1
+    ; call fetch_float_iy_nor
+    ; ld iy,arg2
+    ; call fetch_float_iy_alt
+
+    ; call print_float_dec_nor
+    ; ld a,' '
+    ; rst.lil $10
+    ; call print_float_dec_alt
+    ; call printNewLine
 
 ; ; --- inthlu ---
 ;     ld iy,arg1
@@ -278,29 +282,23 @@ main:
 ;     call print_float_hex_nor
 ;     ld a,' '
 ;     rst.lil $10
-;     call print_float_dec
-;     call printInline
-;     asciz " int: "
+;     call print_float_dec_nor
+;     call printNewLine
 
-;     ld iy,arg1
-;     call fetch_float_iy_nor
+;     call fetch_float_iy_alt
+
 ;     call int_fp_
-;     ld iy,arg2
-;     call store_float_iy_nor
 ;     call print_float_hex_nor
 ;     ld a,' '
 ;     rst.lil $10
-;     call print_float_dec
+;     call print_float_dec_nor
+;     call printNewLine
 
-;     call printInline
-;     asciz " hlu: "
-;     ld iy,arg2
-;     call fetch_float_iy_nor
-;     call int2hlu
-;     call printHex24
+;     call print_float_hex_alt
 ;     ld a,' '
 ;     rst.lil $10
-;     call printDec
+;     call print_float_dec_alt
+;     call printNewLine
 
 ; ; --- polar_to_cartesian_fpp ---
 
@@ -385,7 +383,7 @@ get_arg_float:
     lea ix,ix+3 ; point to the next argument
     push ix ; preserve
     ld ix,(ix)  ; point to argument string
-    call VAL_FP ; convert the string to a float
+    call val_fp ; convert the string to a float
     pop ix ; restore
     ret ; return with the value in HLH'L'C
 
@@ -397,7 +395,7 @@ store_arg_iy_float:
     lea ix,ix+3 ; point to the next argument
     push ix ; preserve
     ld ix,(ix)  ; point to argument string
-    call VAL_FP ; convert the string to a float
+    call val_fp ; convert the string to a float
     call store_float_iy_nor ; save the float in buffer
     pop ix ; restore
     ret ; return with the value in HLH'L'C
