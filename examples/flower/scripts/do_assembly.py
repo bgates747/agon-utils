@@ -199,14 +199,15 @@ if __name__ == '__main__':
     tgt_bin_dir = os.path.expanduser('~/Agon/emulator/sdcard/mystuff/agon-utils/examples/flower/tgt')
     mos_dir = 'mos'
 
+    assemble = True
+    copy_sdcard = True
+    run_emulator = False
+
     if False:
         app_name = 'evalbas'
         tgt_bin_filename = f'{app_name}.bin'
         copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
         autoexec_text = []
-        assemble = True
-        copy_sdcard = False
-        run_emulator = False
         build_and_run(asm_src_dir,tgt_bin_dir,emulator_dir,mos_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_bin_filename)
         lst_filepath = f'{asm_src_dir}/{app_name}.lst'
         expand_lst(lst_filepath, lst_filepath, exclude_comments=False)
@@ -217,9 +218,6 @@ if __name__ == '__main__':
         tgt_bin_filename = f'{app_name}.bin'
         copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
         autoexec_text = []
-        assemble = True
-        copy_sdcard = False
-        run_emulator = False
         build_and_run(asm_src_dir,tgt_bin_dir,emulator_dir,mos_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_bin_filename)
         lst_filepath = f'{asm_src_dir}/{app_name}.lst'
         expand_lst(lst_filepath, lst_filepath, exclude_comments=False)
@@ -230,9 +228,6 @@ if __name__ == '__main__':
         tgt_bin_filename = f'{app_name}.bin'
         copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
         autoexec_text = []
-        assemble = True
-        copy_sdcard = False
-        run_emulator = False
         build_and_run(asm_src_dir,tgt_bin_dir,emulator_dir,mos_dir,assemble,copy_sdcard,copy_sdcard_include_pattern,run_emulator,autoexec_text,app_name,tgt_bin_filename)
         lst_filepath = f'{asm_src_dir}/{app_name}.lst'
         expand_lst(lst_filepath, lst_filepath, exclude_comments=False)

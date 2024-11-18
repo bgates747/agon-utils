@@ -294,12 +294,7 @@ _main_end_ok:
 main:    
     dec c               ; decrement the argument count to skip the program name
     call load_input     ; load the input arguments
-
-; --- clear the screen ---
-    ld a,19
-    call vdu_set_screen_mode
-    call vdu_cls
-
+    call vdu_cls        ; clear the screen
     call print_input    ; print the input arguments
 
 ; Set screen origin to the center
@@ -408,16 +403,6 @@ main:
 ; set initial point and move graphics cursor to it
     call calc_point ; HLH'L'C = x DED'E'B = y
 
-; ; DEBUG
-;     call printNewLine
-;     call print_float_dec_nor
-;     ld a,' '
-;     rst.lil $10
-;     call print_float_dec_alt
-;     call printNewLine
-;     jp _main_end_ok
-; ; END DEBUG
-
     ld a,plot_pt+mv_abs
     call vdu_plot_float
 
@@ -459,14 +444,6 @@ main:
     call vdu_plot_float
 
 ; Decrement the loop counter
-; ; DEBUG
-;     ld c,0 ; x
-;     ld b,1 ; y
-;     call vdu_move_cursor
-;     ld hl,(total_steps)
-;     call printDec
-; ; END DEBUG
-
     ld hl,(total_steps)
     ld de,-1
     and a ; clear carry
@@ -484,16 +461,9 @@ vdu_plot_float:
     call int2hlu
     ld (@x0),hl
 
-    ; call printDec
-    ; ld a,','
-    ; rst.lil $10
-
     call SWAP
     call int2hlu
     ld (@y0),hl
-
-    ; call printDec
-    ; call printNewLine
 
 	ld hl,@cmd
 	ld bc,@end-@cmd
