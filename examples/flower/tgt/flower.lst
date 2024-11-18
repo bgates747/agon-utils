@@ -535,11 +535,11 @@
 0B00BE C5      0170 PUSH		BC
 0B00BF 21      0171 LD		HL, RAM_START
 0B00C0 00 
-0B00C1 21 
+0B00C1 22 
 0B00C2 0B 
 0B00C3 11      0172 LD		DE, RAM_START + 1
 0B00C4 01 
-0B00C5 21 
+0B00C5 22 
 0B00C6 0B 
 0B00C7 01      0173 LD		BC, RAM_END - RAM_START - 1
 0B00C8 4F 
@@ -7553,7 +7553,7 @@
               0311* ; convert the number to a string
 0B1765 11     0312* ld de,ACCS          ; point to the string accumulator
 0B1766 00 
-0B1767 21 
+0B1767 22 
 0B1768 0B 
 0B1769 DD     0313* ld ix,@G9-1         ; get the format code for the number
 0B176A 21 
@@ -7569,7 +7569,7 @@
 0B1774 00 
 0B1775 21     0317* ld hl,ACCS          ; point to the string accumulator
 0B1776 00 
-0B1777 21 
+0B1777 22 
 0B1778 0B 
 0B1779 CD     0318* call printString
 0B177A CE 
@@ -9539,7 +9539,7 @@
 0B1D54 FE      0267 cp min_args         ; not enough?
 0B1D55 02 
 0B1D56 30      0268 jr nc,main          ; if enough, go to main loop
-0B1D57 2F 
+0B1D57 1F 
 0B1D58 21      0269 ld hl,str_usage     ; if not enough, print usage
 0B1D59 C8 
 0B1D5A 1C 
@@ -9576,970 +9576,1090 @@
                0283 ; end BASIC-specific end code
                0284 
                0285 _main_end_ok:
-0B1D72 CD      0286 call printNewLine
-0B1D73 E3 
-0B1D74 0E 
-0B1D75 0B 
-0B1D76 21      0287 ld hl,str_success   ; print success message
-0B1D77 E9 
-0B1D78 1C 
-0B1D79 0B 
-0B1D7A CD      0288 call printString
-0B1D7B CE 
-0B1D7C 0E 
-0B1D7D 0B 
-0B1D7E CD      0289 call printNewLine
-0B1D7F E3 
-0B1D80 0E 
-0B1D81 0B 
-0B1D82 21      0290 ld hl,0             ; return 0 for success
-0B1D83 00 
-0B1D84 00 
-0B1D85 00 
-0B1D86 C9      0291 ret
+               0286 ; call printNewLine
+               0287 ; ld hl,str_success   ; print success message
+               0288 ; call printString
+               0289 ; call printNewLine
+0B1D72 21      0290 ld hl,0             ; return 0 for success
+0B1D73 00 
+0B1D74 00 
+0B1D75 00 
+0B1D76 C9      0291 ret
                0292 
                0293 ; ========= BEGIN CUSTOM MAIN LOOP =========
                0294 main:
-0B1D87 0D      0295 dec c               ; decrement the argument count to skip the program name
-0B1D88 CD      0296 call load_input     ; load the input arguments
-0B1D89 19 
-0B1D8A 1F 
-0B1D8B 0B 
-0B1D8C CD      0297 call print_input    ; print the input arguments
-0B1D8D 32 
-0B1D8E 1F 
-0B1D8F 0B 
+0B1D77 0D      0295 dec c               ; decrement the argument count to skip the program name
+0B1D78 CD      0296 call load_input     ; load the input arguments
+0B1D79 A0 
+0B1D7A 1F 
+0B1D7B 0B 
+0B1D7C CD      0297 call print_input    ; print the input arguments
+0B1D7D B9 
+0B1D7E 1F 
+0B1D7F 0B 
                0298 
                0299 ; --- clear the screen ---
-               0300 ; call vdu_cls
-               0301 
-               0302 ; --- load radius_scale ---
-               0303 LOAD_FLOAT "256" ; HLH'L'C = 256
-0B1D90 DD     0001M ld ix,$+11
-0B1D91 21 
-0B1D92 9B 
-0B1D93 1D 
-0B1D93 0B   
-0B1D95 CD     0002M call VAL_FP
-0B1D96 49 
-0B1D97 05 
-0B1D98 0B 
-0B1D99 DD     0003M jp (ix)
-0B1D9A E9 
-0B1D9B 32     0004M asciz ARG
-0B1D9C 35 
-0B1D9D 36 
-0B1D9E 00 
-0B1D9F FD      0304 ld iy,radius_scale
-0B1DA0 21 
-0B1DA1 17 
-0B1DA2 1D 
-0B1DA2 0B   
-0B1DA4 CD      0305 call store_float_iy_nor
-0B1DA5 88 
-0B1DA6 16 
-0B1DA7 0B 
-               0306 
-               0307 ; --- convert input thetas to radians
-0B1DA8 FD      0308 ld iy,theta_prime
-0B1DA9 21 
-0B1DAA 30 
-0B1DAB 1D 
-0B1DAB 0B   
-0B1DAD CD      0309 call fetch_float_iy_nor
-0B1DAE 9A 
-0B1DAF 16 
-0B1DB0 0B 
-0B1DB1 3E      0310 ld a,rad
-0B1DB2 1B 
-0B1DB3 CD      0311 call FPP
-0B1DB4 D2 
-0B1DB5 00 
-0B1DB6 0B 
-0B1DB7 CD      0312 call store_float_iy_nor
-0B1DB8 88 
-0B1DB9 16 
-0B1DBA 0B 
+0B1D80 3E      0300 ld a,19
+0B1D81 13 
+0B1D82 CD      0301 call vdu_set_screen_mode
+0B1D83 B1 
+0B1D84 18 
+0B1D85 0B 
+0B1D86 CD      0302 call vdu_cls
+0B1D87 01 
+0B1D88 18 
+0B1D89 0B 
+               0303 
+               0304 ; Set screen origin to the center
+0B1D8A 01      0305 ld bc,1280/2 ; x
+0B1D8B 80 
+0B1D8C 02 
+0B1D8D 00 
+0B1D8E 11      0306 ld de,1024/2 ; y
+0B1D8F 00 
+0B1D90 02 
+0B1D91 00 
+0B1D92 CD      0307 call vdu_set_gfx_origin
+0B1D93 6D 
+0B1D94 18 
+0B1D95 0B 
+               0308 
+               0309 ; --- load radius_scale ---
+               0310 LOAD_FLOAT "256" ; HLH'L'C = 256
+0B1D96 DD     0001M ld ix,$+11
+0B1D97 21 
+0B1D98 A1 
+0B1D99 1D 
+0B1D99 0B   
+0B1D9B CD     0002M call VAL_FP
+0B1D9C 49 
+0B1D9D 05 
+0B1D9E 0B 
+0B1D9F DD     0003M jp (ix)
+0B1DA0 E9 
+0B1DA1 32     0004M asciz ARG
+0B1DA2 35 
+0B1DA3 36 
+0B1DA4 00 
+0B1DA5 FD      0311 ld iy,radius_scale
+0B1DA6 21 
+0B1DA7 17 
+0B1DA8 1D 
+0B1DA8 0B   
+0B1DAA CD      0312 call store_float_iy_nor
+0B1DAB 88 
+0B1DAC 16 
+0B1DAD 0B 
                0313 
-0B1DBB FD      0314 ld iy,theta_petal
-0B1DBC 21 
-0B1DBD 35 
-0B1DBE 1D 
-0B1DBE 0B   
-0B1DC0 CD      0315 call fetch_float_iy_nor
-0B1DC1 9A 
-0B1DC2 16 
-0B1DC3 0B 
-0B1DC4 3E      0316 ld a,rad
-0B1DC5 1B 
-0B1DC6 CD      0317 call FPP
-0B1DC7 D2 
-0B1DC8 00 
+               0314 ; --- convert input thetas to radians
+0B1DAE FD      0315 ld iy,theta_prime
+0B1DAF 21 
+0B1DB0 30 
+0B1DB1 1D 
+0B1DB1 0B   
+0B1DB3 CD      0316 call fetch_float_iy_nor
+0B1DB4 9A 
+0B1DB5 16 
+0B1DB6 0B 
+0B1DB7 3E      0317 ld a,rad
+0B1DB8 1B 
+0B1DB9 CD      0318 call FPP
+0B1DBA D2 
+0B1DBB 00 
+0B1DBC 0B 
+0B1DBD CD      0319 call store_float_iy_nor
+0B1DBE 88 
+0B1DBF 16 
+0B1DC0 0B 
+               0320 
+0B1DC1 FD      0321 ld iy,theta_petal
+0B1DC2 21 
+0B1DC3 35 
+0B1DC4 1D 
+0B1DC4 0B   
+0B1DC6 CD      0322 call fetch_float_iy_nor
+0B1DC7 9A 
+0B1DC8 16 
 0B1DC9 0B 
-0B1DCA CD      0318 call store_float_iy_nor
-0B1DCB 88 
-0B1DCC 16 
-0B1DCD 0B 
-               0319 
-               0320 ; --- compute the main loop parameters ---
-               0321 ; step_theta_prime = 2 * pi / (petals * vectors)
-0B1DCE FD      0322 ld iy,petals
-0B1DCF 21 
-0B1DD0 F4 
-0B1DD1 1C 
-0B1DD1 0B   
-0B1DD3 CD      0323 call fetch_float_iy_nor
-0B1DD4 9A 
-0B1DD5 16 
-0B1DD6 0B 
-0B1DD7 FD      0324 ld iy,vectors
-0B1DD8 21 
-0B1DD9 F9 
-0B1DDA 1C 
-0B1DDA 0B   
-0B1DDC CD      0325 call fetch_float_iy_alt
-0B1DDD BE 
-0B1DDE 16 
-0B1DDF 0B 
-0B1DE0 3E      0326 ld a,fmul
-0B1DE1 0A 
-0B1DE2 CD      0327 call FPP ; HLH'L'C = petals * vectors
-0B1DE3 D2 
-0B1DE4 00 
+0B1DCA 3E      0323 ld a,rad
+0B1DCB 1B 
+0B1DCC CD      0324 call FPP
+0B1DCD D2 
+0B1DCE 00 
+0B1DCF 0B 
+0B1DD0 CD      0325 call store_float_iy_nor
+0B1DD1 88 
+0B1DD2 16 
+0B1DD3 0B 
+               0326 
+               0327 ; --- compute the main loop parameters ---
+               0328 ; step_theta_prime = 2 * pi / (petals * vectors)
+0B1DD4 FD      0329 ld iy,petals
+0B1DD5 21 
+0B1DD6 F4 
+0B1DD7 1C 
+0B1DD7 0B   
+0B1DD9 CD      0330 call fetch_float_iy_nor
+0B1DDA 9A 
+0B1DDB 16 
+0B1DDC 0B 
+0B1DDD FD      0331 ld iy,vectors
+0B1DDE 21 
+0B1DDF F9 
+0B1DE0 1C 
+0B1DE0 0B   
+0B1DE2 CD      0332 call fetch_float_iy_alt
+0B1DE3 BE 
+0B1DE4 16 
 0B1DE5 0B 
-0B1DE6 CD      0328 call pi2_alt ; DED'E'B = 2 * pi
-0B1DE7 B9 
-0B1DE8 17 
-0B1DE9 0B 
-0B1DEA CD      0329 call SWAP ; HLH'L'C <--> DED'E'B
-0B1DEB BF 
-0B1DEC 15 
-0B1DED 0B 
-0B1DEE 3E      0330 ld a,fdiv
-0B1DEF 0F 
-0B1DF0 CD      0331 call FPP ; HLH'L'C = 2 * pi / (petals * vectors)
-0B1DF1 D2 
-0B1DF2 00 
+0B1DE6 3E      0333 ld a,fmul
+0B1DE7 0A 
+0B1DE8 CD      0334 call FPP ; HLH'L'C = petals * vectors
+0B1DE9 D2 
+0B1DEA 00 
+0B1DEB 0B 
+0B1DEC CD      0335 call pi2_alt ; DED'E'B = 2 * pi
+0B1DED B9 
+0B1DEE 17 
+0B1DEF 0B 
+0B1DF0 CD      0336 call SWAP ; HLH'L'C <--> DED'E'B
+0B1DF1 BF 
+0B1DF2 15 
 0B1DF3 0B 
-0B1DF4 FD      0332 ld iy,step_theta_prime
-0B1DF5 21 
-0B1DF6 1C 
-0B1DF7 1D 
-0B1DF7 0B   
-0B1DF9 CD      0333 call store_float_iy_nor
-0B1DFA 88 
-0B1DFB 16 
-0B1DFC 0B 
-               0334 
-               0335 ; step_theta_petal = 2 * pi / vectors
-0B1DFD FD      0336 ld iy,vectors
-0B1DFE 21 
-0B1DFF F9 
-0B1E00 1C 
-0B1E00 0B   
-0B1E02 CD      0337 call fetch_float_iy_nor
-0B1E03 9A 
-0B1E04 16 
-0B1E05 0B 
-0B1E06 CD      0338 call pi2_alt ; DED'E'B = 2 * pi
-0B1E07 B9 
-0B1E08 17 
-0B1E09 0B 
-0B1E0A CD      0339 call SWAP ; HLH'L'C <--> DED'E'B
-0B1E0B BF 
-0B1E0C 15 
-0B1E0D 0B 
-0B1E0E 3E      0340 ld a,fdiv
-0B1E0F 0F 
-0B1E10 CD      0341 call FPP ; HLH'L'C = 2 * pi / vectors
-0B1E11 D2 
-0B1E12 00 
+0B1DF4 3E      0337 ld a,fdiv
+0B1DF5 0F 
+0B1DF6 CD      0338 call FPP ; HLH'L'C = 2 * pi / (petals * vectors)
+0B1DF7 D2 
+0B1DF8 00 
+0B1DF9 0B 
+0B1DFA FD      0339 ld iy,step_theta_prime
+0B1DFB 21 
+0B1DFC 1C 
+0B1DFD 1D 
+0B1DFD 0B   
+0B1DFF CD      0340 call store_float_iy_nor
+0B1E00 88 
+0B1E01 16 
+0B1E02 0B 
+               0341 
+               0342 ; step_theta_petal = 2 * pi / vectors
+0B1E03 FD      0343 ld iy,vectors
+0B1E04 21 
+0B1E05 F9 
+0B1E06 1C 
+0B1E06 0B   
+0B1E08 CD      0344 call fetch_float_iy_nor
+0B1E09 9A 
+0B1E0A 16 
+0B1E0B 0B 
+0B1E0C CD      0345 call pi2_alt ; DED'E'B = 2 * pi
+0B1E0D B9 
+0B1E0E 17 
+0B1E0F 0B 
+0B1E10 CD      0346 call SWAP ; HLH'L'C <--> DED'E'B
+0B1E11 BF 
+0B1E12 15 
 0B1E13 0B 
-0B1E14 FD      0342 ld iy,step_theta_petal
-0B1E15 21 
-0B1E16 21 
-0B1E17 1D 
-0B1E17 0B   
-0B1E19 CD      0343 call store_float_iy_nor
-0B1E1A 88 
-0B1E1B 16 
-0B1E1C 0B 
-               0344 
-               0345 ; total_steps = int(petals * vectors * periods)
-0B1E1D FD      0346 ld iy,petals
-0B1E1E 21 
-0B1E1F F4 
-0B1E20 1C 
-0B1E20 0B   
-0B1E22 CD      0347 call fetch_float_iy_nor
-0B1E23 9A 
-0B1E24 16 
-0B1E25 0B 
-0B1E26 FD      0348 ld iy,vectors
-0B1E27 21 
-0B1E28 F9 
-0B1E29 1C 
-0B1E29 0B   
-0B1E2B CD      0349 call fetch_float_iy_alt
-0B1E2C BE 
-0B1E2D 16 
-0B1E2E 0B 
-0B1E2F 3E      0350 ld a,fmul
-0B1E30 0A 
-0B1E31 CD      0351 call FPP ; HLH'L'C = petals * vectors
-0B1E32 D2 
-0B1E33 00 
+0B1E14 3E      0347 ld a,fdiv
+0B1E15 0F 
+0B1E16 CD      0348 call FPP ; HLH'L'C = 2 * pi / vectors
+0B1E17 D2 
+0B1E18 00 
+0B1E19 0B 
+0B1E1A FD      0349 ld iy,step_theta_petal
+0B1E1B 21 
+0B1E1C 21 
+0B1E1D 1D 
+0B1E1D 0B   
+0B1E1F CD      0350 call store_float_iy_nor
+0B1E20 88 
+0B1E21 16 
+0B1E22 0B 
+               0351 
+               0352 ; total_steps = int(petals * vectors * periods)
+0B1E23 FD      0353 ld iy,petals
+0B1E24 21 
+0B1E25 F4 
+0B1E26 1C 
+0B1E26 0B   
+0B1E28 CD      0354 call fetch_float_iy_nor
+0B1E29 9A 
+0B1E2A 16 
+0B1E2B 0B 
+0B1E2C FD      0355 ld iy,vectors
+0B1E2D 21 
+0B1E2E F9 
+0B1E2F 1C 
+0B1E2F 0B   
+0B1E31 CD      0356 call fetch_float_iy_alt
+0B1E32 BE 
+0B1E33 16 
 0B1E34 0B 
-0B1E35 FD      0352 ld iy,periods
-0B1E36 21 
-0B1E37 03 
-0B1E38 1D 
-0B1E38 0B   
-0B1E3A CD      0353 call fetch_float_iy_alt
-0B1E3B BE 
-0B1E3C 16 
-0B1E3D 0B 
-0B1E3E 3E      0354 ld a,fmul
-0B1E3F 0A 
-0B1E40 CD      0355 call FPP ; HLH'L'C = petals * vectors * periods
-0B1E41 D2 
-0B1E42 00 
+0B1E35 3E      0357 ld a,fmul
+0B1E36 0A 
+0B1E37 CD      0358 call FPP ; HLH'L'C = petals * vectors
+0B1E38 D2 
+0B1E39 00 
+0B1E3A 0B 
+0B1E3B FD      0359 ld iy,periods
+0B1E3C 21 
+0B1E3D 03 
+0B1E3E 1D 
+0B1E3E 0B   
+0B1E40 CD      0360 call fetch_float_iy_alt
+0B1E41 BE 
+0B1E42 16 
 0B1E43 0B 
-0B1E44 FD      0356 ld iy,total_steps
-0B1E45 21 
-0B1E46 26 
-0B1E47 1D 
-0B1E47 0B   
-0B1E49 CD      0357 call store_float_iy_nor ; we'll make it an integer after computing step_shrink
-0B1E4A 88 
-0B1E4B 16 
-0B1E4C 0B 
-               0358 
-               0359 ; Calculate shrink per step (linear)
-               0360 ; step_shrink = -shrink * radius_scale / total_steps
-0B1E4D FD      0361 ld iy,shrink
-0B1E4E 21 
-0B1E4F 08 
-0B1E50 1D 
-0B1E50 0B   
-0B1E52 CD      0362 call fetch_float_iy_nor
-0B1E53 9A 
-0B1E54 16 
-0B1E55 0B 
-0B1E56 FD      0363 ld iy,radius_scale
-0B1E57 21 
-0B1E58 17 
-0B1E59 1D 
-0B1E59 0B   
-0B1E5B CD      0364 call fetch_float_iy_alt
-0B1E5C BE 
-0B1E5D 16 
-0B1E5E 0B 
-0B1E5F 3E      0365 ld a,fmul
-0B1E60 0A 
-0B1E61 CD      0366 call FPP ; HLH'L'C = shrink * radius_scale
-0B1E62 D2 
-0B1E63 00 
+0B1E44 3E      0361 ld a,fmul
+0B1E45 0A 
+0B1E46 CD      0362 call FPP ; HLH'L'C = petals * vectors * periods
+0B1E47 D2 
+0B1E48 00 
+0B1E49 0B 
+0B1E4A FD      0363 ld iy,total_steps
+0B1E4B 21 
+0B1E4C 26 
+0B1E4D 1D 
+0B1E4D 0B   
+0B1E4F CD      0364 call store_float_iy_nor ; we'll make it an integer after computing step_shrink
+0B1E50 88 
+0B1E51 16 
+0B1E52 0B 
+               0365 
+               0366 ; Calculate shrink per step (linear)
+               0367 ; step_shrink = -shrink * radius_scale / total_steps
+0B1E53 FD      0368 ld iy,shrink
+0B1E54 21 
+0B1E55 08 
+0B1E56 1D 
+0B1E56 0B   
+0B1E58 CD      0369 call fetch_float_iy_nor
+0B1E59 9A 
+0B1E5A 16 
+0B1E5B 0B 
+0B1E5C FD      0370 ld iy,radius_scale
+0B1E5D 21 
+0B1E5E 17 
+0B1E5F 1D 
+0B1E5F 0B   
+0B1E61 CD      0371 call fetch_float_iy_alt
+0B1E62 BE 
+0B1E63 16 
 0B1E64 0B 
-0B1E65 FD      0367 ld iy,total_steps
-0B1E66 21 
-0B1E67 26 
-0B1E68 1D 
-0B1E68 0B   
-0B1E6A CD      0368 call fetch_float_iy_alt
-0B1E6B BE 
-0B1E6C 16 
-0B1E6D 0B 
-0B1E6E 3E      0369 ld a,fdiv
-0B1E6F 0F 
-0B1E70 CD      0370 call FPP ; HLH'L'C = shrink * radius_scale / total_steps
-0B1E71 D2 
-0B1E72 00 
+0B1E65 3E      0372 ld a,fmul
+0B1E66 0A 
+0B1E67 CD      0373 call FPP ; HLH'L'C = shrink * radius_scale
+0B1E68 D2 
+0B1E69 00 
+0B1E6A 0B 
+0B1E6B FD      0374 ld iy,total_steps
+0B1E6C 21 
+0B1E6D 26 
+0B1E6E 1D 
+0B1E6E 0B   
+0B1E70 CD      0375 call fetch_float_iy_alt
+0B1E71 BE 
+0B1E72 16 
 0B1E73 0B 
-0B1E74 CD      0371 call NEGATE ; HLH'L'C = -shrink * radius_scale / total_steps
-0B1E75 42 
-0B1E76 0B 
-0B1E77 0B 
-0B1E78 FD      0372 ld iy,step_shrink
-0B1E79 21 
-0B1E7A 2B 
-0B1E7B 1D 
-0B1E7B 0B   
-0B1E7D CD      0373 call store_float_iy_nor
-0B1E7E 88 
-0B1E7F 16 
-0B1E80 0B 
-               0374 
-               0375 ; Make total_steps an integer and store it in uhl
-0B1E81 FD      0376 ld iy,total_steps
-0B1E82 21 
-0B1E83 26 
-0B1E84 1D 
-0B1E84 0B   
-0B1E86 CD      0377 call fetch_float_iy_nor
-0B1E87 9A 
-0B1E88 16 
-0B1E89 0B 
-0B1E8A CD      0378 call int2hlu ; HLH'L'C = int(total_steps)
-0B1E8B C7 
-0B1E8C 15 
-0B1E8D 0B 
-0B1E8E FD      0379 ld (iy),hl ; uhl = int(total_steps)
-0B1E8F 2F 
-0B1E90 00 
-               0380 
-               0381 ; Initialize radius_prime
-0B1E91 FD      0382 ld iy,radius_scale
-0B1E92 21 
-0B1E93 17 
-0B1E94 1D 
-0B1E94 0B   
-0B1E96 CD      0383 call fetch_float_iy_nor
-0B1E97 9A 
-0B1E98 16 
-0B1E99 0B 
-0B1E9A FD      0384 ld iy,radius_prime
-0B1E9B 21 
-0B1E9C 3A 
-0B1E9D 1D 
-0B1E9D 0B   
-0B1E9F CD      0385 call store_float_iy_nor
-0B1EA0 88 
-0B1EA1 16 
-0B1EA2 0B 
-               0386 
-               0387 ; Set screen origin to the center
-0B1EA3 01      0388 ld bc,1280/2 ; x
-0B1EA4 80 
-0B1EA5 02 
-0B1EA6 00 
-0B1EA7 11      0389 ld de,1024/2 ; y
-0B1EA8 00 
-0B1EA9 02 
-0B1EAA 00 
-0B1EAB CD      0390 call vdu_set_gfx_origin
-0B1EAC 6D 
-0B1EAD 18 
-0B1EAE 0B 
-               0391 
-               0392 ; set initial point and move graphics cursor to it
-0B1EAF CD      0393 call calc_point ; HLH'L'C = x DED'E'B = y
-0B1EB0 CB 
-0B1EB1 1E 
-0B1EB2 0B 
-               0394 ; ld a,plot_pt+mv_abs ; plot mode
-               0395 ; call vdu_plot
-               0396 ; fall through to main loop
+0B1E74 3E      0376 ld a,fdiv
+0B1E75 0F 
+0B1E76 CD      0377 call FPP ; HLH'L'C = shrink * radius_scale / total_steps
+0B1E77 D2 
+0B1E78 00 
+0B1E79 0B 
+0B1E7A CD      0378 call NEGATE ; HLH'L'C = -shrink * radius_scale / total_steps
+0B1E7B 42 
+0B1E7C 0B 
+0B1E7D 0B 
+0B1E7E FD      0379 ld iy,step_shrink
+0B1E7F 21 
+0B1E80 2B 
+0B1E81 1D 
+0B1E81 0B   
+0B1E83 CD      0380 call store_float_iy_nor
+0B1E84 88 
+0B1E85 16 
+0B1E86 0B 
+               0381 
+               0382 ; Make total_steps an integer and store it in uhl
+0B1E87 FD      0383 ld iy,total_steps
+0B1E88 21 
+0B1E89 26 
+0B1E8A 1D 
+0B1E8A 0B   
+0B1E8C CD      0384 call fetch_float_iy_nor
+0B1E8D 9A 
+0B1E8E 16 
+0B1E8F 0B 
+0B1E90 CD      0385 call int2hlu ; HLH'L'C = int(total_steps)
+0B1E91 C7 
+0B1E92 15 
+0B1E93 0B 
+0B1E94 FD      0386 ld (iy),hl ; uhl = int(total_steps)
+0B1E95 2F 
+0B1E96 00 
+               0387 
+               0388 ; Initialize radius_prime
+0B1E97 FD      0389 ld iy,radius_scale
+0B1E98 21 
+0B1E99 17 
+0B1E9A 1D 
+0B1E9A 0B   
+0B1E9C CD      0390 call fetch_float_iy_nor
+0B1E9D 9A 
+0B1E9E 16 
+0B1E9F 0B 
+0B1EA0 FD      0391 ld iy,radius_prime
+0B1EA1 21 
+0B1EA2 3A 
+0B1EA3 1D 
+0B1EA3 0B   
+0B1EA5 CD      0392 call store_float_iy_nor
+0B1EA6 88 
+0B1EA7 16 
+0B1EA8 0B 
+               0393 
+               0394 ; set initial point and move graphics cursor to it
+0B1EA9 CD      0395 call calc_point ; HLH'L'C = x DED'E'B = y
+0B1EAA 52 
+0B1EAB 1F 
+0B1EAC 0B 
+0B1EAD CD      0396 call vdu_plot_float
+0B1EAE 1C 
+0B1EAF 1F 
+0B1EB0 0B 
                0397 
-               0398 ; DEBUG
-0B1EB3 CD      0399 call printNewLine
-0B1EB4 E3 
-0B1EB5 0E 
-0B1EB6 0B 
-0B1EB7 CD      0400 call print_float_dec_nor
-0B1EB8 51 
-0B1EB9 17 
-0B1EBA 0B 
-0B1EBB CD      0401 call printNewLine
-0B1EBC E3 
-0B1EBD 0E 
-0B1EBE 0B 
-0B1EBF CD      0402 call print_float_dec_alt
-0B1EC0 9E 
-0B1EC1 17 
+               0398 ; fall through to main loop
+               0399 
+               0400 ; ; DEBUG
+               0401 ;     call printNewLine
+               0402 ;     call print_float_dec_nor
+               0403 ;     call printNewLine
+               0404 ;     call print_float_dec_alt
+               0405 ;     jp _main_end_ok
+               0406 ; ; END DEBUG
+               0407 
+               0408 @loop:
+               0409 ; Advance thetas
+               0410 ; theta_prime += step_theta_prime
+0B1EB1 FD      0411 ld iy,step_theta_prime
+0B1EB2 21 
+0B1EB3 1C 
+0B1EB4 1D 
+0B1EB4 0B   
+0B1EB6 CD      0412 call fetch_float_iy_nor
+0B1EB7 9A 
+0B1EB8 16 
+0B1EB9 0B 
+0B1EBA FD      0413 ld iy,theta_prime
+0B1EBB 21 
+0B1EBC 30 
+0B1EBD 1D 
+0B1EBD 0B   
+0B1EBF CD      0414 call fetch_float_iy_alt
+0B1EC0 BE 
+0B1EC1 16 
 0B1EC2 0B 
-0B1EC3 C3      0403 jp _main_end_ok
-0B1EC4 72 
-0B1EC5 1D 
-0B1EC6 0B 
-               0404 ; END DEBUG
-               0405 
-               0406 @loop:
-               0407 ; ; Advance theta values
-               0408 ;     ; theta_prime += step_theta_prime
-               0409 ;     ld hl,(theta_prime)
-               0410 ;     ld de,(step_theta_prime)
-               0411 ;     add hl,de
-               0412 ;     ld (theta_prime),hl
-               0413 
-               0414 ;     ; theta_petal += step_theta_petal
-               0415 ;     ld hl,(theta_petal)
-               0416 ;     ld de,(step_theta_petal)
-               0417 ;     add hl,de
-               0418 ;     ld (theta_petal),hl
-               0419 
-               0420 ; ; Update radius_prime
-               0421 ;     ; radius_prime += step_shrink
-               0422 ;     ld hl,(radius_prime)
-               0423 ;     ld de,(step_shrink)
-               0424 ;     add hl,de
-               0425 ;     ld (radius_prime),hl
-               0426 
-               0427 ; ; Calculate new coordinates and draw a line from the previous point
-               0428 ;     call calc_point ; ub.c = x, ud.e = y
-               0429 ;     ld a,plot_sl_both+dr_abs_fg ; plot mode
-               0430 ;     call vdu_plot_168
-               0431 
-               0432 ;     ; call printNewLine
-               0433 ;     ; call print_theta_prime
-               0434 ;     ; call print_theta_petal
-               0435 ;     ; ; call print_radius_prime
-               0436 ;     ; ; call print_radius_petal
-               0437 ;     ; call print_radius
-               0438 ;     ; call print_xy
-               0439 
-               0440 ; ; Decrement the loop counter
-               0441 ;     ld hl,total_steps
-               0442 ;     dec (hl)
-               0443 ;     jp nz,@loop
-               0444 
-0B1EC7 C3      0445 jp _main_end_ok
-0B1EC8 72 
-0B1EC9 1D 
-0B1ECA 0B 
-               0446 
-               0447 ; compute the Cartesian coordinates of the next point on the curve
-               0448 ; inputs: theta_prime, theta_petal, radius_prime, depth
-               0449 ; outputs: HLH'L'C = x, DED'E'B = y
-               0450 calc_point:
-               0451 ; Calculate the petal radius and total radius
-               0452 ; radius_petal = math.cos(theta_petal) * depth
-0B1ECB FD      0453 ld iy,theta_petal
-0B1ECC 21 
-0B1ECD 35 
-0B1ECE 1D 
-0B1ECE 0B   
-0B1ED0 CD      0454 call fetch_float_iy_nor
-0B1ED1 9A 
-0B1ED2 16 
-0B1ED3 0B 
-0B1ED4 3E      0455 ld a,cos
-0B1ED5 14 
-0B1ED6 CD      0456 call FPP ; HLH'L'C = cos(theta_petal)
-0B1ED7 D2 
-0B1ED8 00 
-0B1ED9 0B 
-0B1EDA FD      0457 ld iy,depth
-0B1EDB 21 
-0B1EDC FE 
-0B1EDD 1C 
-0B1EDD 0B   
-0B1EDF CD      0458 call fetch_float_iy_alt
-0B1EE0 BE 
-0B1EE1 16 
-0B1EE2 0B 
-0B1EE3 3E      0459 ld a,fmul
-0B1EE4 0A 
-0B1EE5 CD      0460 call FPP ; HLH'L'C = radius_petal
-0B1EE6 D2 
-0B1EE7 00 
+0B1EC3 3E      0415 ld a,fadd
+0B1EC4 0B 
+0B1EC5 CD      0416 call FPP ; HLH'L'C = theta_prime + step_theta_prime
+0B1EC6 D2 
+0B1EC7 00 
+0B1EC8 0B 
+0B1EC9 CD      0417 call store_float_iy_nor ; theta_prime
+0B1ECA 88 
+0B1ECB 16 
+0B1ECC 0B 
+               0418 
+               0419 ; theta_petal += step_theta_petal
+0B1ECD FD      0420 ld iy,step_theta_petal
+0B1ECE 21 
+0B1ECF 21 
+0B1ED0 1D 
+0B1ED0 0B   
+0B1ED2 CD      0421 call fetch_float_iy_nor
+0B1ED3 9A 
+0B1ED4 16 
+0B1ED5 0B 
+0B1ED6 FD      0422 ld iy,theta_petal
+0B1ED7 21 
+0B1ED8 35 
+0B1ED9 1D 
+0B1ED9 0B   
+0B1EDB CD      0423 call fetch_float_iy_alt
+0B1EDC BE 
+0B1EDD 16 
+0B1EDE 0B 
+0B1EDF 3E      0424 ld a,fadd
+0B1EE0 0B 
+0B1EE1 CD      0425 call FPP ; HLH'L'C = theta_petal + step_theta_petal
+0B1EE2 D2 
+0B1EE3 00 
+0B1EE4 0B 
+0B1EE5 CD      0426 call store_float_iy_nor ; theta_petal
+0B1EE6 88 
+0B1EE7 16 
 0B1EE8 0B 
-               0461 
-               0462 ; radius = radius_prime + radius_petal * radius_prime
-0B1EE9 FD      0463 ld iy,radius_prime
+               0427 
+               0428 ; Update radius_prime
+               0429 ; radius_prime += step_shrink
+0B1EE9 FD      0430 ld iy,step_shrink
 0B1EEA 21 
-0B1EEB 3A 
+0B1EEB 2B 
 0B1EEC 1D 
 0B1EEC 0B   
-0B1EEE CD      0464 call fetch_float_iy_alt
-0B1EEF BE 
+0B1EEE CD      0431 call fetch_float_iy_nor
+0B1EEF 9A 
 0B1EF0 16 
 0B1EF1 0B 
-0B1EF2 3E      0465 ld a,fmul
-0B1EF3 0A 
-0B1EF4 CD      0466 call FPP ; HLH'L'C = radius_petal * radius_prime
-0B1EF5 D2 
-0B1EF6 00 
-0B1EF7 0B 
-0B1EF8 FD      0467 ld iy,radius_prime
-0B1EF9 21 
-0B1EFA 3A 
-0B1EFB 1D 
-0B1EFB 0B   
-0B1EFD CD      0468 call fetch_float_iy_alt
-0B1EFE BE 
-0B1EFF 16 
+0B1EF2 FD      0432 ld iy,radius_prime
+0B1EF3 21 
+0B1EF4 3A 
+0B1EF5 1D 
+0B1EF5 0B   
+0B1EF7 CD      0433 call fetch_float_iy_alt
+0B1EF8 BE 
+0B1EF9 16 
+0B1EFA 0B 
+0B1EFB 3E      0434 ld a,fadd
+0B1EFC 0B 
+0B1EFD CD      0435 call FPP ; HLH'L'C = radius_prime + step_shrink
+0B1EFE D2 
+0B1EFF 00 
 0B1F00 0B 
-0B1F01 3E      0469 ld a,fadd
-0B1F02 0B 
-0B1F03 CD      0470 call FPP ; HLH'L'C = radius
-0B1F04 D2 
-0B1F05 00 
-0B1F06 0B 
-0B1F07 CD      0471 call SWAP ; DED'E'B = radius
-0B1F08 BF 
-0B1F09 15 
-0B1F0A 0B 
-               0472 
-               0473 ; Convert polar to Cartesian coordinates
-0B1F0B FD      0474 ld iy,theta_prime
-0B1F0C 21 
-0B1F0D 30 
-0B1F0E 1D 
-0B1F0E 0B   
-0B1F10 CD      0475 call fetch_float_iy_nor ; HLH'L'C = theta_prime
-0B1F11 9A 
-0B1F12 16 
-0B1F13 0B 
-0B1F14 CD      0476 call polar_to_cartesian_fpp ; HLH'L'C = x, DED'E'B = y
-0B1F15 D9 
-0B1F16 15 
+0B1F01 CD      0436 call store_float_iy_nor ; radius_prime
+0B1F02 88 
+0B1F03 16 
+0B1F04 0B 
+               0437 
+               0438 ; Calculate new coordinates and draw a line from the previous point
+0B1F05 CD      0439 call calc_point ; HLH'L'C = x DED'E'B = y
+0B1F06 52 
+0B1F07 1F 
+0B1F08 0B 
+0B1F09 3E      0440 ld a,plot_sl_both+dr_abs_fg ; plot mode
+0B1F0A 05 
+0B1F0B CD      0441 call vdu_plot_float
+0B1F0C 1C 
+0B1F0D 1F 
+0B1F0E 0B 
+               0442 
+               0443 ; Decrement the loop counter
+0B1F0F 21      0444 ld hl,total_steps
+0B1F10 26 
+0B1F11 1D 
+0B1F12 0B 
+0B1F13 35      0445 dec (hl)
+0B1F14 C2      0446 jp nz,@loop
+0B1F15 B1 
+0B1F16 1E 
 0B1F17 0B 
-               0477 
-0B1F18 C9      0478 ret
-               0479 
-               0480 
-               0481 ; --- Load arguments ---
-               0482 ; --------------------------------
-               0483 load_input:
-0B1F19 79      0484 ld a,c ; put the number of entered arguments in a
-0B1F1A 06      0485 ld b,input_params_num ; loop counter = number of arguments
-0B1F1B 05 
-0B1F1C B8      0486 cp b ; compare the number of arguments to the number of arguments
-0B1F1D C2      0487 jp nz,args_count_off ; handle discrepancies
-0B1F1E 4D 
-0B1F1F 1F 
-0B1F20 0B 
-0B1F21 FD      0488 ld iy,input_params  ; point to the arguments table
-0B1F22 21 
-0B1F23 F4 
-0B1F24 1C 
-0B1F24 0B   
-               0489 @loop:
-0B1F26 C5      0490 push bc ; save the loop counter
-0B1F27 CD      0491 call store_arg_iy_float ; get the next argument and store it
-0B1F28 0F 
-0B1F29 20 
-0B1F2A 0B 
-0B1F2B ED      0492 lea iy,iy+5  ; point to the next parameter
-0B1F2C 33 
-0B1F2D 05 
-0B1F2E C1      0493 pop bc ; get back the loop counter
-0B1F2F 10      0494 djnz @loop ; loop until done
-0B1F30 F5 
-0B1F31 C9      0495 ret
-               0496 
-               0497 print_input:
-0B1F32 06      0498 ld b,input_params_num ; loop counter = number of arguments
-0B1F33 05 
-0B1F34 FD      0499 ld iy,input_params  ; point to the arguments table
-0B1F35 21 
-0B1F36 F4 
-0B1F37 1C 
-0B1F37 0B   
-               0500 @loop:
-0B1F39 C5      0501 push bc ; save the loop counter
-0B1F3A CD      0502 call fetch_float_iy_nor ; fetch the next parameter into HLH'L'C
-0B1F3B 9A 
-0B1F3C 16 
-0B1F3D 0B 
-0B1F3E CD      0503 call print_float_dec_nor ; print the parameter
-0B1F3F 51 
-0B1F40 17 
-0B1F41 0B 
-0B1F42 3E      0504 ld a,' ' ; print a space separator
-0B1F43 20 
-0B1F44 5B      0505 rst.lil $10
-0B1F45 D7 
-0B1F46 ED      0506 lea iy,iy+5  ; point to the next parameter
-0B1F47 33 
-0B1F48 05 
-0B1F49 C1      0507 pop bc ; get back the loop counter
-0B1F4A 10      0508 djnz @loop ; loop until done
-0B1F4B ED 
-0B1F4C C9      0509 ret
-               0510 
-               0511 ; --- Specific parameter processing functions ---
-               0512 args_count_off:
-0B1F4D 21      0513 ld hl,@str_args_count_off
-0B1F4E 59 
-0B1F4F 1F 
-0B1F50 0B 
-0B1F51 CD      0514 call printString
-0B1F52 CE 
-0B1F53 0E 
-0B1F54 0B 
-0B1F55 C3      0515 jp _main_end_error
-0B1F56 60 
-0B1F57 1D 
-0B1F58 0B 
-0B1F59 41      0516 @str_args_count_off: db "Argument counts mismatch!\r\n",0
-0B1F5A 72 
-0B1F5B 67 
-0B1F5C 75 
-0B1F5C 6D   
-0B1F5D 65 
-0B1F5E 6E 
-0B1F5F 74 
-0B1F5F 20   
-0B1F60 63 
-0B1F61 6F 
-0B1F62 75 
-0B1F62 6E   
-0B1F63 74 
-0B1F64 73 
-0B1F65 20 
-0B1F65 6D   
-0B1F66 69 
-0B1F67 73 
-0B1F68 6D 
-0B1F68 61   
-0B1F69 74 
-0B1F6A 63 
-0B1F6B 68 
-0B1F6B 21   
-0B1F6C 0D 
-0B1F6D 0A 
+               0447 
+0B1F18 C3      0448 jp _main_end_ok
+0B1F19 72 
+0B1F1A 1D 
+0B1F1B 0B 
+               0449 
+               0450 ; VDU 25, mode, x; y;: PLOT command
+               0451 ; inputs: a=mode, HL'H'L'C=x, DE'D'E'B=y
+               0452 vdu_plot_float:
+0B1F1C 32      0453 ld (@mode),a
+0B1F1D 4C 
+0B1F1E 1F 
+0B1F1F 0B 
+0B1F20 3E      0454 ld a,int_
+0B1F21 17 
+0B1F22 CD      0455 CALL FPP
+0B1F23 D2 
+0B1F24 00 
+0B1F25 0B 
+0B1F26 CD      0456 call int2hlu
+0B1F27 C7 
+0B1F28 15 
+0B1F29 0B 
+0B1F2A 22      0457 ld (@x0),hl
+0B1F2B 4D 
+0B1F2C 1F 
+0B1F2D 0B 
+0B1F2E CD      0458 call SWAP
+0B1F2F BF 
+0B1F30 15 
+0B1F31 0B 
+0B1F32 3E      0459 ld a,int_
+0B1F33 17 
+0B1F34 CD      0460 CALL FPP
+0B1F35 D2 
+0B1F36 00 
+0B1F37 0B 
+0B1F38 CD      0461 call int2hlu
+0B1F39 C7 
+0B1F3A 15 
+0B1F3B 0B 
+0B1F3C 22      0462 ld (@y0),hl
+0B1F3D 4F 
+0B1F3E 1F 
+0B1F3F 0B 
+0B1F40 21      0463 ld hl,@cmd
+0B1F41 4B 
+0B1F42 1F 
+0B1F43 0B 
+0B1F44 01      0464 ld bc,@end-@cmd
+0B1F45 06 
+0B1F46 00 
+0B1F47 00 
+0B1F48 5B      0465 rst.lil $18
+0B1F49 DF 
+0B1F4A C9      0466 ret
+0B1F4B 19      0467 @cmd:   db 25
+0B1F4C 00      0468 @mode:  db 0
+0B1F4D 00      0469 @x0: 	dw 0
+0B1F4E 00 
+0B1F4F 00      0470 @y0: 	dw 0
+0B1F50 00 
+0B1F51 00      0471 @end:   db 0 ; padding
+               0472 
+               0473 ; compute the Cartesian coordinates of the next point on the curve
+               0474 ; inputs: theta_prime, theta_petal, radius_prime, depth
+               0475 ; outputs: HLH'L'C = x, DED'E'B = y
+               0476 calc_point:
+               0477 ; Calculate the petal radius and total radius
+               0478 ; radius_petal = math.cos(theta_petal) * depth
+0B1F52 FD      0479 ld iy,theta_petal
+0B1F53 21 
+0B1F54 35 
+0B1F55 1D 
+0B1F55 0B   
+0B1F57 CD      0480 call fetch_float_iy_nor
+0B1F58 9A 
+0B1F59 16 
+0B1F5A 0B 
+0B1F5B 3E      0481 ld a,cos
+0B1F5C 14 
+0B1F5D CD      0482 call FPP ; HLH'L'C = cos(theta_petal)
+0B1F5E D2 
+0B1F5F 00 
+0B1F60 0B 
+0B1F61 FD      0483 ld iy,depth
+0B1F62 21 
+0B1F63 FE 
+0B1F64 1C 
+0B1F64 0B   
+0B1F66 CD      0484 call fetch_float_iy_alt
+0B1F67 BE 
+0B1F68 16 
+0B1F69 0B 
+0B1F6A 3E      0485 ld a,fmul
+0B1F6B 0A 
+0B1F6C CD      0486 call FPP ; HLH'L'C = radius_petal
+0B1F6D D2 
 0B1F6E 00 
-               0517 
-               0518 ; ---- text strings ----
-0B1F75 73      0519 str_step_theta_prime: ASCIZ "step_theta_prime: "
-0B1F76 74 
-0B1F77 65 
-0B1F78 70 
-0B1F78 5F   
-0B1F79 74 
-0B1F7A 68 
-0B1F7B 65 
-0B1F7B 74   
-0B1F7C 61 
-0B1F7D 5F 
-0B1F7E 70 
-0B1F7E 72   
-0B1F7F 69 
-0B1F80 6D 
-0B1F81 65 
-0B1F81 3A   
-0B1F82 20 
-0B1F83 00 
-0B1F88 73      0520 str_step_theta_petal: ASCIZ "step_theta_petal: "
-0B1F89 74 
-0B1F8A 65 
-0B1F8B 70 
-0B1F8B 5F   
-0B1F8C 74 
-0B1F8D 68 
-0B1F8E 65 
-0B1F8E 74   
-0B1F8F 61 
-0B1F90 5F 
-0B1F91 70 
-0B1F91 65   
-0B1F92 74 
-0B1F93 61 
-0B1F94 6C 
-0B1F94 3A   
-0B1F95 20 
-0B1F96 00 
-0B1F9B 74      0521 str_total_steps: ASCIZ "total_steps: "
-0B1F9C 6F 
-0B1F9D 74 
-0B1F9E 61 
-0B1F9E 6C   
-0B1F9F 5F 
-0B1FA0 73 
-0B1FA1 74 
-0B1FA1 65   
-0B1FA2 70 
-0B1FA3 73 
-0B1FA4 3A 
-0B1FA4 20   
-0B1FA5 00 
-0B1FA9 73      0522 str_step_shrink: ASCIZ "step_shrink: "
-0B1FAA 74 
-0B1FAB 65 
-0B1FAC 70 
-0B1FAC 5F   
-0B1FAD 73 
-0B1FAE 68 
-0B1FAF 72 
-0B1FAF 69   
-0B1FB0 6E 
-0B1FB1 6B 
-0B1FB2 3A 
-0B1FB2 20   
-0B1FB3 00 
-               0523 
-0B1FB7 74      0524 str_theta_prime: ASCIZ "theta_prime: "
-0B1FB8 68 
-0B1FB9 65 
-0B1FBA 74 
-0B1FBA 61   
-0B1FBB 5F 
-0B1FBC 70 
-0B1FBD 72 
-0B1FBD 69   
-0B1FBE 6D 
-0B1FBF 65 
-0B1FC0 3A 
-0B1FC0 20   
-0B1FC1 00 
-0B1FC5 72      0525 str_radius_prime: ASCIZ "radius_prime: "
-0B1FC6 61 
-0B1FC7 64 
-0B1FC8 69 
-0B1FC8 75   
-0B1FC9 73 
-0B1FCA 5F 
-0B1FCB 70 
-0B1FCB 72   
-0B1FCC 69 
-0B1FCD 6D 
-0B1FCE 65 
-0B1FCE 3A   
-0B1FCF 20 
-0B1FD0 00 
-0B1FD4 72      0526 str_radius_petal: ASCIZ "radius_petal: "
-0B1FD5 61 
-0B1FD6 64 
-0B1FD7 69 
-0B1FD7 75   
-0B1FD8 73 
-0B1FD9 5F 
-0B1FDA 70 
-0B1FDA 65   
-0B1FDB 74 
-0B1FDC 61 
-0B1FDD 6C 
-0B1FDD 3A   
-0B1FDE 20 
-0B1FDF 00 
-0B1FE3 74      0527 str_theta_petal: ASCIZ "theta_petal: "
-0B1FE4 68 
-0B1FE5 65 
+0B1F6F 0B 
+               0487 
+               0488 ; radius = radius_prime + radius_petal * radius_prime
+0B1F70 FD      0489 ld iy,radius_prime
+0B1F71 21 
+0B1F72 3A 
+0B1F73 1D 
+0B1F73 0B   
+0B1F75 CD      0490 call fetch_float_iy_alt
+0B1F76 BE 
+0B1F77 16 
+0B1F78 0B 
+0B1F79 3E      0491 ld a,fmul
+0B1F7A 0A 
+0B1F7B CD      0492 call FPP ; HLH'L'C = radius_petal * radius_prime
+0B1F7C D2 
+0B1F7D 00 
+0B1F7E 0B 
+0B1F7F FD      0493 ld iy,radius_prime
+0B1F80 21 
+0B1F81 3A 
+0B1F82 1D 
+0B1F82 0B   
+0B1F84 CD      0494 call fetch_float_iy_alt
+0B1F85 BE 
+0B1F86 16 
+0B1F87 0B 
+0B1F88 3E      0495 ld a,fadd
+0B1F89 0B 
+0B1F8A CD      0496 call FPP ; HLH'L'C = radius
+0B1F8B D2 
+0B1F8C 00 
+0B1F8D 0B 
+0B1F8E CD      0497 call SWAP ; DED'E'B = radius
+0B1F8F BF 
+0B1F90 15 
+0B1F91 0B 
+               0498 
+               0499 ; Convert polar to Cartesian coordinates
+0B1F92 FD      0500 ld iy,theta_prime
+0B1F93 21 
+0B1F94 30 
+0B1F95 1D 
+0B1F95 0B   
+0B1F97 CD      0501 call fetch_float_iy_nor ; HLH'L'C = theta_prime
+0B1F98 9A 
+0B1F99 16 
+0B1F9A 0B 
+0B1F9B CD      0502 call polar_to_cartesian_fpp ; HLH'L'C = x, DED'E'B = y
+0B1F9C D9 
+0B1F9D 15 
+0B1F9E 0B 
+               0503 
+0B1F9F C9      0504 ret
+               0505 
+               0506 
+               0507 ; --- Load arguments ---
+               0508 ; --------------------------------
+               0509 load_input:
+0B1FA0 79      0510 ld a,c ; put the number of entered arguments in a
+0B1FA1 06      0511 ld b,input_params_num ; loop counter = number of arguments
+0B1FA2 05 
+0B1FA3 B8      0512 cp b ; compare the number of arguments to the number of arguments
+0B1FA4 C2      0513 jp nz,args_count_off ; handle discrepancies
+0B1FA5 D4 
+0B1FA6 1F 
+0B1FA7 0B 
+0B1FA8 FD      0514 ld iy,input_params  ; point to the arguments table
+0B1FA9 21 
+0B1FAA F4 
+0B1FAB 1C 
+0B1FAB 0B   
+               0515 @loop:
+0B1FAD C5      0516 push bc ; save the loop counter
+0B1FAE CD      0517 call store_arg_iy_float ; get the next argument and store it
+0B1FAF 96 
+0B1FB0 20 
+0B1FB1 0B 
+0B1FB2 ED      0518 lea iy,iy+5  ; point to the next parameter
+0B1FB3 33 
+0B1FB4 05 
+0B1FB5 C1      0519 pop bc ; get back the loop counter
+0B1FB6 10      0520 djnz @loop ; loop until done
+0B1FB7 F5 
+0B1FB8 C9      0521 ret
+               0522 
+               0523 print_input:
+0B1FB9 06      0524 ld b,input_params_num ; loop counter = number of arguments
+0B1FBA 05 
+0B1FBB FD      0525 ld iy,input_params  ; point to the arguments table
+0B1FBC 21 
+0B1FBD F4 
+0B1FBE 1C 
+0B1FBE 0B   
+               0526 @loop:
+0B1FC0 C5      0527 push bc ; save the loop counter
+0B1FC1 CD      0528 call fetch_float_iy_nor ; fetch the next parameter into HLH'L'C
+0B1FC2 9A 
+0B1FC3 16 
+0B1FC4 0B 
+0B1FC5 CD      0529 call print_float_dec_nor ; print the parameter
+0B1FC6 51 
+0B1FC7 17 
+0B1FC8 0B 
+0B1FC9 3E      0530 ld a,' ' ; print a space separator
+0B1FCA 20 
+0B1FCB 5B      0531 rst.lil $10
+0B1FCC D7 
+0B1FCD ED      0532 lea iy,iy+5  ; point to the next parameter
+0B1FCE 33 
+0B1FCF 05 
+0B1FD0 C1      0533 pop bc ; get back the loop counter
+0B1FD1 10      0534 djnz @loop ; loop until done
+0B1FD2 ED 
+0B1FD3 C9      0535 ret
+               0536 
+               0537 ; --- Specific parameter processing functions ---
+               0538 args_count_off:
+0B1FD4 21      0539 ld hl,@str_args_count_off
+0B1FD5 E0 
+0B1FD6 1F 
+0B1FD7 0B 
+0B1FD8 CD      0540 call printString
+0B1FD9 CE 
+0B1FDA 0E 
+0B1FDB 0B 
+0B1FDC C3      0541 jp _main_end_error
+0B1FDD 60 
+0B1FDE 1D 
+0B1FDF 0B 
+0B1FE0 41      0542 @str_args_count_off: db "Argument counts mismatch!\r\n",0
+0B1FE1 72 
+0B1FE2 67 
+0B1FE3 75 
+0B1FE3 6D   
+0B1FE4 65 
+0B1FE5 6E 
 0B1FE6 74 
-0B1FE6 61   
-0B1FE7 5F 
-0B1FE8 70 
-0B1FE9 65 
-0B1FE9 74   
-0B1FEA 61 
-0B1FEB 6C 
-0B1FEC 3A 
-0B1FEC 20   
-0B1FED 00 
-               0528 
-0B1FF1 72      0529 str_radius: ASCIZ "radius: "
-0B1FF2 61 
-0B1FF3 64 
-0B1FF4 69 
-0B1FF4 75   
-0B1FF5 73 
-0B1FF6 3A 
-0B1FF7 20 
-0B1FF7 00   
-0B1FFA 78      0530 str_xy: ASCIZ "x,y: "
-0B1FFB 2C 
-0B1FFC 79 
-0B1FFD 3A 
-0B1FFD 20   
-0B1FFE 00 
-               0531 
-               0532 ; ========== HELPER FUNCTIONS ==========
-               0533 ;
-               0534 ; get the next argument after ix as a floating point number
-               0535 ; inputs: ix = pointer to the argument string
-               0536 ; outputs: HLH'L'C = floating point number, ix points to the next argument
-               0537 ; destroys: everything except iy, including prime registers
-               0538 get_arg_float:
-0B2000 ED      0539 lea ix,ix+3 ; point to the next argument
-0B2001 32 
-0B2002 03 
-0B2003 DD      0540 push ix ; preserve
-0B2004 E5 
-0B2005 DD      0541 ld ix,(ix)  ; point to argument string
-0B2006 37 
-0B2007 00 
-0B2008 CD      0542 call VAL_FP ; convert the string to a float
-0B2009 49 
-0B200A 05 
-0B200B 0B 
-0B200C DD      0543 pop ix ; restore
-0B200D E1 
-0B200E C9      0544 ret ; return with the value in HLH'L'C
-               0545 
-               0546 ; get the next argument after ix as a floating point number and store it in buffer pointed to by iy
-               0547 ; inputs: ix = pointer to the argument string
-               0548 ; outputs: HLH'L'C = floating point number, ix points to the next argument
-               0549 ; destroys: everything except iy, including prime registers
-               0550 store_arg_iy_float:
-0B200F ED      0551 lea ix,ix+3 ; point to the next argument
-0B2010 32 
-0B2011 03 
-0B2012 DD      0552 push ix ; preserve
-0B2013 E5 
-0B2014 DD      0553 ld ix,(ix)  ; point to argument string
-0B2015 37 
-0B2016 00 
-0B2017 CD      0554 call VAL_FP ; convert the string to a float
-0B2018 49 
-0B2019 05 
-0B201A 0B 
-0B201B CD      0555 call store_float_iy_nor ; save the float in buffer
-0B201C 88 
-0B201D 16 
-0B201E 0B 
-0B201F DD      0556 pop ix ; restore
-0B2020 E1 
-0B2021 C9      0557 ret ; return with the value in HLH'L'C
-               0558 ;
-               0559 ; get the next argument after ix as a string
-               0560 ; inputs: ix = pointer to the argument string
-               0561 ; outputs: HL = pointer to the argument string, ix points to the next argument
-               0562 ; destroys: a, h, l, f
-               0563 get_arg_text:
-0B2022 ED      0564 lea ix,ix+3 ; point to the next argument
-0B2023 32 
-0B2024 03 
-0B2025 DD      0565 ld hl,(ix)  ; get the argument string
-0B2026 27 
-0B2027 00 
-0B2028 C9      0566 ret
-               0567 ;
-               0568 ; match the next argument after ix to the dispatch table at iy
-               0569 ;   - arguments and dispatch entries are zero-terminated, case-sensitive strings
-               0570 ;   - final entry of dispatch table must be a 3-byte zero or bad things will happen
-               0571 ; returns: NO MATCH: iy=dispatch list terminator a=1 and zero flag reset
-               0572 ;          ON MATCH: iy=dispatch address, a=0 and zero flag set
-               0573 ; destroys: a, hl, de, ix, iy, flags
-               0574 match_next:
-0B2029 ED      0575 lea ix,ix+3         ; point to the next argument
-0B202A 32 
-0B202B 03 
-               0576 @loop:
-0B202C FD      0577 ld hl,(iy)          ; pointer argument dispatch record
-0B202D 27 
-0B202E 00 
-               0578 sign_hlu            ; check for list terminator
-0B202F 19     0001M add hl,de
-0B2030 B7     0002M or a
-0B2031 ED     0003M sbc hl,de
-0B2032 52 
-0B2033 CA      0579 jp z,@no_match      ; if a=0, return error
-0B2034 4B 
-0B2035 20 
-0B2036 0B 
-0B2037 23      0580 inc hl              ; skip over jp instruction
-0B2038 23      0581 inc hl
-0B2039 DD      0582 ld de,(ix)          ; pointer to the argument string
-0B203A 17 
-0B203B 00 
-0B203C CD      0583 call str_equal      ; compare the argument to the dispatch table entry
-0B203D 62 
-0B203E 20 
-0B203F 0B 
-0B2040 CA      0584 jp z,@match         ; if equal, return success
-0B2041 4D 
-0B2042 20 
-0B2043 0B 
-0B2044 ED      0585 lea iy,iy+3         ; if not equal, bump iy to next dispatch table entry
-0B2045 33 
-0B2046 03 
-0B2047 C3      0586 jp @loop            ; and loop
-0B2048 2C 
-0B2049 20 
-0B204A 0B 
-               0587 @no_match:
-0B204B 3C      0588 inc a               ; no match so return a=1 and zero flag reset
-0B204C C9      0589 ret
-               0590 @match:
-0B204D FD      0591 ld iy,(iy)          ; get the function pointer
-0B204E 37 
-0B204F 00 
-0B2050 C9      0592 ret                 ; return a=0 and zero flag set
-               0593 
-               0594 ; same as match_next, but prints the parameter if a match is found
-               0595 match_next_and_print:
-0B2051 CD      0596 call match_next
-0B2052 29 
-0B2053 20 
-0B2054 0B 
-0B2055 C0      0597 ret nz ; no match found
-0B2056 ED      0598 lea ix,ix-3
-0B2057 32 
-0B2058 FD 
-0B2059 CD      0599 call get_arg_text ; hl points to the operator string
-0B205A 22 
-0B205B 20 
-0B205C 0B 
-0B205D CD      0600 call print_param
-0B205E 6D 
-0B205F 20 
-0B2060 0B 
-0B2061 C9      0601 ret
-               0602 
-               0603 ; compare two zero-terminated strings for equality, case-sensitive
-               0604 ; hl: pointer to first string, de: pointer to second string
-               0605 ; returns: z if equal, nz if not equal
-               0606 ; destroys: a, hl, de
-               0607 str_equal:
-0B2062 1A      0608 ld a,(de)           ; get the first character
-0B2063 BE      0609 cp (hl)             ; compare to the second character
-0B2064 C0      0610 ret nz              ; if not equal, return
-0B2065 B7      0611 or a
-0B2066 C8      0612 ret z               ; if equal and zero, return
-0B2067 23      0613 inc hl              ; next character
-0B2068 13      0614 inc de
-0B2069 C3      0615 jp str_equal        ; loop until end of string
-0B206A 62 
-0B206B 20 
-0B206C 0B 
-               0616 
-               0617 ; print the parameter string pointed to by ix
-               0618 ; destroys: a, hl
-               0619 print_param:
-0B206D DD      0620 ld hl,(ix)          ; get the parameter pointer
-0B206E 27 
-0B206F 00 
-0B2070 CD      0621 call printString    ; print the parameter string
-0B2071 CE 
-0B2072 0E 
-0B2073 0B 
-0B2074 3E      0622 ld a,' '            ; print a space separator
-0B2075 20 
-0B2076 5B      0623 rst.lil $10
-0B2077 D7 
-0B2078 C9      0624 ret
-               0625 
-               0626 ; print the parameters
-               0627 ; inputs: b = number of parameters, ix = pointer to the parameters
-               0628 ; destroys: a, hl, bc
-               0629 print_params:
-0B2079 41      0630 ld b,c              ; loop counter = number of parameters
-0B207A DD      0631 push ix             ; save the pointer to the parameters
-0B207B E5 
-               0632 @loop:
-0B207C C5      0633 push bc             ; save the loop counter
-0B207D CD      0634 call print_param    ; print the parameter
-0B207E 6D 
-0B207F 20 
-0B2080 0B 
-0B2081 ED      0635 lea ix,ix+3         ; next parameter pointer
-0B2082 32 
-0B2083 03 
-0B2084 C1      0636 pop bc              ; get back the loop counter
-0B2085 10      0637 djnz @loop          ; loop until done
-0B2086 F5 
-0B2087 DD      0638 pop ix              ; restore the pointer to the parameters
-0B2088 E1 
-0B2089 C9      0639 ret
-               0640 
-               0641 debug_print:
-0B208A CD      0642 call printNewLine
-0B208B E3 
-0B208C 0E 
-0B208D 0B 
-0B208E CD      0643 call dumpRegistersHexAll
-0B208F 23 
-0B2090 13 
-0B2091 0B 
-0B2092 CD      0644 call printNewLine
-0B2093 E3 
-0B2094 0E 
-0B2095 0B 
-0B2096 C9      0645 ret
-               0646 
-               0647 include "basic/ram.asm" ; must be last so that RAM has room for BASIC operations
+0B1FE6 20   
+0B1FE7 63 
+0B1FE8 6F 
+0B1FE9 75 
+0B1FE9 6E   
+0B1FEA 74 
+0B1FEB 73 
+0B1FEC 20 
+0B1FEC 6D   
+0B1FED 69 
+0B1FEE 73 
+0B1FEF 6D 
+0B1FEF 61   
+0B1FF0 74 
+0B1FF1 63 
+0B1FF2 68 
+0B1FF2 21   
+0B1FF3 0D 
+0B1FF4 0A 
+0B1FF5 00 
+               0543 
+               0544 ; ---- text strings ----
+0B1FFC 73      0545 str_step_theta_prime: ASCIZ "step_theta_prime: "
+0B1FFD 74 
+0B1FFE 65 
+0B1FFF 70 
+0B1FFF 5F   
+0B2000 74 
+0B2001 68 
+0B2002 65 
+0B2002 74   
+0B2003 61 
+0B2004 5F 
+0B2005 70 
+0B2005 72   
+0B2006 69 
+0B2007 6D 
+0B2008 65 
+0B2008 3A   
+0B2009 20 
+0B200A 00 
+0B200F 73      0546 str_step_theta_petal: ASCIZ "step_theta_petal: "
+0B2010 74 
+0B2011 65 
+0B2012 70 
+0B2012 5F   
+0B2013 74 
+0B2014 68 
+0B2015 65 
+0B2015 74   
+0B2016 61 
+0B2017 5F 
+0B2018 70 
+0B2018 65   
+0B2019 74 
+0B201A 61 
+0B201B 6C 
+0B201B 3A   
+0B201C 20 
+0B201D 00 
+0B2022 74      0547 str_total_steps: ASCIZ "total_steps: "
+0B2023 6F 
+0B2024 74 
+0B2025 61 
+0B2025 6C   
+0B2026 5F 
+0B2027 73 
+0B2028 74 
+0B2028 65   
+0B2029 70 
+0B202A 73 
+0B202B 3A 
+0B202B 20   
+0B202C 00 
+0B2030 73      0548 str_step_shrink: ASCIZ "step_shrink: "
+0B2031 74 
+0B2032 65 
+0B2033 70 
+0B2033 5F   
+0B2034 73 
+0B2035 68 
+0B2036 72 
+0B2036 69   
+0B2037 6E 
+0B2038 6B 
+0B2039 3A 
+0B2039 20   
+0B203A 00 
+               0549 
+0B203E 74      0550 str_theta_prime: ASCIZ "theta_prime: "
+0B203F 68 
+0B2040 65 
+0B2041 74 
+0B2041 61   
+0B2042 5F 
+0B2043 70 
+0B2044 72 
+0B2044 69   
+0B2045 6D 
+0B2046 65 
+0B2047 3A 
+0B2047 20   
+0B2048 00 
+0B204C 72      0551 str_radius_prime: ASCIZ "radius_prime: "
+0B204D 61 
+0B204E 64 
+0B204F 69 
+0B204F 75   
+0B2050 73 
+0B2051 5F 
+0B2052 70 
+0B2052 72   
+0B2053 69 
+0B2054 6D 
+0B2055 65 
+0B2055 3A   
+0B2056 20 
+0B2057 00 
+0B205B 72      0552 str_radius_petal: ASCIZ "radius_petal: "
+0B205C 61 
+0B205D 64 
+0B205E 69 
+0B205E 75   
+0B205F 73 
+0B2060 5F 
+0B2061 70 
+0B2061 65   
+0B2062 74 
+0B2063 61 
+0B2064 6C 
+0B2064 3A   
+0B2065 20 
+0B2066 00 
+0B206A 74      0553 str_theta_petal: ASCIZ "theta_petal: "
+0B206B 68 
+0B206C 65 
+0B206D 74 
+0B206D 61   
+0B206E 5F 
+0B206F 70 
+0B2070 65 
+0B2070 74   
+0B2071 61 
+0B2072 6C 
+0B2073 3A 
+0B2073 20   
+0B2074 00 
+               0554 
+0B2078 72      0555 str_radius: ASCIZ "radius: "
+0B2079 61 
+0B207A 64 
+0B207B 69 
+0B207B 75   
+0B207C 73 
+0B207D 3A 
+0B207E 20 
+0B207E 00   
+0B2081 78      0556 str_xy: ASCIZ "x,y: "
+0B2082 2C 
+0B2083 79 
+0B2084 3A 
+0B2084 20   
+0B2085 00 
+               0557 
+               0558 ; ========== HELPER FUNCTIONS ==========
+               0559 ;
+               0560 ; get the next argument after ix as a floating point number
+               0561 ; inputs: ix = pointer to the argument string
+               0562 ; outputs: HLH'L'C = floating point number, ix points to the next argument
+               0563 ; destroys: everything except iy, including prime registers
+               0564 get_arg_float:
+0B2087 ED      0565 lea ix,ix+3 ; point to the next argument
+0B2088 32 
+0B2089 03 
+0B208A DD      0566 push ix ; preserve
+0B208B E5 
+0B208C DD      0567 ld ix,(ix)  ; point to argument string
+0B208D 37 
+0B208E 00 
+0B208F CD      0568 call VAL_FP ; convert the string to a float
+0B2090 49 
+0B2091 05 
+0B2092 0B 
+0B2093 DD      0569 pop ix ; restore
+0B2094 E1 
+0B2095 C9      0570 ret ; return with the value in HLH'L'C
+               0571 
+               0572 ; get the next argument after ix as a floating point number and store it in buffer pointed to by iy
+               0573 ; inputs: ix = pointer to the argument string
+               0574 ; outputs: HLH'L'C = floating point number, ix points to the next argument
+               0575 ; destroys: everything except iy, including prime registers
+               0576 store_arg_iy_float:
+0B2096 ED      0577 lea ix,ix+3 ; point to the next argument
+0B2097 32 
+0B2098 03 
+0B2099 DD      0578 push ix ; preserve
+0B209A E5 
+0B209B DD      0579 ld ix,(ix)  ; point to argument string
+0B209C 37 
+0B209D 00 
+0B209E CD      0580 call VAL_FP ; convert the string to a float
+0B209F 49 
+0B20A0 05 
+0B20A1 0B 
+0B20A2 CD      0581 call store_float_iy_nor ; save the float in buffer
+0B20A3 88 
+0B20A4 16 
+0B20A5 0B 
+0B20A6 DD      0582 pop ix ; restore
+0B20A7 E1 
+0B20A8 C9      0583 ret ; return with the value in HLH'L'C
+               0584 ;
+               0585 ; get the next argument after ix as a string
+               0586 ; inputs: ix = pointer to the argument string
+               0587 ; outputs: HL = pointer to the argument string, ix points to the next argument
+               0588 ; destroys: a, h, l, f
+               0589 get_arg_text:
+0B20A9 ED      0590 lea ix,ix+3 ; point to the next argument
+0B20AA 32 
+0B20AB 03 
+0B20AC DD      0591 ld hl,(ix)  ; get the argument string
+0B20AD 27 
+0B20AE 00 
+0B20AF C9      0592 ret
+               0593 ;
+               0594 ; match the next argument after ix to the dispatch table at iy
+               0595 ;   - arguments and dispatch entries are zero-terminated, case-sensitive strings
+               0596 ;   - final entry of dispatch table must be a 3-byte zero or bad things will happen
+               0597 ; returns: NO MATCH: iy=dispatch list terminator a=1 and zero flag reset
+               0598 ;          ON MATCH: iy=dispatch address, a=0 and zero flag set
+               0599 ; destroys: a, hl, de, ix, iy, flags
+               0600 match_next:
+0B20B0 ED      0601 lea ix,ix+3         ; point to the next argument
+0B20B1 32 
+0B20B2 03 
+               0602 @loop:
+0B20B3 FD      0603 ld hl,(iy)          ; pointer argument dispatch record
+0B20B4 27 
+0B20B5 00 
+               0604 sign_hlu            ; check for list terminator
+0B20B6 19     0001M add hl,de
+0B20B7 B7     0002M or a
+0B20B8 ED     0003M sbc hl,de
+0B20B9 52 
+0B20BA CA      0605 jp z,@no_match      ; if a=0, return error
+0B20BB D2 
+0B20BC 20 
+0B20BD 0B 
+0B20BE 23      0606 inc hl              ; skip over jp instruction
+0B20BF 23      0607 inc hl
+0B20C0 DD      0608 ld de,(ix)          ; pointer to the argument string
+0B20C1 17 
+0B20C2 00 
+0B20C3 CD      0609 call str_equal      ; compare the argument to the dispatch table entry
+0B20C4 E9 
+0B20C5 20 
+0B20C6 0B 
+0B20C7 CA      0610 jp z,@match         ; if equal, return success
+0B20C8 D4 
+0B20C9 20 
+0B20CA 0B 
+0B20CB ED      0611 lea iy,iy+3         ; if not equal, bump iy to next dispatch table entry
+0B20CC 33 
+0B20CD 03 
+0B20CE C3      0612 jp @loop            ; and loop
+0B20CF B3 
+0B20D0 20 
+0B20D1 0B 
+               0613 @no_match:
+0B20D2 3C      0614 inc a               ; no match so return a=1 and zero flag reset
+0B20D3 C9      0615 ret
+               0616 @match:
+0B20D4 FD      0617 ld iy,(iy)          ; get the function pointer
+0B20D5 37 
+0B20D6 00 
+0B20D7 C9      0618 ret                 ; return a=0 and zero flag set
+               0619 
+               0620 ; same as match_next, but prints the parameter if a match is found
+               0621 match_next_and_print:
+0B20D8 CD      0622 call match_next
+0B20D9 B0 
+0B20DA 20 
+0B20DB 0B 
+0B20DC C0      0623 ret nz ; no match found
+0B20DD ED      0624 lea ix,ix-3
+0B20DE 32 
+0B20DF FD 
+0B20E0 CD      0625 call get_arg_text ; hl points to the operator string
+0B20E1 A9 
+0B20E2 20 
+0B20E3 0B 
+0B20E4 CD      0626 call print_param
+0B20E5 F4 
+0B20E6 20 
+0B20E7 0B 
+0B20E8 C9      0627 ret
+               0628 
+               0629 ; compare two zero-terminated strings for equality, case-sensitive
+               0630 ; hl: pointer to first string, de: pointer to second string
+               0631 ; returns: z if equal, nz if not equal
+               0632 ; destroys: a, hl, de
+               0633 str_equal:
+0B20E9 1A      0634 ld a,(de)           ; get the first character
+0B20EA BE      0635 cp (hl)             ; compare to the second character
+0B20EB C0      0636 ret nz              ; if not equal, return
+0B20EC B7      0637 or a
+0B20ED C8      0638 ret z               ; if equal and zero, return
+0B20EE 23      0639 inc hl              ; next character
+0B20EF 13      0640 inc de
+0B20F0 C3      0641 jp str_equal        ; loop until end of string
+0B20F1 E9 
+0B20F2 20 
+0B20F3 0B 
+               0642 
+               0643 ; print the parameter string pointed to by ix
+               0644 ; destroys: a, hl
+               0645 print_param:
+0B20F4 DD      0646 ld hl,(ix)          ; get the parameter pointer
+0B20F5 27 
+0B20F6 00 
+0B20F7 CD      0647 call printString    ; print the parameter string
+0B20F8 CE 
+0B20F9 0E 
+0B20FA 0B 
+0B20FB 3E      0648 ld a,' '            ; print a space separator
+0B20FC 20 
+0B20FD 5B      0649 rst.lil $10
+0B20FE D7 
+0B20FF C9      0650 ret
+               0651 
+               0652 ; print the parameters
+               0653 ; inputs: b = number of parameters, ix = pointer to the parameters
+               0654 ; destroys: a, hl, bc
+               0655 print_params:
+0B2100 41      0656 ld b,c              ; loop counter = number of parameters
+0B2101 DD      0657 push ix             ; save the pointer to the parameters
+0B2102 E5 
+               0658 @loop:
+0B2103 C5      0659 push bc             ; save the loop counter
+0B2104 CD      0660 call print_param    ; print the parameter
+0B2105 F4 
+0B2106 20 
+0B2107 0B 
+0B2108 ED      0661 lea ix,ix+3         ; next parameter pointer
+0B2109 32 
+0B210A 03 
+0B210B C1      0662 pop bc              ; get back the loop counter
+0B210C 10      0663 djnz @loop          ; loop until done
+0B210D F5 
+0B210E DD      0664 pop ix              ; restore the pointer to the parameters
+0B210F E1 
+0B2110 C9      0665 ret
+               0666 
+               0667 debug_print:
+0B2111 CD      0668 call printNewLine
+0B2112 E3 
+0B2113 0E 
+0B2114 0B 
+0B2115 CD      0669 call dumpRegistersHexAll
+0B2116 23 
+0B2117 13 
+0B2118 0B 
+0B2119 CD      0670 call printNewLine
+0B211A E3 
+0B211B 0E 
+0B211C 0B 
+0B211D C9      0671 ret
+               0672 
+               0673 include "basic/ram.asm" ; must be last so that RAM has room for BASIC operations
               0001* ;
               0002* ; Title:	BBC Basic Interpreter - Z80 version
               0003* ;		RAM Module for BBC Basic Interpreter
@@ -10601,370 +10721,235 @@
               0059* ; XDEF	USER
               0060* 
               0061* end_binary: ;  for assemble.py to know where to truncate the binary file
-0B2097 FF     0062* ALIGN 		256		; ACCS, BUFFER & STAVAR must be on page boundaries
-0B2098 FF 
-0B2099 FF 
-0B209A FF 
-0B209A FF   
-0B209B FF 
-0B209C FF 
-0B209D FF 
-0B209D FF   
-0B209E FF 
-0B209F FF 
-0B20A0 FF 
-0B20A0 FF   
-0B20A1 FF 
-0B20A2 FF 
-0B20A3 FF 
-0B20A3 FF   
-0B20A4 FF 
-0B20A5 FF 
-0B20A6 FF 
-0B20A6 FF   
-0B20A7 FF 
-0B20A8 FF 
-0B20A9 FF 
-0B20A9 FF   
-0B20AA FF 
-0B20AB FF 
-0B20AC FF 
-0B20AC FF   
-0B20AD FF 
-0B20AE FF 
-0B20AF FF 
-0B20AF FF   
-0B20B0 FF 
-0B20B1 FF 
-0B20B2 FF 
-0B20B2 FF   
-0B20B3 FF 
-0B20B4 FF 
-0B20B5 FF 
-0B20B5 FF   
-0B20B6 FF 
-0B20B7 FF 
-0B20B8 FF 
-0B20B8 FF   
-0B20B9 FF 
-0B20BA FF 
-0B20BB FF 
-0B20BB FF   
-0B20BC FF 
-0B20BD FF 
-0B20BE FF 
-0B20BE FF   
-0B20BF FF 
-0B20C0 FF 
-0B20C1 FF 
-0B20C1 FF   
-0B20C2 FF 
-0B20C3 FF 
-0B20C4 FF 
-0B20C4 FF   
-0B20C5 FF 
-0B20C6 FF 
-0B20C7 FF 
-0B20C7 FF   
-0B20C8 FF 
-0B20C9 FF 
-0B20CA FF 
-0B20CA FF   
-0B20CB FF 
-0B20CC FF 
-0B20CD FF 
-0B20CD FF   
-0B20CE FF 
-0B20CF FF 
-0B20D0 FF 
-0B20D0 FF   
-0B20D1 FF 
-0B20D2 FF 
-0B20D3 FF 
-0B20D3 FF   
-0B20D4 FF 
-0B20D5 FF 
-0B20D6 FF 
-0B20D6 FF   
-0B20D7 FF 
-0B20D8 FF 
-0B20D9 FF 
-0B20D9 FF   
-0B20DA FF 
-0B20DB FF 
-0B20DC FF 
-0B20DC FF   
-0B20DD FF 
-0B20DE FF 
-0B20DF FF 
-0B20DF FF   
-0B20E0 FF 
-0B20E1 FF 
-0B20E2 FF 
-0B20E2 FF   
-0B20E3 FF 
-0B20E4 FF 
-0B20E5 FF 
-0B20E5 FF   
+0B211E FF     0062* ALIGN 		256		; ACCS, BUFFER & STAVAR must be on page boundaries
+0B211F FF 
+0B2120 FF 
+0B2121 FF 
+0B2121 FF   
+0B2122 FF 
+0B2123 FF 
+0B2124 FF 
+0B2124 FF   
+0B2125 FF 
+0B2126 FF 
+0B2127 FF 
+0B2127 FF   
+0B2128 FF 
+0B2129 FF 
+0B212A FF 
+0B212A FF   
+0B212B FF 
+0B212C FF 
+0B212D FF 
+0B212D FF   
+0B212E FF 
+0B212F FF 
+0B2130 FF 
+0B2130 FF   
+0B2131 FF 
+0B2132 FF 
+0B2133 FF 
+0B2133 FF   
+0B2134 FF 
+0B2135 FF 
+0B2136 FF 
+0B2136 FF   
+0B2137 FF 
+0B2138 FF 
+0B2139 FF 
+0B2139 FF   
+0B213A FF 
+0B213B FF 
+0B213C FF 
+0B213C FF   
+0B213D FF 
+0B213E FF 
+0B213F FF 
+0B213F FF   
+0B2140 FF 
+0B2141 FF 
+0B2142 FF 
+0B2142 FF   
+0B2143 FF 
+0B2144 FF 
+0B2145 FF 
+0B2145 FF   
+0B2146 FF 
+0B2147 FF 
+0B2148 FF 
+0B2148 FF   
+0B2149 FF 
+0B214A FF 
+0B214B FF 
+0B214B FF   
+0B214C FF 
+0B214D FF 
+0B214E FF 
+0B214E FF   
+0B214F FF 
+0B2150 FF 
+0B2151 FF 
+0B2151 FF   
+0B2152 FF 
+0B2153 FF 
+0B2154 FF 
+0B2154 FF   
+0B2155 FF 
+0B2156 FF 
+0B2157 FF 
+0B2157 FF   
+0B2158 FF 
+0B2159 FF 
+0B215A FF 
+0B215A FF   
+0B215B FF 
+0B215C FF 
+0B215D FF 
+0B215D FF   
+0B215E FF 
+0B215F FF 
+0B2160 FF 
+0B2160 FF   
+0B2161 FF 
+0B2162 FF 
+0B2163 FF 
+0B2163 FF   
+0B2164 FF 
+0B2165 FF 
+0B2166 FF 
+0B2166 FF   
+0B2167 FF 
+0B2168 FF 
+0B2169 FF 
+0B2169 FF   
+0B216A FF 
+0B216B FF 
+0B216C FF 
+0B216C FF   
+0B216D FF 
+0B216E FF 
+0B216F FF 
+0B216F FF   
+0B2170 FF 
+0B2171 FF 
+0B2172 FF 
+0B2172 FF   
+0B2173 FF 
+0B2174 FF 
+0B2175 FF 
+0B2175 FF   
+0B2176 FF 
+0B2177 FF 
+0B2178 FF 
+0B2178 FF   
+0B2179 FF 
+0B217A FF 
+0B217B FF 
+0B217B FF   
+0B217C FF 
+0B217D FF 
+0B217E FF 
+0B217E FF   
+0B217F FF 
+0B2180 FF 
+0B2181 FF 
+0B2181 FF   
+0B2182 FF 
+0B2183 FF 
+0B2184 FF 
+0B2184 FF   
+0B2185 FF 
+0B2186 FF 
+0B2187 FF 
+0B2187 FF   
+0B2188 FF 
+0B2189 FF 
+0B218A FF 
+0B218A FF   
+0B218B FF 
+0B218C FF 
+0B218D FF 
+0B218D FF   
+0B218E FF 
+0B218F FF 
+0B2190 FF 
+0B2190 FF   
+0B2191 FF 
+0B2192 FF 
+0B2193 FF 
+0B2193 FF   
+0B2194 FF 
+0B2195 FF 
+0B2196 FF 
+0B2196 FF   
+0B2197 FF 
+0B2198 FF 
+0B2199 FF 
+0B2199 FF   
+0B219A FF 
+0B219B FF 
+0B219C FF 
+0B219C FF   
+0B219D FF 
+0B219E FF 
+0B219F FF 
+0B219F FF   
+0B21A0 FF 
+0B21A1 FF 
+0B21A2 FF 
+0B21A2 FF   
+0B21A3 FF 
+0B21A4 FF 
+0B21A5 FF 
+0B21A5 FF   
+0B21A6 FF 
+0B21A7 FF 
+0B21A8 FF 
+0B21A8 FF   
+0B21A9 FF 
+0B21AA FF 
+0B21AB FF 
+0B21AB FF   
+0B21AC FF 
+0B21AD FF 
+0B21AE FF 
+0B21AE FF   
+0B21AF FF 
+0B21B0 FF 
+0B21B1 FF 
+0B21B1 FF   
+0B21B2 FF 
+0B21B3 FF 
+0B21B4 FF 
+0B21B4 FF   
+0B21B5 FF 
+0B21B6 FF 
+0B21B7 FF 
+0B21B7 FF   
+0B21B8 FF 
+0B21B9 FF 
+0B21BA FF 
+0B21BA FF   
+0B21BB FF 
+0B21BC FF 
+0B21BD FF 
+0B21BD FF   
+0B21BE FF 
+0B21BF FF 
+0B21C0 FF 
+0B21C0 FF   
+0B21C1 FF 
+0B21C2 FF 
+0B21C3 FF 
+0B21C3 FF   
+0B21C4 FF 
+0B21C5 FF 
+0B21C6 FF 
+0B21C6 FF   
+0B21C7 FF 
               0063* RAM_START:
               0064* ;
-0B2100 00     0065* ACCS:           BLKB    256,0             ; String Accumulator
-0B2101 00 
-0B2102 00 
-0B2103 00 
-0B2103 00   
-0B2104 00 
-0B2105 00 
-0B2106 00 
-0B2106 00   
-0B2107 00 
-0B2108 00 
-0B2109 00 
-0B2109 00   
-0B210A 00 
-0B210B 00 
-0B210C 00 
-0B210C 00   
-0B210D 00 
-0B210E 00 
-0B210F 00 
-0B210F 00   
-0B2110 00 
-0B2111 00 
-0B2112 00 
-0B2112 00   
-0B2113 00 
-0B2114 00 
-0B2115 00 
-0B2115 00   
-0B2116 00 
-0B2117 00 
-0B2118 00 
-0B2118 00   
-0B2119 00 
-0B211A 00 
-0B211B 00 
-0B211B 00   
-0B211C 00 
-0B211D 00 
-0B211E 00 
-0B211E 00   
-0B211F 00 
-0B2120 00 
-0B2121 00 
-0B2121 00   
-0B2122 00 
-0B2123 00 
-0B2124 00 
-0B2124 00   
-0B2125 00 
-0B2126 00 
-0B2127 00 
-0B2127 00   
-0B2128 00 
-0B2129 00 
-0B212A 00 
-0B212A 00   
-0B212B 00 
-0B212C 00 
-0B212D 00 
-0B212D 00   
-0B212E 00 
-0B212F 00 
-0B2130 00 
-0B2130 00   
-0B2131 00 
-0B2132 00 
-0B2133 00 
-0B2133 00   
-0B2134 00 
-0B2135 00 
-0B2136 00 
-0B2136 00   
-0B2137 00 
-0B2138 00 
-0B2139 00 
-0B2139 00   
-0B213A 00 
-0B213B 00 
-0B213C 00 
-0B213C 00   
-0B213D 00 
-0B213E 00 
-0B213F 00 
-0B213F 00   
-0B2140 00 
-0B2141 00 
-0B2142 00 
-0B2142 00   
-0B2143 00 
-0B2144 00 
-0B2145 00 
-0B2145 00   
-0B2146 00 
-0B2147 00 
-0B2148 00 
-0B2148 00   
-0B2149 00 
-0B214A 00 
-0B214B 00 
-0B214B 00   
-0B214C 00 
-0B214D 00 
-0B214E 00 
-0B214E 00   
-0B214F 00 
-0B2150 00 
-0B2151 00 
-0B2151 00   
-0B2152 00 
-0B2153 00 
-0B2154 00 
-0B2154 00   
-0B2155 00 
-0B2156 00 
-0B2157 00 
-0B2157 00   
-0B2158 00 
-0B2159 00 
-0B215A 00 
-0B215A 00   
-0B215B 00 
-0B215C 00 
-0B215D 00 
-0B215D 00   
-0B215E 00 
-0B215F 00 
-0B2160 00 
-0B2160 00   
-0B2161 00 
-0B2162 00 
-0B2163 00 
-0B2163 00   
-0B2164 00 
-0B2165 00 
-0B2166 00 
-0B2166 00   
-0B2167 00 
-0B2168 00 
-0B2169 00 
-0B2169 00   
-0B216A 00 
-0B216B 00 
-0B216C 00 
-0B216C 00   
-0B216D 00 
-0B216E 00 
-0B216F 00 
-0B216F 00   
-0B2170 00 
-0B2171 00 
-0B2172 00 
-0B2172 00   
-0B2173 00 
-0B2174 00 
-0B2175 00 
-0B2175 00   
-0B2176 00 
-0B2177 00 
-0B2178 00 
-0B2178 00   
-0B2179 00 
-0B217A 00 
-0B217B 00 
-0B217B 00   
-0B217C 00 
-0B217D 00 
-0B217E 00 
-0B217E 00   
-0B217F 00 
-0B2180 00 
-0B2181 00 
-0B2181 00   
-0B2182 00 
-0B2183 00 
-0B2184 00 
-0B2184 00   
-0B2185 00 
-0B2186 00 
-0B2187 00 
-0B2187 00   
-0B2188 00 
-0B2189 00 
-0B218A 00 
-0B218A 00   
-0B218B 00 
-0B218C 00 
-0B218D 00 
-0B218D 00   
-0B218E 00 
-0B218F 00 
-0B2190 00 
-0B2190 00   
-0B2191 00 
-0B2192 00 
-0B2193 00 
-0B2193 00   
-0B2194 00 
-0B2195 00 
-0B2196 00 
-0B2196 00   
-0B2197 00 
-0B2198 00 
-0B2199 00 
-0B2199 00   
-0B219A 00 
-0B219B 00 
-0B219C 00 
-0B219C 00   
-0B219D 00 
-0B219E 00 
-0B219F 00 
-0B219F 00   
-0B21A0 00 
-0B21A1 00 
-0B21A2 00 
-0B21A2 00   
-0B21A3 00 
-0B21A4 00 
-0B21A5 00 
-0B21A5 00   
-0B21A6 00 
-0B21A7 00 
-0B21A8 00 
-0B21A8 00   
-0B21A9 00 
-0B21AA 00 
-0B21AB 00 
-0B21AB 00   
-0B21AC 00 
-0B21AD 00 
-0B21AE 00 
-0B21AE 00   
-0B21AF 00 
-0B21B0 00 
-0B21B1 00 
-0B21B1 00   
-0B21B2 00 
-0B21B3 00 
-0B21B4 00 
-0B21B4 00   
-0B21B5 00 
-0B21B6 00 
-0B21B7 00 
-0B21B7 00   
-0B21B8 00 
-0B21B9 00 
-0B21BA 00 
-0B21BA 00   
-0B21BB 00 
-0B21BC 00 
-0B21BD 00 
-0B21BD 00   
-0B21BE 00 
-0B21BF 00 
-0B21C0 00 
-0B2200 00     0066* BUFFER:         BLKB    256,0             ; String Input Buffer
+0B2200 00     0065* ACCS:           BLKB    256,0             ; String Accumulator
 0B2201 00 
 0B2202 00 
 0B2203 00 
@@ -11220,7 +11205,7 @@
 0B22BE 00 
 0B22BF 00 
 0B22C0 00 
-0B2300 00     0067* STAVAR:         BLKB    27*4,0            ; Static Variables
+0B2300 00     0066* BUFFER:         BLKB    256,0             ; String Input Buffer
 0B2301 00 
 0B2302 00 
 0B2303 00 
@@ -11328,7 +11313,43 @@
 0B234F 00 
 0B2350 00 
 0B2351 00 
-0B236C 00     0068* DYNVAR:         BLKB    54*3,0            ; Dynamic Variable Pointers
+0B2351 00   
+0B2352 00 
+0B2353 00 
+0B2354 00 
+0B2354 00   
+0B2355 00 
+0B2356 00 
+0B2357 00 
+0B2357 00   
+0B2358 00 
+0B2359 00 
+0B235A 00 
+0B235A 00   
+0B235B 00 
+0B235C 00 
+0B235D 00 
+0B235D 00   
+0B235E 00 
+0B235F 00 
+0B2360 00 
+0B2360 00   
+0B2361 00 
+0B2362 00 
+0B2363 00 
+0B2363 00   
+0B2364 00 
+0B2365 00 
+0B2366 00 
+0B2366 00   
+0B2367 00 
+0B2368 00 
+0B2369 00 
+0B2369 00   
+0B236A 00 
+0B236B 00 
+0B236C 00 
+0B236C 00   
 0B236D 00 
 0B236E 00 
 0B236F 00 
@@ -11440,109 +11461,329 @@
 0B23BE 00 
 0B23BF 00 
 0B23C0 00 
-0B23C0 00   
-0B23C1 00 
-0B23C2 00 
-0B23C3 00 
-0B23C3 00   
-0B23C4 00 
-0B23C5 00 
-0B23C6 00 
-0B23C6 00   
-0B23C7 00 
-0B23C8 00 
-0B23C9 00 
-0B23C9 00   
-0B23CA 00 
-0B23CB 00 
-0B23CC 00 
-0B23CC 00   
-0B23CD 00 
-0B23CE 00 
-0B23CF 00 
-0B23CF 00   
-0B23D0 00 
-0B23D1 00 
-0B23D2 00 
-0B23D2 00   
-0B23D3 00 
-0B23D4 00 
-0B23D5 00 
-0B23D5 00   
-0B23D6 00 
-0B23D7 00 
-0B23D8 00 
-0B23D8 00   
-0B23D9 00 
-0B23DA 00 
-0B23DB 00 
-0B23DB 00   
-0B23DC 00 
-0B23DD 00 
-0B23DE 00 
-0B23DE 00   
-0B23DF 00 
-0B23E0 00 
-0B23E1 00 
-0B23E1 00   
-0B23E2 00 
-0B23E3 00 
-0B23E4 00 
-0B23E4 00   
-0B23E5 00 
-0B240E 00     0069* FNPTR:          BLKB    3,0               ; Dynamic Function Pointers
+0B2400 00     0067* STAVAR:         BLKB    27*4,0            ; Static Variables
+0B2401 00 
+0B2402 00 
+0B2403 00 
+0B2403 00   
+0B2404 00 
+0B2405 00 
+0B2406 00 
+0B2406 00   
+0B2407 00 
+0B2408 00 
+0B2409 00 
+0B2409 00   
+0B240A 00 
+0B240B 00 
+0B240C 00 
+0B240C 00   
+0B240D 00 
+0B240E 00 
 0B240F 00 
+0B240F 00   
 0B2410 00 
-0B2411 00     0070* PROPTR:         BLKB    3,0               ; Dynamic Procedure Pointers
+0B2411 00 
 0B2412 00 
+0B2412 00   
 0B2413 00 
-              0071* ;
-0B2414 00     0072* PAGE_:          BLKB    3,0               ; Start of User Program
+0B2414 00 
 0B2415 00 
+0B2415 00   
 0B2416 00 
-0B2417 00     0073* TOP:            BLKB    3,0               ; First Location after User Program
+0B2417 00 
 0B2418 00 
+0B2418 00   
 0B2419 00 
-0B241A 00     0074* LOMEM:          BLKB    3,0               ; Start of Dynamic Storage
+0B241A 00 
 0B241B 00 
+0B241B 00   
 0B241C 00 
-0B241D 00     0075* FREE:           BLKB    3,0               ; First Free Space Byte
+0B241D 00 
 0B241E 00 
+0B241E 00   
 0B241F 00 
-0B2420 00     0076* HIMEM:          BLKB    3,0               ; First Protected Byte
+0B2420 00 
 0B2421 00 
+0B2421 00   
 0B2422 00 
-              0077* ;
-0B2423 00     0078* LINENO:         BLKB    3,0               ; Line Number
+0B2423 00 
 0B2424 00 
+0B2424 00   
 0B2425 00 
-0B2426 00     0079* TRACEN:         BLKB    3,0               ; Trace Flag
+0B2426 00 
 0B2427 00 
+0B2427 00   
 0B2428 00 
-0B2429 00     0080* AUTONO:         BLKB    3,0               ; Auto Flag
+0B2429 00 
 0B242A 00 
+0B242A 00   
 0B242B 00 
-0B242C 00     0081* ERRTRP:         BLKB    3,0               ; Error Trap
+0B242C 00 
 0B242D 00 
+0B242D 00   
 0B242E 00 
-0B242F 00     0082* ERRTXT:         BLKB    2,0               ; Error Message Pointer
+0B242F 00 
 0B2430 00 
-0B2431 00     0083* DATPTR:         BLKB    2,0               ; Data Pointer
+0B2430 00   
+0B2431 00 
 0B2432 00 
-0B2433 00     0084* ERL:            BLKB    2,0               ; Error Line
+0B2433 00 
+0B2433 00   
 0B2434 00 
-0B2435 00     0085* ERRLIN:         BLKB    3,0               ; The "ON ERROR" Line
+0B2435 00 
 0B2436 00 
+0B2436 00   
 0B2437 00 
-0B2438 00     0086* RANDOM:         BLKB    5,0               ; Random Number
+0B2438 00 
 0B2439 00 
+0B2439 00   
 0B243A 00 
 0B243B 00 
-0B243B 00   
-0B243D 00     0087* COUNT:          BLKB    1,0               ; Print Position
-0B243E 00     0088* WIDTH:          BLKB    1,0               ; Print Width
-0B243F 00     0089* ERR:            BLKB    1,0               ; Error Number
-0B2440 00     0090* LISTON:         BLKB    1,0               ; LISTO (bottom nibble)
+0B243C 00 
+0B243C 00   
+0B243D 00 
+0B243E 00 
+0B243F 00 
+0B243F 00   
+0B2440 00 
+0B2441 00 
+0B2442 00 
+0B2442 00   
+0B2443 00 
+0B2444 00 
+0B2445 00 
+0B2445 00   
+0B2446 00 
+0B2447 00 
+0B2448 00 
+0B2448 00   
+0B2449 00 
+0B244A 00 
+0B244B 00 
+0B244B 00   
+0B244C 00 
+0B244D 00 
+0B244E 00 
+0B244E 00   
+0B244F 00 
+0B2450 00 
+0B2451 00 
+0B246C 00     0068* DYNVAR:         BLKB    54*3,0            ; Dynamic Variable Pointers
+0B246D 00 
+0B246E 00 
+0B246F 00 
+0B246F 00   
+0B2470 00 
+0B2471 00 
+0B2472 00 
+0B2472 00   
+0B2473 00 
+0B2474 00 
+0B2475 00 
+0B2475 00   
+0B2476 00 
+0B2477 00 
+0B2478 00 
+0B2478 00   
+0B2479 00 
+0B247A 00 
+0B247B 00 
+0B247B 00   
+0B247C 00 
+0B247D 00 
+0B247E 00 
+0B247E 00   
+0B247F 00 
+0B2480 00 
+0B2481 00 
+0B2481 00   
+0B2482 00 
+0B2483 00 
+0B2484 00 
+0B2484 00   
+0B2485 00 
+0B2486 00 
+0B2487 00 
+0B2487 00   
+0B2488 00 
+0B2489 00 
+0B248A 00 
+0B248A 00   
+0B248B 00 
+0B248C 00 
+0B248D 00 
+0B248D 00   
+0B248E 00 
+0B248F 00 
+0B2490 00 
+0B2490 00   
+0B2491 00 
+0B2492 00 
+0B2493 00 
+0B2493 00   
+0B2494 00 
+0B2495 00 
+0B2496 00 
+0B2496 00   
+0B2497 00 
+0B2498 00 
+0B2499 00 
+0B2499 00   
+0B249A 00 
+0B249B 00 
+0B249C 00 
+0B249C 00   
+0B249D 00 
+0B249E 00 
+0B249F 00 
+0B249F 00   
+0B24A0 00 
+0B24A1 00 
+0B24A2 00 
+0B24A2 00   
+0B24A3 00 
+0B24A4 00 
+0B24A5 00 
+0B24A5 00   
+0B24A6 00 
+0B24A7 00 
+0B24A8 00 
+0B24A8 00   
+0B24A9 00 
+0B24AA 00 
+0B24AB 00 
+0B24AB 00   
+0B24AC 00 
+0B24AD 00 
+0B24AE 00 
+0B24AE 00   
+0B24AF 00 
+0B24B0 00 
+0B24B1 00 
+0B24B1 00   
+0B24B2 00 
+0B24B3 00 
+0B24B4 00 
+0B24B4 00   
+0B24B5 00 
+0B24B6 00 
+0B24B7 00 
+0B24B7 00   
+0B24B8 00 
+0B24B9 00 
+0B24BA 00 
+0B24BA 00   
+0B24BB 00 
+0B24BC 00 
+0B24BD 00 
+0B24BD 00   
+0B24BE 00 
+0B24BF 00 
+0B24C0 00 
+0B24C0 00   
+0B24C1 00 
+0B24C2 00 
+0B24C3 00 
+0B24C3 00   
+0B24C4 00 
+0B24C5 00 
+0B24C6 00 
+0B24C6 00   
+0B24C7 00 
+0B24C8 00 
+0B24C9 00 
+0B24C9 00   
+0B24CA 00 
+0B24CB 00 
+0B24CC 00 
+0B24CC 00   
+0B24CD 00 
+0B24CE 00 
+0B24CF 00 
+0B24CF 00   
+0B24D0 00 
+0B24D1 00 
+0B24D2 00 
+0B24D2 00   
+0B24D3 00 
+0B24D4 00 
+0B24D5 00 
+0B24D5 00   
+0B24D6 00 
+0B24D7 00 
+0B24D8 00 
+0B24D8 00   
+0B24D9 00 
+0B24DA 00 
+0B24DB 00 
+0B24DB 00   
+0B24DC 00 
+0B24DD 00 
+0B24DE 00 
+0B24DE 00   
+0B24DF 00 
+0B24E0 00 
+0B24E1 00 
+0B24E1 00   
+0B24E2 00 
+0B24E3 00 
+0B24E4 00 
+0B24E4 00   
+0B24E5 00 
+0B250E 00     0069* FNPTR:          BLKB    3,0               ; Dynamic Function Pointers
+0B250F 00 
+0B2510 00 
+0B2511 00     0070* PROPTR:         BLKB    3,0               ; Dynamic Procedure Pointers
+0B2512 00 
+0B2513 00 
+              0071* ;
+0B2514 00     0072* PAGE_:          BLKB    3,0               ; Start of User Program
+0B2515 00 
+0B2516 00 
+0B2517 00     0073* TOP:            BLKB    3,0               ; First Location after User Program
+0B2518 00 
+0B2519 00 
+0B251A 00     0074* LOMEM:          BLKB    3,0               ; Start of Dynamic Storage
+0B251B 00 
+0B251C 00 
+0B251D 00     0075* FREE:           BLKB    3,0               ; First Free Space Byte
+0B251E 00 
+0B251F 00 
+0B2520 00     0076* HIMEM:          BLKB    3,0               ; First Protected Byte
+0B2521 00 
+0B2522 00 
+              0077* ;
+0B2523 00     0078* LINENO:         BLKB    3,0               ; Line Number
+0B2524 00 
+0B2525 00 
+0B2526 00     0079* TRACEN:         BLKB    3,0               ; Trace Flag
+0B2527 00 
+0B2528 00 
+0B2529 00     0080* AUTONO:         BLKB    3,0               ; Auto Flag
+0B252A 00 
+0B252B 00 
+0B252C 00     0081* ERRTRP:         BLKB    3,0               ; Error Trap
+0B252D 00 
+0B252E 00 
+0B252F 00     0082* ERRTXT:         BLKB    2,0               ; Error Message Pointer
+0B2530 00 
+0B2531 00     0083* DATPTR:         BLKB    2,0               ; Data Pointer
+0B2532 00 
+0B2533 00     0084* ERL:            BLKB    2,0               ; Error Line
+0B2534 00 
+0B2535 00     0085* ERRLIN:         BLKB    3,0               ; The "ON ERROR" Line
+0B2536 00 
+0B2537 00 
+0B2538 00     0086* RANDOM:         BLKB    5,0               ; Random Number
+0B2539 00 
+0B253A 00 
+0B253B 00 
+0B253B 00   
+0B253D 00     0087* COUNT:          BLKB    1,0               ; Print Position
+0B253E 00     0088* WIDTH:          BLKB    1,0               ; Print Width
+0B253F 00     0089* ERR:            BLKB    1,0               ; Error Number
+0B2540 00     0090* LISTON:         BLKB    1,0               ; LISTO (bottom nibble)
               0091* ; - BIT 0: If set, output a space after the line number
               0092* ; - BIT 1: If set, then indent FOR/NEXT loops
               0093* ; - BIT 2: If set, then indent REPEAT/UNTIL loops
@@ -11552,7 +11793,7 @@
               0097* ; - BIT 5: If set, then assembler errors are reported
               0098* ; - BIT 6: If set, then place the code starting at address pointed to by O%
               0099* ; - BIT 7: If set, then assemble in ADL mode, otherwise assemble in Z80 mode
-0B2441 00     0100* INCREM:         BLKB    1,0               ; Auto-Increment Value
+0B2541 00     0100* INCREM:         BLKB    1,0               ; Auto-Increment Value
               0101* ;
               0102* ; --------------------------------------------------------------------------------------------
               0103* ; BEGIN MODIFIED CODE
@@ -11568,204 +11809,204 @@
               0113* 
               0114* ; Extra Agon-implementation specific system variables
               0115* ;
-0B2442 00     0116* FLAGS:          BLKB    1,0       ; Miscellaneous flags
+0B2542 00     0116* FLAGS:          BLKB    1,0       ; Miscellaneous flags
               0117* ; - BIT 7: Set if ESC pressed
               0118* ; - BIT 6: Set to disable ESC
-0B2443 00     0119* OSWRCHPT:       BLKB    2,0       ; Pointer for *EDIT
-0B2444 00 
-0B2445 00     0120* OSWRCHCH:       BLKB    1,0       ; Channel of OSWRCH
+0B2543 00     0119* OSWRCHPT:       BLKB    2,0       ; Pointer for *EDIT
+0B2544 00 
+0B2545 00     0120* OSWRCHCH:       BLKB    1,0       ; Channel of OSWRCH
               0121* ; - 0: Console
               0122* ; - 1: File
-0B2446 00     0123* OSWRCHFH:       BLKB    1,0       ; File handle for OSWRCHCHN
-0B2447 00     0124* KEYDOWN:        BLKB    1,0       ; Keydown flag
-0B2448 00     0125* KEYASCII:       BLKB    1,0       ; ASCII code of pressed key
-0B2449 00     0126* KEYCOUNT:       BLKB    1,0       ; Counts every time a key is pressed
-0B244A 00     0127* R0:             BLKB    3,0       ; General purpose storage for 8/16 to 24 bit operations
-0B244B 00 
-0B244C 00 
-0B244D 00     0128* R1:             BLKB    3,0
-0B244E 00 
-0B244F 00 
+0B2546 00     0123* OSWRCHFH:       BLKB    1,0       ; File handle for OSWRCHCHN
+0B2547 00     0124* KEYDOWN:        BLKB    1,0       ; Keydown flag
+0B2548 00     0125* KEYASCII:       BLKB    1,0       ; ASCII code of pressed key
+0B2549 00     0126* KEYCOUNT:       BLKB    1,0       ; Counts every time a key is pressed
+0B254A 00     0127* R0:             BLKB    3,0       ; General purpose storage for 8/16 to 24 bit operations
+0B254B 00 
+0B254C 00 
+0B254D 00     0128* R1:             BLKB    3,0
+0B254E 00 
+0B254F 00 
               0129* 
               0130* ;
               0131* ; This must be at the end
               0132* ;
               0133* RAM_END:
-0B2450 FF     0134* ALIGN	256
-0B2451 FF 
-0B2452 FF 
-0B2453 FF 
-0B2453 FF   
-0B2454 FF 
-0B2455 FF 
-0B2456 FF 
-0B2456 FF   
-0B2457 FF 
-0B2458 FF 
-0B2459 FF 
-0B2459 FF   
-0B245A FF 
-0B245B FF 
-0B245C FF 
-0B245C FF   
-0B245D FF 
-0B245E FF 
-0B245F FF 
-0B245F FF   
-0B2460 FF 
-0B2461 FF 
-0B2462 FF 
-0B2462 FF   
-0B2463 FF 
-0B2464 FF 
-0B2465 FF 
-0B2465 FF   
-0B2466 FF 
-0B2467 FF 
-0B2468 FF 
-0B2468 FF   
-0B2469 FF 
-0B246A FF 
-0B246B FF 
-0B246B FF   
-0B246C FF 
-0B246D FF 
-0B246E FF 
-0B246E FF   
-0B246F FF 
-0B2470 FF 
-0B2471 FF 
-0B2471 FF   
-0B2472 FF 
-0B2473 FF 
-0B2474 FF 
-0B2474 FF   
-0B2475 FF 
-0B2476 FF 
-0B2477 FF 
-0B2477 FF   
-0B2478 FF 
-0B2479 FF 
-0B247A FF 
-0B247A FF   
-0B247B FF 
-0B247C FF 
-0B247D FF 
-0B247D FF   
-0B247E FF 
-0B247F FF 
-0B2480 FF 
-0B2480 FF   
-0B2481 FF 
-0B2482 FF 
-0B2483 FF 
-0B2483 FF   
-0B2484 FF 
-0B2485 FF 
-0B2486 FF 
-0B2486 FF   
-0B2487 FF 
-0B2488 FF 
-0B2489 FF 
-0B2489 FF   
-0B248A FF 
-0B248B FF 
-0B248C FF 
-0B248C FF   
-0B248D FF 
-0B248E FF 
-0B248F FF 
-0B248F FF   
-0B2490 FF 
-0B2491 FF 
-0B2492 FF 
-0B2492 FF   
-0B2493 FF 
-0B2494 FF 
-0B2495 FF 
-0B2495 FF   
-0B2496 FF 
-0B2497 FF 
-0B2498 FF 
-0B2498 FF   
-0B2499 FF 
-0B249A FF 
-0B249B FF 
-0B249B FF   
-0B249C FF 
-0B249D FF 
-0B249E FF 
-0B249E FF   
-0B249F FF 
-0B24A0 FF 
-0B24A1 FF 
-0B24A1 FF   
-0B24A2 FF 
-0B24A3 FF 
-0B24A4 FF 
-0B24A4 FF   
-0B24A5 FF 
-0B24A6 FF 
-0B24A7 FF 
-0B24A7 FF   
-0B24A8 FF 
-0B24A9 FF 
-0B24AA FF 
-0B24AA FF   
-0B24AB FF 
-0B24AC FF 
-0B24AD FF 
-0B24AD FF   
-0B24AE FF 
-0B24AF FF 
-0B24B0 FF 
-0B24B0 FF   
-0B24B1 FF 
-0B24B2 FF 
-0B24B3 FF 
-0B24B3 FF   
-0B24B4 FF 
-0B24B5 FF 
-0B24B6 FF 
-0B24B6 FF   
-0B24B7 FF 
-0B24B8 FF 
-0B24B9 FF 
-0B24B9 FF   
-0B24BA FF 
-0B24BB FF 
-0B24BC FF 
-0B24BC FF   
-0B24BD FF 
-0B24BE FF 
-0B24BF FF 
-0B24BF FF   
-0B24C0 FF 
-0B24C1 FF 
-0B24C2 FF 
-0B24C2 FF   
-0B24C3 FF 
-0B24C4 FF 
-0B24C5 FF 
-0B24C5 FF   
-0B24C6 FF 
-0B24C7 FF 
-0B24C8 FF 
-0B24C8 FF   
-0B24C9 FF 
-0B24CA FF 
-0B24CB FF 
-0B24CB FF   
-0B24CC FF 
-0B24CD FF 
-0B24CE FF 
-0B24CE FF   
-0B24CF FF 
-0B24D0 FF 
-0B24D1 FF 
-0B24D1 FF   
-0B24D2 FF 
-0B24D3 FF 
-0B24D4 FF 
+0B2550 FF     0134* ALIGN	256
+0B2551 FF 
+0B2552 FF 
+0B2553 FF 
+0B2553 FF   
+0B2554 FF 
+0B2555 FF 
+0B2556 FF 
+0B2556 FF   
+0B2557 FF 
+0B2558 FF 
+0B2559 FF 
+0B2559 FF   
+0B255A FF 
+0B255B FF 
+0B255C FF 
+0B255C FF   
+0B255D FF 
+0B255E FF 
+0B255F FF 
+0B255F FF   
+0B2560 FF 
+0B2561 FF 
+0B2562 FF 
+0B2562 FF   
+0B2563 FF 
+0B2564 FF 
+0B2565 FF 
+0B2565 FF   
+0B2566 FF 
+0B2567 FF 
+0B2568 FF 
+0B2568 FF   
+0B2569 FF 
+0B256A FF 
+0B256B FF 
+0B256B FF   
+0B256C FF 
+0B256D FF 
+0B256E FF 
+0B256E FF   
+0B256F FF 
+0B2570 FF 
+0B2571 FF 
+0B2571 FF   
+0B2572 FF 
+0B2573 FF 
+0B2574 FF 
+0B2574 FF   
+0B2575 FF 
+0B2576 FF 
+0B2577 FF 
+0B2577 FF   
+0B2578 FF 
+0B2579 FF 
+0B257A FF 
+0B257A FF   
+0B257B FF 
+0B257C FF 
+0B257D FF 
+0B257D FF   
+0B257E FF 
+0B257F FF 
+0B2580 FF 
+0B2580 FF   
+0B2581 FF 
+0B2582 FF 
+0B2583 FF 
+0B2583 FF   
+0B2584 FF 
+0B2585 FF 
+0B2586 FF 
+0B2586 FF   
+0B2587 FF 
+0B2588 FF 
+0B2589 FF 
+0B2589 FF   
+0B258A FF 
+0B258B FF 
+0B258C FF 
+0B258C FF   
+0B258D FF 
+0B258E FF 
+0B258F FF 
+0B258F FF   
+0B2590 FF 
+0B2591 FF 
+0B2592 FF 
+0B2592 FF   
+0B2593 FF 
+0B2594 FF 
+0B2595 FF 
+0B2595 FF   
+0B2596 FF 
+0B2597 FF 
+0B2598 FF 
+0B2598 FF   
+0B2599 FF 
+0B259A FF 
+0B259B FF 
+0B259B FF   
+0B259C FF 
+0B259D FF 
+0B259E FF 
+0B259E FF   
+0B259F FF 
+0B25A0 FF 
+0B25A1 FF 
+0B25A1 FF   
+0B25A2 FF 
+0B25A3 FF 
+0B25A4 FF 
+0B25A4 FF   
+0B25A5 FF 
+0B25A6 FF 
+0B25A7 FF 
+0B25A7 FF   
+0B25A8 FF 
+0B25A9 FF 
+0B25AA FF 
+0B25AA FF   
+0B25AB FF 
+0B25AC FF 
+0B25AD FF 
+0B25AD FF   
+0B25AE FF 
+0B25AF FF 
+0B25B0 FF 
+0B25B0 FF   
+0B25B1 FF 
+0B25B2 FF 
+0B25B3 FF 
+0B25B3 FF   
+0B25B4 FF 
+0B25B5 FF 
+0B25B6 FF 
+0B25B6 FF   
+0B25B7 FF 
+0B25B8 FF 
+0B25B9 FF 
+0B25B9 FF   
+0B25BA FF 
+0B25BB FF 
+0B25BC FF 
+0B25BC FF   
+0B25BD FF 
+0B25BE FF 
+0B25BF FF 
+0B25BF FF   
+0B25C0 FF 
+0B25C1 FF 
+0B25C2 FF 
+0B25C2 FF   
+0B25C3 FF 
+0B25C4 FF 
+0B25C5 FF 
+0B25C5 FF   
+0B25C6 FF 
+0B25C7 FF 
+0B25C8 FF 
+0B25C8 FF   
+0B25C9 FF 
+0B25CA FF 
+0B25CB FF 
+0B25CB FF   
+0B25CC FF 
+0B25CD FF 
+0B25CE FF 
+0B25CE FF   
+0B25CF FF 
+0B25D0 FF 
+0B25D1 FF 
+0B25D1 FF   
+0B25D2 FF 
+0B25D3 FF 
+0B25D4 FF 
               0135* USER:							; Must be aligned on a page boundary
               0136* 

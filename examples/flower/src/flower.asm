@@ -283,10 +283,10 @@ _end:			LD		SP, (_sps)		; Restore the stack pointer
 ; end BASIC-specific end code
 
 _main_end_ok:
-    call printNewLine
-    ld hl,str_success   ; print success message
-    call printString
-    call printNewLine
+    ; call printNewLine
+    ; ld hl,str_success   ; print success message
+    ; call printString
+    ; call printNewLine
     ld hl,0             ; return 0 for success
     ret
 
@@ -297,7 +297,14 @@ main:
     call print_input    ; print the input arguments
 
 ; --- clear the screen ---
-    ; call vdu_cls
+    ld a,19
+    call vdu_set_screen_mode
+    call vdu_cls
+
+; Set screen origin to the center
+    ld bc,1280/2 ; x
+    ld de,1024/2 ; y
+    call vdu_set_gfx_origin
 
 ; --- load radius_scale ---
     LOAD_FLOAT "256" ; HLH'L'C = 256
@@ -384,65 +391,84 @@ main:
     ld iy,radius_prime
     call store_float_iy_nor
 
-; Set screen origin to the center
-    ld bc,1280/2 ; x
-    ld de,1024/2 ; y
-    call vdu_set_gfx_origin
-
 ; set initial point and move graphics cursor to it
     call calc_point ; HLH'L'C = x DED'E'B = y
-    ; ld a,plot_pt+mv_abs ; plot mode
-    ; call vdu_plot
+    call vdu_plot_float
+
 ; fall through to main loop
 
-; DEBUG
-    call printNewLine
-    call print_float_dec_nor
-    call printNewLine
-    call print_float_dec_alt
-    jp _main_end_ok
-; END DEBUG
+; ; DEBUG
+;     call printNewLine
+;     call print_float_dec_nor
+;     call printNewLine
+;     call print_float_dec_alt
+;     jp _main_end_ok
+; ; END DEBUG
 
 @loop:
-    ; ; Advance theta values
-    ;     ; theta_prime += step_theta_prime
-    ;     ld hl,(theta_prime)
-    ;     ld de,(step_theta_prime)
-    ;     add hl,de
-    ;     ld (theta_prime),hl
+; Advance thetas
+    ; theta_prime += step_theta_prime
+    ld iy,step_theta_prime
+    call fetch_float_iy_nor
+    ld iy,theta_prime
+    call fetch_float_iy_alt
+    ld a,fadd
+    call FPP ; HLH'L'C = theta_prime + step_theta_prime
+    call store_float_iy_nor ; theta_prime
 
-    ;     ; theta_petal += step_theta_petal
-    ;     ld hl,(theta_petal)
-    ;     ld de,(step_theta_petal)
-    ;     add hl,de
-    ;     ld (theta_petal),hl
+    ; theta_petal += step_theta_petal
+    ld iy,step_theta_petal
+    call fetch_float_iy_nor
+    ld iy,theta_petal
+    call fetch_float_iy_alt
+    ld a,fadd
+    call FPP ; HLH'L'C = theta_petal + step_theta_petal
+    call store_float_iy_nor ; theta_petal
 
-    ; ; Update radius_prime
-    ;     ; radius_prime += step_shrink
-    ;     ld hl,(radius_prime)
-    ;     ld de,(step_shrink)
-    ;     add hl,de
-    ;     ld (radius_prime),hl
+; Update radius_prime
+    ; radius_prime += step_shrink
+    ld iy,step_shrink
+    call fetch_float_iy_nor
+    ld iy,radius_prime
+    call fetch_float_iy_alt
+    ld a,fadd
+    call FPP ; HLH'L'C = radius_prime + step_shrink
+    call store_float_iy_nor ; radius_prime
 
-    ; ; Calculate new coordinates and draw a line from the previous point
-    ;     call calc_point ; ub.c = x, ud.e = y
-    ;     ld a,plot_sl_both+dr_abs_fg ; plot mode
-    ;     call vdu_plot_168
+; Calculate new coordinates and draw a line from the previous point
+    call calc_point ; HLH'L'C = x DED'E'B = y
+    ld a,plot_sl_both+dr_abs_fg ; plot mode
+    call vdu_plot_float
 
-    ;     ; call printNewLine
-    ;     ; call print_theta_prime
-    ;     ; call print_theta_petal
-    ;     ; ; call print_radius_prime
-    ;     ; ; call print_radius_petal
-    ;     ; call print_radius
-    ;     ; call print_xy
-
-    ; ; Decrement the loop counter
-    ;     ld hl,total_steps
-    ;     dec (hl)
-    ;     jp nz,@loop
+; Decrement the loop counter
+    ld hl,total_steps
+    dec (hl)
+    jp nz,@loop
 
     jp _main_end_ok
+
+; VDU 25, mode, x; y;: PLOT command
+; inputs: a=mode, HL'H'L'C=x, DE'D'E'B=y
+vdu_plot_float:
+    ld (@mode),a
+    ld a,int_
+    CALL FPP
+    call int2hlu
+    ld (@x0),hl
+    call SWAP
+    ld a,int_
+    CALL FPP
+    call int2hlu
+    ld (@y0),hl
+	ld hl,@cmd
+	ld bc,@end-@cmd
+	rst.lil $18
+	ret
+@cmd:   db 25
+@mode:  db 0
+@x0: 	dw 0
+@y0: 	dw 0
+@end:   db 0 ; padding
 
 ; compute the Cartesian coordinates of the next point on the curve
 ; inputs: theta_prime, theta_petal, radius_prime, depth
