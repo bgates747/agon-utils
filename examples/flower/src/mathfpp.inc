@@ -158,7 +158,6 @@ polar_to_cartesian_fpp:
     ld iy,@scratch
     call fetch_float_iy_alt
     ret
-    
 @angle: ds 5
 @radius: ds 5
 @scratch: ds 5

@@ -4,6 +4,8 @@
 ; Created:	03/08/2022
 ; Last Updated:	11/11/2023
 ;
+; Modified: 11/14/2024 by Brandon R. Gates for ez80asm compatibility
+;
 ; Modinfo:
 ; 05/08/2022:	Added mos_feof
 ; 09/08/2022:	Added system variables: cursorX, cursorY
@@ -25,7 +27,8 @@
 ; 03/08/2023:	Added mos_setkbvector
 ; 10/08/2023:	Added mos_getkbmap
 ; 11/11/2023:	Added mos_i2c_open, mos_i2c_close, mos_i2c_write and mos_i2c_read
-
+; 11/14/2024:   FatFS structs modified for ez80asm compatibility
+;
 ; VDP control (VDU 23, 0, n)
 ;
 vdp_gp:			EQU 	80h
@@ -174,7 +177,7 @@ sysvar_mouseButtons:	EQU	2Dh	; 1: Mouse button state
 sysvar_mouseWheel:	EQU	2Eh	; 1: Mouse wheel delta
 sysvar_mouseXDelta:	EQU	2Fh	; 2: Mouse X delta
 sysvar_mouseYDelta:	EQU	31h	; 2: Mouse Y delta
-	
+;
 ; Flags for the VPD protocol
 ;
 vdp_pflag_cursor:	EQU	00000001b
@@ -186,58 +189,11 @@ vdp_pflag_rtc:		EQU	00100000b
 vdp_pflag_mouse:	EQU	01000000b
 ; vdp_pflag_buffered:	EQU	10000000b
 
-;
+
 ; FatFS structures
 ; These mirror the structures contained in src_fatfs/ff.h in the MOS project
 ;
 ; Object ID and allocation information (FFOBJID)
-;
-; FFOBJID	.STRUCT
-; 	fs:		DS	3	; Pointer to the hosting volume of this object
-; 	id:		DS	2	; Hosting volume mount ID
-; 	attr:		DS	1	; Object attribute
-; 	stat:		DS	1	; Object chain status (b1-0: =0:not contiguous, =2:contiguous, =3:fragmented in this session, b2:sub-directory stretched)
-; 	sclust:		DS	4	; Object data start cluster (0:no cluster or root directory)
-; 	objsize:	DS	4	; Object size (valid when sclust != 0)
-; FFOBJID_SIZE .ENDSTRUCT FFOBJID
-; ;
-; ; File object structure (FIL)
-; ;
-; FIL .STRUCT
-; 	obj:		.TAG	FFOBJID	; Object identifier
-; 	flag:		DS	1	; File status flags
-; 	err:		DS	1	; Abort flag (error code)
-; 	fptr:		DS	4	; File read/write pointer (Zeroed on file open)
-; 	clust:		DS	4	; Current cluster of fpter (invalid when fptr is 0)
-; 	sect:		DS	4	; Sector number appearing in buf[] (0:invalid)
-; 	dir_sect:	DS	4	; Sector number containing the directory entry
-; 	dir_ptr:	DS	3	; Pointer to the directory entry in the win[]
-; FIL_SIZE .ENDSTRUCT FIL
-; ;
-; ; Directory object structure (DIR)
-; ; 
-; DIR .STRUCT
-; 	obj:		.TAG	FFOBJID	; Object identifier
-; 	dptr:		DS	4	; Current read/write offset
-; 	clust:		DS	4	; Current cluster
-; 	sect:		DS	4	; Current sector (0:Read operation has terminated)
-; 	dir:		DS	3	; Pointer to the directory item in the win[]
-; 	fn:		DS	12	; SFN (in/out) {body[8],ext[3],status[1]}
-; 	blk_ofs:	DS	4	; Offset of current entry block being processed (0xFFFFFFFF:Invalid)
-; DIR_SIZE .ENDSTRUCT DIR
-; ;
-; ; File information structure (FILINFO)
-; ;
-; FILINFO .STRUCT
-; 	fsize:		DS 	4	; File size
-; 	fdate:		DS	2	; Modified date
-; 	ftime:		DS	2	; Modified time
-; 	fattrib:	DS	1	; File attribute
-; 	altname:	DS	13	; Alternative file name
-; 	fname:		DS	256	; Primary file name
-; FILINFO_SIZE .ENDSTRUCT FILINFO
-
-; FFOBJID offsets
 FFOBJID.fs:       EQU 0    ; Pointer to the hosting volume of this object
 FFOBJID.id:       EQU 3    ; Hosting volume mount ID
 FFOBJID.attr:     EQU 5    ; Object attribute
@@ -245,8 +201,9 @@ FFOBJID.stat:     EQU 6    ; Object chain status
 FFOBJID.sclust:   EQU 7    ; Object data start cluster
 FFOBJID.objsize:  EQU 11   ; Object size
 FFOBJID_SIZE:     EQU 15   ; Total size of FFOBJID structure
-
-; FIL offsets (including FFOBJID fields)
+;
+; File object structure (FIL)
+;
 FIL.obj:          EQU 0                  ; Object identifier (FFOBJID fields start here)
 FIL.flag:         EQU FFOBJID_SIZE       ; File status flags
 FIL.err:          EQU FFOBJID_SIZE + 1   ; Abort flag (error code)
@@ -256,8 +213,9 @@ FIL.sect:         EQU FFOBJID_SIZE + 10  ; Sector number appearing in buf[]
 FIL.dir_sect:     EQU FFOBJID_SIZE + 14  ; Sector number containing the directory entry
 FIL.dir_ptr:      EQU FFOBJID_SIZE + 18  ; Pointer to the directory entry in the win[]
 FIL_SIZE:         EQU FFOBJID_SIZE + 21  ; Total size of FIL structure
-
-; DIR offsets (including FFOBJID fields)
+;
+; Directory object structure (DIR)
+; 
 DIR.obj:          EQU 0                  ; Object identifier (FFOBJID fields start here)
 DIR.dptr:         EQU FFOBJID_SIZE       ; Current read/write offset
 DIR.clust:        EQU FFOBJID_SIZE + 4   ; Current cluster
@@ -266,8 +224,9 @@ DIR.dir:          EQU FFOBJID_SIZE + 12  ; Pointer to the directory item in the 
 DIR.fn:           EQU FFOBJID_SIZE + 15  ; SFN (in/out) {body[8],ext[3],status[1]}
 DIR.blk_ofs:      EQU FFOBJID_SIZE + 27  ; Offset of current entry block being processed
 DIR_SIZE:         EQU FFOBJID_SIZE + 31  ; Total size of DIR structure
-
-; FILINFO offsets
+;
+; File information structure (FILINFO)
+;
 FILINFO.fsize:    EQU 0    ; File size
 FILINFO.fdate:    EQU 4    ; Modified date
 FILINFO.ftime:    EQU 6    ; Modified time
@@ -275,7 +234,6 @@ FILINFO.fattrib:  EQU 8    ; File attribute
 FILINFO.altname:  EQU 9    ; Alternative file name
 FILINFO.fname:    EQU 22   ; Primary file name
 FILINFO_SIZE:     EQU 278  ; Total size of FILINFO structure
-
 ;
 ; Macro for calling the API
 ; Parameters:

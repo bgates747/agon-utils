@@ -656,10 +656,4 @@ print_params:
     pop ix              ; restore the pointer to the parameters
     ret
 
-debug_print:
-    call printNewLine
-    call dumpRegistersHexAll
-    call printNewLine
-    ret
-
     include "basic/ram.asm" ; must be last so that RAM has room for BASIC operations
