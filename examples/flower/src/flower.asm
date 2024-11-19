@@ -194,7 +194,7 @@ _clear_ram:
 ; APPLICATION INCLUDES
 
 ; Storage for the argv array pointers
-min_args: equ 2
+min_args: equ 1
 argv_ptrs_max:		EQU	16			; Maximum number of arguments allowed in argv
 argv_ptrs:		    BLKP	argv_ptrs_max, 0		
 _sps:			DS	3			; Storage for the stack pointer (used by BASIC)
@@ -210,50 +210,30 @@ str_success: ASCIZ "Success!\r\n"
 
 ; GLOBAL VARIABLES / DEFAULTS
 ; ---- input arguments (float) ----
-input_params_num: equ 5
-input_params:               ; label so we can traverse the table in loops
-petals:             db   0x81           ; 3.03
-                    dw32 0x41EB851E   
-vectors:            db   0x80           ; 1.98
-                    dw32 0x7D70A3D7   
-depth:              db   0x7F           ; 0.6
-                    dw32 0x19999999   
-periods:            db   0x86           ; 66
-                    dw32 0x04000000   
-shrink:             db   0x7F           ; 0.8
-                    dw32 0x4CCCCCCC   
-clock_prime:        db   0x00           ; 1     not used
-                    dw32 0x00000000   
-clock_petal: 	    db   0x00           ; 1     not used
-                    dw32 0x00000000   
-radius_scale: 	    db   0x88           ; 256
-                    dw32 0x00000000   
+input_params_num: equ 7
+input_params:
+petals:             db   0x81, 0x1E, 0x85, 0xEB, 0x41           ; 3.03
+vectors:            db   0x80, 0xD7, 0xA3, 0x70, 0x7D           ; 1.98
+depth:              db   0x7F, 0x99, 0x99, 0x99, 0x19           ; 0.6
+periods:            db   0x86, 0x00, 0x00, 0x00, 0x04           ; 66
+shrink:             db   0x7F, 0xCC, 0xCC, 0xCC, 0x4C           ; 0.8
+radius_scale: 	    db   0x88, 0x00, 0x00, 0x00, 0x00           ; 256
+theta_init: 	    db   0x00, 0x00, 0x00, 0x00, 0x00           ; 0
 
-; ---- main loop parameters (float unless noted otherwise) ----
-step_theta_prime:   db   0x00    ; Step increment for theta_prime in each loop iteration
-                    dw32 0x00000000
-step_theta_petal:   db   0x00    ; Step increment for theta_petal in each loop iteration
-                    dw32 0x00000000
-total_steps:        db   0x00    ; Total number of iterations based on periods and step_theta_prime
-                    dw32 0x00000000
-step_shrink:        db   0x00    ; Step decrement applied to radius in each iteration
-                    dw32 0x00000000
+; ---- main loop constants (float unless noted otherwise) ----
+step_theta_prime:   blkb 5,0    ; Step increment for theta_prime in each loop iteration
+step_theta_petal:   blkb 5,0    ; Step increment for theta_petal in each loop iteration
+total_steps:        blkb 5,0    ; Total number of iterations based on periods and step_theta_prime
+step_shrink:        blkb 5,0    ; Step decrement applied to radius in each iteration
 
 ; ---- main loop state variables (float) ----
-theta_prime: 	    db   0x00    ; 
-                    dw32 0x00000000
-theta_petal: 	    db   0x00    ; 
-                    dw32 0x00000000
-radius_prime:       db   0x00    ; Initial radius before shrink factor is applied
-                    dw32 0x00000000
-radius_petal:       db   0x00    ; Radius of the petal circle
-                    dw32 0x00000000
-radius:             db   0x00    ; Total radius of the curve
-                    dw32 0x00000000
-x_prev:             db   0x00    ; Previous x coordinate
-                    dw32 0x00000000
-y_prev:             db   0x00    ; Previous y coordinate
-                    dw32 0x00000000
+theta_prime: 	    blkb 5,0    ; Angle of the drawing cursor relative to the origin
+theta_petal: 	    blkb 5,0    ; Angle used to compute radius offset of the petal circle
+radius_prime:       blkb 5,0    ; Initial radius before shrink factor is applied
+radius_petal:       blkb 5,0    ; Radius of the petal circle
+radius:             blkb 5,0    ; Total radius of the curve
+x_prev:             blkb 5,0    ; Previous x coordinate
+y_prev:             blkb 5,0    ; Previous y coordinate
 
 ; ========= MAIN LOOP ========= 
 ; The main routine
@@ -302,11 +282,6 @@ main:
     ld de,1024/2 ; y
     call vdu_set_gfx_origin
 
-; --- load radius_scale ---
-    LOAD_FLOAT "256" ; HLH'L'C = 256
-    ld iy,radius_scale
-    call store_float_iy_nor
-
 ; --- convert input thetas to radians
     ld iy,theta_prime
     call fetch_float_iy_nor
@@ -318,6 +293,15 @@ main:
     call fetch_float_iy_nor
     ld a,rad
     call FPP
+    call store_float_iy_nor
+
+    ld iy,theta_init
+    call fetch_float_iy_nor
+    ld a,rad
+    call FPP
+    call store_float_iy_nor
+
+    ld iy,theta_prime ; set theta_prime to theta_init
     call store_float_iy_nor
 
 ; --- compute the main loop parameters ---
@@ -508,14 +492,17 @@ calc_point:
 
     ret
 
-
 ; --- Load arguments ---
 ; --------------------------------
 load_input:
-    ld a,c ; put the number of entered arguments in a
-    ld b,input_params_num ; loop counter = number of arguments
-    cp b ; compare the number of arguments to the number of arguments
-    jp nz,args_count_off ; handle discrepancies
+    ld b,input_params_num ; loop counter assuming correct number of arguments were entered
+    ld a,c ; number of arguments entered
+    sub b ; compare expected with entered
+    jp p,@F ; entered arguments >= expected, so proceed ignoring any excess arguments
+    add a,b ; set loop counter to entered arguments
+    ret z ; no arguments entered so return, leaving all to defaults
+    ld b,a
+@@:
     ld iy,input_params  ; point to the arguments table
 @loop:
     push bc ; save the loop counter
