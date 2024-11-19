@@ -1,0 +1,44 @@
+Title:   flower
+Author:  Brandon R. Gates (BeeGee747)
+Created: Nov. 2024
+
+This program draws 2D curves related to the epitrochoid family (i.e. Spirographs),
+more generally known as roulettes. However, instead of an outer wheel rolling
+around on an inner wheel, this algorithm can be thought of as a rotating arm whose
+radius oscillates a set number of times per rotation, which is set by the petals parameter.
+Unlike the Spirograph toy which plots a continuous curve, the vectors parameter determines
+the number of points plotted per oscillation. Specifying a small number of vectors leads 
+to more angular polygonal type curves remniscent of string art. Also unlike the toy, 
+a shrink factor can be specified resulting in graphs which are true spirals.
+
+More information about epitrochoid curves can be found here: 
+https://mathcurve.com/courbes2d.gb/epitrochoid/epitrochoid.shtml
+
+Useage
+------
+Once the flower.bin file has been copied to the mos directory, type `flower` followed by
+values for each of the seven parameters shown below. Entering fewer than seven will cause
+the program to subtitute the defaults given as examples. Parameters in excess of seven will
+simply be ignored.
+
+Parameters with example values
+------------------------------
+petals       = 3.03  : Number radius oscillations per cycle.
+vectors      = 1.98  : Number of points plotted per oscillation.
+depth        = 0.6   : Multiplier determining the depth of the oscillation.
+periods      = 66    : Number of full rotations.
+shrink       = 0.8   : Multiplier determining the final radius relative to the start.
+theta_init   = 0.0   : Starting angle of the drawing cursor relative to the origin.
+radius_scale = 320   : Starting radius.
+
+Compiling and installing
+------------------------
+The source codes are meant to be assembled with Agon's native assembler, ez80asm. From the root src directory, enter `ez80asm flower.asm /mos/flower.bin`.
+
+Credits
+-------
+The floating point library is taken from R.T. Russell's ez80 port of BBC Basic, further modified by Dean Belfield for the Agon Light, further modified me to be compatible with the ez80asm assembler. The src/basic directory contains full copyright and licence details.
+
+Various other codes are copied from or inspired by the works of Dean Belfield, Sean Sjinstra, Richard Turrnnige, and Jeroen Venema.
+
+This program derives from one my stepfather wrote on a Data General Nova circa 1980, outputting to a Tektronix vector graphics terminal. My first stab at replicating it was on the Apple //e he gifted me several years later.

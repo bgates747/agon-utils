@@ -1,39 +1,32 @@
 ;
 ; Title:	flower
-; Author:	Brandon R. Gates
+; Author:	Brandon R. Gates (BeeGee747)
 ; Created:	Nov. 2024
 ;
-; This program draws 2D curves related to the hypotrochoid / epitrochoid family (i.e. Spirographs),
-; more generally known as roulettes. While it is possible to construct curves fitting the precise
-; definitions of such curves, the program is not limited to them as slipping of the outer circle
-; is allowable. In addition, continually plotting the curve insribed by the outer circle is not required.
-; This allows rotating polygonal shapes remniscent of string art, as well as daisy-like curves.
-; Hence the name "flower" even though the program is not limited to such shapes.
-; Another key difference is that cumulative shrinking can be applied to the radii of the rotating circles,
-; thus allowing curves which form true spirals in contrast to the Spirograph toy, which does not.
+; This program draws 2D curves related to the epitrochoid family (i.e. Spirographs),
+; more generally known as roulettes. However, instead of an outer wheel rolling
+; around on an inner wheel, this algorithm can be thought of as a rotating arm whose
+; radius oscillates a set number of times per rotation, which is set by the petals parameter.
+; Unlike the Spirograph toy which plots a continuous curve, the vectors parameter determines
+; the number of points plotted per oscillation. Specifying a small number of vectors leads 
+; to more angular polygonal type curves remniscent of string art. Also unlike the toy, 
+; a shrink factor can be specified resulting in graphs which are true spirals.
+;
+; More information about epitrochoid curves can be found here: 
+; https://mathcurve.com/courbes2d.gb/epitrochoid/epitrochoid.shtml
 ; 
 ; Parameters with example values:
-; petals      = 3.03  : 
-; vectors     = 1.98  : 
-; depth       = 0.6   : 
-; periods     = 66    : 
-; shrink      = 0.8   : 
-; theta_prime = 0.0   : 
-; radius_scale= 480   : 
+; petals       = 3.03  : Number radius oscillations per cycle.
+; vectors      = 1.98  : Number of points plotted per oscillation.
+; depth        = 0.6   : Multiplier determining the depth of the oscillation.
+; periods      = 66    : Number of full rotations.
+; shrink       = 0.8   : Multiplier determining the final radius relative to the start.
+; theta_init   = 0.0   : Starting angle of the drawing cursor relative to the origin.
+; radius_scale = 320   : Starting radius.
 ;
 ; ========================================
-; MODIFIED MOSLET INITIALIZATION CODE
+; MOSLET INITIALIZATION CODE
 ; ========================================
-;
-; Title:	Copy - Initialisation Code
-; Author:	Dean Belfield, Lennart Benschop
-; Created:	06/11/2022
-; Last Updated:	26/12/2022
-;
-; Modinfo:
-; 17/12/2022:	Added parameter processing
-; 26/12/2022:   Adapted to Copy program, use LEA instead of 3x INC IX, Save/restore MB
-; Changed:      08/04/2924 adapt to ez80asm
 ;
     ASSUME	ADL = 1			
     INCLUDE "mos_api.inc"
@@ -212,13 +205,13 @@ str_success: ASCIZ "Success!\r\n"
 ; ---- input arguments (float) ----
 input_params_num: equ 7
 input_params:
-petals:             db   0x81, 0x1E, 0x85, 0xEB, 0x41           ; 3.03
-vectors:            db   0x80, 0xD7, 0xA3, 0x70, 0x7D           ; 1.98
-depth:              db   0x7F, 0x99, 0x99, 0x99, 0x19           ; 0.6
-periods:            db   0x86, 0x00, 0x00, 0x00, 0x04           ; 66
-shrink:             db   0x7F, 0xCC, 0xCC, 0xCC, 0x4C           ; 0.8
-radius_scale: 	    db   0x88, 0x00, 0x00, 0x00, 0x00           ; 256
-theta_init: 	    db   0x00, 0x00, 0x00, 0x00, 0x00           ; 0
+petals:             db   0x81, 0x1E, 0x85, 0xEB, 0x41 ; 3.03
+vectors:            db   0x80, 0xD7, 0xA3, 0x70, 0x7D ; 1.98
+depth:              db   0x7F, 0x99, 0x99, 0x99, 0x19 ; 0.6
+periods:            db   0x86, 0x00, 0x00, 0x00, 0x04 ; 66
+shrink:             db   0x7F, 0xCC, 0xCC, 0xCC, 0x4C ; 0.8
+radius_scale: 	    db   0x88, 0x00, 0x00, 0x00, 0x00 ; 256
+theta_init: 	    db   0x00, 0x00, 0x00, 0x00, 0x00 ; 0
 
 ; ---- main loop constants (float unless noted otherwise) ----
 step_theta_prime:   blkb 5,0    ; Step increment for theta_prime in each loop iteration
