@@ -75,14 +75,14 @@ _clear_ram:
 ; ---- input arguments (float) ----
 input_params_num: equ 8
 input_params:
-petals:             db   0x81, 0x1E, 0x85, 0xEB, 0x41 ; 3.03
+petals:             db   0x81, 0x1F, 0x85, 0xEB, 0x41 ; 3.03
 vectors:            db   0x80, 0xD7, 0xA3, 0x70, 0x7D ; 1.98
-depth:              db   0x7F, 0x99, 0x99, 0x99, 0x19 ; 0.6
-periods:            db   0x86, 0x00, 0x00, 0x00, 0x04 ; 66
+depth:              db   0x7F, 0x9A, 0x99, 0x99, 0x19 ; 0.6
+periods:            db   0x00, 0x42, 0x00, 0x00, 0x00 ; 66.0
 shrink:             db   0x7F, 0xCC, 0xCC, 0xCC, 0x4C ; 0.8
-radius_scale: 	    db   0x88, 0x00, 0x00, 0x00, 0x00 ; 256
+radius_scale: 	    db   0x00, 0x40, 0x01, 0x00, 0x00 ; 320.0
 theta_init: 	    db   0x00, 0x00, 0x00, 0x00, 0x00 ; 0
-loops: blkb 5,0 ; starts as float, but will be converted to int
+num_increments:     db   0x00, 0x01, 0x00, 0x00, 0x00 ; 1.0
 
 target_params: blkb input_params_num*5,0
 
@@ -102,38 +102,127 @@ G9: DW 9 ; format code for converting floats to strings
 cur_sample: dl samples ; address of the current sample
 next_sample: dl samples ; address of the next sample
 samples:
-    asciz "3 4 .5 30 1 320 0 10"
-    asciz "3 4 .5 30 -320 1 0 10"
+    asciz "6.966 2.01 0.5 50 1 320 90 20"
+    asciz "7.034 1.99 0.5 50 1 320 141.428 1"
 
-    asciz "4 5 .5 30 1 320 0 10"
-    asciz "4 5 .5 30 -320 1 0 10"
-    
-    asciz "5 5 .5 30 1 320 0 10"
-    asciz "5 5 .5 30 -320 1 0 10"
+    asciz "3.03 1.98 .6 66 .8 320 0 50"
+    asciz "2.97 2.02 .6 66 .8 320 120 1"
 
-    asciz "6 5 .5 30 1 320 0 10"
-    asciz "6 5 .5 30 -320 1 0 10"
 
-    asciz "7 5.01 0.5 50 1 320 90 10"
-    asciz "7 5.01 0.5 50 -320 1 90 10"
+    ; asciz "4.03 2.98 1.6 67 1.8 320 1 20"
 
-    asciz "3.03 1.98 .6 66 .8 320 90 10"
-    asciz "3.03 1.98 .6 66 -320 .8 90 10"
+    ; asciz "3 0.98 0.8 30 0.8 256 90 100"
+    ; asciz "3 1.02 0.8 30 0.1 256 90 100"
 
-    asciz "2.5 1.001 1 500 1 320 90 10"
-    asciz "2.5 1.001 1 500 -320 1 90 10"
-
+    ; asciz "7 5.01 0.5 50 1 320 90 100"
+    ; asciz "3.03 1.98 .6 66 .8 320 90 100"
+    ; asciz "2.5 1.001 1 500 1 320 90 100"
     dl 0 ; list terminator
 
 main:
 ; set up the display
-    ld a,18;+128 ; 146   1024  768   2     60hz  double-buffered
+    ld a,18;+128 ; 18   1024  768   2     60hz  double-buffered
     call vdu_set_screen_mode
-
-; set the cursor off
 	call cursor_off
 
 main_loop:
+; get the starting parameters
+    call get_params
+    ld iy,input_params
+    call load_input
+
+; ; DEBUG
+;     push hl
+;     ld hl,input_params
+;     ld a,input_params_num*5
+;     call dumpMemoryHex
+;     ; call waitKeypress
+;     pop hl
+; ; END DEBUG
+
+; bump pointer to the next sample 
+    ld hl,(next_sample)
+    ld (cur_sample),hl 
+
+; ; DEBUG
+;     call printHex24
+;     call waitKeypress
+; ; DEBUG
+
+; get the target parameters
+    call get_params
+    ld iy,target_params
+    call load_input
+
+; ; DEBUG
+;     push hl
+;     ld hl,target_params
+;     ld a,input_params_num*5
+;     call dumpMemoryHex
+;     ; call waitKeypress
+;     pop hl
+; ; END DEBUG
+
+; compute the increment parameters
+    call compute_increments
+
+; ; DEBUG
+;     push hl
+;     ld hl,inc_params
+;     ld a,input_params_num*5
+;     call dumpMemoryHex
+    ; call waitKeypress
+;     pop hl
+; ; END DEBUG
+
+; iterate to the target sample
+    ld ix,target_params-5 ; point to num_increments
+    call fetch_float_nor
+    call int2hlu
+    ld b,l ; loop counter
+
+; ; DEBUG
+;     call printDec
+;     call waitKeypress
+; ; DEBUG
+
+@loop:
+    push bc
+; assemble the command string and draw the flower
+    call assemble_command
+    call draw_flower
+    call vdu_flip
+
+    ; call waitKeypress ; DEBUG
+
+    call apply_increments
+
+; check for escape key and quit if pressed
+    MOSCALL mos_getkbmap
+    pop bc ; get back the loop counter
+; 113 Escape
+    bit 0,(ix+14)
+    jr nz,main_end
+@Escape:
+    djnz @loop ; loop until done
+
+    jp main_loop
+
+main_end:
+; restore screen to something normalish
+    ld a,20 ; 20    512   384   64    60hz  single-buffered
+	call vdu_set_screen_mode
+	call cursor_on
+	ret
+
+draw_flower:
+    ld hl,command0
+    MOSCALL mos_oscli
+    ld a,' '          ; restore the space after "flower" since  
+    ld (command1-1),a ; mos_oscli null-terminates each argument
+    ret
+
+get_params:
 ; prepare to read the parameter string
     ld de,command1
     ld hl,(cur_sample)    
@@ -151,8 +240,7 @@ main_loop:
     inc de
     or a
     jp nz,@loop
-    ; inc hl            ; point to the next sample
-    ld (next_sample),hl ; and store it
+    ld (next_sample),hl
 
 ; parse the parameters
     ld hl,command1
@@ -161,10 +249,23 @@ main_loop:
     CALL _parse_params	; Parse the parameters
     POP IX
 
-; convert the strings to floats and store them in the input_params table
-    ld iy,input_params
-    call load_input
+    ret
 
+; inputs: ix points to the start of the argument pointers
+;         iy points to the start of the parameter values table
+; outputs: the parameter values are loaded into the table
+;          hl points to the next parameter set
+load_input:
+    ld b,input_params_num ; loop counter
+@loop:
+    push bc ; save the loop counter
+    call store_arg_iy_float ; get the next argument and store it
+    lea iy,iy+5  ; point to the next parameter
+    pop bc ; get back the loop counter
+    djnz @loop ; loop until done
+    ret
+
+assemble_command:
 ; convert the loaded values back into strings and assemble the final command string
     ld b,input_params_num ; loop counter
     ld iy,input_params  ; point to the parameter values table
@@ -199,48 +300,114 @@ main_loop:
     xor a
     ld (ix),a           ; now null-terminate the command string
 
-; draw the flower
-    call draw_flower
+    ret
 
-; flip the screen
-	call vdu_flip
+offset_targets: equ input_params_num*5
+offset_increments: equ input_params_num*5*2
 
-; bump pointer to the next sample 
-    ld hl,(next_sample)
-    ld (cur_sample),hl
-
-; check for escape key and quit if pressed
-	MOSCALL mos_getkbmap
-; 113 Escape
-    bit 0,(ix+14)
-	jr nz,main_end
-@Escape:
-	jp main_loop
-
-main_end:
-; restore screen to something normalish
-    ld a,20 ; 20    512   384   64    60hz  single-buffered
-	call vdu_set_screen_mode
-	call cursor_on
-	ret
-
-; inputs: ix points to the start of the argument pointers
-;         iy points to the start of the parameter values table
-load_input:
-    ld b,input_params_num ; loop counter
+compute_increments:
+    ld b,input_params_num-1 ; loop counter (skip number of increments)
+    ld iy,input_params  ; point to the parameter values table
 @loop:
     push bc ; save the loop counter
-    call store_arg_iy_float ; get the next argument and store it
+    call fetch_float_targets_nor
+    call fetch_float_iy_alt ; input_params
+    ld a,fsub
+    call FPP ; HLH'L'C = target - input
+
+; ; DEBUG
+;     call print_float_dec_nor
+;     call printNewLine
+; ; END DEBUG
+
+    ld ix,target_params-5 ; point to num_increments
+    ; call dumpRegistersHex ; DEBUG
+    call fetch_float_alt
+
+; ; DEBUG
+;     call print_float_dec_alt
+;     call printNewLine
+; ; END DEBUG
+
+    ld a,fdiv
+    call FPP ; HLH'L'C = (target - input) / num_increments
+    call store_float_increments_nor
+
+; ; DEBUG
+;     call print_float_dec_nor
+;     call printNewLine
+; ; END DEBUG
+
     lea iy,iy+5  ; point to the next parameter
     pop bc ; get back the loop counter
     djnz @loop ; loop until done
     ret
 
-draw_flower:
-    ld hl,command0
-    MOSCALL mos_oscli
-    ld a,' ' ; restore the space after "flower" since mos_oscli 
-    ld (command1-1),a ; annoyingly null-terminates each argument
+apply_increments:
+    ld b,input_params_num ; loop counter
+    ld iy,input_params  ; point to the parameter values table
+@loop:
+    push bc ; save the loop counter
+    call fetch_float_iy_nor
+    call fetch_float_increments_alt
+    ld a,fadd
+    call FPP ; HLH'L'C = input + increment
+    call store_float_iy_nor
+
+; ; DEBUG
+;     call print_float_dec_nor
+;     call printNewLine
+; ; END DEBUG
+
+    lea iy,iy+5  ; point to the next parameter
+    pop bc ; get back the loop counter
+    djnz @loop ; loop until done
+
+    ; call waitKeypress ; DEBUG
+
+    ret
+
+; fetch HLH'L'C floating point number from a 40-bit buffer
+; inputs: iy = buffer address
+; outputs: HLH'L'C = floating point number
+; destroys: HLH'L'C
+fetch_float_targets_nor:
+    ld c,(iy+0+offset_targets)
+    ld l,(iy+3+offset_targets)
+    ld h,(iy+4+offset_targets)
+    exx
+    ld l,(iy+1+offset_targets)
+    ld h,(iy+2+offset_targets)
+    exx
+    ret
+
+; store HLH'L'C floating point number in a 40-bit buffer
+; inputs: HLH'L'C = floating point number
+;         iy = buffer address
+; outputs: buffer filled with floating point number
+; destroys: nothing
+store_float_increments_nor:
+    ld (iy+0+offset_increments),c
+    ld (iy+3+offset_increments),l
+    ld (iy+4+offset_increments),h
+    exx
+    ld (iy+1+offset_increments),l
+    ld (iy+2+offset_increments),h
+    exx
+    ret
+
+; fetch DED'E'B floating point number from a 40-bit buffer
+; inputs: iy = buffer address
+; outputs: DED'E'B = floating point number
+; destroys: DED'E'B
+fetch_float_increments_alt:
+    ld b,(iy+0+offset_increments)
+    ld e,(iy+3+offset_increments)
+    ld d,(iy+4+offset_increments)
+    exx
+    ld e,(iy+1+offset_increments)
+    ld d,(iy+2+offset_increments)
+    exx
     ret
 
 ; @command: asciz "flower 3.93 1.98 .6 66 .8 320 90"

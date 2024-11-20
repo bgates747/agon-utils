@@ -200,7 +200,7 @@ if __name__ == '__main__':
     mos_dir = 'mos'
 
     assemble = True
-    copy_sdcard = False
+    copy_sdcard = True
     run_emulator = False
 
     if False:
@@ -213,7 +213,7 @@ if __name__ == '__main__':
         expand_lst(lst_filepath, lst_filepath, exclude_comments=False)
         shutil.move(lst_filepath, f'{tgt_bin_dir}/{app_name}.lst')
 
-    if False:
+    if True:
         app_name = 'calcbas'
         tgt_bin_filename = f'{app_name}.bin'
         copy_sdcard_include_pattern = f'{re.escape(app_name)}\\.bin'
