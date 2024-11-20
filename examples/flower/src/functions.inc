@@ -1005,18 +1005,11 @@ resetAllFlags:
 
 ; wait until user presses a key
 ; inputs: none
-; outputs: none
+; outputs: ascii code of key pressed in a
 ; destroys: af,ix
 waitKeypress:
-    MOSCALL mos_sysvars
-    xor a ; zero out any prior keypresses
-    ld (ix+sysvar_keyascii),a
-@loop:
-    ld a,(ix+sysvar_keyascii)
-    and a
-    ret nz
-    jr @loop
-
+    MOSCALL mos_getkey
+    ret
 
 ; print bytes from an address to the screen in hexidecimal format
 ; inputs: hl = address of first byte to print, a = number of bytes to print

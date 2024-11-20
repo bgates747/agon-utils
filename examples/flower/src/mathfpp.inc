@@ -283,6 +283,7 @@ fetch_float_iy_alt:
 ; inputs: HLH'L'C = floating point number
 print_float_hex_nor:
     PUSH_ALL
+    push bc ; preserve c
     call printHex16
     ld a,'.'
     rst.lil 10h
@@ -291,6 +292,7 @@ print_float_hex_nor:
     exx
     ld a,'^'
     rst.lil 10h
+    pop bc ; restore c
     ld a,c
     call printHex8
     POP_ALL
@@ -300,6 +302,7 @@ print_float_hex_nor:
 ; inputs: DED'E'B = floating point number
 print_float_hex_alt:
     PUSH_ALL
+    push bc ; preserve b
     ex de,hl
     call printHex16
     ex de,hl
@@ -312,7 +315,7 @@ print_float_hex_alt:
     exx
     ld a,'^'
     rst.lil 10h
-    ld a,b
+    pop af ; restore b to a
     call printHex8
     POP_ALL
     ret
