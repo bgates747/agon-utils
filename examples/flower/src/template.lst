@@ -1,0 +1,322 @@
+PC     Output      Line
+040000             0001       assume adl=1
+040000             0002       org 0x040000
+040000             0003   
+040000             0004       include "mos_api.inc"
+040000             0001*  ;
+040000             0002*  ; Title:	AGON MOS - API for user projects
+040000             0003*  ; Author:	Dean Belfield
+040000             0004*  ; Created:	03/08/2022
+040000             0005*  ; Last Updated:	11/11/2023
+040000             0006*  ;
+040000             0007*  ; Modified: 11/14/2024 by Brandon R. Gates for ez80asm compatibility
+040000             0008*  ;
+040000             0009*  ; Modinfo:
+040000             0010*  ; 05/08/2022:	Added mos_feof
+040000             0011*  ; 09/08/2022:	Added system variables: cursorX, cursorY
+040000             0012*  ; 18/08/2022:	Added system variables: scrchar, scrpixel, audioChannel, audioSuccess, vpd_pflags
+040000             0013*  ; 05/09/2022:	Added mos_ren, vdp_pflag_mode
+040000             0014*  ; 24/09/2022:	Added mos_getError, mos_mkdir
+040000             0015*  ; 13/10/2022:	Added mos_oscli
+040000             0016*  ; 23/02/2023:	Added more sysvars, fixed typo in sysvar_audioSuccess, offsets for sysvar_scrCols, sysvar_scrRows
+040000             0017*  ; 04/03/2023:	Added sysvar_scrpixelIndex
+040000             0018*  ; 08/03/2023:	Renamed sysvar_keycode to sysvar_keyascii, added sysvar_vkeycode
+040000             0019*  ; 15/03/2023:	Added mos_copy, mos_getrtc, mos_setrtc, rtc, vdp_pflag_rtc
+040000             0020*  ; 21/03/2023:	Added mos_setintvector, sysvars for keyboard status, vdu codes for vdp
+040000             0021*  ; 22/03/2023:	The VDP commands are now indexed from 0x80
+040000             0022*  ; 29/03/2023:	Added mos_uopen, mos_uclose, mos_ugetc, mos_uputc
+040000             0023*  ; 13/04/2023:	Added FatFS file structures (FFOBJID, FIL, DIR, FILINFO)
+040000             0024*  ; 15/04/2023:	Added mos_getfil, mos_fread, mos_fwrite and mos_flseek
+040000             0025*  ; 19/05/2023:	Added sysvar_scrMode
+040000             0026*  ; 05/06/2023:	Added sysvar_rtcEnable
+040000             0027*  ; 03/08/2023:	Added mos_setkbvector
+040000             0028*  ; 10/08/2023:	Added mos_getkbmap
+040000             0029*  ; 11/11/2023:	Added mos_i2c_open, mos_i2c_close, mos_i2c_write and mos_i2c_read
+040000             0030*  ; 11/14/2024:   FatFS structs modified for ez80asm compatibility
+040000             0031*  ;
+040000             0032*  ; VDP control (VDU 23, 0, n)
+040000             0033*  ;
+040000             0034*  vdp_gp:			EQU 	80h
+040000             0035*  vdp_keycode:		EQU 	81h
+040000             0036*  vdp_cursor:		EQU	82h
+040000             0037*  vdp_scrchar:		EQU	83h
+040000             0038*  vdp_scrpixel:		EQU	84h
+040000             0039*  vdp_audio:		EQU	85h
+040000             0040*  vdp_mode:		EQU	86h
+040000             0041*  vdp_rtc:		EQU	87h
+040000             0042*  vdp_keystate:		EQU	88h
+040000             0043*  vdp_logicalcoords:	EQU	C0h
+040000             0044*  vdp_terminalmode:	EQU	FFh
+040000             0045*  
+040000             0046*  ; MOS high level functions
+040000             0047*  ;
+040000             0048*  mos_getkey:		EQU	00h
+040000             0049*  mos_load:		EQU	01h
+040000             0050*  mos_save:		EQU	02h
+040000             0051*  mos_cd:			EQU	03h
+040000             0052*  mos_dir:		EQU	04h
+040000             0053*  mos_del:		EQU	05h
+040000             0054*  mos_ren:		EQU	06h
+040000             0055*  mos_mkdir:		EQU	07h
+040000             0056*  mos_sysvars:		EQU	08h
+040000             0057*  mos_editline:		EQU	09h
+040000             0058*  mos_fopen:		EQU	0Ah
+040000             0059*  mos_fclose:		EQU	0Bh
+040000             0060*  mos_fgetc:		EQU	0Ch
+040000             0061*  mos_fputc:		EQU	0Dh
+040000             0062*  mos_feof:		EQU	0Eh
+040000             0063*  mos_getError:		EQU	0Fh
+040000             0064*  mos_oscli:		EQU	10h
+040000             0065*  mos_copy:		EQU	11h
+040000             0066*  mos_getrtc:		EQU	12h
+040000             0067*  mos_setrtc:		EQU	13h
+040000             0068*  mos_setintvector:	EQU	14h
+040000             0069*  mos_uopen:		EQU	15h
+040000             0070*  mos_uclose:		EQU	16h
+040000             0071*  mos_ugetc:		EQU	17h
+040000             0072*  mos_uputc:		EQU 	18h
+040000             0073*  mos_getfil:		EQU	19h
+040000             0074*  mos_fread:		EQU	1Ah
+040000             0075*  mos_fwrite:		EQU	1Bh
+040000             0076*  mos_flseek:		EQU	1Ch
+040000             0077*  mos_setkbvector:	EQU	1Dh
+040000             0078*  mos_getkbmap:		EQU	1Eh
+040000             0079*  mos_i2c_open:		EQU	1Fh
+040000             0080*  mos_i2c_close:		EQU	20h
+040000             0081*  mos_i2c_write:		EQU	21h
+040000             0082*  mos_i2c_read:		EQU	22h
+040000             0083*  
+040000             0084*  
+040000             0085*  ; FatFS file access functions
+040000             0086*  ;
+040000             0087*  ffs_fopen:		EQU	80h
+040000             0088*  ffs_fclose:		EQU	81h
+040000             0089*  ffs_fread:		EQU	82h
+040000             0090*  ffs_fwrite:		EQU	83h
+040000             0091*  ffs_flseek:		EQU	84h
+040000             0092*  ffs_ftruncate:		EQU	85h
+040000             0093*  ffs_fsync:		EQU	86h
+040000             0094*  ffs_fforward:		EQU	87h
+040000             0095*  ffs_fexpand:		EQU	88h
+040000             0096*  ffs_fgets:		EQU	89h
+040000             0097*  ffs_fputc:		EQU	8Ah
+040000             0098*  ffs_fputs:		EQU	8Bh
+040000             0099*  ffs_fprintf:		EQU	8Ch
+040000             0100*  ffs_ftell:		EQU	8Dh
+040000             0101*  ffs_feof:		EQU	8Eh
+040000             0102*  ffs_fsize:		EQU	8Fh
+040000             0103*  ffs_ferror:		EQU	90h
+040000             0104*  
+040000             0105*  ; FatFS directory access functions
+040000             0106*  ;
+040000             0107*  ffs_dopen:		EQU	91h
+040000             0108*  ffs_dclose:		EQU	92h
+040000             0109*  ffs_dread:		EQU	93h
+040000             0110*  ffs_dfindfirst:		EQU	94h
+040000             0111*  ffs_dfindnext:		EQU	95h
+040000             0112*  
+040000             0113*  ; FatFS file and directory management functions
+040000             0114*  ;
+040000             0115*  ffs_stat:		EQU	96h
+040000             0116*  ffs_unlink:		EQU	97h
+040000             0117*  ffs_rename:		EQU	98h
+040000             0118*  ffs_chmod:		EQU	99h
+040000             0119*  ffs_utime:		EQU	9Ah
+040000             0120*  ffs_mkdir:		EQU	9Bh
+040000             0121*  ffs_chdir:		EQU	9Ch
+040000             0122*  ffs_chdrive:		EQU	9Dh
+040000             0123*  ffs_getcwd:		EQU	9Eh
+040000             0124*  
+040000             0125*  ; FatFS volume management and system configuration functions
+040000             0126*  ;
+040000             0127*  ffs_mount:		EQU	9Fh
+040000             0128*  ffs_mkfs:		EQU	A0h
+040000             0129*  ffs_fdisk:		EQU	A1h
+040000             0130*  ffs_getfree:		EQU	A2h
+040000             0131*  ffs_getlabel:		EQU	A3h
+040000             0132*  ffs_setlabel:		EQU	A4h
+040000             0133*  ffs_setcp:		EQU	A5h
+040000             0134*  
+040000             0135*  ; File access modes
+040000             0136*  ;
+040000             0137*  fa_read:		EQU	01h
+040000             0138*  fa_write:		EQU	02h
+040000             0139*  fa_open_existing:	EQU	00h
+040000             0140*  fa_create_new:		EQU	04h
+040000             0141*  fa_create_always:	EQU	08h
+040000             0142*  fa_open_always:		EQU	10h
+040000             0143*  fa_open_append:		EQU	30h
+040000             0144*  
+040000             0145*  ; System variable indexes for api_sysvars
+040000             0146*  ; Index into _sysvars in globals.asm
+040000             0147*  ;
+040000             0148*  sysvar_time:		EQU	00h	; 4: Clock timer in centiseconds (incremented by 2 every VBLANK)
+040000             0149*  sysvar_vpd_pflags:	EQU	04h	; 1: Flags to indicate completion of VDP commands
+040000             0150*  sysvar_keyascii:	EQU	05h	; 1: ASCII keycode, or 0 if no key is pressed
+040000             0151*  sysvar_keymods:		EQU	06h	; 1: Keycode modifiers
+040000             0152*  sysvar_cursorX:		EQU	07h	; 1: Cursor X position
+040000             0153*  sysvar_cursorY:		EQU	08h	; 1: Cursor Y position
+040000             0154*  sysvar_scrchar:		EQU	09h	; 1: Character read from screen
+040000             0155*  sysvar_scrpixel:	EQU	0Ah	; 3: Pixel data read from screen (R,B,G)
+040000             0156*  sysvar_audioChannel:	EQU	0Dh	; 1: Audio channel
+040000             0157*  sysvar_audioSuccess:	EQU	0Eh	; 1: Audio channel note queued (0 = no, 1 = yes)
+040000             0158*  sysvar_scrWidth:	EQU	0Fh	; 2: Screen width in pixels
+040000             0159*  sysvar_scrHeight:	EQU	11h	; 2: Screen height in pixels
+040000             0160*  sysvar_scrCols:		EQU	13h	; 1: Screen columns in characters
+040000             0161*  sysvar_scrRows:		EQU	14h	; 1: Screen rows in characters
+040000             0162*  sysvar_scrColours:	EQU	15h	; 1: Number of colours displayed
+040000             0163*  sysvar_scrpixelIndex:	EQU	16h	; 1: Index of pixel data read from screen
+040000             0164*  sysvar_vkeycode:	EQU	17h	; 1: Virtual key code from FabGL
+040000             0165*  sysvar_vkeydown:	EQU	18h	; 1: Virtual key state from FabGL (0=up, 1=down)
+040000             0166*  sysvar_vkeycount:	EQU	19h	; 1: Incremented every time a key packet is received
+040000             0167*  sysvar_rtc:		EQU	1Ah	; 6: Real time clock data
+040000             0168*  sysvar_spare:		EQU	20h	; 2: Spare, previously used by rtc
+040000             0169*  sysvar_keydelay:	EQU	22h	; 2: Keyboard repeat delay
+040000             0170*  sysvar_keyrate:		EQU	24h	; 2: Keyboard repeat reat
+040000             0171*  sysvar_keyled:		EQU	26h	; 1: Keyboard LED status
+040000             0172*  sysvar_scrMode:		EQU	27h	; 1: Screen mode
+040000             0173*  sysvar_rtcEnable:	EQU	28h	; 1: RTC enable flag (0: disabled, 1: use ESP32 RTC)
+040000             0174*  sysvar_mouseX:		EQU	29h	; 2: Mouse X position
+040000             0175*  sysvar_mouseY:		EQU	2Bh	; 2: Mouse Y position
+040000             0176*  sysvar_mouseButtons:	EQU	2Dh	; 1: Mouse button state
+040000             0177*  sysvar_mouseWheel:	EQU	2Eh	; 1: Mouse wheel delta
+040000             0178*  sysvar_mouseXDelta:	EQU	2Fh	; 2: Mouse X delta
+040000             0179*  sysvar_mouseYDelta:	EQU	31h	; 2: Mouse Y delta
+040000             0180*  ;
+040000             0181*  ; Flags for the VPD protocol
+040000             0182*  ;
+040000             0183*  vdp_pflag_cursor:	EQU	00000001b
+040000             0184*  vdp_pflag_scrchar:	EQU	00000010b
+040000             0185*  vdp_pflag_point:	EQU	00000100b
+040000             0186*  vdp_pflag_audio:	EQU	00001000b
+040000             0187*  vdp_pflag_mode:		EQU	00010000b
+040000             0188*  vdp_pflag_rtc:		EQU	00100000b
+040000             0189*  vdp_pflag_mouse:	EQU	01000000b
+040000             0190*  ; vdp_pflag_buffered:	EQU	10000000b
+040000             0191*  
+040000             0192*  
+040000             0193*  ; FatFS structures
+040000             0194*  ; These mirror the structures contained in src_fatfs/ff.h in the MOS project
+040000             0195*  ;
+040000             0196*  ; Object ID and allocation information (FFOBJID)
+040000             0197*  FFOBJID.fs:       EQU 0    ; Pointer to the hosting volume of this object
+040000             0198*  FFOBJID.id:       EQU 3    ; Hosting volume mount ID
+040000             0199*  FFOBJID.attr:     EQU 5    ; Object attribute
+040000             0200*  FFOBJID.stat:     EQU 6    ; Object chain status
+040000             0201*  FFOBJID.sclust:   EQU 7    ; Object data start cluster
+040000             0202*  FFOBJID.objsize:  EQU 11   ; Object size
+040000             0203*  FFOBJID_SIZE:     EQU 15   ; Total size of FFOBJID structure
+040000             0204*  ;
+040000             0205*  ; File object structure (FIL)
+040000             0206*  ;
+040000             0207*  FIL.obj:          EQU 0                  ; Object identifier (FFOBJID fields start here)
+040000             0208*  FIL.flag:         EQU FFOBJID_SIZE       ; File status flags
+040000             0209*  FIL.err:          EQU FFOBJID_SIZE + 1   ; Abort flag (error code)
+040000             0210*  FIL.fptr:         EQU FFOBJID_SIZE + 2   ; File read/write pointer
+040000             0211*  FIL.clust:        EQU FFOBJID_SIZE + 6   ; Current cluster of fptr
+040000             0212*  FIL.sect:         EQU FFOBJID_SIZE + 10  ; Sector number appearing in buf[]
+040000             0213*  FIL.dir_sect:     EQU FFOBJID_SIZE + 14  ; Sector number containing the directory entry
+040000             0214*  FIL.dir_ptr:      EQU FFOBJID_SIZE + 18  ; Pointer to the directory entry in the win[]
+040000             0215*  FIL_SIZE:         EQU FFOBJID_SIZE + 21  ; Total size of FIL structure
+040000             0216*  ;
+040000             0217*  ; Directory object structure (DIR)
+040000             0218*  ;
+040000             0219*  DIR.obj:          EQU 0                  ; Object identifier (FFOBJID fields start here)
+040000             0220*  DIR.dptr:         EQU FFOBJID_SIZE       ; Current read/write offset
+040000             0221*  DIR.clust:        EQU FFOBJID_SIZE + 4   ; Current cluster
+040000             0222*  DIR.sect:         EQU FFOBJID_SIZE + 8   ; Current sector
+040000             0223*  DIR.dir:          EQU FFOBJID_SIZE + 12  ; Pointer to the directory item in the win[]
+040000             0224*  DIR.fn:           EQU FFOBJID_SIZE + 15  ; SFN (in/out) {body[8],ext[3],status[1]}
+040000             0225*  DIR.blk_ofs:      EQU FFOBJID_SIZE + 27  ; Offset of current entry block being processed
+040000             0226*  DIR_SIZE:         EQU FFOBJID_SIZE + 31  ; Total size of DIR structure
+040000             0227*  ;
+040000             0228*  ; File information structure (FILINFO)
+040000             0229*  ;
+040000             0230*  FILINFO.fsize:    EQU 0    ; File size
+040000             0231*  FILINFO.fdate:    EQU 4    ; Modified date
+040000             0232*  FILINFO.ftime:    EQU 6    ; Modified time
+040000             0233*  FILINFO.fattrib:  EQU 8    ; File attribute
+040000             0234*  FILINFO.altname:  EQU 9    ; Alternative file name
+040000             0235*  FILINFO.fname:    EQU 22   ; Primary file name
+040000             0236*  FILINFO_SIZE:     EQU 278  ; Total size of FILINFO structure
+040000             0237*  ;
+040000             0238*  ; Macro for calling the API
+040000             0239*  ; Parameters:
+040000             0240*  ; - function: One of the function numbers listed above
+040000             0241*  ;
+040000             0242*  			MACRO MOSCALL	function
+040000             0243*  			LD	A, function
+040000             0244*  			RST.LIS	08h
+040000             0245*  			ENDMACRO
+040000             0005   
+040000             0006       MACRO PROGNAME
+040000             0007       ASCIZ "flower_demo"
+040000             0008       ENDMACRO
+040000             0009   
+040000 C3 45 00 04 0010       jp start
+040004             0011   
+040004             0012   _exec_name:
+040004             0013   	PROGNAME
+040004 66 6C 6F 77 0001M      ASCIZ "flower_demo"
+       65 72 5F 64 
+       65 6D 6F 00 
+040010             0014   
+040010 FF FF FF FF 0015       align 64
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+040040 4D 4F 53    0016       db "MOS"
+040043 00          0017       db 00h
+040044 01          0018       db 01h
+040045             0019   
+040045             0020   start:
+040045 F5          0021       push af
+040046 C5          0022       push bc
+040047 D5          0023       push de
+040048 DD E5       0024       push ix
+04004A FD E5       0025       push iy
+04004C             0026   
+04004C CD 60 00 04 0027       call init
+040050 CD 61 00 04 0028       call main
+040054             0029   
+040054             0030   exit:
+040054             0031   
+040054 FD E1       0032       pop iy
+040056 DD E1       0033       pop ix
+040058 D1          0034       pop de
+040059 C1          0035       pop bc
+04005A F1          0036       pop af
+04005B 21 00 00 00 0037       ld hl,0
+04005F             0038   
+04005F C9          0039       ret
+040060             0040   
+040060             0041   ; --- MAIN PROGRAM ---
+040060             0042   ; APPLICATION INCLUDES
+040060             0043   
+040060             0044   ; --- INITIALIZATION ---
+040060             0045   init:
+040060 C9          0046       ret
+040061             0047   
+040061             0048   ; --- MAIN PROGRAM ---
+040061             0049   main:
+040061 CD 68 00 04 0050       call waitKeypress
+040065 5B D7       0051       rst.lil 10h
+040067 C9          0052       ret
+040068             0053   
+040068             0054   ; wait until user presses a key
+040068             0055   ; inputs: none
+040068             0056   ; outputs: none
+040068             0057   ; destroys: af,ix
+040068             0058   waitKeypress:
+040068             0059       MOSCALL mos_getkey
+040068 3E 00       0001M  			LD	A, function
+04006A 49 CF       0002M  			RST.LIS	08h
+04006C C9          0060       ret

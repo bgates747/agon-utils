@@ -47,14 +47,4 @@ init:
 
 ; --- MAIN PROGRAM ---
 main:
-    call waitKeypress
-    rst.lil 10h
-    ret
-
-; wait until user presses a key
-; inputs: none
-; outputs: ascii code of key pressed in a
-; destroys: af,ix
-waitKeypress:
-    MOSCALL mos_getkey
     ret

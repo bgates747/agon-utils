@@ -225,45 +225,41 @@ _main_end_ok:
 main:
     ld hl,(ix)          ; get the first argument in case hl doesn't land here with it
 
-    ; ld iy,arg1
-    ; call store_arg_iy_float
-    ; call print_float_dec
-    ; call printInline
-    ; asciz " op "
-
-    ; ld iy,arg2
-    ; call store_arg_iy_float
-    ; call print_float_dec
-    ; call printInline
-    ; asciz " = "
-
-    ; ld iy,arg1
-    ; call fetch_float_iy_nor
-
-    ; ld iy,arg2
-    ; call fetch_float_iy_alt
-
-    ; ld a,fmul
-    ; call FPP
-    ; call print_float_dec
-
-; --- LOAD_FLOAT ---
+; --- FLOAT TO DEC AND HEX ---
     ld iy,arg1
     call store_arg_iy_float
-    call SWAP
-
-    ; ld iy,arg2
-    ; call store_arg_iy_float
-
-    LOAD_FLOAT "256.599999"
-    ld iy,arg2
-    call store_float_iy_nor
-
+    ; call dumpRegistersHexAll
     call print_float_dec_nor
     ld a,' '
     rst.lil $10
-    call print_float_dec_alt
+    call print_float_hex_nor
     call printNewLine
+
+    ld iy,arg1
+    call fetch_float_iy_alt
+    call print_float_dec_alt
+    ld a,' '
+    rst.lil $10
+    call print_float_hex_alt
+    call printNewLine
+
+; ; --- LOAD_FLOAT ---
+;     ld iy,arg1
+;     call store_arg_iy_float
+;     call SWAP
+
+;     ; ld iy,arg2
+;     ; call store_arg_iy_float
+
+;     LOAD_FLOAT "256.599999"
+;     ld iy,arg2
+;     call store_float_iy_nor
+
+;     call print_float_dec_nor
+;     ld a,' '
+;     rst.lil $10
+;     call print_float_dec_alt
+;     call printNewLine
 
     ; ld iy,arg1
     ; call fetch_float_iy_nor
