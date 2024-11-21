@@ -1,42 +1,64 @@
-    assume adl=1   
-    org 0x040000    
-
+    assume adl=1 
+    org 0x040000 
     include "mos_api.inc"
-
     MACRO PROGNAME
     ASCIZ "flower_demo"
     ENDMACRO
-
-    jp start       
-
+    jp start 
 _exec_name:
-	PROGNAME
-
-    align 64      
-    db "MOS"       
-    db 00h         
-    db 01h
-
-start:              
+    PROGNAME
+    align 64 
+    db "MOS", 00h, 01h 
+start: 
     push af
     push bc
     push de
     push ix
     push iy
-
     call init
     call main
-
 exit:
-
     pop iy 
     pop ix
     pop de
     pop bc
     pop af
     ld hl,0
-
     ret 
+
+; ---- list of input arguments to cycle through ----
+cur_sample: dl samples ; address of the current sample
+next_sample: dl samples ; address of the next sample
+samples:
+    asciz "6.966, 2.01, 0.4, 50, 1, 320, 90, 17"
+    asciz "7.034, 2.00, 0.4, 50, 1, 320, 90, 17"
+    asciz "6.966, 1.99, 0.4, 50, 1, 320, 90, 17"
+    asciz "7.034, 2.00, 0.4, 50, 1, 320, 90, 17"
+
+
+    ; asciz "4.09, 20, 0.25, 25, 0, 320, 90, 20"
+    ; asciz "4.12, 20, 0.25, 25, 0, 320, 90, 20"
+
+    ; asciz "3 4 0 1 0 320 90 100"
+    ; asciz "3 4 1 1 0 160 -90 100"
+
+    ; asciz "7.034 1.98 0.5 50 1 320 90 20"
+
+
+
+
+    ; asciz "3.03 1.98 .6 66 .8 320 0 50"
+    ; asciz "2.97 2.02 .6 66 .8 320 120 1"
+
+    ; asciz "4.03 2.98 1.6 67 1.8 320 1 20"
+
+    ; asciz "3 0.98 0.8 30 0.8 256 90 100"
+    ; asciz "3 1.02 0.8 30 0.1 256 90 100"
+
+    ; asciz "7 5.01 0.5 50 1 320 90 50"
+    ; asciz "3.03 1.98 .6 66 .8 320 90 20"
+    ; asciz "2.5 1.001 1 500 1 320 90 100"
+    dl 0; list terminator
 
 ; APPLICATION INCLUDES
 filedata: equ 0xB7E000 ; start address of 8k onboard sram
@@ -98,27 +120,6 @@ theta_init_inc: blkb 5,0
 
 G9: DW 9 ; format code for converting floats to strings
 
-; ---- list of input arguments to cycle through ----
-cur_sample: dl samples ; address of the current sample
-next_sample: dl samples ; address of the next sample
-samples:
-    asciz "6.966 2.01 0.5 50 1 320 90 20"
-    asciz "7.034 1.99 0.5 50 1 320 141.428 1"
-
-    asciz "3.03 1.98 .6 66 .8 320 0 50"
-    asciz "2.97 2.02 .6 66 .8 320 120 1"
-
-
-    ; asciz "4.03 2.98 1.6 67 1.8 320 1 20"
-
-    ; asciz "3 0.98 0.8 30 0.8 256 90 100"
-    ; asciz "3 1.02 0.8 30 0.1 256 90 100"
-
-    ; asciz "7 5.01 0.5 50 1 320 90 100"
-    ; asciz "3.03 1.98 .6 66 .8 320 90 100"
-    ; asciz "2.5 1.001 1 500 1 320 90 100"
-    dl 0 ; list terminator
-
 main:
 ; set up the display
     ld a,18;+128 ; 18   1024  768   2     60hz  double-buffered
@@ -131,60 +132,25 @@ main_loop:
     ld iy,input_params
     call load_input
 
-; ; DEBUG
-;     push hl
-;     ld hl,input_params
-;     ld a,input_params_num*5
-;     call dumpMemoryHex
-;     ; call waitKeypress
-;     pop hl
-; ; END DEBUG
-
 ; bump pointer to the next sample 
     ld hl,(next_sample)
     ld (cur_sample),hl 
-
-; ; DEBUG
-;     call printHex24
-;     call waitKeypress
-; ; DEBUG
 
 ; get the target parameters
     call get_params
     ld iy,target_params
     call load_input
 
-; ; DEBUG
-;     push hl
-;     ld hl,target_params
-;     ld a,input_params_num*5
-;     call dumpMemoryHex
-;     ; call waitKeypress
-;     pop hl
-; ; END DEBUG
-
 ; compute the increment parameters
     call compute_increments
-
-; ; DEBUG
-;     push hl
-;     ld hl,inc_params
-;     ld a,input_params_num*5
-;     call dumpMemoryHex
-    ; call waitKeypress
-;     pop hl
-; ; END DEBUG
 
 ; iterate to the target sample
     ld ix,target_params-5 ; point to num_increments
     call fetch_float_nor
     call int2hlu
     ld b,l ; loop counter
-
-; ; DEBUG
-;     call printDec
-;     call waitKeypress
-; ; DEBUG
+    dec b ; otherwise we draw the target twice ...
+    jp z,main_loop
 
 @loop:
     push bc
@@ -193,8 +159,7 @@ main_loop:
     call draw_flower
     call vdu_flip
 
-    ; call waitKeypress ; DEBUG
-
+    call waitKeypress
     call apply_increments
 
 ; check for escape key and quit if pressed
@@ -231,7 +196,6 @@ get_params:
     jp nz,@loop ; not at end of list so proceed
     ld hl,samples ;loop back to beginning of list
     ld (cur_sample),hl
-
 @loop:
 ; copy the orginal string to the command buffer since _parse_params zero-terminates each token
     ld a,(hl)
@@ -241,14 +205,12 @@ get_params:
     or a
     jp nz,@loop
     ld (next_sample),hl
-
 ; parse the parameters
     ld hl,command1
     LD IX,argv_ptrs		; The argv array pointer address
     PUSH IX
     CALL _parse_params	; Parse the parameters
     POP IX
-
     ret
 
 ; inputs: ix points to the start of the argument pointers
@@ -314,30 +276,11 @@ compute_increments:
     call fetch_float_iy_alt ; input_params
     ld a,fsub
     call FPP ; HLH'L'C = target - input
-
-; ; DEBUG
-;     call print_float_dec_nor
-;     call printNewLine
-; ; END DEBUG
-
     ld ix,target_params-5 ; point to num_increments
-    ; call dumpRegistersHex ; DEBUG
     call fetch_float_alt
-
-; ; DEBUG
-;     call print_float_dec_alt
-;     call printNewLine
-; ; END DEBUG
-
     ld a,fdiv
     call FPP ; HLH'L'C = (target - input) / num_increments
     call store_float_increments_nor
-
-; ; DEBUG
-;     call print_float_dec_nor
-;     call printNewLine
-; ; END DEBUG
-
     lea iy,iy+5  ; point to the next parameter
     pop bc ; get back the loop counter
     djnz @loop ; loop until done
@@ -353,18 +296,9 @@ apply_increments:
     ld a,fadd
     call FPP ; HLH'L'C = input + increment
     call store_float_iy_nor
-
-; ; DEBUG
-;     call print_float_dec_nor
-;     call printNewLine
-; ; END DEBUG
-
     lea iy,iy+5  ; point to the next parameter
     pop bc ; get back the loop counter
     djnz @loop ; loop until done
-
-    ; call waitKeypress ; DEBUG
-
     ret
 
 ; fetch HLH'L'C floating point number from a 40-bit buffer
