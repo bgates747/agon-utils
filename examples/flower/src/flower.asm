@@ -371,9 +371,17 @@ main:
     call int2hlu ; UHL = int(total_steps)
     ld (iy),hl
 
-; Initialize radius_prime
+; Initialize radius_prime accounting for depth
+    LOAD_FLOAT "1"
+    ld iy,depth
+    call fetch_float_iy_alt
+    ld a,fadd
+    call FPP ; HLH'L'C = 1 + depth
+    call SWAP ; DED'E'B = 1 + depth
     ld iy,radius_scale
     call fetch_float_iy_nor
+    ld a,fdiv
+    call FPP ; HLH'L'C = radius_scale / (1 + depth)
     ld iy,radius_prime
     call store_float_iy_nor
 
