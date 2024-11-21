@@ -22,7 +22,7 @@
 ; periods      = 66    : Number of full rotations.
 ; shrink       = 0.8   : Multiplier determining the final radius relative to the start.
 ; theta_init   = 0.0   : Starting angle of the drawing cursor relative to the origin.
-; radius_scale = 320   : Starting radius.
+; radius_scale = 512   : Starting radius.
 ;
 ; ========================================
 ; MOSLET INITIALIZATION CODE
@@ -210,7 +210,7 @@ vectors:            db   0x80, 0xD7, 0xA3, 0x70, 0x7D ; 1.98
 depth:              db   0x7F, 0x9A, 0x99, 0x99, 0x19 ; 0.6
 periods:            db   0x00, 0x42, 0x00, 0x00, 0x00 ; 66.0
 shrink:             db   0x7F, 0xCC, 0xCC, 0xCC, 0x4C ; 0.8
-radius_scale: 	    db   0x00, 0x40, 0x01, 0x00, 0x00 ; 320.0
+radius_scale: 	    db   0x00, 0x00, 0x02, 0x00, 0x00 ; 512.0
 theta_init: 	    db   0x00, 0x00, 0x00, 0x00, 0x00 ; 0
 
 ; ---- main loop constants (float unless noted otherwise) ----
