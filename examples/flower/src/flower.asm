@@ -342,15 +342,26 @@ main:
     ld iy,total_steps
     call store_float_iy_nor ; we'll make it an integer after computing step_shrink
 
+; Initialize radius_prime accounting for depth
+    LOAD_FLOAT "1"
+    ld iy,depth
+    call fetch_float_iy_alt
+    ld a,fadd
+    call FPP ; HLH'L'C = 1 + depth
+    call SWAP ; DED'E'B = 1 + depth
+    ld iy,radius_scale
+    call fetch_float_iy_nor
+    ld a,fdiv
+    call FPP ; HLH'L'C = radius_scale / (1 + depth)
+    ld iy,radius_prime
+    call store_float_iy_nor
+
 ; Calculate shrink per step (linear)
     ; step_shrink = -shrink * radius_scale / total_steps 
     ld iy,shrink
-    call fetch_float_iy_nor
-    ld iy,radius_scale
     call fetch_float_iy_alt
     ld a,fmul
-    call FPP ; HLH'L'C = shrink * radius_scale
-
+    call FPP ; HLH'L'C = shrink * radius_prime
     ld iy,total_steps
     call fetch_float_iy_alt
     ld a,fdiv
@@ -370,20 +381,6 @@ main:
     call fetch_float_iy_nor
     call int2hlu ; UHL = int(total_steps)
     ld (iy),hl
-
-; Initialize radius_prime accounting for depth
-    LOAD_FLOAT "1"
-    ld iy,depth
-    call fetch_float_iy_alt
-    ld a,fadd
-    call FPP ; HLH'L'C = 1 + depth
-    call SWAP ; DED'E'B = 1 + depth
-    ld iy,radius_scale
-    call fetch_float_iy_nor
-    ld a,fdiv
-    call FPP ; HLH'L'C = radius_scale / (1 + depth)
-    ld iy,radius_prime
-    call store_float_iy_nor
 
 ; set initial point and move graphics cursor to it
     call calc_point ; HLH'L'C = x DED'E'B = y
