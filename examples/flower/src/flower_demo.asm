@@ -30,34 +30,23 @@ exit:
 cur_sample: dl samples ; address of the current sample
 next_sample: dl samples ; address of the next sample
 samples:
-    asciz "6.966, 2.01, 0.4, 50, 1, 320, 90, 17"
-    asciz "7.034, 2.00, 0.4, 50, 1, 320, 90, 17"
-    asciz "6.966, 1.99, 0.4, 50, 1, 320, 90, 17"
-    asciz "7.034, 2.00, 0.4, 50, 1, 320, 90, 17"
+    asciz "3, 1.03703704, 0.5, 64, 1, 512, 90, 100"
+    asciz "2.99, 0.96618358, 0.5, 64, 1, 512, 90, 1"
 
+    ; asciz "3.03, 1.98019802, 0.0, 66, 1, 512, 90, 12"
+    ; asciz "3.03, 1.98019802, 1.0, 66, 1, 512, 90, 1"
 
-    ; asciz "4.09, 20, 0.25, 25, 0, 320, 90, 20"
-    ; asciz "4.12, 20, 0.25, 25, 0, 320, 90, 20"
+    ; asciz "6.96, 2.0028733, 0.4, 50, 1, 512, 90, 50"
+    ; asciz "6.96, 2.01, 0.4, 50, 1, 512, 90, 1"
 
-    ; asciz "3 4 0 1 0 320 90 100"
-    ; asciz "3 4 1 1 0 160 -90 100"
+    ; asciz "6.99, 1.78826896, 0.5, 100, 0, 512, 90, 20"
+    ; asciz "6.99, 1.81211254, 0.5, 100, 0, 512, 90, 1"
 
-    ; asciz "7.034 1.98 0.5 50 1 320 90 20"
+    ; asciz "6.966, 2.01, 0.4, 50, 1, 512, 90, 17"
+    ; asciz "7.034, 2.00, 0.4, 50, 1, 512, 90, 1"
+    ; asciz "6.966, 1.99, 0.4, 50, 1, 512, 90, 17"
+    ; asciz "7.034, 2.00, 0.4, 50, 1, 512, 90, 17"
 
-
-
-
-    ; asciz "3.03 1.98 .6 66 .8 320 0 50"
-    ; asciz "2.97 2.02 .6 66 .8 320 120 1"
-
-    ; asciz "4.03 2.98 1.6 67 1.8 320 1 20"
-
-    ; asciz "3 0.98 0.8 30 0.8 256 90 100"
-    ; asciz "3 1.02 0.8 30 0.1 256 90 100"
-
-    ; asciz "7 5.01 0.5 50 1 320 90 50"
-    ; asciz "3.03 1.98 .6 66 .8 320 90 20"
-    ; asciz "2.5 1.001 1 500 1 320 90 100"
     dl 0; list terminator
 
 ; APPLICATION INCLUDES
@@ -102,7 +91,7 @@ vectors:            db   0x80, 0xD7, 0xA3, 0x70, 0x7D ; 1.98
 depth:              db   0x7F, 0x9A, 0x99, 0x99, 0x19 ; 0.6
 periods:            db   0x00, 0x42, 0x00, 0x00, 0x00 ; 66.0
 shrink:             db   0x7F, 0xCC, 0xCC, 0xCC, 0x4C ; 0.8
-radius_scale: 	    db   0x00, 0x40, 0x01, 0x00, 0x00 ; 320.0
+radius_scale: 	    db   0x00, 0x00, 0x02, 0x00, 0x00 ; 512.0
 theta_init: 	    db   0x00, 0x00, 0x00, 0x00, 0x00 ; 0
 num_increments:     db   0x00, 0x01, 0x00, 0x00, 0x00 ; 1.0
 
@@ -122,7 +111,7 @@ G9: DW 9 ; format code for converting floats to strings
 
 main:
 ; set up the display
-    ld a,18;+128 ; 18   1024  768   2     60hz  double-buffered
+    ld a,18+128 ; 18   1024  768   2     60hz  double-buffered
     call vdu_set_screen_mode
 	call cursor_off
 
@@ -149,8 +138,6 @@ main_loop:
     call fetch_float_nor
     call int2hlu
     ld b,l ; loop counter
-    dec b ; otherwise we draw the target twice ...
-    jp z,main_loop
 
 @loop:
     push bc
@@ -159,7 +146,7 @@ main_loop:
     call draw_flower
     call vdu_flip
 
-    call waitKeypress
+    ; call waitKeypress
     call apply_increments
 
 ; check for escape key and quit if pressed
@@ -344,7 +331,7 @@ fetch_float_increments_alt:
     exx
     ret
 
-; @command: asciz "flower 3.93 1.98 .6 66 .8 320 90"
+; @command: asciz "flower 3.93 1.98 .6 66 .8 512 90"
 command0: db "flower " 
 command1: blkb 256-7,0 
 
