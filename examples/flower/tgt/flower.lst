@@ -11,14 +11,14 @@
                0009 ; radius oscillates a set number of times per rotation, which is set by the petals parameter.
                0010 ; Unlike the Spirograph toy which plots a continuous curve, the vectors parameter determines
                0011 ; the number of points plotted per oscillation. Specifying a small number of vectors leads
-               0012 ; to more angular polygonal type curves remniscent of string art. Also unlike the toy,
+               0012 ; to more angular polygonal-type curves reminiscent of string art. Also unlike the toy,
                0013 ; a shrink factor can be specified resulting in graphs which are true spirals.
                0014 ;
                0015 ; More information about epitrochoid curves can be found here:
                0016 ; https://mathcurve.com/courbes2d.gb/epitrochoid/epitrochoid.shtml
                0017 ;
                0018 ; Parameters with example values:
-               0019 ; petals       = 3.03  : Number radius oscillations per cycle.
+               0019 ; petals       = 3.03  : Number of radius oscillations per cycle.
                0020 ; vectors      = 1.98  : Number of points plotted per oscillation.
                0021 ; depth        = 0.6   : Multiplier determining the depth of the oscillation.
                0022 ; periods      = 66    : Number of full rotations.
