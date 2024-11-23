@@ -165,9 +165,7 @@ startSound:
 	; set the required note quick hack to test
 
 	ld a, (note)						; this is midi number
-	or a
-	sla a	
-	and 11111110b						; x2
+	add a,a 							; x2
 
 	push af 
 
