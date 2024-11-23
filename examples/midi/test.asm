@@ -284,11 +284,15 @@ endPlayNote:
 
 stopNote:
 
-	.db 23, 0, $85, 0, 12
-	.dw 0									;  channel 0 duration
-	.db 0
+; ; Command 12: Set duration
+; ; VDU 23, 0, &85, channel, 12, duration; durationHighByte
+; 	.db 23, 0, $85, 0, 12
+; 	.dw 0									;  channel 0 duration
+; 	.db 0
 
-
+; Command 2: Set volume
+; VDU 23, 0, &85, channel, 2, volume
+	.db 23, 0, $85, 0, 2, 0				; stop note
 
 endStopNote:
 

@@ -34,7 +34,7 @@ PC     Output      Line
 040000             0033   	.assume adl=1						; big memory mode
 040000             0034   	.org $40000						; load code here
 040000             0035   
-040000 C3 C4 00 04 0036   	jp start_here						; jump to start of code
+040000 C3 C9 00 04 0036   	jp start_here						; jump to start of code
 040004             0037   
 040004 FF FF FF FF 0038   	.align 64						; MOS header
        FF FF FF FF 
@@ -57,376 +57,385 @@ PC     Output      Line
 040045             0041   	;include "debug_routines.asm"
 040045             0042       include "test.inc"
 040045             0001*  get_keys:
-040045             0002*  ; set uart1_received to midi_ID
-040045 3E 90       0003*      ld a,midi_ID
-040047 32 A2 49 04 0004*      ld (uart1_received),a
-04004B             0005*  
-04004B             0006*  ; point ix at keyboard matrix
-04004B             0007*      MOSCALL mos_getkbmap
-04004B 3E 1E       0001*M 	ld a, afunc
-04004D 5B CF       0002*M 	rst.lil $08
-04004F             0008*  
-04004F             0009*  ; reset a to no key pressed
-04004F AF          0010*      xor a
-040050             0011*  
-040050             0012*  ; 17 Q
-040050 DD CB 02 46 0013*      bit 0,(ix+2)
-040054 28 02       0014*      jr z,@F
-040056 3E 01       0015*      ld a,1
-040058             0016*  @@:
-040058             0017*  
-040058             0018*  ; 34 W
-040058 DD CB 04 4E 0019*      bit 1,(ix+4)
-04005C 28 02       0020*      jr z,@F
-04005E 3E 02       0021*      ld a,2
-040060             0022*  @@:
-040060             0023*  
-040060             0024*  ; 35 E
-040060 DD CB 04 56 0025*      bit 2,(ix+4)
-040064 28 02       0026*      jr z,@F
-040066 3E 03       0027*      ld a,3
-040068             0028*  @@:
-040068             0029*  
-040068             0030*  ; 52 R
-040068 DD CB 06 5E 0031*      bit 3,(ix+6)
-04006C 28 02       0032*      jr z,@F
-04006E 3E 04       0033*      ld a,4
-040070             0034*  @@:
-040070             0035*  
-040070             0036*  ; 36 T
-040070 DD CB 04 5E 0037*      bit 3,(ix+4)
-040074 28 02       0038*      jr z,@F
-040076 3E 05       0039*      ld a,5
-040078             0040*  @@:
-040078             0041*  
-040078             0042*  ; 69 Y
-040078 DD CB 08 66 0043*      bit 4,(ix+8)
-04007C 28 02       0044*      jr z,@F
-04007E 3E 06       0045*      ld a,6
-040080             0046*  @@:
-040080             0047*  
-040080             0048*  ; 54 U
-040080 DD CB 06 6E 0049*      bit 5,(ix+6)
-040084 28 02       0050*      jr z,@F
-040086 3E 07       0051*      ld a,7
-040088             0052*  @@:
-040088             0053*  
-040088             0054*  ; 38 I
-040088 DD CB 04 6E 0055*      bit 5,(ix+4)
-04008C 28 02       0056*      jr z,@F
-04008E 3E 08       0057*      ld a,8
-040090             0058*  @@:
-040090             0059*  
-040090             0060*  ; 55 O
-040090 DD CB 06 76 0061*      bit 6,(ix+6)
-040094 28 02       0062*      jr z,@F
-040096 3E 09       0063*      ld a,9
-040098             0064*  @@:
-040098             0065*  
-040098             0066*  ; 56 P
-040098 DD CB 06 7E 0067*      bit 7,(ix+6)
-04009C 28 02       0068*      jr z,@F
-04009E 3E 0A       0069*      ld a,10
-0400A0             0070*  @@:
-0400A0             0071*  
-0400A0             0072*  ; 57 LeftBracket
-0400A0 DD CB 07 46 0073*      bit 0,(ix+7)
-0400A4 28 02       0074*      jr z,@F
-0400A6 3E 0B       0075*      ld a,11
-0400A8             0076*  @@:
-0400A8             0077*  
-0400A8             0078*  ; 89 RightBracket
-0400A8 DD CB 0B 46 0079*      bit 0,(ix+11)
-0400AC 28 02       0080*      jr z,@F
-0400AE 3E 0C       0081*      ld a,12
-0400B0             0082*  @@:
-0400B0             0083*  
-0400B0             0084*  ; test for key pressed
-0400B0 B7          0085*      or a
-0400B1 20 0A       0086*      jr nz,@play ; if key pressed, play note
-0400B3             0087*  
-0400B3             0088*  ; otherwise test for note playing and stop it
-0400B3 3A 0F 01 04 0089*      ld a,(is_playing)
-0400B7 B7          0090*      or a
-0400B8 C4 23 02 04 0091*      call nz,stopSound
-0400BC             0092*      ; xor a
-0400BC             0093*      ; ld (is_playing),a
-0400BC C9          0094*      ret
-0400BD             0095*  
-0400BD             0096*  @play:
-0400BD             0097*  ; otherwise spoof midi keypress
-0400BD C6 3B       0098*      add a,59 ; 60 is middle C
-0400BF 32 A2 49 04 0099*      ld (uart1_received),a
-0400C3 C9          0100*      ret
-0400C4             0043   
-0400C4             0044   ; ---------------------------------------------
-0400C4             0045   ;
-0400C4             0046   ;	INITIAL SETUP CODE HERE
-0400C4             0047   ;
-0400C4             0048   ; ---------------------------------------------
-0400C4             0049   
-0400C4             0050   start_here:
-0400C4             0051   								; store everything as good practice
-0400C4 F5          0052   	push af							; pop back when we return from code later
-0400C5 C5          0053   	push bc
-0400C6 D5          0054   	push de
-0400C7 DD E5       0055   	push ix
-0400C9 FD E5       0056   	push iy
-0400CB             0057   
-0400CB             0058   
-0400CB CD D0 49 04 0059   	call CLS 						; clear screen
-0400CF CD A5 49 04 0060   	call openUART1						; init the UART1 serial port
-0400D3 CD D5 49 04 0061   	call hidecursor						; hide the cursor
-0400D7             0062   
-0400D7 21 7D 4A 04 0063   	ld hl, text_data
-0400DB 01 31 00 00 0064   	ld bc, end_text_data - text_data
-0400DF 5B DF       0065   	rst.lil $18						; print default text to screen
-0400E1             0066   
-0400E1 CD 4E 02 04 0067   	call loadSample
-0400E5             0068   
-0400E5             0069   ; ---------------------------------------------
-0400E5             0070   ;
-0400E5             0071   ;	MAIN LOOP
-0400E5             0072   ;
-0400E5             0073   ; ---------------------------------------------
-0400E5             0074   
-0400E5             0075   MAIN_LOOP:
-0400E5             0076   	MOSCALL $08								; get IX pointer to sysvars
-0400E5 3E 08       0001M  	ld a, afunc
-0400E7 5B CF       0002M  	rst.lil $08
-0400E9 DD 7E 05    0077   	ld a, (ix + 05h)						; ix+5h is 'last key pressed'
-0400EC FE 1B       0078   	cp 27									; is it ESC key?
-0400EE CA BC 49 04 0079   	jp z, exit_here							; if so exit cleanly
-0400F2             0080   
-0400F2             0081   	; call uart1_handler						; get any new data from UART1
-0400F2 CD 45 00 04 0082       call get_keys                           ; get any new data from keyboard
-0400F6             0083   
-0400F6 3A A2 49 04 0084   	ld a, (uart1_received)					; check if we got anything
-0400FA FE 00       0085   	cp 0
-0400FC 28 E7       0086   	jr z, MAIN_LOOP							; nothing new, loop round again
-0400FE             0087   
-0400FE 3A A2 49 04 0088   	ld a, (uart1_received)					; grab latest data
-040102             0089   
-040102 CD 14 01 04 0090   	call manageData							; deal with data
-040106             0091   
-040106 AF          0092       xor a                                   ; clear uart1_received
-040107 32 A2 49 04 0093       ld (uart1_received), a
-04010B             0094   
-04010B C3 E5 00 04 0095   	jp MAIN_LOOP
-04010F             0096   
-04010F             0097   
-04010F 00          0098   is_playing:		.db 0						; quick hack for single not playing
-040110 01          0099   waitingNote:	.db 1						; if waiting for note to arrive
-040111 00          0100   waitingValue:	.db 0						; if waiting for hit value to arrive
-040112             0101   
-040112 00          0102   note:			.db 0
-040113 00          0103   value:			.db 0
-040114             0104   
-040114             0105   ; ---------------------------------------------
-040114             0106   ; deal with incoming data
-040114             0107   
-040114             0108   manageData:
-040114 3A A2 49 04 0109   	ld a, (uart1_received)					; grab latest data
-040118 FE 90       0110   	cp midi_ID								; is is a signal from keyboard?
-04011A 28 34       0111   	jr z, keyboardSignal					; is keyboard id
-04011C             0112   
-04011C 3A 10 01 04 0113   	ld a, (waitingNote)
-040120 FE 01       0114   	cp 1
-040122 28 0D       0115   	jr z, getNote							; get the note
-040124             0116   											; else we must get Value
-040124             0117   
-040124             0118   getValue:
-040124             0119   
-040124 3A A2 49 04 0120   	ld a, (uart1_received)					; this is our Value
-040128 32 13 01 04 0121   	ld (value), a  							; we can now start the note
-04012C             0122   
-04012C CD 57 01 04 0123   	call startSound
-040130             0124   
-040130 C9          0125   	ret
-040131             0126   
-040131             0127   
-040131             0128   getNote:
-040131             0129   
-040131 3A A2 49 04 0130   	ld a, (uart1_received)					; this is our Note
-040135 32 12 01 04 0131   	ld (note), a
-040139             0132   
-040139 3A 0F 01 04 0133   	ld a, (is_playing)
-04013D FE 01       0134   	cp 1
-04013F             0135   
-04013F CA 23 02 04 0136   	jp z, stopSound							; if playing, we need to stop
-040143             0137   
-040143 3E 00       0138   	ld a, 0
-040145 32 10 01 04 0139   	ld (waitingNote), a  					; we have note, now need value
-040149 3E 01       0140   	ld a, 1
-04014B 32 11 01 04 0141   	ld (waitingValue), a
-04014F             0142   
-04014F C9          0143   	ret
-040150             0144   
-040150             0145   keyboardSignal:
-040150             0146   
-040150 3E 01       0147   	ld a, 1
-040152 32 10 01 04 0148   	ld (waitingNote), a 					; now wait for a note
-040156             0149   
-040156 C9          0150   	ret
-040157             0151   
-040157             0152   
-040157             0153   startSound:
-040157             0154   
-040157 3E 00       0155   	ld a, 0
-040159 32 10 01 04 0156   	ld (waitingNote), a  					; reset waitingNote
-04015D 32 11 01 04 0157   	ld (waitingValue), a  					; reset waitingValue
-040161             0158   
-040161 3E 01       0159   	ld a, 1
-040163 32 0F 01 04 0160   	ld (is_playing), a
-040167             0161   
-040167             0162   	; set the required note quick hack to test
-040167             0163   
-040167 3A 12 01 04 0164   	ld a, (note)						; this is midi number
-04016B B7          0165   	or a
-04016C CB 27       0166   	sla a
-04016E E6 FE       0167   	and 11111110b						; x2
-040170             0168   
-040170 F5          0169   	push af
-040171             0170   
-040171             0171   
-040171 06 07       0172   	ld b, 7
-040173 0E 0A       0173   	ld c, 10
-040175 CD AE 4A 04 0174   	call setTAB
-040179 21 18 02 04 0175   	ld hl, blanks
-04017D CD E7 49 04 0176   	call printString
-040181             0177   
-040181 06 07       0178   	ld b, 7
-040183 0E 0A       0179   	ld c, 10
-040185 CD AE 4A 04 0180   	call setTAB
-040189 F1          0181   	pop af
-04018A F5          0182   	push af
-04018B CD EF 49 04 0183   	call printDec
-04018F             0184   
-04018F F1          0185   	pop af
-040190             0186   
-040190             0187   	; A is offset
-040190             0188   
-040190 21 BB 4A 04 0189   	ld HL, midiFrequencies
-040194 11 00 00 00 0190   	ld de, 0						; reset to 0
-040198 5F          0191   	ld e, a 						; the offset
-040199 19          0192   	add hl, de 						; get offset into data
-04019A             0193   
-04019A 7E          0194   	ld a, (hl)
-04019B 32 42 02 04 0195   	ld (theNote), a  					; set LSB
-04019F             0196   
-04019F 23          0197   	inc hl
-0401A0 7E          0198   	ld a, (hl)
-0401A1 32 43 02 04 0199   	ld (theNote + 1), a  					; set MSB
-0401A5             0200   
-0401A5 21 3C 02 04 0201   	ld hl, playNote
-0401A9 01 0A 00 00 0202   	ld bc, endPlayNote - playNote
-0401AD 5B DF       0203   	rst.lil $18
-0401AF             0204   
-0401AF             0205   	; print it out
-0401AF 06 07       0206   	ld b, 7
-0401B1 0E 02       0207   	ld c, 2
-0401B3             0208   
-0401B3 CD AE 4A 04 0209   	call setTAB
-0401B7 3A 12 01 04 0210   	ld a, (note)
-0401BB CD EF 49 04 0211   	call printDec
-0401BF             0212   
-0401BF 06 07       0213   	ld b, 7
-0401C1 0E 04       0214   	ld c, 4
-0401C3 CD AE 4A 04 0215   	call setTAB
-0401C7 3A 13 01 04 0216   	ld a, (value)
-0401CB CD EF 49 04 0217   	call printDec
-0401CF             0218   
-0401CF 06 07       0219   	ld b, 7
-0401D1 0E 06       0220   	ld c, 6
-0401D3 3A 42 02 04 0221   	ld a, (theNote)
-0401D7 CD 41 4A 04 0222   	call debugA
-0401DB             0223   
-0401DB 06 0A       0224   	ld b, 10
-0401DD 0E 06       0225   	ld c, 6
-0401DF 3A 43 02 04 0226   	ld a, (theNote + 1)
-0401E3 CD 41 4A 04 0227   	call debugA
-0401E7             0228   
-0401E7             0229   
-0401E7 06 07       0230   	ld b, 7
-0401E9 0E 08       0231   	ld c, 8
-0401EB             0232   
-0401EB CD AE 4A 04 0233   	call setTAB
-0401EF             0234   
-0401EF 21 18 02 04 0235   	ld hl, blanks
-0401F3 CD E7 49 04 0236   	call printString
-0401F7             0237   
-0401F7 06 07       0238   	ld b, 7
-0401F9 0E 08       0239   	ld c, 8
-0401FB             0240   
-0401FB CD AE 4A 04 0241   	call setTAB
-0401FF             0242   
-0401FF 3A 42 02 04 0243   	ld a, (theNote)
-040203 CD EF 49 04 0244   	call printDec
-040207             0245   
-040207 06 0B       0246   	ld b, 11
-040209 0E 08       0247   	ld c, 8
-04020B             0248   
-04020B CD AE 4A 04 0249   	call setTAB
-04020F 3A 43 02 04 0250   	ld a, (theNote + 1)
-040213 CD EF 49 04 0251   	call printDec
-040217             0252   
-040217             0253   
-040217 C9          0254   	ret
-040218             0255   
-040218 20 20 20 20 0256   blanks:		.blkb 10,32
+040045             0002*  ; point ix at keyboard matrix
+040045             0003*      MOSCALL mos_getkbmap
+040045 3E 1E       0001*M 	ld a, afunc
+040047 5B CF       0002*M 	rst.lil $08
+040049             0004*  
+040049             0005*  ; reset a to no key pressed
+040049 AF          0006*      xor a
+04004A             0007*  
+04004A             0008*  ; 17 Q
+04004A DD CB 02 46 0009*      bit 0,(ix+2)
+04004E 28 02       0010*      jr z,@F
+040050 3E 01       0011*      ld a,1
+040052             0012*  @@:
+040052             0013*  
+040052             0014*  ; 34 W
+040052 DD CB 04 4E 0015*      bit 1,(ix+4)
+040056 28 02       0016*      jr z,@F
+040058 3E 02       0017*      ld a,2
+04005A             0018*  @@:
+04005A             0019*  
+04005A             0020*  ; 35 E
+04005A DD CB 04 56 0021*      bit 2,(ix+4)
+04005E 28 02       0022*      jr z,@F
+040060 3E 03       0023*      ld a,3
+040062             0024*  @@:
+040062             0025*  
+040062             0026*  ; 52 R
+040062 DD CB 06 5E 0027*      bit 3,(ix+6)
+040066 28 02       0028*      jr z,@F
+040068 3E 04       0029*      ld a,4
+04006A             0030*  @@:
+04006A             0031*  
+04006A             0032*  ; 36 T
+04006A DD CB 04 5E 0033*      bit 3,(ix+4)
+04006E 28 02       0034*      jr z,@F
+040070 3E 05       0035*      ld a,5
+040072             0036*  @@:
+040072             0037*  
+040072             0038*  ; 69 Y
+040072 DD CB 08 66 0039*      bit 4,(ix+8)
+040076 28 02       0040*      jr z,@F
+040078 3E 06       0041*      ld a,6
+04007A             0042*  @@:
+04007A             0043*  
+04007A             0044*  ; 54 U
+04007A DD CB 06 6E 0045*      bit 5,(ix+6)
+04007E 28 02       0046*      jr z,@F
+040080 3E 07       0047*      ld a,7
+040082             0048*  @@:
+040082             0049*  
+040082             0050*  ; 38 I
+040082 DD CB 04 6E 0051*      bit 5,(ix+4)
+040086 28 02       0052*      jr z,@F
+040088 3E 08       0053*      ld a,8
+04008A             0054*  @@:
+04008A             0055*  
+04008A             0056*  ; 55 O
+04008A DD CB 06 76 0057*      bit 6,(ix+6)
+04008E 28 02       0058*      jr z,@F
+040090 3E 09       0059*      ld a,9
+040092             0060*  @@:
+040092             0061*  
+040092             0062*  ; 56 P
+040092 DD CB 06 7E 0063*      bit 7,(ix+6)
+040096 28 02       0064*      jr z,@F
+040098 3E 0A       0065*      ld a,10
+04009A             0066*  @@:
+04009A             0067*  
+04009A             0068*  ; 57 LeftBracket
+04009A DD CB 07 46 0069*      bit 0,(ix+7)
+04009E 28 02       0070*      jr z,@F
+0400A0 3E 0B       0071*      ld a,11
+0400A2             0072*  @@:
+0400A2             0073*  
+0400A2             0074*  ; 89 RightBracket
+0400A2 DD CB 0B 46 0075*      bit 0,(ix+11)
+0400A6 28 02       0076*      jr z,@F
+0400A8 3E 0C       0077*      ld a,12
+0400AA             0078*  @@:
+0400AA             0079*  
+0400AA             0080*  ; test for key pressed
+0400AA B7          0081*      or a
+0400AB 20 0A       0082*      jr nz,@play ; if key pressed, play note
+0400AD             0083*  
+0400AD             0084*  ; otherwise test for note playing and stop it
+0400AD 3A 04 01 04 0085*      ld a,(is_playing)
+0400B1 B7          0086*      or a
+0400B2 C4 18 02 04 0087*      call nz,stopSound
+0400B6 C9          0088*      ret
+0400B7             0089*  
+0400B7             0090*  @play:
+0400B7 21 C8 00 04 0091*      ld hl,last_played
+0400BB C6 3B       0092*      add a,59 ; 60 is middle C
+0400BD BE          0093*      cp (hl) ; compare with last note played
+0400BE C8          0094*      ret z ; same as last, do nothing
+0400BF             0095*  
+0400BF 32 07 01 04 0096*      ld (note),a ; midi note number
+0400C3 77          0097*      ld (hl),a ; save note played
+0400C4             0098*  
+0400C4 C3 4C 01 04 0099*      jp startSound ; ... and return to caller from there
+0400C8             0100*  
+0400C8 00          0101*  last_played: db 0
+0400C9             0043   
+0400C9             0044   ; ---------------------------------------------
+0400C9             0045   ;
+0400C9             0046   ;	INITIAL SETUP CODE HERE
+0400C9             0047   ;
+0400C9             0048   ; ---------------------------------------------
+0400C9             0049   
+0400C9             0050   start_here:
+0400C9             0051   								; store everything as good practice
+0400C9 F5          0052   	push af							; pop back when we return from code later
+0400CA C5          0053   	push bc
+0400CB D5          0054   	push de
+0400CC DD E5       0055   	push ix
+0400CE FD E5       0056   	push iy
+0400D0             0057   
+0400D0             0058   
+0400D0 CD C7 49 04 0059   	call CLS 						; clear screen
+0400D4 CD 9C 49 04 0060   	call openUART1						; init the UART1 serial port
+0400D8 CD CC 49 04 0061   	call hidecursor						; hide the cursor
+0400DC             0062   
+0400DC 21 74 4A 04 0063   	ld hl, text_data
+0400E0 01 31 00 00 0064   	ld bc, end_text_data - text_data
+0400E4 5B DF       0065   	rst.lil $18						; print default text to screen
+0400E6             0066   
+0400E6 CD 45 02 04 0067   	call loadSample
+0400EA             0068   
+0400EA AF          0069   	xor a
+0400EB 32 C8 00 04 0070   	ld (last_played), a
+0400EF             0071   
+0400EF             0072   ; ---------------------------------------------
+0400EF             0073   ;
+0400EF             0074   ;	MAIN LOOP
+0400EF             0075   ;
+0400EF             0076   ; ---------------------------------------------
+0400EF             0077   
+0400EF             0078   MAIN_LOOP:
+0400EF             0079   	MOSCALL $08								; get IX pointer to sysvars
+0400EF 3E 08       0001M  	ld a, afunc
+0400F1 5B CF       0002M  	rst.lil $08
+0400F3 DD 7E 05    0080   	ld a, (ix + 05h)						; ix+5h is 'last key pressed'
+0400F6 FE 1B       0081   	cp 27									; is it ESC key?
+0400F8 CA B3 49 04 0082   	jp z, exit_here							; if so exit cleanly
+0400FC             0083   
+0400FC             0084   	; call uart1_handler						; get any new data from UART1
+0400FC CD 45 00 04 0085       call get_keys                           ; get any new data from keyboard
+040100             0086   
+040100             0087   	; ld a, (uart1_received)					; check if we got anything
+040100             0088   	; cp 0
+040100             0089   	; jr z, MAIN_LOOP							; nothing new, loop round again
+040100             0090   
+040100             0091   	; ld a, (uart1_received)					; grab latest data
+040100             0092   
+040100             0093   	; call manageData							; deal with data
+040100             0094   
+040100             0095       ; xor a                                   ; clear uart1_received
+040100             0096       ; ld (uart1_received), a
+040100             0097   
+040100 C3 EF 00 04 0098   	jp MAIN_LOOP
+040104             0099   
+040104             0100   
+040104 00          0101   is_playing:		.db 0						; quick hack for single not playing
+040105 01          0102   waitingNote:	.db 1						; if waiting for note to arrive
+040106 00          0103   waitingValue:	.db 0						; if waiting for hit value to arrive
+040107             0104   
+040107 00          0105   note:			.db 0
+040108 00          0106   value:			.db 0
+040109             0107   
+040109             0108   ; ---------------------------------------------
+040109             0109   ; deal with incoming data
+040109             0110   
+040109             0111   manageData:
+040109 3A 99 49 04 0112   	ld a, (uart1_received)					; grab latest data
+04010D FE 90       0113   	cp midi_ID								; is is a signal from keyboard?
+04010F 28 34       0114   	jr z, keyboardSignal					; is keyboard id
+040111             0115   
+040111 3A 05 01 04 0116   	ld a, (waitingNote)
+040115 FE 01       0117   	cp 1
+040117 28 0D       0118   	jr z, getNote							; get the note
+040119             0119   											; else we must get Value
+040119             0120   
+040119             0121   getValue:
+040119             0122   
+040119 3A 99 49 04 0123   	ld a, (uart1_received)					; this is our Value
+04011D 32 08 01 04 0124   	ld (value), a  							; we can now start the note
+040121             0125   
+040121 CD 4C 01 04 0126   	call startSound
+040125             0127   
+040125 C9          0128   	ret
+040126             0129   
+040126             0130   
+040126             0131   getNote:
+040126             0132   
+040126 3A 99 49 04 0133   	ld a, (uart1_received)					; this is our Note
+04012A 32 07 01 04 0134   	ld (note), a
+04012E             0135   
+04012E 3A 04 01 04 0136   	ld a, (is_playing)
+040132 FE 01       0137   	cp 1
+040134             0138   
+040134 CA 18 02 04 0139   	jp z, stopSound							; if playing, we need to stop
+040138             0140   
+040138 3E 00       0141   	ld a, 0
+04013A 32 05 01 04 0142   	ld (waitingNote), a  					; we have note, now need value
+04013E 3E 01       0143   	ld a, 1
+040140 32 06 01 04 0144   	ld (waitingValue), a
+040144             0145   
+040144 C9          0146   	ret
+040145             0147   
+040145             0148   keyboardSignal:
+040145             0149   
+040145 3E 01       0150   	ld a, 1
+040147 32 05 01 04 0151   	ld (waitingNote), a 					; now wait for a note
+04014B             0152   
+04014B C9          0153   	ret
+04014C             0154   
+04014C             0155   
+04014C             0156   startSound:
+04014C             0157   
+04014C 3E 00       0158   	ld a, 0
+04014E 32 05 01 04 0159   	ld (waitingNote), a  					; reset waitingNote
+040152 32 06 01 04 0160   	ld (waitingValue), a  					; reset waitingValue
+040156             0161   
+040156 3E 01       0162   	ld a, 1
+040158 32 04 01 04 0163   	ld (is_playing), a
+04015C             0164   
+04015C             0165   	; set the required note quick hack to test
+04015C             0166   
+04015C 3A 07 01 04 0167   	ld a, (note)						; this is midi number
+040160 B7          0168   	or a
+040161 CB 27       0169   	sla a
+040163 E6 FE       0170   	and 11111110b						; x2
+040165             0171   
+040165 F5          0172   	push af
+040166             0173   
+040166             0174   
+040166 06 07       0175   	ld b, 7
+040168 0E 0A       0176   	ld c, 10
+04016A CD A5 4A 04 0177   	call setTAB
+04016E 21 0D 02 04 0178   	ld hl, blanks
+040172 CD DE 49 04 0179   	call printString
+040176             0180   
+040176 06 07       0181   	ld b, 7
+040178 0E 0A       0182   	ld c, 10
+04017A CD A5 4A 04 0183   	call setTAB
+04017E F1          0184   	pop af
+04017F F5          0185   	push af
+040180 CD E6 49 04 0186   	call printDec
+040184             0187   
+040184 F1          0188   	pop af
+040185             0189   
+040185             0190   	; A is offset
+040185             0191   
+040185 21 B2 4A 04 0192   	ld HL, midiFrequencies
+040189 11 00 00 00 0193   	ld de, 0						; reset to 0
+04018D 5F          0194   	ld e, a 						; the offset
+04018E 19          0195   	add hl, de 						; get offset into data
+04018F             0196   
+04018F 7E          0197   	ld a, (hl)
+040190 32 3B 02 04 0198   	ld (theNote), a  					; set LSB
+040194             0199   
+040194 23          0200   	inc hl
+040195 7E          0201   	ld a, (hl)
+040196 32 3C 02 04 0202   	ld (theNote + 1), a  					; set MSB
+04019A             0203   
+04019A 21 35 02 04 0204   	ld hl, playNote
+04019E 01 0A 00 00 0205   	ld bc, endPlayNote - playNote
+0401A2 5B DF       0206   	rst.lil $18
+0401A4             0207   
+0401A4             0208   	; print it out
+0401A4 06 07       0209   	ld b, 7
+0401A6 0E 02       0210   	ld c, 2
+0401A8             0211   
+0401A8 CD A5 4A 04 0212   	call setTAB
+0401AC 3A 07 01 04 0213   	ld a, (note)
+0401B0 CD E6 49 04 0214   	call printDec
+0401B4             0215   
+0401B4 06 07       0216   	ld b, 7
+0401B6 0E 04       0217   	ld c, 4
+0401B8 CD A5 4A 04 0218   	call setTAB
+0401BC 3A 08 01 04 0219   	ld a, (value)
+0401C0 CD E6 49 04 0220   	call printDec
+0401C4             0221   
+0401C4 06 07       0222   	ld b, 7
+0401C6 0E 06       0223   	ld c, 6
+0401C8 3A 3B 02 04 0224   	ld a, (theNote)
+0401CC CD 38 4A 04 0225   	call debugA
+0401D0             0226   
+0401D0 06 0A       0227   	ld b, 10
+0401D2 0E 06       0228   	ld c, 6
+0401D4 3A 3C 02 04 0229   	ld a, (theNote + 1)
+0401D8 CD 38 4A 04 0230   	call debugA
+0401DC             0231   
+0401DC             0232   
+0401DC 06 07       0233   	ld b, 7
+0401DE 0E 08       0234   	ld c, 8
+0401E0             0235   
+0401E0 CD A5 4A 04 0236   	call setTAB
+0401E4             0237   
+0401E4 21 0D 02 04 0238   	ld hl, blanks
+0401E8 CD DE 49 04 0239   	call printString
+0401EC             0240   
+0401EC 06 07       0241   	ld b, 7
+0401EE 0E 08       0242   	ld c, 8
+0401F0             0243   
+0401F0 CD A5 4A 04 0244   	call setTAB
+0401F4             0245   
+0401F4 3A 3B 02 04 0246   	ld a, (theNote)
+0401F8 CD E6 49 04 0247   	call printDec
+0401FC             0248   
+0401FC 06 0B       0249   	ld b, 11
+0401FE 0E 08       0250   	ld c, 8
+040200             0251   
+040200 CD A5 4A 04 0252   	call setTAB
+040204 3A 3C 02 04 0253   	ld a, (theNote + 1)
+040208 CD E6 49 04 0254   	call printDec
+04020C             0255   
+04020C             0256   
+04020C C9          0257   	ret
+04020D             0258   
+04020D 20 20 20 20 0259   blanks:		.blkb 10,32
        20 20 20 20 
        20 20       
-040222 00          0257   		.db 0
-040223             0258   stopSound:
-040223             0259   
-040223 3E 00       0260   	ld a, 0
-040225 32 10 01 04 0261   	ld (waitingNote), a  					; reset waitingNote
-040229 32 11 01 04 0262   	ld (waitingValue), a  					; reset waitingValue
-04022D 32 0F 01 04 0263   	ld (is_playing), a
-040231             0264   
-040231 21 46 02 04 0265   	ld hl, stopNote
-040235 01 08 00 00 0266   	ld bc, endStopNote - stopNote
-040239 5B DF       0267   	rst.lil $18
-04023B             0268   
-04023B C9          0269   	ret
-04023C             0270   
-04023C             0271   
-04023C             0272   
-04023C             0273   playNote:
-04023C             0274   
-04023C 17 00 85 00 0275   		.db 23, 0, $85, 0, 0, 127			; play note
+040217 00          0260   		.db 0
+040218             0261   stopSound:
+040218             0262   
+040218 3E 00       0263   	ld a, 0
+04021A 32 05 01 04 0264   	ld (waitingNote), a  					; reset waitingNote
+04021E 32 06 01 04 0265   	ld (waitingValue), a  					; reset waitingValue
+040222 32 04 01 04 0266   	ld (is_playing), a
+040226 32 C8 00 04 0267   	ld (last_played), a
+04022A             0268   
+04022A 21 3F 02 04 0269   	ld hl, stopNote
+04022E 01 06 00 00 0270   	ld bc, endStopNote - stopNote
+040232 5B DF       0271   	rst.lil $18
+040234             0272   
+040234 C9          0273   	ret
+040235             0274   
+040235             0275   
+040235             0276   
+040235             0277   playNote:
+040235             0278   
+040235 17 00 85 00 0279   		.db 23, 0, $85, 0, 0, 127			; play note
        00 7F       
-040242 00 00       0276   theNote:	.dw $0
-040244 FF FF       0277   theLength:	.dw -1
-040246             0278   
-040246             0279   endPlayNote:
-040246             0280   
-040246             0281   stopNote:
-040246             0282   
-040246 17 00 85 00 0283   	.db 23, 0, $85, 0, 12
-       0C          
-04024B 00 00       0284   	.dw 0									;  channel 0 duration
-04024D 00          0285   	.db 0
-04024E             0286   
-04024E             0287   
-04024E             0288   
-04024E             0289   endStopNote:
-04024E             0290   
-04024E             0291   ; ------------------
-04024E             0292   
-04024E             0293   loadSample:                             	; for loading audio samples
-04024E             0294   
-04024E 21 59 02 04 0295   	ld hl, sampleStr                    	; start of data to send
-040252 01 1F 47 00 0296   	ld bc, endSampleStr - sampleStr     	; length of data to send
-040256 5B DF       0297   	rst.lil $18                         	; send data
-040258 C9          0298   	ret
-040259             0299   
-040259             0300   sampleStr:
-040259 17 00 85    0301   	.db     23,0,85h                    	; audio command
-04025C FF 05       0302   	.db     -1, 5                       	; sample number, sample management
-04025E 00          0303   	.db     0                           	; load
-04025F FB 46 00    0304   	.dl     18171                       	; length in bytes (LONG)
-040262 CE D4 D9 D0 0305   	incbin "violin.raw"
+04023B 00 00       0280   theNote:	.dw $0
+04023D FF FF       0281   theLength:	.dw -1
+04023F             0282   
+04023F             0283   endPlayNote:
+04023F             0284   
+04023F             0285   stopNote:
+04023F             0286   
+04023F             0287   ; ; Command 12: Set duration
+04023F             0288   ; ; VDU 23, 0, &85, channel, 12, duration; durationHighByte
+04023F             0289   ; 	.db 23, 0, $85, 0, 12
+04023F             0290   ; 	.dw 0									;  channel 0 duration
+04023F             0291   ; 	.db 0
+04023F             0292   
+04023F             0293   ; Command 2: Set volume
+04023F             0294   ; VDU 23, 0, &85, channel, 2, volume
+04023F 17 00 85 00 0295   	.db 23, 0, $85, 0, 2, 0				; stop note
+       02 00       
+040245             0296   
+040245             0297   endStopNote:
+040245             0298   
+040245             0299   ; ------------------
+040245             0300   
+040245             0301   loadSample:                             	; for loading audio samples
+040245             0302   
+040245 21 50 02 04 0303   	ld hl, sampleStr                    	; start of data to send
+040249 01 1F 47 00 0304   	ld bc, endSampleStr - sampleStr     	; length of data to send
+04024D 5B DF       0305   	rst.lil $18                         	; send data
+04024F C9          0306   	ret
+040250             0307   
+040250             0308   sampleStr:
+040250 17 00 85    0309   	.db     23,0,85h                    	; audio command
+040253 FF 05       0310   	.db     -1, 5                       	; sample number, sample management
+040255 00          0311   	.db     0                           	; load
+040256 FB 46 00    0312   	.dl     18171                       	; length in bytes (LONG)
+040259 CE D4 D9 D0 0313   	incbin "violin.raw"
        D7 E7 EE EF 
        FC 16 26 25 
        29 36 36 27 
@@ -4969,489 +4978,489 @@ PC     Output      Line
        26 19 13 1C 
        2A 34 32 24 
        1B 14 FF    
-04495D             0306   
-04495D             0307   
-04495D 17 00 85    0308   	.db     23,0,85h                    	; audio command
-044960 FF 05       0309   	.db     -1, 5                       	; sample number, sample management
-044962 03          0310   	.db     3                           	; set baseline freq
-044963 08 01       0311   	.dw     264								; the base freq
-044965             0312   
-044965             0313   
-044965 17 00 85 00 0314   	.db 23, 0, $85, 0, 4					; set ch0 to sample mode
+044954             0314   
+044954             0315   
+044954 17 00 85    0316   	.db     23,0,85h                    	; audio command
+044957 FF 05       0317   	.db     -1, 5                       	; sample number, sample management
+044959 03          0318   	.db     3                           	; set baseline freq
+04495A 08 01       0319   	.dw     264								; the base freq
+04495C             0320   
+04495C             0321   
+04495C 17 00 85 00 0322   	.db 23, 0, $85, 0, 4					; set ch0 to sample mode
        04          
-04496A FF          0315   	.db -1									; set which sample
-04496B             0316   
-04496B             0317   
-04496B 17 00 85 00 0318   	.db 23, 0, $85, 0, 6, 1					; set ch0 envelope
+044961 FF          0323   	.db -1									; set which sample
+044962             0324   
+044962             0325   
+044962 17 00 85 00 0326   	.db 23, 0, $85, 0, 6, 1					; set ch0 envelope
        06 01       
-044971 50 00       0319   	.dw 80									; Attack
-044973 78 00       0320   	.dw 120									; Decay
-044975 3F          0321   	.db 63									; Sustain
-044976 40 06       0322   	.dw 1600								; Release
-044978             0323   
-044978             0324   
-044978             0325   
-044978             0326   endSampleStr:
-044978             0327   
-044978             0328   
-044978             0329   
-044978             0330   ; ---------------------------------------------
-044978             0331   ; Adapted from Hexload source
-044978             0332   
-044978             0333   uart1_handler:
-044978 F3          0334   	DI
-044979 F5          0335   	PUSH	AF
-04497A ED 38 D5    0336   	IN0	A,(REG_LSR)				; Get the line status register
-04497D E6 01       0337   	AND	UART_LSR_RDY				; Check for characters in buffer
-04497F 28 18       0338   	JR	Z, noData 				; Nothing received
-044981             0339   
-044981 3E 01       0340   	LD	A,1   					; we got new data
-044983 32 A2 49 04 0341   	LD	(uart1_received),a 			; so set flag fro new data
-044987 ED 38 D0    0342   	IN0	A,(REG_RBR)				; Read the character from the UART receive buffer
-04498A 32 A1 49 04 0343   	LD	(uart1_buffer),A  			; store new byte of data
-04498E F1          0344   	POP	AF
-04498F FB          0345   	EI
-044990             0346   
-044990 3A A1 49 04 0347    	ld a, (uart1_buffer)				; check it is a control code. Exit if not
-044994 32 A2 49 04 0348   	LD (uart1_received), A				; store it
-044998             0349   
-044998 C9          0350   	RET
-044999             0351   
-044999             0352   noData:
-044999 AF          0353   	XOR 	A,A
-04499A 32 A2 49 04 0354   	LD	(uart1_received),A			; note that nothing is available
-04499E F1          0355   	POP	AF
-04499F FB          0356   	EI
-0449A0             0357   
-0449A0 C9          0358   	RET
-0449A1             0359   
-0449A1 01          0360   uart1_buffer:		.db	1			; 64 byte receive buffer
-0449A2 01          0361   uart1_received:		.db	1			; boolean
-0449A3 01          0362   uart1_data:		.db	1			; final pot value received
-0449A4 00          0363   uart1_command: 		.db 	0			; current command received
-0449A5             0364   
-0449A5             0365   ; ---------------------------------------------
-0449A5             0366   ;
-0449A5             0367   ;	UART CODE
-0449A5             0368   ;
-0449A5             0369   ; ---------------------------------------------
-0449A5             0370   
-0449A5             0371   openUART1:
-0449A5 DD 21 B4 49 0372   	ld ix, UART1_Struct
+044968 50 00       0327   	.dw 80									; Attack
+04496A 78 00       0328   	.dw 120									; Decay
+04496C 3F          0329   	.db 63									; Sustain
+04496D 40 06       0330   	.dw 1600								; Release
+04496F             0331   
+04496F             0332   
+04496F             0333   
+04496F             0334   endSampleStr:
+04496F             0335   
+04496F             0336   
+04496F             0337   
+04496F             0338   ; ---------------------------------------------
+04496F             0339   ; Adapted from Hexload source
+04496F             0340   
+04496F             0341   uart1_handler:
+04496F F3          0342   	DI
+044970 F5          0343   	PUSH	AF
+044971 ED 38 D5    0344   	IN0	A,(REG_LSR)				; Get the line status register
+044974 E6 01       0345   	AND	UART_LSR_RDY				; Check for characters in buffer
+044976 28 18       0346   	JR	Z, noData 				; Nothing received
+044978             0347   
+044978 3E 01       0348   	LD	A,1   					; we got new data
+04497A 32 99 49 04 0349   	LD	(uart1_received),a 			; so set flag fro new data
+04497E ED 38 D0    0350   	IN0	A,(REG_RBR)				; Read the character from the UART receive buffer
+044981 32 98 49 04 0351   	LD	(uart1_buffer),A  			; store new byte of data
+044985 F1          0352   	POP	AF
+044986 FB          0353   	EI
+044987             0354   
+044987 3A 98 49 04 0355    	ld a, (uart1_buffer)				; check it is a control code. Exit if not
+04498B 32 99 49 04 0356   	LD (uart1_received), A				; store it
+04498F             0357   
+04498F C9          0358   	RET
+044990             0359   
+044990             0360   noData:
+044990 AF          0361   	XOR 	A,A
+044991 32 99 49 04 0362   	LD	(uart1_received),A			; note that nothing is available
+044995 F1          0363   	POP	AF
+044996 FB          0364   	EI
+044997             0365   
+044997 C9          0366   	RET
+044998             0367   
+044998 01          0368   uart1_buffer:		.db	1			; 64 byte receive buffer
+044999 01          0369   uart1_received:		.db	1			; boolean
+04499A 01          0370   uart1_data:		.db	1			; final pot value received
+04499B 00          0371   uart1_command: 		.db 	0			; current command received
+04499C             0372   
+04499C             0373   ; ---------------------------------------------
+04499C             0374   ;
+04499C             0375   ;	UART CODE
+04499C             0376   ;
+04499C             0377   ; ---------------------------------------------
+04499C             0378   
+04499C             0379   openUART1:
+04499C DD 21 AB 49 0380   	ld ix, UART1_Struct
        04          
-0449AA             0373   	MOSCALL $15					; open uart1
-0449AA 3E 15       0001M  	ld a, afunc
-0449AC 5B CF       0002M  	rst.lil $08
-0449AE C9          0374   	ret
-0449AF             0375   
-0449AF             0376   ; ---------------------------------------------
-0449AF             0377   
-0449AF             0378   closeUART1:
-0449AF             0379   	MOSCALL $16 					; close uart1
-0449AF 3E 16       0001M  	ld a, afunc
-0449B1 5B CF       0002M  	rst.lil $08
-0449B3 C9          0380   	ret
-0449B4             0381   
-0449B4             0382   ; ---------------------------------------------
-0449B4             0383   
-0449B4             0384   UART1_Struct:
-0449B4 00 C2 01    0385   	.dl 	115200; 9600					; baud (stored as three byte LONG)
-0449B7 08          0386   	.db 	8 					; data bits
-0449B8 01          0387   	.db 	1 					; stop bits
-0449B9 00          0388   	.db 	0 					; parity bits
-0449BA 00          0389   	.db 	0					; flow control
-0449BB 00          0390   	.db 	0					; interrupt bits
-0449BC             0391   
-0449BC             0392   ; ---------------------------------------------
-0449BC             0393   ;
-0449BC             0394   ;	EXIT CODE CLEANLY
-0449BC             0395   ;
-0449BC             0396   ; ---------------------------------------------
-0449BC             0397   
-0449BC             0398   exit_here:
-0449BC             0399   
-0449BC CD AF 49 04 0400   	call closeUART1
-0449C0 CD D0 49 04 0401   	call CLS
-0449C4             0402   							; reset all values before returning to MOS
-0449C4 FD E1       0403   	pop iy
-0449C6 DD E1       0404   	pop ix
-0449C8 D1          0405   	pop de
-0449C9 C1          0406   	pop bc
-0449CA F1          0407   	pop af
-0449CB 21 00 00 00 0408   	ld hl,0
-0449CF             0409   
-0449CF C9          0410   	ret						; return to MOS here
-0449D0             0411   
-0449D0             0412   ; ---------------------------------------------
-0449D0             0413   ;
-0449D0             0414   ;	OTHER ROUTINES
-0449D0             0415   ;
-0449D0             0416   ; ---------------------------------------------
-0449D0             0417   
-0449D0             0418   CLS:
-0449D0 3E 0C       0419   	ld a, 12
-0449D2 5B D7       0420   	rst.lil $10					; CLS
-0449D4 C9          0421   	ret
-0449D5             0422   
-0449D5             0423   ; ---------------------------------------------
-0449D5             0424   
-0449D5             0425   hidecursor:
-0449D5 F5          0426   	push af
-0449D6 3E 17       0427   	ld a, 23
-0449D8 5B D7       0428   	rst.lil $10
-0449DA 3E 01       0429   	ld a, 1
-0449DC 5B D7       0430   	rst.lil $10
-0449DE 3E 00       0431   	ld a,0
-0449E0 5B D7       0432   	rst.lil $10	;VDU 23,1,0
-0449E2 F1          0433   	pop af
-0449E3 C9          0434   	ret
-0449E4             0435   
-0449E4             0436   
-0449E4             0437   ; ---------------------------------------------
-0449E4             0438   ; strings used
-0449E4             0439   
-0449E4 0D 0A 00    0440   LINEFEED:           .asciz "\r\n"
-0449E7             0441   
-0449E7             0442   printString:                ; print zero terminated string
-0449E7 7E          0443       ld a,(hl)
-0449E8 B7          0444       or a
-0449E9 C8          0445       ret z
-0449EA 5B D7       0446       RST.LIL 10h
-0449EC 23          0447       inc hl
-0449ED 18 F8       0448       jr printString
-0449EF             0449   
-0449EF             0450   
-0449EF             0451   ; ---------------------------------------------
-0449EF             0452   ;
-0449EF             0453   ;	DEBUG ROUTINES
-0449EF             0454   ;
-0449EF             0455   ; ---------------------------------------------
-0449EF             0456   
-0449EF             0457   ; ---------------------------------
-0449EF             0458   ; print decimal value of 0 -> 255 to screen at current TAB position
-0449EF             0459   
-0449EF             0460   printDec:               ; debug A to screen as 3 char string pos
-0449EF             0461   
-0449EF 32 32 4A 04 0462       ld (base),a         ; save
-0449F3             0463   
-0449F3 FE C8       0464       cp 200              ; are we under 200 ?
-0449F5 38 0C       0465       jr c,_under200      ; not 200+
-0449F7 D6 C8       0466       sub a, 200
-0449F9 32 32 4A 04 0467       ld (base),a         ; sub 200 and save
-0449FD             0468   
-0449FD 3E 32       0469       ld a, '2'           ; 2 in ascii
-0449FF 5B D7       0470       rst.lil $10         ; print out a '200' digit
-044A01             0471   
-044A01 18 0E       0472       jr _under100
-044A03             0473   
-044A03             0474   _under200:
-044A03 FE 64       0475       cp 100              ; are we under 100 ?
-044A05 38 0A       0476       jr c,_under100      ; not 200+
-044A07 D6 64       0477       sub a, 100
-044A09 32 32 4A 04 0478       ld (base),a         ; sub 100 and save
-044A0D             0479   
-044A0D 3E 31       0480       ld a, '1'           ; 1 in ascii
-044A0F 5B D7       0481       rst.lil $10         ; print out a '100' digit
-044A11             0482   
-044A11             0483   _under100:
-044A11 3A 32 4A 04 0484       ld a, (base)        ; get last 2 digits as decimal
-044A15 4F          0485       ld c,a              ; store numerator in C
-044A16 16 0A       0486       ld d, 10            ; D will be denominator
-044A18 CD 33 4A 04 0487       call C_Div_D        ; divide C by 10 to get two parts.
-044A1C             0488                           ; A is the remainder, C is the int of C/D
-044A1C             0489   
-044A1C 47          0490       ld b, a             ; put remainder ascii into B
-044A1D             0491   
-044A1D 79          0492       ld a, c             ; get int div
-044A1E FE 00       0493       cp 0                ; if 0 (ie, number was <10)
-044A20 28 06       0494       jr z, _lastBut1    ; just do last digit
-044A22             0495   
-044A22 C6 30       0496       add a, 48           ; add 48 to make ascii of int C/D
-044A24 5B D7       0497       rst.lil $10         ; print out 10s digit
-044A26 18 04       0498       jr _lastDigit
-044A28             0499   
-044A28             0500   _lastBut1:
-044A28 C6 30       0501       add a, 48           ; add 48 to make ascii of int C/D
-044A2A 5B D7       0502       rst.lil $10         ; print out 10s digit
-044A2C             0503   
-044A2C             0504   _lastDigit:
-044A2C 78          0505       ld a,b              ; get remainder back
-044A2D C6 30       0506       add a, 48           ; add 48 to remainder to convert to ascii
-044A2F 5B D7       0507       rst.lil $10         ; print out last digit
-044A31             0508   
-044A31 C9          0509       ret
-044A32             0510   
-044A32 00          0511   base:   .db     0       ; used in calculations
-044A33             0512   
-044A33             0513   ; -----------------
-044A33             0514   
-044A33             0515   C_Div_D:
-044A33             0516   ;Inputs:
-044A33             0517   ;     C is the numerator
-044A33             0518   ;     D is the denominator
-044A33             0519   ;Outputs:
-044A33             0520   ;     A is the remainder
-044A33             0521   ;     B is 0
-044A33             0522   ;     C is the result of C/D
-044A33             0523   ;     D,E,H,L are not changed
-044A33             0524   ;
-044A33 06 08       0525       ld b,8              ; B is counter = 8
-044A35 AF          0526       xor a               ; [loop] clear flags
-044A36 CB 21       0527       sla c               ; C = C x 2
-044A38 17          0528       rla                 ; A = A x 2 + Carry
-044A39 BA          0529       cp d                ; compare A with Denominator
-044A3A 38 02       0530       jr c,$+4            ; if bigger go to loop
-044A3C 0C          0531       inc c               ; inc Numerator
-044A3D 92          0532       sub d               ; A = A - denominator
-044A3E 10 F6       0533       djnz $-8            ; go round loop
-044A40 C9          0534       ret                 ; done 8 times, so return
-044A41             0535   
-044A41             0536   ; not sure how this works, need to get my head around it!
-044A41             0537   ; ---------------------------------
-044A41             0538   
-044A41             0539   
-044A41             0540   debugA:				; debug A to screen as HEX byte pair at pos BC
-044A41 F5          0541   	push af
-044A42 32 7C 4A 04 0542   	ld (debug_char), a	; store A
-044A46             0543   				; first, print 'A=' at TAB 36,0
-044A46 3E 1F       0544   	ld a, 31		; TAB at x,y
-044A48 5B D7       0545   	rst.lil $10
-044A4A 78          0546   	ld a, b			; x=b
-044A4B 5B D7       0547   	rst.lil $10
-044A4D 79          0548   	ld a,c			; y=c
-044A4E 5B D7       0549   	rst.lil $10		; put tab at BC position
-044A50             0550   
-044A50 3A 7C 4A 04 0551   	ld a, (debug_char)	; get A from store, then split into two nibbles
-044A54 E6 F0       0552   	and 11110000b		; get higher nibble
-044A56 1F          0553   	rra
-044A57 1F          0554   	rra
-044A58 1F          0555   	rra
-044A59 1F          0556   	rra			; move across to lower nibble
-044A5A C6 30       0557   	add a,48		; increase to ascii code range 0-9
-044A5C FE 3A       0558   	cp 58			; is A less than 10? (58+)
-044A5E 38 02       0559   	jr c, nextbd1		; carry on if less
-044A60 C6 07       0560   	add a, 7		; add to get 'A' char if larger than 10
-044A62             0561   nextbd1:
-044A62 5B D7       0562   	rst.lil $10		; print the A char
-044A64             0563   
-044A64 3A 7C 4A 04 0564   	ld a, (debug_char)	; get A back again
-044A68 E6 0F       0565   	and 00001111b		; now just get lower nibble
-044A6A C6 30       0566   	add a,48		; increase to ascii code range 0-9
-044A6C FE 3A       0567   	cp 58			; is A less than 10 (58+)
-044A6E DA 74 4A 04 0568   	jp c, nextbd2		; carry on if less
-044A72 C6 07       0569   	add a, 7		; add to get 'A' char if larger than 10
-044A74             0570   nextbd2:
-044A74 5B D7       0571   	rst.lil $10		; print the A char
-044A76             0572   
-044A76 3A 7C 4A 04 0573   	ld a, (debug_char)
-044A7A F1          0574   	pop af
-044A7B C9          0575   	ret			; head back
-044A7C             0576   
-044A7C 00          0577   debug_char: 	.db 0
-044A7D             0578   
-044A7D             0579   ; ---------------------------------------------
-044A7D             0580   ;
-044A7D             0581   ;	TEXT AND DATA
-044A7D             0582   ;
-044A7D             0583   ; ---------------------------------------------
-044A7D             0584   
-044A7D             0585   text_data:
-044A7D             0586   
-044A7D 1F 00 00 4D 0587   	.db 31, 0, 0, "Midi reader"
+0449A1             0381   	MOSCALL $15					; open uart1
+0449A1 3E 15       0001M  	ld a, afunc
+0449A3 5B CF       0002M  	rst.lil $08
+0449A5 C9          0382   	ret
+0449A6             0383   
+0449A6             0384   ; ---------------------------------------------
+0449A6             0385   
+0449A6             0386   closeUART1:
+0449A6             0387   	MOSCALL $16 					; close uart1
+0449A6 3E 16       0001M  	ld a, afunc
+0449A8 5B CF       0002M  	rst.lil $08
+0449AA C9          0388   	ret
+0449AB             0389   
+0449AB             0390   ; ---------------------------------------------
+0449AB             0391   
+0449AB             0392   UART1_Struct:
+0449AB 00 C2 01    0393   	.dl 	115200; 9600					; baud (stored as three byte LONG)
+0449AE 08          0394   	.db 	8 					; data bits
+0449AF 01          0395   	.db 	1 					; stop bits
+0449B0 00          0396   	.db 	0 					; parity bits
+0449B1 00          0397   	.db 	0					; flow control
+0449B2 00          0398   	.db 	0					; interrupt bits
+0449B3             0399   
+0449B3             0400   ; ---------------------------------------------
+0449B3             0401   ;
+0449B3             0402   ;	EXIT CODE CLEANLY
+0449B3             0403   ;
+0449B3             0404   ; ---------------------------------------------
+0449B3             0405   
+0449B3             0406   exit_here:
+0449B3             0407   
+0449B3 CD A6 49 04 0408   	call closeUART1
+0449B7 CD C7 49 04 0409   	call CLS
+0449BB             0410   							; reset all values before returning to MOS
+0449BB FD E1       0411   	pop iy
+0449BD DD E1       0412   	pop ix
+0449BF D1          0413   	pop de
+0449C0 C1          0414   	pop bc
+0449C1 F1          0415   	pop af
+0449C2 21 00 00 00 0416   	ld hl,0
+0449C6             0417   
+0449C6 C9          0418   	ret						; return to MOS here
+0449C7             0419   
+0449C7             0420   ; ---------------------------------------------
+0449C7             0421   ;
+0449C7             0422   ;	OTHER ROUTINES
+0449C7             0423   ;
+0449C7             0424   ; ---------------------------------------------
+0449C7             0425   
+0449C7             0426   CLS:
+0449C7 3E 0C       0427   	ld a, 12
+0449C9 5B D7       0428   	rst.lil $10					; CLS
+0449CB C9          0429   	ret
+0449CC             0430   
+0449CC             0431   ; ---------------------------------------------
+0449CC             0432   
+0449CC             0433   hidecursor:
+0449CC F5          0434   	push af
+0449CD 3E 17       0435   	ld a, 23
+0449CF 5B D7       0436   	rst.lil $10
+0449D1 3E 01       0437   	ld a, 1
+0449D3 5B D7       0438   	rst.lil $10
+0449D5 3E 00       0439   	ld a,0
+0449D7 5B D7       0440   	rst.lil $10	;VDU 23,1,0
+0449D9 F1          0441   	pop af
+0449DA C9          0442   	ret
+0449DB             0443   
+0449DB             0444   
+0449DB             0445   ; ---------------------------------------------
+0449DB             0446   ; strings used
+0449DB             0447   
+0449DB 0D 0A 00    0448   LINEFEED:           .asciz "\r\n"
+0449DE             0449   
+0449DE             0450   printString:                ; print zero terminated string
+0449DE 7E          0451       ld a,(hl)
+0449DF B7          0452       or a
+0449E0 C8          0453       ret z
+0449E1 5B D7       0454       RST.LIL 10h
+0449E3 23          0455       inc hl
+0449E4 18 F8       0456       jr printString
+0449E6             0457   
+0449E6             0458   
+0449E6             0459   ; ---------------------------------------------
+0449E6             0460   ;
+0449E6             0461   ;	DEBUG ROUTINES
+0449E6             0462   ;
+0449E6             0463   ; ---------------------------------------------
+0449E6             0464   
+0449E6             0465   ; ---------------------------------
+0449E6             0466   ; print decimal value of 0 -> 255 to screen at current TAB position
+0449E6             0467   
+0449E6             0468   printDec:               ; debug A to screen as 3 char string pos
+0449E6             0469   
+0449E6 32 29 4A 04 0470       ld (base),a         ; save
+0449EA             0471   
+0449EA FE C8       0472       cp 200              ; are we under 200 ?
+0449EC 38 0C       0473       jr c,_under200      ; not 200+
+0449EE D6 C8       0474       sub a, 200
+0449F0 32 29 4A 04 0475       ld (base),a         ; sub 200 and save
+0449F4             0476   
+0449F4 3E 32       0477       ld a, '2'           ; 2 in ascii
+0449F6 5B D7       0478       rst.lil $10         ; print out a '200' digit
+0449F8             0479   
+0449F8 18 0E       0480       jr _under100
+0449FA             0481   
+0449FA             0482   _under200:
+0449FA FE 64       0483       cp 100              ; are we under 100 ?
+0449FC 38 0A       0484       jr c,_under100      ; not 200+
+0449FE D6 64       0485       sub a, 100
+044A00 32 29 4A 04 0486       ld (base),a         ; sub 100 and save
+044A04             0487   
+044A04 3E 31       0488       ld a, '1'           ; 1 in ascii
+044A06 5B D7       0489       rst.lil $10         ; print out a '100' digit
+044A08             0490   
+044A08             0491   _under100:
+044A08 3A 29 4A 04 0492       ld a, (base)        ; get last 2 digits as decimal
+044A0C 4F          0493       ld c,a              ; store numerator in C
+044A0D 16 0A       0494       ld d, 10            ; D will be denominator
+044A0F CD 2A 4A 04 0495       call C_Div_D        ; divide C by 10 to get two parts.
+044A13             0496                           ; A is the remainder, C is the int of C/D
+044A13             0497   
+044A13 47          0498       ld b, a             ; put remainder ascii into B
+044A14             0499   
+044A14 79          0500       ld a, c             ; get int div
+044A15 FE 00       0501       cp 0                ; if 0 (ie, number was <10)
+044A17 28 06       0502       jr z, _lastBut1    ; just do last digit
+044A19             0503   
+044A19 C6 30       0504       add a, 48           ; add 48 to make ascii of int C/D
+044A1B 5B D7       0505       rst.lil $10         ; print out 10s digit
+044A1D 18 04       0506       jr _lastDigit
+044A1F             0507   
+044A1F             0508   _lastBut1:
+044A1F C6 30       0509       add a, 48           ; add 48 to make ascii of int C/D
+044A21 5B D7       0510       rst.lil $10         ; print out 10s digit
+044A23             0511   
+044A23             0512   _lastDigit:
+044A23 78          0513       ld a,b              ; get remainder back
+044A24 C6 30       0514       add a, 48           ; add 48 to remainder to convert to ascii
+044A26 5B D7       0515       rst.lil $10         ; print out last digit
+044A28             0516   
+044A28 C9          0517       ret
+044A29             0518   
+044A29 00          0519   base:   .db     0       ; used in calculations
+044A2A             0520   
+044A2A             0521   ; -----------------
+044A2A             0522   
+044A2A             0523   C_Div_D:
+044A2A             0524   ;Inputs:
+044A2A             0525   ;     C is the numerator
+044A2A             0526   ;     D is the denominator
+044A2A             0527   ;Outputs:
+044A2A             0528   ;     A is the remainder
+044A2A             0529   ;     B is 0
+044A2A             0530   ;     C is the result of C/D
+044A2A             0531   ;     D,E,H,L are not changed
+044A2A             0532   ;
+044A2A 06 08       0533       ld b,8              ; B is counter = 8
+044A2C AF          0534       xor a               ; [loop] clear flags
+044A2D CB 21       0535       sla c               ; C = C x 2
+044A2F 17          0536       rla                 ; A = A x 2 + Carry
+044A30 BA          0537       cp d                ; compare A with Denominator
+044A31 38 02       0538       jr c,$+4            ; if bigger go to loop
+044A33 0C          0539       inc c               ; inc Numerator
+044A34 92          0540       sub d               ; A = A - denominator
+044A35 10 F6       0541       djnz $-8            ; go round loop
+044A37 C9          0542       ret                 ; done 8 times, so return
+044A38             0543   
+044A38             0544   ; not sure how this works, need to get my head around it!
+044A38             0545   ; ---------------------------------
+044A38             0546   
+044A38             0547   
+044A38             0548   debugA:				; debug A to screen as HEX byte pair at pos BC
+044A38 F5          0549   	push af
+044A39 32 73 4A 04 0550   	ld (debug_char), a	; store A
+044A3D             0551   				; first, print 'A=' at TAB 36,0
+044A3D 3E 1F       0552   	ld a, 31		; TAB at x,y
+044A3F 5B D7       0553   	rst.lil $10
+044A41 78          0554   	ld a, b			; x=b
+044A42 5B D7       0555   	rst.lil $10
+044A44 79          0556   	ld a,c			; y=c
+044A45 5B D7       0557   	rst.lil $10		; put tab at BC position
+044A47             0558   
+044A47 3A 73 4A 04 0559   	ld a, (debug_char)	; get A from store, then split into two nibbles
+044A4B E6 F0       0560   	and 11110000b		; get higher nibble
+044A4D 1F          0561   	rra
+044A4E 1F          0562   	rra
+044A4F 1F          0563   	rra
+044A50 1F          0564   	rra			; move across to lower nibble
+044A51 C6 30       0565   	add a,48		; increase to ascii code range 0-9
+044A53 FE 3A       0566   	cp 58			; is A less than 10? (58+)
+044A55 38 02       0567   	jr c, nextbd1		; carry on if less
+044A57 C6 07       0568   	add a, 7		; add to get 'A' char if larger than 10
+044A59             0569   nextbd1:
+044A59 5B D7       0570   	rst.lil $10		; print the A char
+044A5B             0571   
+044A5B 3A 73 4A 04 0572   	ld a, (debug_char)	; get A back again
+044A5F E6 0F       0573   	and 00001111b		; now just get lower nibble
+044A61 C6 30       0574   	add a,48		; increase to ascii code range 0-9
+044A63 FE 3A       0575   	cp 58			; is A less than 10 (58+)
+044A65 DA 6B 4A 04 0576   	jp c, nextbd2		; carry on if less
+044A69 C6 07       0577   	add a, 7		; add to get 'A' char if larger than 10
+044A6B             0578   nextbd2:
+044A6B 5B D7       0579   	rst.lil $10		; print the A char
+044A6D             0580   
+044A6D 3A 73 4A 04 0581   	ld a, (debug_char)
+044A71 F1          0582   	pop af
+044A72 C9          0583   	ret			; head back
+044A73             0584   
+044A73 00          0585   debug_char: 	.db 0
+044A74             0586   
+044A74             0587   ; ---------------------------------------------
+044A74             0588   ;
+044A74             0589   ;	TEXT AND DATA
+044A74             0590   ;
+044A74             0591   ; ---------------------------------------------
+044A74             0592   
+044A74             0593   text_data:
+044A74             0594   
+044A74 1F 00 00 4D 0595   	.db 31, 0, 0, "Midi reader"
        69 64 69 20 
        72 65 61 64 
        65 72       
-044A8B 1F 00 02 4E 0588   	.db 31, 0, 2, "Note:"
+044A82 1F 00 02 4E 0596   	.db 31, 0, 2, "Note:"
        6F 74 65 3A 
-044A93 1F 00 04 56 0589   	.db 31, 0, 4, "Value:"
+044A8A 1F 00 04 56 0597   	.db 31, 0, 4, "Value:"
        61 6C 75 65 
        3A          
-044A9C 1F 00 06 66 0590   	.db 31, 0, 6, "freq:"
+044A93 1F 00 06 66 0598   	.db 31, 0, 6, "freq:"
        72 65 71 3A 
-044AA4 1F 00 0A 6F 0591   	.db 31, 0, 10, "offset:"
+044A9B 1F 00 0A 6F 0599   	.db 31, 0, 10, "offset:"
        66 66 73 65 
        74 3A       
-044AAE             0592   
-044AAE             0593   end_text_data:
-044AAE             0594   
-044AAE             0595   ; set tab to B,C
-044AAE             0596   setTAB:
-044AAE F5          0597   	push af
-044AAF 3E 1F       0598   	ld a, 31
-044AB1 5B D7       0599   	rst.lil $10    ; send text colour comd
-044AB3 78          0600   	ld a, b
-044AB4 5B D7       0601   	rst.lil $10    ; send text colour comd
-044AB6 79          0602   	ld a, c
-044AB7 5B D7       0603   	rst.lil $10    ; send text colour comd
-044AB9 F1          0604   	pop af
-044ABA C9          0605   	ret
-044ABB             0606   
-044ABB             0607   ; ---------------------------------------------
-044ABB             0608   ;
-044ABB             0609   ;	PORT CONSTANTS - FOR REFERENCE, NOT ALLL ARE USED
-044ABB             0610   ;
-044ABB             0611   ; ---------------------------------------------
-044ABB             0612   
-044ABB             0613   PORT:			EQU	$D0		; UART1
-044ABB             0614   
-044ABB             0615   REG_RBR:		EQU	PORT+0		; Receive buffer
-044ABB             0616   REG_THR:		EQU	PORT+0		; Transmitter holding
-044ABB             0617   REG_DLL:		EQU	PORT+0		; Divisor latch low
-044ABB             0618   REG_IER:		EQU	PORT+1		; Interrupt enable
-044ABB             0619   REG_DLH:		EQU	PORT+1		; Divisor latch high
-044ABB             0620   REG_IIR:		EQU	PORT+2		; Interrupt identification
-044ABB             0621   REG_FCT:		EQU	PORT+2;		; Flow control
-044ABB             0622   REG_LCR:		EQU	PORT+3		; Line control
-044ABB             0623   REG_MCR:		EQU	PORT+4		; Modem control
-044ABB             0624   REG_LSR:		EQU	PORT+5		; Line status
-044ABB             0625   REG_MSR:		EQU	PORT+6		; Modem status
-044ABB             0626   REG_SCR:		EQU 	PORT+7		; Scratch
-044ABB             0627   TX_WAIT:		EQU	16384 		; Count before a TX times out
-044ABB             0628   UART_LSR_ERR:		EQU 	$80		; Error
-044ABB             0629   UART_LSR_ETX:		EQU 	$40		; Transmit empty
-044ABB             0630   UART_LSR_ETH:		EQU	$20		; Transmit holding register empty
-044ABB             0631   UART_LSR_RDY:		EQU	%01		; Data ready
-044ABB             0632   
-044ABB             0633   
-044ABB             0634   ; ---------------------------------------------
-044ABB             0635   ;
-044ABB             0636   ;	NOTE data
-044ABB             0637   ;
-044ABB             0638   ; ---------------------------------------------
-044ABB             0639   
-044ABB             0640   
-044ABB             0641   midiFrequencies:
-044ABB             0642   
-044ABB 00 00       0643        .dw 0    ; 0
-044ABD 00 00       0644        .dw 0    ; 1
-044ABF 00 00       0645        .dw 0    ; 2
-044AC1 00 00       0646        .dw 0    ; 3
-044AC3 00 00       0647        .dw 0    ; 4
-044AC5 00 00       0648        .dw 0    ; 5
-044AC7 00 00       0649        .dw 0    ; 6
-044AC9 00 00       0650        .dw 0    ; 7
-044ACB 00 00       0651        .dw 0    ; 8
-044ACD 00 00       0652        .dw 0    ; 9
-044ACF 00 00       0653        .dw 0    ; 10
-044AD1 0F 00       0654        .dw 15    ; 11    Cb0
-044AD3 10 00       0655        .dw 16    ; 12    C0
-044AD5 11 00       0656        .dw 17    ; 13    Db0
-044AD7 12 00       0657        .dw 18    ; 14    D0
-044AD9 13 00       0658        .dw 19    ; 15    Eb0
-044ADB 13 00       0659        .dw 19    ; 15    D#0
-044ADD 14 00       0660        .dw 20    ; 16    E0
-044ADF 15 00       0661        .dw 21    ; 17    F0
-044AE1 17 00       0662        .dw 23    ; 18    Gb0
-044AE3 18 00       0663        .dw 24    ; 19    G0
-044AE5 19 00       0664        .dw 25    ; 20    Ab0
-044AE7 1B 00       0665        .dw 27    ; 21    A0
-044AE9 1D 00       0666        .dw 29    ; 22    A#0
-044AEB 20 00       0667        .dw 32    ; 24    B#0
-044AED 22 00       0668        .dw 34    ; 25    C#1
-044AEF 24 00       0669        .dw 36    ; 26    D1
-044AF1 26 00       0670        .dw 38    ; 27    D#1
-044AF3 29 00       0671        .dw 41    ; 28    E1
-044AF5 2B 00       0672        .dw 43    ; 29    E#1
-044AF7 2E 00       0673        .dw 46    ; 30    F#1
-044AF9 30 00       0674        .dw 48    ; 31    G1
-044AFB 33 00       0675        .dw 51    ; 32    G#1
-044AFD 37 00       0676        .dw 55    ; 33    A1
-044AFF 3A 00       0677        .dw 58    ; 34    A#1
-044B01 3D 00       0678        .dw 61    ; 35    B1
-044B03 41 00       0679        .dw 65    ; 36    B#1
-044B05 45 00       0680        .dw 69    ; 37    C#2
-044B07 49 00       0681        .dw 73    ; 38    D2
-044B09 4D 00       0682        .dw 77    ; 39    D#2
-044B0B 52 00       0683        .dw 82    ; 40    E2
-044B0D 57 00       0684        .dw 87    ; 41    E#2
-044B0F 5C 00       0685        .dw 92    ; 42    F#2
-044B11 61 00       0686        .dw 97    ; 43    G2
-044B13 67 00       0687        .dw 103    ; 44    G#2
-044B15 6E 00       0688        .dw 110    ; 45    A2
-044B17 74 00       0689        .dw 116    ; 46    A#2
-044B19 7B 00       0690        .dw 123    ; 47    B2
-044B1B 82 00       0691        .dw 130    ; 48    B#2
-044B1D 8A 00       0692        .dw 138    ; 49    C#3
-044B1F 92 00       0693        .dw 146    ; 50    D3
-044B21 9B 00       0694        .dw 155    ; 51    D#3
-044B23 A4 00       0695        .dw 164    ; 52    E3
-044B25 AE 00       0696        .dw 174    ; 53    E#3
-044B27 B9 00       0697        .dw 185    ; 54    F#3
-044B29 C4 00       0698        .dw 196    ; 55    G3
-044B2B CF 00       0699        .dw 207    ; 56    G#3
-044B2D DC 00       0700        .dw 220    ; 57    A3
-044B2F E9 00       0701        .dw 233    ; 58    A#3
-044B31 F6 00       0702        .dw 246    ; 59    B3
-044B33 05 01       0703        .dw 261    ; 60    B#3
-044B35 15 01       0704        .dw 277    ; 61    C#4
-044B37 25 01       0705        .dw 293    ; 62    D4
-044B39 37 01       0706        .dw 311    ; 63    D#4
-044B3B 49 01       0707        .dw 329    ; 64    E4
-044B3D 5D 01       0708        .dw 349    ; 65    E#4
-044B3F 71 01       0709        .dw 369    ; 66    F#4
-044B41 88 01       0710        .dw 392    ; 67    G4
-044B43 9F 01       0711        .dw 415    ; 68    G#4
-044B45 B8 01       0712        .dw 440    ; 69    A4
-044B47 D2 01       0713        .dw 466    ; 70    A#4
-044B49 ED 01       0714        .dw 493    ; 71    B4
-044B4B 0B 02       0715        .dw 523    ; 72    B#4
-044B4D 2A 02       0716        .dw 554    ; 73    C#5
-044B4F 4B 02       0717        .dw 587    ; 74    D5
-044B51 6E 02       0718        .dw 622    ; 75    D#5
-044B53 93 02       0719        .dw 659    ; 76    E5
-044B55 BA 02       0720        .dw 698    ; 77    E#5
-044B57 E3 02       0721        .dw 739    ; 78    F#5
-044B59 0F 03       0722        .dw 783    ; 79    G5
-044B5B 3E 03       0723        .dw 830    ; 80    G#5
-044B5D 70 03       0724        .dw 880    ; 81    A5
-044B5F A4 03       0725        .dw 932    ; 82    A#5
-044B61 DB 03       0726        .dw 987    ; 83    B5
-044B63 16 04       0727        .dw 1046    ; 84    B#5
-044B65 54 04       0728        .dw 1108    ; 85    C#6
-044B67 96 04       0729        .dw 1174    ; 86    D6
-044B69 DC 04       0730        .dw 1244    ; 87    D#6
-044B6B 26 05       0731        .dw 1318    ; 88    E6
-044B6D 74 05       0732        .dw 1396    ; 89    F6
-044B6F C8 05       0733        .dw 1480    ; 90    F#6
-044B71 20 06       0734        .dw 1568    ; 91    G6
-044B73 7D 06       0735        .dw 1661    ; 92    G#6
-044B75 E0 06       0736        .dw 1760    ; 93    A6
-044B77 48 07       0737        .dw 1864    ; 94    A#6
-044B79 B7 07       0738        .dw 1975    ; 95    B6
-044B7B 2D 08       0739        .dw 2093    ; 96    B#6
-044B7D A9 08       0740        .dw 2217    ; 97    C#7
-044B7F 2D 09       0741        .dw 2349    ; 98    D7
-044B81 B9 09       0742        .dw 2489    ; 99    D#7
-044B83 4D 0A       0743        .dw 2637    ; 100    E7
-044B85 E9 0A       0744        .dw 2793    ; 101    E#7
-044B87 90 0B       0745        .dw 2960    ; 102    F#7
-044B89 40 0C       0746        .dw 3136    ; 103    G7
-044B8B FA 0C       0747        .dw 3322    ; 104    G#7
-044B8D C0 0D       0748        .dw 3520    ; 105    A7
-044B8F 91 0E       0749        .dw 3729    ; 106    A#7
-044B91 6F 0F       0750        .dw 3951    ; 107    B7
-044B93 5A 10       0751        .dw 4186    ; 108    B#7
-044B95 52 11       0752        .dw 4434    ; 109    C#8
-044B97 5A 12       0753        .dw 4698    ; 110    D8
-044B99 72 13       0754        .dw 4978    ; 111    D#8
-044B9B 9A 14       0755        .dw 5274    ; 112    E8
-044B9D D3 15       0756        .dw 5587    ; 113    E#8
-044B9F 1F 17       0757        .dw 5919    ; 114    F#8
-044BA1 7F 18       0758        .dw 6271    ; 115    G8
-044BA3 F4 19       0759        .dw 6644    ; 116    G#8
-044BA5 80 1B       0760        .dw 7040    ; 117    A8
-044BA7 22 1D       0761        .dw 7458    ; 118    A#8
-044BA9 DE 1E       0762        .dw 7902    ; 119    B8
-044BAB B4 20       0763        .dw 8372    ; 120    B#8
-044BAD A5 22       0764        .dw 8869    ; 121    C#9
-044BAF B5 24       0765        .dw 9397    ; 122    D9
-044BB1 E4 26       0766        .dw 9956    ; 123    D#9
-044BB3 34 29       0767        .dw 10548    ; 124    E9
-044BB5 A7 2B       0768        .dw 11175    ; 125    E#9
-044BB7 40 2E       0769        .dw 11840    ; 126    F#9
-044BB9 00 31       0770        .dw 12544    ; 127    G9
-044BBB EA 33       0771        .dw 13290    ; 128    G#9
-044BBD 00 37       0772        .dw 14080    ; 129    A9
-044BBF 45 3A       0773        .dw 14917    ; 130    A#9
-044BC1 BC 3D       0774        .dw 15804    ; 131    B9
-044BC3 68 41       0775        .dw 16744    ; 132    B#9
+044AA5             0600   
+044AA5             0601   end_text_data:
+044AA5             0602   
+044AA5             0603   ; set tab to B,C
+044AA5             0604   setTAB:
+044AA5 F5          0605   	push af
+044AA6 3E 1F       0606   	ld a, 31
+044AA8 5B D7       0607   	rst.lil $10    ; send text colour comd
+044AAA 78          0608   	ld a, b
+044AAB 5B D7       0609   	rst.lil $10    ; send text colour comd
+044AAD 79          0610   	ld a, c
+044AAE 5B D7       0611   	rst.lil $10    ; send text colour comd
+044AB0 F1          0612   	pop af
+044AB1 C9          0613   	ret
+044AB2             0614   
+044AB2             0615   ; ---------------------------------------------
+044AB2             0616   ;
+044AB2             0617   ;	PORT CONSTANTS - FOR REFERENCE, NOT ALLL ARE USED
+044AB2             0618   ;
+044AB2             0619   ; ---------------------------------------------
+044AB2             0620   
+044AB2             0621   PORT:			EQU	$D0		; UART1
+044AB2             0622   
+044AB2             0623   REG_RBR:		EQU	PORT+0		; Receive buffer
+044AB2             0624   REG_THR:		EQU	PORT+0		; Transmitter holding
+044AB2             0625   REG_DLL:		EQU	PORT+0		; Divisor latch low
+044AB2             0626   REG_IER:		EQU	PORT+1		; Interrupt enable
+044AB2             0627   REG_DLH:		EQU	PORT+1		; Divisor latch high
+044AB2             0628   REG_IIR:		EQU	PORT+2		; Interrupt identification
+044AB2             0629   REG_FCT:		EQU	PORT+2;		; Flow control
+044AB2             0630   REG_LCR:		EQU	PORT+3		; Line control
+044AB2             0631   REG_MCR:		EQU	PORT+4		; Modem control
+044AB2             0632   REG_LSR:		EQU	PORT+5		; Line status
+044AB2             0633   REG_MSR:		EQU	PORT+6		; Modem status
+044AB2             0634   REG_SCR:		EQU 	PORT+7		; Scratch
+044AB2             0635   TX_WAIT:		EQU	16384 		; Count before a TX times out
+044AB2             0636   UART_LSR_ERR:		EQU 	$80		; Error
+044AB2             0637   UART_LSR_ETX:		EQU 	$40		; Transmit empty
+044AB2             0638   UART_LSR_ETH:		EQU	$20		; Transmit holding register empty
+044AB2             0639   UART_LSR_RDY:		EQU	%01		; Data ready
+044AB2             0640   
+044AB2             0641   
+044AB2             0642   ; ---------------------------------------------
+044AB2             0643   ;
+044AB2             0644   ;	NOTE data
+044AB2             0645   ;
+044AB2             0646   ; ---------------------------------------------
+044AB2             0647   
+044AB2             0648   
+044AB2             0649   midiFrequencies:
+044AB2             0650   
+044AB2 00 00       0651        .dw 0    ; 0
+044AB4 00 00       0652        .dw 0    ; 1
+044AB6 00 00       0653        .dw 0    ; 2
+044AB8 00 00       0654        .dw 0    ; 3
+044ABA 00 00       0655        .dw 0    ; 4
+044ABC 00 00       0656        .dw 0    ; 5
+044ABE 00 00       0657        .dw 0    ; 6
+044AC0 00 00       0658        .dw 0    ; 7
+044AC2 00 00       0659        .dw 0    ; 8
+044AC4 00 00       0660        .dw 0    ; 9
+044AC6 00 00       0661        .dw 0    ; 10
+044AC8 0F 00       0662        .dw 15    ; 11    Cb0
+044ACA 10 00       0663        .dw 16    ; 12    C0
+044ACC 11 00       0664        .dw 17    ; 13    Db0
+044ACE 12 00       0665        .dw 18    ; 14    D0
+044AD0 13 00       0666        .dw 19    ; 15    Eb0
+044AD2 13 00       0667        .dw 19    ; 15    D#0
+044AD4 14 00       0668        .dw 20    ; 16    E0
+044AD6 15 00       0669        .dw 21    ; 17    F0
+044AD8 17 00       0670        .dw 23    ; 18    Gb0
+044ADA 18 00       0671        .dw 24    ; 19    G0
+044ADC 19 00       0672        .dw 25    ; 20    Ab0
+044ADE 1B 00       0673        .dw 27    ; 21    A0
+044AE0 1D 00       0674        .dw 29    ; 22    A#0
+044AE2 20 00       0675        .dw 32    ; 24    B#0
+044AE4 22 00       0676        .dw 34    ; 25    C#1
+044AE6 24 00       0677        .dw 36    ; 26    D1
+044AE8 26 00       0678        .dw 38    ; 27    D#1
+044AEA 29 00       0679        .dw 41    ; 28    E1
+044AEC 2B 00       0680        .dw 43    ; 29    E#1
+044AEE 2E 00       0681        .dw 46    ; 30    F#1
+044AF0 30 00       0682        .dw 48    ; 31    G1
+044AF2 33 00       0683        .dw 51    ; 32    G#1
+044AF4 37 00       0684        .dw 55    ; 33    A1
+044AF6 3A 00       0685        .dw 58    ; 34    A#1
+044AF8 3D 00       0686        .dw 61    ; 35    B1
+044AFA 41 00       0687        .dw 65    ; 36    B#1
+044AFC 45 00       0688        .dw 69    ; 37    C#2
+044AFE 49 00       0689        .dw 73    ; 38    D2
+044B00 4D 00       0690        .dw 77    ; 39    D#2
+044B02 52 00       0691        .dw 82    ; 40    E2
+044B04 57 00       0692        .dw 87    ; 41    E#2
+044B06 5C 00       0693        .dw 92    ; 42    F#2
+044B08 61 00       0694        .dw 97    ; 43    G2
+044B0A 67 00       0695        .dw 103    ; 44    G#2
+044B0C 6E 00       0696        .dw 110    ; 45    A2
+044B0E 74 00       0697        .dw 116    ; 46    A#2
+044B10 7B 00       0698        .dw 123    ; 47    B2
+044B12 82 00       0699        .dw 130    ; 48    B#2
+044B14 8A 00       0700        .dw 138    ; 49    C#3
+044B16 92 00       0701        .dw 146    ; 50    D3
+044B18 9B 00       0702        .dw 155    ; 51    D#3
+044B1A A4 00       0703        .dw 164    ; 52    E3
+044B1C AE 00       0704        .dw 174    ; 53    E#3
+044B1E B9 00       0705        .dw 185    ; 54    F#3
+044B20 C4 00       0706        .dw 196    ; 55    G3
+044B22 CF 00       0707        .dw 207    ; 56    G#3
+044B24 DC 00       0708        .dw 220    ; 57    A3
+044B26 E9 00       0709        .dw 233    ; 58    A#3
+044B28 F6 00       0710        .dw 246    ; 59    B3
+044B2A 05 01       0711        .dw 261    ; 60    B#3
+044B2C 15 01       0712        .dw 277    ; 61    C#4
+044B2E 25 01       0713        .dw 293    ; 62    D4
+044B30 37 01       0714        .dw 311    ; 63    D#4
+044B32 49 01       0715        .dw 329    ; 64    E4
+044B34 5D 01       0716        .dw 349    ; 65    E#4
+044B36 71 01       0717        .dw 369    ; 66    F#4
+044B38 88 01       0718        .dw 392    ; 67    G4
+044B3A 9F 01       0719        .dw 415    ; 68    G#4
+044B3C B8 01       0720        .dw 440    ; 69    A4
+044B3E D2 01       0721        .dw 466    ; 70    A#4
+044B40 ED 01       0722        .dw 493    ; 71    B4
+044B42 0B 02       0723        .dw 523    ; 72    B#4
+044B44 2A 02       0724        .dw 554    ; 73    C#5
+044B46 4B 02       0725        .dw 587    ; 74    D5
+044B48 6E 02       0726        .dw 622    ; 75    D#5
+044B4A 93 02       0727        .dw 659    ; 76    E5
+044B4C BA 02       0728        .dw 698    ; 77    E#5
+044B4E E3 02       0729        .dw 739    ; 78    F#5
+044B50 0F 03       0730        .dw 783    ; 79    G5
+044B52 3E 03       0731        .dw 830    ; 80    G#5
+044B54 70 03       0732        .dw 880    ; 81    A5
+044B56 A4 03       0733        .dw 932    ; 82    A#5
+044B58 DB 03       0734        .dw 987    ; 83    B5
+044B5A 16 04       0735        .dw 1046    ; 84    B#5
+044B5C 54 04       0736        .dw 1108    ; 85    C#6
+044B5E 96 04       0737        .dw 1174    ; 86    D6
+044B60 DC 04       0738        .dw 1244    ; 87    D#6
+044B62 26 05       0739        .dw 1318    ; 88    E6
+044B64 74 05       0740        .dw 1396    ; 89    F6
+044B66 C8 05       0741        .dw 1480    ; 90    F#6
+044B68 20 06       0742        .dw 1568    ; 91    G6
+044B6A 7D 06       0743        .dw 1661    ; 92    G#6
+044B6C E0 06       0744        .dw 1760    ; 93    A6
+044B6E 48 07       0745        .dw 1864    ; 94    A#6
+044B70 B7 07       0746        .dw 1975    ; 95    B6
+044B72 2D 08       0747        .dw 2093    ; 96    B#6
+044B74 A9 08       0748        .dw 2217    ; 97    C#7
+044B76 2D 09       0749        .dw 2349    ; 98    D7
+044B78 B9 09       0750        .dw 2489    ; 99    D#7
+044B7A 4D 0A       0751        .dw 2637    ; 100    E7
+044B7C E9 0A       0752        .dw 2793    ; 101    E#7
+044B7E 90 0B       0753        .dw 2960    ; 102    F#7
+044B80 40 0C       0754        .dw 3136    ; 103    G7
+044B82 FA 0C       0755        .dw 3322    ; 104    G#7
+044B84 C0 0D       0756        .dw 3520    ; 105    A7
+044B86 91 0E       0757        .dw 3729    ; 106    A#7
+044B88 6F 0F       0758        .dw 3951    ; 107    B7
+044B8A 5A 10       0759        .dw 4186    ; 108    B#7
+044B8C 52 11       0760        .dw 4434    ; 109    C#8
+044B8E 5A 12       0761        .dw 4698    ; 110    D8
+044B90 72 13       0762        .dw 4978    ; 111    D#8
+044B92 9A 14       0763        .dw 5274    ; 112    E8
+044B94 D3 15       0764        .dw 5587    ; 113    E#8
+044B96 1F 17       0765        .dw 5919    ; 114    F#8
+044B98 7F 18       0766        .dw 6271    ; 115    G8
+044B9A F4 19       0767        .dw 6644    ; 116    G#8
+044B9C 80 1B       0768        .dw 7040    ; 117    A8
+044B9E 22 1D       0769        .dw 7458    ; 118    A#8
+044BA0 DE 1E       0770        .dw 7902    ; 119    B8
+044BA2 B4 20       0771        .dw 8372    ; 120    B#8
+044BA4 A5 22       0772        .dw 8869    ; 121    C#9
+044BA6 B5 24       0773        .dw 9397    ; 122    D9
+044BA8 E4 26       0774        .dw 9956    ; 123    D#9
+044BAA 34 29       0775        .dw 10548    ; 124    E9
+044BAC A7 2B       0776        .dw 11175    ; 125    E#9
+044BAE 40 2E       0777        .dw 11840    ; 126    F#9
+044BB0 00 31       0778        .dw 12544    ; 127    G9
+044BB2 EA 33       0779        .dw 13290    ; 128    G#9
+044BB4 00 37       0780        .dw 14080    ; 129    A9
+044BB6 45 3A       0781        .dw 14917    ; 130    A#9
+044BB8 BC 3D       0782        .dw 15804    ; 131    B9
+044BBA 68 41       0783        .dw 16744    ; 132    B#9
