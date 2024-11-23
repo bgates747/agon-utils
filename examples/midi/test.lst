@@ -1,0 +1,5457 @@
+PC     Output      Line
+040000             0001   ;	Serial MIDI input demo
+040000             0002   ; 	Richard Turnnidge 2024
+040000             0003   
+040000             0004   ; 	Reads MIDI serial data from keyboard and plays sounds
+040000             0005   
+040000             0006   
+040000             0007   ; ---------------------------------------------
+040000             0008   ;
+040000             0009   ;	CONSTANTS
+040000             0010   ;
+040000             0011   ; ---------------------------------------------
+040000             0012   
+040000             0013   midi_ID:	equ	144 	; Keystation keyboard ID
+040000             0014   mos_getkbmap:		EQU	1Eh
+040000             0015   
+040000             0016   ; ---------------------------------------------
+040000             0017   ;
+040000             0018   ;	MACROS
+040000             0019   ;
+040000             0020   ; ---------------------------------------------
+040000             0021   
+040000             0022   	macro MOSCALL afunc
+040000             0023   	ld a, afunc
+040000             0024   	rst.lil $08
+040000             0025   	endmacro
+040000             0026   
+040000             0027   ; ---------------------------------------------
+040000             0028   ;
+040000             0029   ;	INITIALISE
+040000             0030   ;
+040000             0031   ; ---------------------------------------------
+040000             0032   
+040000             0033   	.assume adl=1						; big memory mode
+040000             0034   	.org $40000						; load code here
+040000             0035   
+040000 C3 C4 00 04 0036   	jp start_here						; jump to start of code
+040004             0037   
+040004 FF FF FF FF 0038   	.align 64						; MOS header
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+040040 4D 4F 53 00 0039   	.db "MOS",0,1
+       01          
+040045             0040   
+040045             0041   	;include "debug_routines.asm"
+040045             0042       include "test.inc"
+040045             0001*  get_keys:
+040045             0002*  ; set uart1_received to midi_ID
+040045 3E 90       0003*      ld a,midi_ID
+040047 32 A2 49 04 0004*      ld (uart1_received),a
+04004B             0005*  
+04004B             0006*  ; point ix at keyboard matrix
+04004B             0007*      MOSCALL mos_getkbmap
+04004B 3E 1E       0001*M 	ld a, afunc
+04004D 5B CF       0002*M 	rst.lil $08
+04004F             0008*  
+04004F             0009*  ; reset a to no key pressed
+04004F AF          0010*      xor a
+040050             0011*  
+040050             0012*  ; 17 Q
+040050 DD CB 02 46 0013*      bit 0,(ix+2)
+040054 28 02       0014*      jr z,@F
+040056 3E 01       0015*      ld a,1
+040058             0016*  @@:
+040058             0017*  
+040058             0018*  ; 34 W
+040058 DD CB 04 4E 0019*      bit 1,(ix+4)
+04005C 28 02       0020*      jr z,@F
+04005E 3E 02       0021*      ld a,2
+040060             0022*  @@:
+040060             0023*  
+040060             0024*  ; 35 E
+040060 DD CB 04 56 0025*      bit 2,(ix+4)
+040064 28 02       0026*      jr z,@F
+040066 3E 03       0027*      ld a,3
+040068             0028*  @@:
+040068             0029*  
+040068             0030*  ; 52 R
+040068 DD CB 06 5E 0031*      bit 3,(ix+6)
+04006C 28 02       0032*      jr z,@F
+04006E 3E 04       0033*      ld a,4
+040070             0034*  @@:
+040070             0035*  
+040070             0036*  ; 36 T
+040070 DD CB 04 5E 0037*      bit 3,(ix+4)
+040074 28 02       0038*      jr z,@F
+040076 3E 05       0039*      ld a,5
+040078             0040*  @@:
+040078             0041*  
+040078             0042*  ; 69 Y
+040078 DD CB 08 66 0043*      bit 4,(ix+8)
+04007C 28 02       0044*      jr z,@F
+04007E 3E 06       0045*      ld a,6
+040080             0046*  @@:
+040080             0047*  
+040080             0048*  ; 54 U
+040080 DD CB 06 6E 0049*      bit 5,(ix+6)
+040084 28 02       0050*      jr z,@F
+040086 3E 07       0051*      ld a,7
+040088             0052*  @@:
+040088             0053*  
+040088             0054*  ; 38 I
+040088 DD CB 04 6E 0055*      bit 5,(ix+4)
+04008C 28 02       0056*      jr z,@F
+04008E 3E 08       0057*      ld a,8
+040090             0058*  @@:
+040090             0059*  
+040090             0060*  ; 55 O
+040090 DD CB 06 76 0061*      bit 6,(ix+6)
+040094 28 02       0062*      jr z,@F
+040096 3E 09       0063*      ld a,9
+040098             0064*  @@:
+040098             0065*  
+040098             0066*  ; 56 P
+040098 DD CB 06 7E 0067*      bit 7,(ix+6)
+04009C 28 02       0068*      jr z,@F
+04009E 3E 0A       0069*      ld a,10
+0400A0             0070*  @@:
+0400A0             0071*  
+0400A0             0072*  ; 57 LeftBracket
+0400A0 DD CB 07 46 0073*      bit 0,(ix+7)
+0400A4 28 02       0074*      jr z,@F
+0400A6 3E 0B       0075*      ld a,11
+0400A8             0076*  @@:
+0400A8             0077*  
+0400A8             0078*  ; 89 RightBracket
+0400A8 DD CB 0B 46 0079*      bit 0,(ix+11)
+0400AC 28 02       0080*      jr z,@F
+0400AE 3E 0C       0081*      ld a,12
+0400B0             0082*  @@:
+0400B0             0083*  
+0400B0             0084*  ; test for key pressed
+0400B0 B7          0085*      or a
+0400B1 20 0A       0086*      jr nz,@play ; if key pressed, play note
+0400B3             0087*  
+0400B3             0088*  ; otherwise test for note playing and stop it
+0400B3 3A 0F 01 04 0089*      ld a,(is_playing)
+0400B7 B7          0090*      or a
+0400B8 C4 23 02 04 0091*      call nz,stopSound
+0400BC             0092*      ; xor a
+0400BC             0093*      ; ld (is_playing),a
+0400BC C9          0094*      ret
+0400BD             0095*  
+0400BD             0096*  @play:
+0400BD             0097*  ; otherwise spoof midi keypress
+0400BD C6 3B       0098*      add a,59 ; 60 is middle C
+0400BF 32 A2 49 04 0099*      ld (uart1_received),a
+0400C3 C9          0100*      ret
+0400C4             0043   
+0400C4             0044   ; ---------------------------------------------
+0400C4             0045   ;
+0400C4             0046   ;	INITIAL SETUP CODE HERE
+0400C4             0047   ;
+0400C4             0048   ; ---------------------------------------------
+0400C4             0049   
+0400C4             0050   start_here:
+0400C4             0051   								; store everything as good practice
+0400C4 F5          0052   	push af							; pop back when we return from code later
+0400C5 C5          0053   	push bc
+0400C6 D5          0054   	push de
+0400C7 DD E5       0055   	push ix
+0400C9 FD E5       0056   	push iy
+0400CB             0057   
+0400CB             0058   
+0400CB CD D0 49 04 0059   	call CLS 						; clear screen
+0400CF CD A5 49 04 0060   	call openUART1						; init the UART1 serial port
+0400D3 CD D5 49 04 0061   	call hidecursor						; hide the cursor
+0400D7             0062   
+0400D7 21 7D 4A 04 0063   	ld hl, text_data
+0400DB 01 31 00 00 0064   	ld bc, end_text_data - text_data
+0400DF 5B DF       0065   	rst.lil $18						; print default text to screen
+0400E1             0066   
+0400E1 CD 4E 02 04 0067   	call loadSample
+0400E5             0068   
+0400E5             0069   ; ---------------------------------------------
+0400E5             0070   ;
+0400E5             0071   ;	MAIN LOOP
+0400E5             0072   ;
+0400E5             0073   ; ---------------------------------------------
+0400E5             0074   
+0400E5             0075   MAIN_LOOP:
+0400E5             0076   	MOSCALL $08								; get IX pointer to sysvars
+0400E5 3E 08       0001M  	ld a, afunc
+0400E7 5B CF       0002M  	rst.lil $08
+0400E9 DD 7E 05    0077   	ld a, (ix + 05h)						; ix+5h is 'last key pressed'
+0400EC FE 1B       0078   	cp 27									; is it ESC key?
+0400EE CA BC 49 04 0079   	jp z, exit_here							; if so exit cleanly
+0400F2             0080   
+0400F2             0081   	; call uart1_handler						; get any new data from UART1
+0400F2 CD 45 00 04 0082       call get_keys                           ; get any new data from keyboard
+0400F6             0083   
+0400F6 3A A2 49 04 0084   	ld a, (uart1_received)					; check if we got anything
+0400FA FE 00       0085   	cp 0
+0400FC 28 E7       0086   	jr z, MAIN_LOOP							; nothing new, loop round again
+0400FE             0087   
+0400FE 3A A2 49 04 0088   	ld a, (uart1_received)					; grab latest data
+040102             0089   
+040102 CD 14 01 04 0090   	call manageData							; deal with data
+040106             0091   
+040106 AF          0092       xor a                                   ; clear uart1_received
+040107 32 A2 49 04 0093       ld (uart1_received), a
+04010B             0094   
+04010B C3 E5 00 04 0095   	jp MAIN_LOOP
+04010F             0096   
+04010F             0097   
+04010F 00          0098   is_playing:		.db 0						; quick hack for single not playing
+040110 01          0099   waitingNote:	.db 1						; if waiting for note to arrive
+040111 00          0100   waitingValue:	.db 0						; if waiting for hit value to arrive
+040112             0101   
+040112 00          0102   note:			.db 0
+040113 00          0103   value:			.db 0
+040114             0104   
+040114             0105   ; ---------------------------------------------
+040114             0106   ; deal with incoming data
+040114             0107   
+040114             0108   manageData:
+040114 3A A2 49 04 0109   	ld a, (uart1_received)					; grab latest data
+040118 FE 90       0110   	cp midi_ID								; is is a signal from keyboard?
+04011A 28 34       0111   	jr z, keyboardSignal					; is keyboard id
+04011C             0112   
+04011C 3A 10 01 04 0113   	ld a, (waitingNote)
+040120 FE 01       0114   	cp 1
+040122 28 0D       0115   	jr z, getNote							; get the note
+040124             0116   											; else we must get Value
+040124             0117   
+040124             0118   getValue:
+040124             0119   
+040124 3A A2 49 04 0120   	ld a, (uart1_received)					; this is our Value
+040128 32 13 01 04 0121   	ld (value), a  							; we can now start the note
+04012C             0122   
+04012C CD 57 01 04 0123   	call startSound
+040130             0124   
+040130 C9          0125   	ret
+040131             0126   
+040131             0127   
+040131             0128   getNote:
+040131             0129   
+040131 3A A2 49 04 0130   	ld a, (uart1_received)					; this is our Note
+040135 32 12 01 04 0131   	ld (note), a
+040139             0132   
+040139 3A 0F 01 04 0133   	ld a, (is_playing)
+04013D FE 01       0134   	cp 1
+04013F             0135   
+04013F CA 23 02 04 0136   	jp z, stopSound							; if playing, we need to stop
+040143             0137   
+040143 3E 00       0138   	ld a, 0
+040145 32 10 01 04 0139   	ld (waitingNote), a  					; we have note, now need value
+040149 3E 01       0140   	ld a, 1
+04014B 32 11 01 04 0141   	ld (waitingValue), a
+04014F             0142   
+04014F C9          0143   	ret
+040150             0144   
+040150             0145   keyboardSignal:
+040150             0146   
+040150 3E 01       0147   	ld a, 1
+040152 32 10 01 04 0148   	ld (waitingNote), a 					; now wait for a note
+040156             0149   
+040156 C9          0150   	ret
+040157             0151   
+040157             0152   
+040157             0153   startSound:
+040157             0154   
+040157 3E 00       0155   	ld a, 0
+040159 32 10 01 04 0156   	ld (waitingNote), a  					; reset waitingNote
+04015D 32 11 01 04 0157   	ld (waitingValue), a  					; reset waitingValue
+040161             0158   
+040161 3E 01       0159   	ld a, 1
+040163 32 0F 01 04 0160   	ld (is_playing), a
+040167             0161   
+040167             0162   	; set the required note quick hack to test
+040167             0163   
+040167 3A 12 01 04 0164   	ld a, (note)						; this is midi number
+04016B B7          0165   	or a
+04016C CB 27       0166   	sla a
+04016E E6 FE       0167   	and 11111110b						; x2
+040170             0168   
+040170 F5          0169   	push af
+040171             0170   
+040171             0171   
+040171 06 07       0172   	ld b, 7
+040173 0E 0A       0173   	ld c, 10
+040175 CD AE 4A 04 0174   	call setTAB
+040179 21 18 02 04 0175   	ld hl, blanks
+04017D CD E7 49 04 0176   	call printString
+040181             0177   
+040181 06 07       0178   	ld b, 7
+040183 0E 0A       0179   	ld c, 10
+040185 CD AE 4A 04 0180   	call setTAB
+040189 F1          0181   	pop af
+04018A F5          0182   	push af
+04018B CD EF 49 04 0183   	call printDec
+04018F             0184   
+04018F F1          0185   	pop af
+040190             0186   
+040190             0187   	; A is offset
+040190             0188   
+040190 21 BB 4A 04 0189   	ld HL, midiFrequencies
+040194 11 00 00 00 0190   	ld de, 0						; reset to 0
+040198 5F          0191   	ld e, a 						; the offset
+040199 19          0192   	add hl, de 						; get offset into data
+04019A             0193   
+04019A 7E          0194   	ld a, (hl)
+04019B 32 42 02 04 0195   	ld (theNote), a  					; set LSB
+04019F             0196   
+04019F 23          0197   	inc hl
+0401A0 7E          0198   	ld a, (hl)
+0401A1 32 43 02 04 0199   	ld (theNote + 1), a  					; set MSB
+0401A5             0200   
+0401A5 21 3C 02 04 0201   	ld hl, playNote
+0401A9 01 0A 00 00 0202   	ld bc, endPlayNote - playNote
+0401AD 5B DF       0203   	rst.lil $18
+0401AF             0204   
+0401AF             0205   	; print it out
+0401AF 06 07       0206   	ld b, 7
+0401B1 0E 02       0207   	ld c, 2
+0401B3             0208   
+0401B3 CD AE 4A 04 0209   	call setTAB
+0401B7 3A 12 01 04 0210   	ld a, (note)
+0401BB CD EF 49 04 0211   	call printDec
+0401BF             0212   
+0401BF 06 07       0213   	ld b, 7
+0401C1 0E 04       0214   	ld c, 4
+0401C3 CD AE 4A 04 0215   	call setTAB
+0401C7 3A 13 01 04 0216   	ld a, (value)
+0401CB CD EF 49 04 0217   	call printDec
+0401CF             0218   
+0401CF 06 07       0219   	ld b, 7
+0401D1 0E 06       0220   	ld c, 6
+0401D3 3A 42 02 04 0221   	ld a, (theNote)
+0401D7 CD 41 4A 04 0222   	call debugA
+0401DB             0223   
+0401DB 06 0A       0224   	ld b, 10
+0401DD 0E 06       0225   	ld c, 6
+0401DF 3A 43 02 04 0226   	ld a, (theNote + 1)
+0401E3 CD 41 4A 04 0227   	call debugA
+0401E7             0228   
+0401E7             0229   
+0401E7 06 07       0230   	ld b, 7
+0401E9 0E 08       0231   	ld c, 8
+0401EB             0232   
+0401EB CD AE 4A 04 0233   	call setTAB
+0401EF             0234   
+0401EF 21 18 02 04 0235   	ld hl, blanks
+0401F3 CD E7 49 04 0236   	call printString
+0401F7             0237   
+0401F7 06 07       0238   	ld b, 7
+0401F9 0E 08       0239   	ld c, 8
+0401FB             0240   
+0401FB CD AE 4A 04 0241   	call setTAB
+0401FF             0242   
+0401FF 3A 42 02 04 0243   	ld a, (theNote)
+040203 CD EF 49 04 0244   	call printDec
+040207             0245   
+040207 06 0B       0246   	ld b, 11
+040209 0E 08       0247   	ld c, 8
+04020B             0248   
+04020B CD AE 4A 04 0249   	call setTAB
+04020F 3A 43 02 04 0250   	ld a, (theNote + 1)
+040213 CD EF 49 04 0251   	call printDec
+040217             0252   
+040217             0253   
+040217 C9          0254   	ret
+040218             0255   
+040218 20 20 20 20 0256   blanks:		.blkb 10,32
+       20 20 20 20 
+       20 20       
+040222 00          0257   		.db 0
+040223             0258   stopSound:
+040223             0259   
+040223 3E 00       0260   	ld a, 0
+040225 32 10 01 04 0261   	ld (waitingNote), a  					; reset waitingNote
+040229 32 11 01 04 0262   	ld (waitingValue), a  					; reset waitingValue
+04022D 32 0F 01 04 0263   	ld (is_playing), a
+040231             0264   
+040231 21 46 02 04 0265   	ld hl, stopNote
+040235 01 08 00 00 0266   	ld bc, endStopNote - stopNote
+040239 5B DF       0267   	rst.lil $18
+04023B             0268   
+04023B C9          0269   	ret
+04023C             0270   
+04023C             0271   
+04023C             0272   
+04023C             0273   playNote:
+04023C             0274   
+04023C 17 00 85 00 0275   		.db 23, 0, $85, 0, 0, 127			; play note
+       00 7F       
+040242 00 00       0276   theNote:	.dw $0
+040244 FF FF       0277   theLength:	.dw -1
+040246             0278   
+040246             0279   endPlayNote:
+040246             0280   
+040246             0281   stopNote:
+040246             0282   
+040246 17 00 85 00 0283   	.db 23, 0, $85, 0, 12
+       0C          
+04024B 00 00       0284   	.dw 0									;  channel 0 duration
+04024D 00          0285   	.db 0
+04024E             0286   
+04024E             0287   
+04024E             0288   
+04024E             0289   endStopNote:
+04024E             0290   
+04024E             0291   ; ------------------
+04024E             0292   
+04024E             0293   loadSample:                             	; for loading audio samples
+04024E             0294   
+04024E 21 59 02 04 0295   	ld hl, sampleStr                    	; start of data to send
+040252 01 1F 47 00 0296   	ld bc, endSampleStr - sampleStr     	; length of data to send
+040256 5B DF       0297   	rst.lil $18                         	; send data
+040258 C9          0298   	ret
+040259             0299   
+040259             0300   sampleStr:
+040259 17 00 85    0301   	.db     23,0,85h                    	; audio command
+04025C FF 05       0302   	.db     -1, 5                       	; sample number, sample management
+04025E 00          0303   	.db     0                           	; load
+04025F FB 46 00    0304   	.dl     18171                       	; length in bytes (LONG)
+040262 CE D4 D9 D0 0305   	incbin "violin.raw"
+       D7 E7 EE EF 
+       FC 16 26 25 
+       29 36 36 27 
+       1B 19 1A 1D 
+       1D 18 0F 0C 
+       04 F7 F1 E7 
+       DF DA D5 D0 
+       D6 D3 C1 C3 
+       DB EE FE 09 
+       10 16 0D FE 
+       01 0C 0D 1E 
+       2A 1F 13 16 
+       25 33 2E 23 
+       1C 16 01 E1 
+       D0 D0 D7 D3 
+       D6 E1 E7 ED 
+       F9 10 24 25 
+       24 33 39 28 
+       1A 1A 19 1B 
+       1C 19 10 0A 
+       04 F7 EF EB 
+       E2 D6 D2 D0 
+       D1 D1 C2 BF 
+       D8 EA F5 06 
+       0E 14 11 01 
+       FD 0E 13 1B 
+       28 20 15 15 
+       20 32 34 24 
+       19 17 07 E5 
+       D1 CF D9 D4 
+       CD D8 E2 E7 
+       EF 06 1E 23 
+       1F 2F 3A 2C 
+       1A 1A 1C 1C 
+       1B 19 12 04 
+       03 FD F5 EF 
+       E4 D5 CE CF 
+       CF D0 C4 B9 
+       CF E6 EE FF 
+       0D 14 15 07 
+       FC 0A 11 13 
+       23 22 15 12 
+       1C 2C 34 2B 
+       1B 15 0E F3 
+       D5 CC D5 D6 
+       C9 CE DA E1 
+       E8 F9 13 24 
+       22 26 34 31 
+       20 17 1A 1D 
+       21 1C 12 05 
+       02 04 FC F2 
+       E5 D9 CE CB 
+       C9 C6 C6 BD 
+       C1 DC EB F2 
+       02 10 1B 17 
+       03 03 10 12 
+       1B 27 1F 17 
+       19 23 30 32 
+       23 12 0B FF 
+       E8 CE C8 D4 
+       D0 C7 CE DA 
+       E0 ED 03 1C 
+       26 22 2D 35 
+       2D 20 1D 1F 
+       22 21 19 0F 
+       02 01 FF FA 
+       F0 DE CE C7 
+       C9 C4 C2 C0 
+       BD CA DE E8 
+       F5 08 16 1F 
+       15 05 0A 15 
+       1B 25 26 1D 
+       1C 20 2B 35 
+       2B 18 0F 0B 
+       F7 D9 C9 CE 
+       D3 C8 C4 D0 
+       DA DE EE 09 
+       22 26 25 30 
+       35 2B 20 21 
+       25 29 20 13 
+       08 01 05 04 
+       FA EA D6 C8 
+       C7 C9 C1 C1 
+       BF BD CF E3 
+       EA FA 10 1F 
+       21 0D 03 13 
+       1E 1C 22 28 
+       23 1F 23 31 
+       37 26 14 0C 
+       09 F2 D4 C7 
+       CE D0 C4 C5 
+       D1 D7 DF F3 
+       10 27 26 25 
+       30 33 29 21 
+       24 28 28 1C 
+       10 05 03 09 
+       03 F6 E6 D4 
+       C6 C7 C6 BE 
+       C0 BF C1 D8 
+       E9 EE 03 1A 
+       24 20 0C 09 
+       1B 1E 19 26 
+       2D 25 21 26 
+       33 36 24 10 
+       09 03 EB CE 
+       C4 D0 CE BF 
+       C2 CD D7 E3 
+       F7 14 2A 27 
+       28 33 34 2D 
+       26 25 29 28 
+       1C 0C 02 07 
+       0B 01 F3 E6 
+       D4 C8 C3 BE 
+       BE C2 C0 C5 
+       DA E6 F0 08 
+       21 29 21 0F 
+       10 1E 1D 20 
+       2F 30 27 22 
+       27 33 34 21 
+       0E 08 FF E7 
+       CA C2 CC CB 
+       BC BB C9 D7 
+       E4 F5 12 2C 
+       2B 2A 33 36 
+       2F 25 27 2E 
+       29 18 0B 06 
+       09 0E 04 F4 
+       E6 D5 C7 C1 
+       BF C0 C6 C5 
+       C7 D7 E6 F3 
+       0B 1F 24 1F 
+       0E 11 21 22 
+       23 2C 31 2C 
+       25 27 33 34 
+       1F 0B 05 02 
+       E9 C9 C1 CA 
+       CA BA B7 C5 
+       D6 E1 EF 11 
+       2C 2A 2B 36 
+       3A 2F 25 2A 
+       30 25 13 0E 
+       09 08 0F 06 
+       F6 E8 D8 C6 
+       BC BF C2 C7 
+       C7 C6 D4 E9 
+       F7 0C 1E 25 
+       24 13 11 24 
+       27 21 2A 31 
+       2D 24 22 2C 
+       2F 1E 09 03 
+       FF E7 CB C0 
+       C6 C5 B6 B0 
+       C0 D6 E0 ED 
+       0C 2C 30 2D 
+       35 3B 33 2A 
+       2A 2C 23 18 
+       12 08 0A 10 
+       07 F9 EE DA 
+       C2 B7 BC C3 
+       C5 C7 C7 D0 
+       E5 F6 09 1B 
+       21 25 19 11 
+       20 29 22 29 
+       33 2E 23 21 
+       26 2B 1F 0B 
+       01 FB EA CE 
+       BC BE C3 B5 
+       AD BF D2 DA 
+       E9 06 27 33 
+       2F 32 39 35 
+       29 2A 2A 23 
+       1D 15 0B 08 
+       0D 0C FF EE 
+       D8 C2 B7 BC 
+       C2 C4 CC CA 
+       CC E3 F3 03 
+       17 1D 22 1F 
+       13 18 27 27 
+       29 2F 2B 24 
+       1D 1E 25 1F 
+       0B FD FB F0 
+       D0 B6 B8 C0 
+       B4 AE BD CD 
+       D6 E5 01 25 
+       37 2F 2F 3A 
+       37 2B 2A 2A 
+       26 1E 18 0E 
+       08 0E 10 00 
+       EC D9 C2 B5 
+       BA C3 C7 CB 
+       C9 CD E0 F0 
+       FB 11 20 24 
+       1E 11 16 27 
+       27 24 2E 30 
+       22 18 1C 24 
+       1D 09 FE FC 
+       F3 D6 BB B2 
+       BC B8 AC B5 
+       C9 D5 E4 FC 
+       1A 34 32 30 
+       3B 3B 2B 26 
+       28 26 24 1F 
+       13 07 0B 10 
+       02 EE E0 CA 
+       B6 B5 BF C4 
+       CA CE CC DB 
+       EC F3 08 1C 
+       22 22 1A 16 
+       22 29 25 28 
+       2B 24 1A 18 
+       1E 1D 0F 00 
+       FA F7 E2 C0 
+       AC B0 B9 B1 
+       AF C2 D5 E0 
+       F3 11 30 3B 
+       33 34 3B 32 
+       26 25 28 29 
+       22 16 0A 0B 
+       10 07 F3 E2 
+       D2 BA B3 C2 
+       C7 C7 CD CB 
+       D1 E5 EF FF 
+       16 20 22 20 
+       1A 1C 26 28 
+       27 26 24 1E 
+       18 19 1A 17 
+       0B FD F4 E8 
+       CD B2 AC B8 
+       B5 AD B9 D1 
+       E0 EF 08 24 
+       36 33 32 3C 
+       3A 2B 23 26 
+       29 28 20 12 
+       0C 0E 0B FB 
+       E7 D9 C6 B7 
+       BE C7 C8 CE 
+       CE CD E0 EF 
+       F3 09 1F 27 
+       25 1D 20 2C 
+       2B 21 22 23 
+       20 1A 16 1A 
+       1A 10 04 FA 
+       EF D9 BB AC 
+       B4 B9 B3 B6 
+       C8 DC ED 00 
+       18 31 39 36 
+       39 3F 35 29 
+       27 2B 2B 27 
+       1A 0A 0C 10 
+       03 EE E0 D3 
+       C2 BC C4 CC 
+       CF CD CD D7 
+       E8 F0 FA 14 
+       25 28 24 21 
+       28 2C 23 21 
+       28 25 1A 17 
+       1C 1F 18 0B 
+       00 F3 E2 C9 
+       B1 AF BB BA 
+       B6 C2 D8 E9 
+       F7 09 28 39 
+       35 36 3D 3B 
+       2F 2A 2E 31 
+       2B 1F 0F 0C 
+       12 0A F8 E9 
+       DD CC C1 C5 
+       CF D2 D1 CF 
+       D1 E2 F0 F6 
+       0B 23 2B 2B 
+       24 22 2B 28 
+       1F 22 23 1C 
+       19 19 1D 1C 
+       10 02 F9 EC 
+       D7 BC AC B7 
+       C2 BE BF D1 
+       E6 F3 00 1A 
+       36 3A 33 39 
+       41 3A 2E 2C 
+       33 2F 24 18 
+       0B 0C 0B 00 
+       F3 E6 D5 C5 
+       C3 C9 D4 D2 
+       CD CE D9 EC 
+       F2 FC 17 2C 
+       31 2A 22 26 
+       29 22 22 28 
+       23 1C 1A 1B 
+       1D 16 09 FE 
+       F1 E1 CA B1 
+       AF C0 C5 BF 
+       C5 DA EE F7 
+       05 27 3D 3A 
+       37 3E 40 36 
+       2F 32 34 2C 
+       1E 10 0A 0E 
+       09 FC EE E2 
+       D0 C3 C2 CC 
+       D1 CF CC D0 
+       E0 EB F2 08 
+       26 31 2D 23 
+       21 28 28 20 
+       24 28 21 1D 
+       1C 1E 1B 11 
+       05 F9 EC D7 
+       BD AF BA C6 
+       C4 C0 CD E2 
+       F1 FC 14 32 
+       3B 37 3B 42 
+       3C 30 2E 32 
+       2F 24 16 08 
+       0A 0E 03 F4 
+       EA D8 C6 C3 
+       C9 D1 D1 CE 
+       CC D7 E9 F1 
+       FD 19 2D 2F 
+       25 1C 20 25 
+       1F 1F 28 27 
+       1F 1B 1C 1B 
+       13 08 FB F1 
+       E2 C9 B2 B4 
+       C5 C5 BE C6 
+       DB E9 F2 04 
+       27 3A 36 39 
+       42 3F 31 2B 
+       2F 31 25 19 
+       0E 08 0B 07 
+       FB F0 E2 CD 
+       C0 C1 C9 CF 
+       D0 CC CF E1 
+       EE F5 0B 26 
+       31 2A 1A 19 
+       24 23 1E 24 
+       28 24 1C 18 
+       19 15 09 FC 
+       F2 E9 D5 BA 
+       B1 C0 C7 C0 
+       C1 D0 E2 EC 
+       F6 16 37 3B 
+       36 3F 42 36 
+       2B 2B 2F 28 
+       1E 11 06 08 
+       0A 00 F1 E6 
+       D2 C1 BD C4 
+       CB CE CE CB 
+       D6 E9 F2 00 
+       19 2A 2A 1E 
+       15 1D 23 20 
+       24 27 23 1B 
+       17 18 16 0C 
+       00 F5 EC DE 
+       C5 B4 B9 C4 
+       C1 BC C6 D9 
+       E9 F1 07 2B 
+       3A 36 3B 43 
+       3A 2D 29 2B 
+       28 21 19 0A 
+       07 0C 04 F6 
+       EB DA C5 BB 
+       BF C9 CC CC 
+       CB D1 E1 EB 
+       F8 10 20 24 
+       1E 16 1B 21 
+       1F 23 2A 25 
+       1C 19 1B 18 
+       10 05 FA F1 
+       E6 D1 BA B7 
+       C1 C1 B9 BE 
+       D1 E2 EB FB 
+       1F 37 35 37 
+       43 3F 2C 26 
+       2B 2A 21 18 
+       0E 09 0C 09 
+       FB EC E0 CF 
+       BF BE C7 CC 
+       CE CD CE DE 
+       E9 EF 06 1D 
+       24 1F 14 15 
+       21 23 21 27 
+       25 1D 17 16 
+       19 14 08 FC 
+       F5 EF DA BF 
+       B5 BF C4 BC 
+       BB CC DE E9 
+       F6 16 35 37 
+       33 40 42 31 
+       26 28 2B 24 
+       1E 15 08 08 
+       0B 01 F1 E4 
+       D4 C0 BB C5 
+       CE D2 D0 CA 
+       D5 E9 F0 FF 
+       14 1E 21 17 
+       12 1E 23 22 
+       27 27 1F 19 
+       17 17 15 0F 
+       04 F6 ED E2 
+       CB B9 BD C4 
+       BD B8 C7 DD 
+       E8 F2 0E 2F 
+       37 32 3C 42 
+       33 28 28 29 
+       23 1E 1A 0F 
+       0B 0C 02 F5 
+       E8 D8 C8 BF 
+       C4 CB CF D1 
+       CF D4 E5 ED 
+       F9 0F 19 1D 
+       17 12 1B 22 
+       22 29 29 1E 
+       16 18 1E 1B 
+       10 05 FC F5 
+       E7 CF BC BC 
+       C4 BE BA C8 
+       DB E6 F0 0B 
+       2B 34 2C 35 
+       42 35 26 25 
+       28 23 1F 1A 
+       12 0C 0B 05 
+       F8 EB DD CC 
+       BF C6 CC D1 
+       D3 CF D7 E7 
+       ED F8 0F 1B 
+       1C 13 0F 19 
+       20 20 27 2A 
+       1F 16 14 1B 
+       20 15 04 FC 
+       FB ED D1 BC 
+       BD C6 BC B9 
+       C9 DB E7 F3 
+       0E 2A 31 2C 
+       34 41 36 25 
+       20 26 25 1F 
+       1A 0F 0C 0D 
+       05 F8 EB DB 
+       CE C3 C9 CF 
+       D2 D2 CE D8 
+       EA EF FA 0F 
+       19 1A 10 0B 
+       16 20 22 2B 
+       2A 1D 15 16 
+       1E 21 17 06 
+       FC F9 EC D4 
+       C0 BF C6 BC 
+       BB CD DE E8 
+       F7 12 29 2B 
+       29 36 3F 32 
+       22 1F 23 20 
+       1D 19 11 0E 
+       0B 02 F6 E9 
+       DC D0 C8 CC 
+       D0 D5 D1 D2 
+       E2 EE F4 01 
+       11 19 18 0C 
+       0C 19 1E 23 
+       2B 26 17 11 
+       18 22 21 11 
+       02 FD FB EA 
+       CE C0 C5 C8 
+       BB BE D3 E4 
+       ED FD 1B 2B 
+       28 29 37 3C 
+       2F 1F 1D 22 
+       20 1B 16 10 
+       0D 08 FE F4 
+       E4 D7 CF CE 
+       CD D0 D5 D0 
+       D6 E8 F0 F6 
+       06 15 1B 11 
+       04 0E 1C 1E 
+       26 2D 22 14 
+       12 19 24 20 
+       11 03 FC F9 
+       E4 CA C2 CA 
+       C7 BB C2 D6 
+       E6 EF 02 20 
+       29 23 29 38 
+       37 28 1E 1D 
+       20 1D 19 16 
+       0F 0D 05 FD 
+       F2 DF D5 D3 
+       D3 D0 D3 D2 
+       CF DC EC F5 
+       FD 0B 16 16 
+       08 00 11 1C 
+       1E 26 27 1C 
+       11 13 21 27 
+       1D 0F 04 FD 
+       F2 DC C9 C8 
+       CF C5 BD CB 
+       E0 ED F5 0E 
+       25 25 20 2D 
+       34 2A 21 1D 
+       1B 1A 18 12 
+       0E 0F 0D 01 
+       F7 E9 E0 DA 
+       D7 D5 D6 D8 
+       CD D2 E7 F3 
+       FC 04 0C 18 
+       11 FD 02 15 
+       1B 20 24 1F 
+       16 0F 15 22 
+       22 16 08 FF 
+       FA ED D8 CC 
+       D0 CE C2 C7 
+       D7 E6 F1 03 
+       1A 22 21 26 
+       2F 28 22 21 
+       19 14 16 15 
+       0E 0D 0D 04 
+       FB F0 E2 DB 
+       DA D9 D5 D8 
+       D2 CF E2 EE 
+       F5 03 0D 11 
+       0F 01 FC 0B 
+       12 19 26 25 
+       1A 11 13 20 
+       24 19 0E 09 
+       01 EF DB D0 
+       D4 D1 C4 C7 
+       D3 DD E8 FD 
+       14 1E 1F 25 
+       2F 2C 22 1D 
+       16 17 1A 18 
+       0D 07 0C 07 
+       FD F2 EC E2 
+       D9 D7 D9 DC 
+       D2 C7 D5 ED 
+       F7 FF 06 0F 
+       15 05 F7 06 
+       14 15 21 27 
+       20 16 0F 19 
+       23 1F 11 07 
+       03 F7 E2 CF 
+       D0 D7 CD C6 
+       CF DB E4 F5 
+       0F 1C 20 27 
+       2E 2B 22 20 
+       1B 13 13 1A 
+       13 06 0A 09 
+       FC F0 E9 E1 
+       DC DC D9 DA 
+       D3 C8 D3 EA 
+       F5 FE 09 0E 
+       12 09 FB 01 
+       0C 14 23 28 
+       1C 11 11 1B 
+       21 1A 11 0B 
+       04 F5 E6 D7 
+       D0 D4 D0 D0 
+       D8 DD DE F1 
+       10 1B 1C 25 
+       31 2D 1F 1C 
+       1B 10 0C 17 
+       19 0B 04 00 
+       FE F6 EB E4 
+       DC D9 DA DD 
+       D6 CC D2 E4 
+       F3 04 10 11 
+       0F 04 FA 02 
+       0B 10 1B 20 
+       1C 11 0E 1B 
+       22 19 11 0E 
+       08 F7 E5 DB 
+       D7 D6 D0 D2 
+       DB E4 E6 F2 
+       0B 1A 1D 26 
+       33 2F 22 1D 
+       16 0B 0A 14 
+       15 0B 05 01 
+       FA F0 EA E7 
+       E1 DE DC DF 
+       D5 C8 D2 E9 
+       F8 07 10 0E 
+       0E 06 FB 00 
+       0B 10 19 1E 
+       1A 12 10 1C 
+       21 1B 12 0E 
+       07 F4 E3 DB 
+       DC DB D2 D3 
+       DF EA ED F9 
+       0D 16 19 26 
+       35 32 24 1D 
+       18 0C 08 14 
+       16 0D 06 FE 
+       F6 EB E8 E6 
+       E6 E0 DC E1 
+       D7 CA D2 E5 
+       F8 0D 10 10 
+       0F 01 F8 00 
+       0B 15 1E 1D 
+       18 11 12 1F 
+       24 19 11 10 
+       09 F2 E1 D9 
+       DE E0 D7 D5 
+       E1 EE F1 FC 
+       0D 16 1C 29 
+       34 32 27 21 
+       1B 0C 08 13 
+       16 0F 09 FE 
+       F4 E9 E3 E3 
+       E7 E0 DD E2 
+       D2 C6 D4 E8 
+       FA 0D 10 14 
+       15 01 F9 01 
+       09 15 20 1F 
+       1B 12 13 1E 
+       22 1E 17 14 
+       09 EE DB D7 
+       DC DE D9 DC 
+       E7 EF F3 00 
+       10 16 1D 2B 
+       38 34 25 1F 
+       1A 0F 0C 15 
+       15 12 0B FB 
+       F0 E6 E3 E6 
+       E5 DE DF E0 
+       CE C6 D7 EA 
+       FB 0D 13 17 
+       11 00 FB 02 
+       05 12 22 24 
+       19 0C 13 22 
+       24 1F 1B 1A 
+       0B EC D9 D5 
+       DD DE DA E1 
+       EB F0 F2 02 
+       13 1A 20 2D 
+       37 31 25 1E 
+       18 0F 0D 13 
+       12 12 0A FA 
+       F0 E6 E2 E5 
+       E6 E1 E1 DE 
+       CC C7 D7 EB 
+       00 0E 11 18 
+       11 FD FB 02 
+       05 12 20 21 
+       16 08 11 24 
+       28 22 1C 18 
+       0A EE D7 D5 
+       E0 DE DC E1 
+       EE F3 F7 09 
+       16 1A 21 2F 
+       36 31 24 1C 
+       14 0F 11 15 
+       13 0F 06 F9 
+       EE E4 E5 E5 
+       E5 DF E1 DF 
+       CC C4 D3 EC 
+       01 0E 10 16 
+       0D FA F9 01 
+       08 16 21 1D 
+       11 0B 16 26 
+       28 22 1E 18 
+       05 EB D6 D4 
+       E1 DE D9 E0 
+       EE F5 F8 0A 
+       1A 1B 1E 2E 
+       35 2C 23 1D 
+       13 0F 12 14 
+       10 0E 06 F8 
+       EC E2 E0 E1 
+       E2 DC E3 DF 
+       C7 C4 D8 EB 
+       01 0E 10 16 
+       08 F4 F7 02 
+       08 17 1F 1B 
+       10 07 15 28 
+       2A 21 1C 15 
+       03 E9 D6 D4 
+       DE DB D9 E1 
+       EE F7 FA 0C 
+       1B 1F 24 30 
+       35 2A 22 1D 
+       14 0E 12 14 
+       0D 0B 03 F3 
+       E5 DD DD E0 
+       DF D7 DE DB 
+       C5 C5 DA EB 
+       FE 0D 12 16 
+       0A F8 F9 03 
+       08 18 20 1C 
+       10 09 18 27 
+       26 1E 1B 16 
+       FF E4 D6 D5 
+       DB D9 DA E1 
+       EC F3 FE 12 
+       1D 20 23 31 
+       37 2E 23 1B 
+       11 0C 13 13 
+       0C 0B FE ED 
+       E5 DE DF E0 
+       D9 D2 DB D7 
+       C5 C7 D8 E6 
+       F8 0C 15 15 
+       07 F8 FB 03 
+       09 19 24 1D 
+       0E 07 19 2B 
+       27 1D 1B 17 
+       01 E4 D2 D4 
+       DC D9 D8 DE 
+       EA F3 FD 12 
+       1F 21 22 31 
+       38 2D 1F 17 
+       0E 0C 14 14 
+       0C 08 FD EC 
+       E3 E0 DF DA 
+       D4 D4 DE D8 
+       C4 C2 D7 E8 
+       FB 0A 0F 14 
+       09 F8 F9 04 
+       09 17 22 1C 
+       0E 07 17 28 
+       26 1E 1A 15 
+       FE E3 D4 D3 
+       DB D8 D5 DB 
+       EA F3 FB 0F 
+       1E 21 23 31 
+       39 2A 1B 16 
+       11 0C 11 12 
+       08 05 FD EE 
+       E4 DD DA D6 
+       D3 D2 DA D9 
+       C2 BC D4 E8 
+       F6 07 0F 15 
+       0C F9 FA 06 
+       08 15 23 1D 
+       0C 05 13 27 
+       29 20 19 13 
+       00 E5 D6 D0 
+       D9 D7 D0 D8 
+       E6 ED F2 09 
+       1E 25 23 2A 
+       35 2D 1D 16 
+       10 0A 0F 11 
+       0B 07 00 EF 
+       E5 DF DE D8 
+       CE CE D6 D8 
+       C4 B6 CC E5 
+       F2 02 0C 15 
+       10 FD FB 0A 
+       0A 0E 21 22 
+       12 05 0E 24 
+       2C 23 19 14 
+       04 EA DA D0 
+       D6 DC D3 D1 
+       DD E9 F1 01 
+       14 23 23 25 
+       32 30 20 18 
+       11 0C 10 13 
+       0C 05 FF F1 
+       EC E6 DE D8 
+       CD CD D5 D8 
+       CB B8 C1 DE 
+       ED FB 09 12 
+       15 0A FE 08 
+       0D 0F 21 25 
+       18 0A 0E 1D 
+       29 27 1D 12 
+       05 F2 DF D3 
+       D1 D9 D2 CE 
+       D6 E4 EA F4 
+       09 1F 27 24 
+       2C 31 27 1C 
+       18 15 13 13 
+       0F 08 02 FA 
+       F0 E9 E6 DD 
+       CA C7 D1 D3 
+       CD BD BC D5 
+       E3 EC 04 12 
+       18 14 04 03 
+       10 13 1B 25 
+       20 15 10 1A 
+       28 2B 22 16 
+       0D FF E8 D6 
+       CF D7 D9 CD 
+       CE DB E4 E8 
+       F7 15 2A 26 
+       23 2F 2C 23 
+       1A 17 1A 19 
+       15 0A 02 01 
+       FC EE EA E4 
+       D1 C4 C9 D2 
+       CF C4 BD C7 
+       DA E8 F7 0E 
+       17 1D 13 04 
+       0E 1B 1B 1C 
+       23 23 1C 13 
+       1D 2B 2B 1D 
+       10 07 F9 E0 
+       D1 D1 D9 D4 
+       C9 CC D9 E8 
+       EF 01 1E 2C 
+       25 25 2F 2F 
+       25 19 1A 1C 
+       19 13 08 02 
+       03 FB F1 EB 
+       DC CD C5 CB 
+       CB C8 C1 BF 
+       CE DF EC FF 
+       12 1D 22 12 
+       07 16 1F 1C 
+       21 29 24 18 
+       18 27 31 28 
+       17 0D 05 F6 
+       E0 D0 D1 D6 
+       CC C6 CF DE 
+       E7 EE 07 25 
+       2C 24 28 32 
+       2E 22 1C 21 
+       21 19 0E 05 
+       06 08 FE F2 
+       E7 D8 CA C9 
+       CC C9 C9 C5 
+       C5 D5 E5 EF 
+       04 19 27 23 
+       0E 0B 1B 1E 
+       1C 28 2D 23 
+       1A 1D 2C 30 
+       23 12 0B 07 
+       F4 D9 CA D0 
+       D4 CA C8 CE 
+       DB E7 F6 12 
+       2B 2C 20 2B 
+       38 33 24 1E 
+       25 24 18 0A 
+       04 0A 09 FD 
+       F1 E4 D5 CB 
+       C8 C9 C9 CC 
+       C6 C7 D9 E8 
+       F5 0A 21 29 
+       1F 0D 0E 1C 
+       1D 21 2D 2E 
+       23 1C 23 2E 
+       2D 1E 0F 07 
+       03 F1 D3 C4 
+       CF D4 C6 C1 
+       CB DC EC FB 
+       13 29 28 25 
+       32 38 30 23 
+       20 25 23 13 
+       08 09 0E 0B 
+       FD EF E2 D7 
+       CB C8 C8 C8 
+       CB C8 CB DD 
+       ED F8 11 23 
+       29 1F 0E 10 
+       19 1E 26 2E 
+       28 21 1E 23 
+       2D 2B 1B 0A 
+       02 01 ED CF 
+       C3 CE D0 C2 
+       C1 CC E0 EC 
+       F9 15 2A 27 
+       26 33 38 2F 
+       20 20 26 1E 
+       10 0A 0A 0C 
+       0B 00 F3 E3 
+       D3 C8 C6 CB 
+       CB CB C8 CB 
+       DB ED FC 14 
+       24 26 1D 10 
+       11 1B 1F 25 
+       2D 2A 21 1C 
+       22 2A 26 17 
+       08 01 FC E5 
+       C9 C0 CC CE 
+       BF BD CA DD 
+       E9 F9 16 2B 
+       28 2A 34 38 
+       2F 23 21 27 
+       21 11 0C 09 
+       0D 0F 02 F5 
+       E5 D3 C3 C4 
+       C9 C8 CB C8 
+       CB DA ED FA 
+       11 23 27 20 
+       0E 0E 1C 21 
+       25 2E 28 1E 
+       1D 1F 26 25 
+       16 08 01 FA 
+       E5 CC BF CA 
+       CC BC B9 C7 
+       DB E8 F7 13 
+       2C 2F 29 33 
+       3A 30 23 22 
+       26 21 13 0A 
+       09 0E 11 06 
+       F6 E6 CF BD 
+       C1 C9 C9 CC 
+       CA CA D9 EC 
+       F8 0E 21 27 
+       20 10 11 1C 
+       22 23 2B 2A 
+       22 1C 1A 22 
+       23 16 09 01 
+       F8 E7 CF BE 
+       C4 C9 BA B6 
+       C4 D9 E6 F4 
+       10 2C 32 2B 
+       34 3C 33 24 
+       23 26 20 15 
+       0C 0C 11 14 
+       09 F8 E6 D2 
+       C1 BE C8 C8 
+       CB CC CC D6 
+       E9 F4 07 1D 
+       24 22 14 10 
+       17 1F 25 2D 
+       2A 21 1C 1C 
+       20 1E 16 09 
+       00 FA EC D2 
+       BD C0 C4 B7 
+       B6 C4 D5 E3 
+       F4 0F 2A 32 
+       2D 36 3D 34 
+       28 23 26 22 
+       19 13 0E 0D 
+       12 0F FC E7 
+       D0 BC BC C8 
+       CB CE D3 CC 
+       D0 E6 F4 07 
+       1B 1F 21 18 
+       10 18 20 24 
+       2C 2E 23 1C 
+       19 1C 1E 14 
+       0C 04 FB ED 
+       D4 BC BA C1 
+       B9 B6 C0 D0 
+       E1 F2 0C 2A 
+       35 31 35 3C 
+       37 2C 26 26 
+       23 1B 15 12 
+       13 16 0E FC 
+       E7 D2 C1 BD 
+       C6 CA CC D1 
+       CF D2 E6 F1 
+       FF 17 22 26 
+       1D 12 17 21 
+       25 2B 2D 20 
+       1A 17 1B 1F 
+       17 0D 04 FC 
+       F3 DD BF B5 
+       BE BD B7 BC 
+       CD E5 F4 06 
+       23 38 37 35 
+       3C 3E 32 24 
+       24 27 23 1B 
+       13 0F 12 10 
+       01 EC D7 C4 
+       BA C2 CC CE 
+       D1 D0 CC DE 
+       F0 FA 12 21 
+       26 21 16 18 
+       24 29 27 29 
+       21 1D 1B 18 
+       1A 18 12 09 
+       FE F4 E2 C5 
+       B2 BA C0 B8 
+       B7 C8 E1 F1 
+       02 1C 36 3A 
+       34 39 3F 36 
+       28 26 29 26 
+       1E 18 11 11 
+       13 06 EF DE 
+       CA BC BF C7 
+       CE D2 CF C9 
+       D5 EA F4 06 
+       1B 27 26 19 
+       17 23 2C 25 
+       24 26 21 1A 
+       14 18 1D 19 
+       0D 01 F8 E7 
+       CC B3 B1 BE 
+       BB B5 C0 D9 
+       EF FE 11 2D 
+       3D 39 38 3F 
+       3C 30 28 28 
+       2A 25 1B 10 
+       0F 14 0D F5 
+       DF D2 C4 BD 
+       C3 CC D1 D2 
+       C9 CB E3 EF 
+       F8 12 25 2B 
+       23 1A 21 2B 
+       28 24 24 22 
+       1D 16 16 1B 
+       1B 13 05 F9 
+       EF D8 BB AD 
+       B8 BF BA BE 
+       D2 E9 F9 08 
+       20 3A 3B 34 
+       3C 40 36 2C 
+       29 2A 27 1F 
+       15 0E 0F 0F 
+       FB E5 DB CC 
+       BD BE CE D6 
+       D4 CE C9 D7 
+       EA F4 0B 21 
+       28 26 1E 1C 
+       25 29 23 22 
+       23 21 19 15 
+       18 1A 17 0C 
+       FE F1 DE C1 
+       AE B5 C3 BD 
+       BB CA E4 F5 
+       00 16 34 3B 
+       32 38 41 3B 
+       2D 29 2C 29 
+       21 18 0F 0C 
+       10 06 ED DE 
+       D0 C0 BD C8 
+       D0 D3 CD C4 
+       CF E6 F1 00 
+       18 28 2D 1E 
+       17 21 28 21 
+       1F 24 22 1B 
+       14 1A 20 1A 
+       0C FE F6 E9 
+       CC B0 AD BC 
+       BE BC C8 DB 
+       ED F8 0C 2C 
+       3D 35 33 3C 
+       3E 35 2C 2A 
+       2A 25 1B 0D 
+       08 10 0B F4 
+       E2 D4 C6 BD 
+       C0 CA CF CF 
+       C8 C8 DC EF 
+       F8 0F 28 31 
+       26 18 19 24 
+       23 22 26 24 
+       1C 15 1B 1E 
+       1A 0E 00 F4 
+       E9 D4 B6 AA 
+       B9 C2 BB BF 
+       D4 EA F6 05 
+       21 39 36 32 
+       3B 41 39 2D 
+       2B 2D 28 1D 
+       10 07 0C 0E 
+       FB E7 D9 C7 
+       BB BE C8 CF 
+       CE C7 C5 D5 
+       E7 F2 08 20 
+       2F 28 17 16 
+       22 24 1F 25 
+       25 1F 19 1B 
+       1F 1D 0F 01 
+       F8 F0 DD BF 
+       A9 B3 C2 BB 
+       B9 CD E5 EF 
+       FA 13 33 3A 
+       32 39 45 3E 
+       2F 2C 2E 2A 
+       1D 10 0A 0D 
+       10 00 EC DF 
+       CE BE BD C5 
+       CB CB C5 C2 
+       D0 E3 EC FF 
+       1A 2D 2C 1A 
+       12 1D 24 1F 
+       24 26 23 1C 
+       18 1D 1F 13 
+       04 F8 F1 E3 
+       C5 AE B2 C0 
+       BD B9 C4 DB 
+       EB F5 0A 29 
+       38 33 39 45 
+       42 33 29 2B 
+       2B 22 16 0C 
+       09 0D 05 F4 
+       E3 D1 C2 BA 
+       BF C8 CB C9 
+       C2 C5 DB EB 
+       FA 12 23 28 
+       1E 14 18 22 
+       21 26 27 24 
+       1E 1C 21 1E 
+       15 09 FD F2 
+       E5 CD B7 B3 
+       BC BD BA C0 
+       D4 E4 EF 04 
+       21 32 30 35 
+       43 42 33 2C 
+       2E 29 1D 16 
+       10 0D 0F 09 
+       F7 E6 D5 C5 
+       BB C0 C8 CA 
+       CA C5 C8 DB 
+       E9 F5 0D 1E 
+       25 1D 12 16 
+       20 1F 25 2C 
+       25 1C 1A 20 
+       20 16 08 FF 
+       F7 E9 D4 BD 
+       B6 BE BE B7 
+       BE D3 E4 EC 
+       00 20 32 2F 
+       31 41 45 36 
+       2A 2A 28 1F 
+       16 0E 0B 10 
+       0C F9 EA DA 
+       CA BE BC C6 
+       CE CD C7 C9 
+       D9 E9 F3 09 
+       1F 27 1D 10 
+       14 20 21 25 
+       2C 28 20 17 
+       1B 21 1C 0B 
+       FF F7 EF DC 
+       C4 B7 BD C0 
+       B7 B9 CD E5 
+       EE FB 18 32 
+       32 30 3F 45 
+       38 2A 27 27 
+       20 17 11 0F 
+       13 11 00 EF 
+       DD CC C1 BF 
+       C7 CD D0 CB 
+       C7 D5 E9 F6 
+       0A 1A 22 1D 
+       10 11 1C 21 
+       28 2E 26 1E 
+       1A 1E 21 1C 
+       10 04 F9 F1 
+       E2 CB BC BD 
+       C0 B9 BC CF 
+       E5 EC FC 1A 
+       30 31 31 3E 
+       44 39 2A 28 
+       26 1D 18 15 
+       12 14 10 00 
+       F2 E0 CE C2 
+       C2 CA CF D0 
+       CB C8 D7 EC 
+       F8 0B 1A 1F 
+       19 10 15 20 
+       20 26 30 2A 
+       1E 17 1D 23 
+       1C 0D 04 00 
+       F5 DF CA BE 
+       C1 C2 BA BE 
+       D0 E3 EB FE 
+       1F 32 30 30 
+       3E 43 39 2B 
+       27 25 1E 19 
+       14 13 15 0E 
+       FD F1 E0 CF 
+       C4 C4 CC D2 
+       D0 CA CC DC 
+       EE F9 0A 18 
+       1D 16 0D 14 
+       1F 20 27 30 
+       2A 1D 15 1C 
+       26 20 10 05 
+       00 F4 E1 CC 
+       C4 C5 C2 B8 
+       BC D2 E7 EE 
+       00 21 30 2C 
+       2F 3C 40 34 
+       27 26 23 1B 
+       16 14 14 17 
+       0C FB EF DE 
+       CE C5 C8 CE 
+       D2 CE CB D2 
+       E0 F0 FB 0B 
+       1A 1C 10 09 
+       16 1F 21 2B 
+       30 28 17 12 
+       1D 27 20 0E 
+       04 FF F3 DE 
+       CB C7 C8 BF 
+       B6 C0 D8 E8 
+       F1 08 28 30 
+       28 2D 3C 3C 
+       2D 24 25 22 
+       1B 13 0F 14 
+       16 06 F9 ED 
+       DA CA C3 C9 
+       D2 D7 CE C9 
+       D4 E6 F4 03 
+       14 1C 16 08 
+       06 17 1F 21 
+       2A 2E 24 12 
+       11 1F 27 19 
+       0A 06 FE EC 
+       D7 CC CC CB 
+       BC B7 C7 DF 
+       EC F7 12 2B 
+       2D 2A 34 39 
+       31 25 23 20 
+       1D 16 0F 0F 
+       16 11 00 F4 
+       E4 D4 C7 C8 
+       CF D5 D2 C9 
+       CF E1 ED FA 
+       0C 19 1B 0E 
+       03 0A 1A 1C 
+       22 2D 2A 19 
+       0D 16 22 21 
+       12 07 03 F8 
+       E4 D1 CC CD 
+       C6 BC C0 D3 
+       E6 F1 06 20 
+       2C 29 2B 36 
+       33 28 21 1F 
+       1A 15 10 0D 
+       11 13 05 F6 
+       EC DF D1 C9 
+       CD D3 D6 CC 
+       CB DD E8 F0 
+       05 16 1D 13 
+       02 00 10 17 
+       1E 29 29 1F 
+       10 10 1D 21 
+       16 0E 09 FE 
+       ED DA CE D0 
+       D0 C4 BE C9 
+       DD EC FD 16 
+       25 26 28 33 
+       35 2B 22 1D 
+       16 16 14 0C 
+       0C 12 0A FC 
+       F0 E4 D8 CF 
+       CE D1 D9 D1 
+       C6 D3 E6 F0 
+       01 12 18 18 
+       06 FB 08 13 
+       17 23 27 21 
+       14 0D 17 1F 
+       18 10 0E 04 
+       F5 E2 D4 D3 
+       D3 CB C6 CB 
+       D5 E3 F6 0E 
+       1E 24 27 32 
+       33 29 21 1D 
+       17 13 15 0D 
+       09 0F 0B FE 
+       F4 E7 DA D3 
+       D3 D6 D8 D0 
+       C4 D0 E4 F0 
+       FD 0E 19 18 
+       09 FA 03 0E 
+       11 1D 28 27 
+       17 0C 16 23 
+       1C 11 0F 0B 
+       F9 E4 D6 D5 
+       D5 CC C7 CD 
+       D8 DE EE 09 
+       1C 20 24 30 
+       33 2B 21 1D 
+       14 0F 12 11 
+       0A 0E 0A FE 
+       F4 E8 E0 D8 
+       D5 D5 DA D1 
+       C2 CC E2 ED 
+       FC 0C 16 18 
+       0B FB FF 09 
+       0D 1B 26 25 
+       18 0C 14 22 
+       1E 13 10 0B 
+       FA E7 D9 D5 
+       D5 CE CC D0 
+       DB E0 EB 05 
+       1A 1F 23 31 
+       37 2E 23 1E 
+       14 0C 0F 14 
+       0D 0D 06 FA 
+       F4 E9 E2 D8 
+       D3 D5 DB D1 
+       C1 CB E0 EB 
+       FB 10 1A 17 
+       0B FD 01 0B 
+       0B 17 24 22 
+       15 0C 16 24 
+       1C 10 0E 0B 
+       FA E5 D8 D6 
+       D8 CF CD D5 
+       E2 E2 EB 07 
+       18 1D 22 33 
+       3C 33 25 1D 
+       13 0A 0E 14 
+       0F 0B 02 F7 
+       EF E5 E1 DA 
+       D6 D6 DC D1 
+       C2 C8 DB EC 
+       FF 11 19 1A 
+       0B FC 01 0A 
+       0C 1A 24 1F 
+       13 0C 18 24 
+       1D 13 0F 09 
+       F9 E5 D9 D8 
+       DB D3 CF D8 
+       E5 E8 EF 06 
+       15 18 1F 32 
+       3C 32 26 1E 
+       12 06 09 12 
+       10 0B FE F4 
+       EB E3 E0 DE 
+       DC DA E0 D2 
+       C2 C9 DB EE 
+       05 11 16 19 
+       09 FB FE 06 
+       0C 1B 21 1E 
+       12 0A 18 25 
+       1D 12 10 0A 
+       F9 E1 D4 D9 
+       DF D7 D4 DD 
+       EA ED F8 0C 
+       16 18 21 32 
+       3A 33 27 20 
+       11 08 0E 12 
+       0E 09 FE F4 
+       E8 DE DC DD 
+       DA DB E1 D0 
+       BE C4 D9 F1 
+       09 11 16 1A 
+       09 FC FE 06 
+       0E 1F 26 20 
+       12 0D 1D 27 
+       21 19 13 0C 
+       F6 DE D4 D9 
+       DA D4 D8 E2 
+       EC EB F9 0E 
+       17 19 25 35 
+       38 31 29 23 
+       15 0B 0D 12 
+       12 0D FF F3 
+       E5 DE DB DD 
+       DC DC DF CD 
+       BC C3 D9 F0 
+       08 0F 18 1C 
+       09 FC FF 05 
+       0F 22 29 20 
+       10 0F 20 28 
+       24 1E 17 0C 
+       F4 DB D1 D6 
+       D9 D7 DC E7 
+       EF F0 FE 12 
+       1A 1D 28 35 
+       38 32 2B 23 
+       15 0D 10 12 
+       12 0B FD EF 
+       E0 DD DE DE 
+       DA DD DF CD 
+       BD C6 DB F3 
+       0A 10 1B 1A 
+       06 FC 03 08 
+       14 23 26 1E 
+       0E 10 24 2A 
+       23 1F 1B 0D 
+       F1 D7 CF D8 
+       DC D9 DB E9 
+       F4 F5 02 14 
+       1D 20 2A 35 
+       38 31 27 22 
+       15 0D 0F 10 
+       11 09 F9 EB 
+       E0 DD DD DE 
+       DC E3 E2 CB 
+       BE C7 DD F8 
+       0A 0E 19 17 
+       02 FD 03 09 
+       16 21 23 19 
+       0A 10 25 27 
+       21 20 1A 0A 
+       EE D8 D3 DA 
+       DB DA DD EA 
+       F5 F9 09 18 
+       1D 1F 2B 36 
+       35 2C 26 1E 
+       12 0D 10 10 
+       10 05 F5 E9 
+       DD DB DB DC 
+       DC E4 DF C7 
+       BD C9 DD F6 
+       0A 12 19 10 
+       FF FD 05 09 
+       15 21 23 16 
+       07 13 28 29 
+       20 21 1D 09 
+       EB D6 D3 D9 
+       D9 D6 DC EB 
+       F6 FA 08 18 
+       1E 20 2A 34 
+       31 26 20 1C 
+       15 10 11 10 
+       10 06 F6 E8 
+       DD DA D9 DA 
+       D8 E2 DC C3 
+       BB CA DD F3 
+       06 0E 18 0F 
+       FB FB 04 09 
+       14 21 21 13 
+       04 10 26 28 
+       24 21 19 06 
+       EB D6 D0 D9 
+       D7 D5 DB E9 
+       F3 FA 0C 1B 
+       1F 20 2C 35 
+       2F 25 1F 19 
+       12 10 10 10 
+       10 05 F3 E5 
+       DB D9 D5 D5 
+       D6 DE D7 BF 
+       B9 C9 DC EF 
+       01 0D 16 0E 
+       FC FB 04 08 
+       17 25 23 11 
+       04 12 27 28 
+       22 22 1A 05 
+       EA D5 CF D8 
+       D7 D3 D8 E6 
+       F2 F8 0A 1B 
+       22 21 29 32 
+       2D 22 1B 16 
+       0E 0F 10 0D 
+       0D 06 F2 E2 
+       DC DA D7 D5 
+       D3 DC D8 C0 
+       B9 C9 DB F0 
+       01 0A 15 0F 
+       FA F9 06 0A 
+       17 22 1F 11 
+       04 0E 24 28 
+       22 21 18 03 
+       EB DA D2 DB 
+       DA D5 D6 E2 
+       F1 FB 0D 1D 
+       22 20 2A 31 
+       2C 21 1A 13 
+       0C 0C 0F 0D 
+       0B 03 F2 E5 
+       DB D8 D2 D1 
+       D4 DF D9 C1 
+       BB C8 DD F2 
+       02 0A 14 0F 
+       FF FD 07 0A 
+       16 25 22 11 
+       03 0F 23 29 
+       23 21 18 06 
+       ED DB D5 DC 
+       DC D3 D4 E2 
+       F1 F7 09 1E 
+       24 20 27 30 
+       2C 1E 19 15 
+       0C 0A 0E 0D 
+       0D 08 F2 E3 
+       DF DD D5 D1 
+       D2 DC DC C5 
+       BC CB DC EE 
+       00 0D 18 13 
+       FF FC 0A 0F 
+       17 22 23 16 
+       08 0C 22 2B 
+       23 1F 1B 0A 
+       F1 DE D4 DB 
+       DF D4 D3 DF 
+       EF F5 03 1C 
+       26 22 25 30 
+       2E 21 1A 16 
+       11 10 11 0D 
+       0B 0B FB EB 
+       E5 E0 D5 CB 
+       CF DB E0 CA 
+       B9 C6 DC EA 
+       FC 0D 19 1A 
+       09 FF 0C 14 
+       16 23 27 1D 
+       0E 0C 1C 2B 
+       27 1E 1A 0E 
+       F8 E2 D4 D7 
+       DE D5 CF DA 
+       EA F1 F9 11 
+       26 2A 28 2F 
+       31 27 1F 1A 
+       16 13 15 10 
+       0B 0F 05 F2 
+       E9 E3 DA CE 
+       CC D5 DB CF 
+       BA BE D4 E5 
+       F1 05 17 1F 
+       15 02 08 14 
+       17 21 2A 23 
+       14 0D 17 29 
+       2D 22 1A 12 
+       03 EE DA D3 
+       DB DC D0 D1 
+       DE EC F2 04 
+       21 2D 27 28 
+       31 2D 25 1D 
+       18 15 17 17 
+       0C 09 0C FE 
+       F0 EA DF CE 
+       C8 D2 DA D6 
+       C3 B8 C7 DE 
+       EB FD 13 1F 
+       20 0C 04 13 
+       1C 1E 26 27 
+       1C 14 13 20 
+       2D 2A 1E 15 
+       09 F7 E5 D6 
+       D6 DD D4 CA 
+       D3 E2 EB F5 
+       0F 29 2D 25 
+       2A 2F 2B 23 
+       1A 18 1C 1D 
+       10 04 09 0D 
+       FD EB E4 D6 
+       C7 CA D3 D5 
+       CC BE BD D0 
+       E5 F1 04 18 
+       25 1D 0A 0C 
+       1A 1D 1E 26 
+       26 1E 14 15 
+       26 31 25 17 
+       0F 05 F3 DB 
+       D0 D7 DA CB 
+       C7 D3 E4 ED 
+       F8 15 2F 2E 
+       24 2A 30 2B 
+       1E 18 1D 20 
+       19 08 00 0B 
+       0C F7 E8 E0 
+       D1 C7 CA CE 
+       D0 C9 BD C1 
+       D9 E9 F4 0A 
+       20 29 1A 08 
+       0F 20 1D 1C 
+       27 27 1D 14 
+       19 2B 2F 1E 
+       0F 0A 02 EB 
+       D2 CA D5 D6 
+       C7 C5 D3 E5 
+       EF 00 1D 2F 
+       29 25 2D 31 
+       2A 1D 1A 20 
+       21 14 02 00 
+       0D 07 F1 E7 
+       DF CF C5 C7 
+       CB CF C8 BD 
+       C6 DC EA FA 
+       14 24 25 19 
+       0E 18 20 1A 
+       20 2C 27 1B 
+       18 1E 2A 27 
+       18 0C 06 F7 
+       E1 CD C9 D3 
+       CE C0 C2 D3 
+       E5 F1 04 1E 
+       2C 28 2A 32 
+       31 26 1D 20 
+       25 1E 0C FF 
+       05 0F 04 F0 
+       E7 DC CB C4 
+       C6 CA CD C7 
+       BE CA DF ED 
+       00 19 27 25 
+       17 0F 19 1E 
+       1F 28 2D 24 
+       1B 19 22 2B 
+       22 12 09 01 
+       F3 DC C7 C7 
+       D2 CB BD C1 
+       D3 E7 F1 05 
+       23 2F 28 28 
+       34 35 27 1E 
+       23 26 1A 09 
+       02 09 0F 02 
+       F0 E7 DB C9 
+       C1 C5 CB CD 
+       C5 C1 CC E2 
+       F0 03 1C 27 
+       26 18 0F 18 
+       21 24 2A 2C 
+       24 1C 1A 20 
+       28 1F 0F 04 
+       FE F0 D6 C2 
+       C7 D2 C8 B9 
+       BD D4 E8 EF 
+       05 25 33 2C 
+       2D 35 35 2A 
+       22 26 26 18 
+       0C 05 07 10 
+       08 F4 E7 DB 
+       C6 BD C2 C9 
+       CE C7 C0 C9 
+       E1 EF 01 1D 
+       2A 28 17 0E 
+       1A 25 24 28 
+       2E 27 1E 1B 
+       1E 24 1D 0E 
+       04 FE EE D4 
+       C2 C4 CF C6 
+       B6 BB D2 E5 
+       EC 04 25 33 
+       2E 2E 37 36 
+       2D 25 26 25 
+       1A 0E 03 06 
+       16 0F F7 E8 
+       DB C6 BC BF 
+       CA D1 CA C1 
+       C8 DE EF 00 
+       1B 2A 29 19 
+       0E 19 26 25 
+       28 2D 28 21 
+       1A 1A 22 1E 
+       0D 02 F9 EC 
+       D7 C3 C0 CB 
+       C7 B7 B8 CE 
+       E4 EF 04 24 
+       36 31 2D 37 
+       3A 31 27 24 
+       23 1A 10 05 
+       08 16 12 FC 
+       EB DD C7 B9 
+       BD CB D0 CC 
+       C5 C6 DA EC 
+       FD 17 27 28 
+       1E 13 19 25 
+       26 29 2E 2A 
+       21 1A 16 1C 
+       1D 11 04 FA 
+       EF DC C7 BE 
+       C6 C5 B7 B6 
+       CB E1 EC FF 
+       20 39 36 30 
+       38 3C 33 29 
+       27 26 1B 11 
+       0A 0B 17 16 
+       00 EC DE C9 
+       B9 BC CA D2 
+       D0 C9 C5 D5 
+       EC FA 11 25 
+       28 21 16 17 
+       24 29 28 2D 
+       2B 20 1A 16 
+       19 1C 11 04 
+       FD F3 E0 C9 
+       BD C3 C5 B8 
+       B4 C7 DE EC 
+       FD 1B 38 3A 
+       33 37 3D 36 
+       2D 27 26 1D 
+       16 10 0B 13 
+       19 08 EE DE 
+       CA BA BA C8 
+       D2 D2 CA C1 
+       D1 EB F7 09 
+       1F 28 26 19 
+       15 23 2C 2A 
+       2B 2C 23 19 
+       12 15 1D 16 
+       07 FD F4 E4 
+       D0 BE BD C1 
+       BB B4 C0 D7 
+       EB FA 12 33 
+       3F 38 35 3B 
+       3A 30 2A 26 
+       20 1B 16 0D 
+       11 19 0F F4 
+       E0 D0 C0 BC 
+       C5 D0 D4 D2 
+       C7 CA E1 F2 
+       02 19 26 27 
+       21 17 1D 2B 
+       2F 2C 2A 25 
+       1D 16 14 17 
+       17 0E 02 F6 
+       E9 D9 C2 B8 
+       BE C0 B8 BB 
+       D2 E9 F8 0B 
+       2B 40 3D 37 
+       3B 3C 34 2C 
+       28 24 1F 1B 
+       11 0D 15 15 
+       FD E4 D4 C2 
+       BB C2 CD D3 
+       D4 CA C6 DA 
+       EF FB 10 22 
+       2A 28 1D 1D 
+       2B 2F 29 2A 
+       27 1F 17 12 
+       13 18 14 06 
+       F9 EE E0 C7 
+       B5 B9 BF BB 
+       B8 CB E3 F5 
+       04 1F 3B 40 
+       39 37 3C 37 
+       30 2B 27 22 
+       1F 17 0C 11 
+       17 05 E8 DA 
+       CB BE BC C6 
+       D3 D4 CB C1 
+       CE E8 F5 04 
+       19 28 2B 22 
+       1C 28 2E 27 
+       26 26 20 19 
+       13 11 19 18 
+       0B FE F3 E5 
+       CF B8 B2 BD 
+       BD B7 C2 DA 
+       F0 FF 12 30 
+       3F 38 34 38 
+       38 32 2C 26 
+       23 20 1B 0E 
+       0C 16 0D F2 
+       DD D0 C4 BE 
+       C3 CF D3 CE 
+       C5 C6 DB ED 
+       F8 0E 22 2D 
+       28 1E 20 2A 
+       26 21 25 22 
+       18 12 11 16 
+       1C 11 02 F4 
+       E8 D7 BC AE 
+       B7 C0 B8 BA 
+       D2 EC F9 05 
+       23 3B 3A 32 
+       36 3A 35 2E 
+       27 24 21 1E 
+       11 09 10 10 
+       FC E4 D6 C7 
+       BF C0 CA D2 
+       D0 C4 BE CF 
+       E6 F2 03 1D 
+       2A 2A 1F 1C 
+       26 28 1F 1F 
+       22 1A 14 12 
+       14 1B 15 05 
+       F9 ED DE C6 
+       B1 B0 BE BE 
+       BA C9 E1 F3 
+       FD 14 34 3C 
+       32 2F 36 35 
+       30 2C 26 1F 
+       1B 14 07 0B 
+       12 04 EA DA 
+       CE C3 C0 C7 
+       D2 D1 C7 BE 
+       C7 DF ED FA 
+       16 29 2D 24 
+       19 1E 25 20 
+       1D 21 1E 17 
+       13 13 18 18 
+       0B FB EE E3 
+       CE B6 B0 BB 
+       C2 BA C3 DA 
+       EF F9 08 27 
+       38 35 31 36 
+       38 32 2C 27 
+       22 1C 18 0B 
+       06 0E 0A F3 
+       DF D4 C6 BE 
+       C2 CE D2 CD 
+       C0 BF D5 EA 
+       F5 0C 25 2F 
+       29 18 1A 25 
+       23 1D 20 20 
+       1B 16 13 16 
+       19 0F FF F1 
+       E6 D6 BE B0 
+       B6 C3 BF BE 
+       D1 E6 F3 FE 
+       1B 35 37 30 
+       35 3A 35 2F 
+       29 25 1D 1A 
+       0F 05 0D 10 
+       FD E7 DC CD 
+       C1 BE CA D3 
+       CF C4 BD CC 
+       E3 F2 04 1E 
+       2D 2C 1C 15 
+       1F 23 1F 22 
+       24 1D 17 15 
+       17 19 14 06 
+       F7 EA DB C8 
+       B7 B7 C3 C1 
+       BA CA E2 EF 
+       F7 0F 2F 38 
+       31 33 3B 39 
+       32 2B 25 1D 
+       1A 14 0A 0D 
+       12 04 F0 E4 
+       D5 C4 BD C8 
+       D4 D1 C7 BF 
+       C8 DE EF 00 
+       18 26 2A 1F 
+       13 1A 22 1F 
+       22 25 20 1A 
+       18 1A 1B 14 
+       08 FC F0 E4 
+       D1 BB B7 C2 
+       C5 BD C5 DB 
+       EC F3 07 2A 
+       38 32 32 3B 
+       38 31 2C 27 
+       1E 18 14 0C 
+       0D 14 0C F8 
+       E9 DA C8 C0 
+       C9 D2 D3 CC 
+       C1 C6 DC EF 
+       FC 12 23 2A 
+       21 12 15 20 
+       21 23 27 21 
+       1B 18 1A 1B 
+       16 0C 00 F3 
+       E7 D6 C2 BA 
+       C2 C6 BF C5 
+       D9 EA F2 05 
+       26 35 31 33 
+       3C 3C 32 2B 
+       27 1F 18 14 
+       0F 0E 14 0E 
+       FD EE DD CB 
+       C2 C8 D2 D3 
+       CE C4 C6 DA 
+       EE FB 0F 20 
+       27 21 14 15 
+       20 23 26 2A 
+       21 1A 19 19 
+       1B 18 0E 02 
+       F5 EB DD C8 
+       BC C5 C7 BE 
+       C2 D6 EA F0 
+       02 22 35 32 
+       32 3A 3D 33 
+       29 26 1E 17 
+       15 10 0F 15 
+       10 FE F1 E1 
+       CF C5 C8 D0 
+       D5 D2 C6 C6 
+       D9 EE FC 0E 
+       1C 22 1D 11 
+       13 1D 22 28 
+       2B 22 17 17 
+       1C 1D 18 0D 
+       04 FA EE DF 
+       CC C3 C9 C9 
+       BE C1 D7 E9 
+       F0 02 20 31 
+       2E 2F 3A 3B 
+       30 25 24 1E 
+       14 11 0F 11 
+       18 11 FD F0 
+       E1 D4 CB CB 
+       D3 D9 D2 C7 
+       CC E1 F2 FC 
+       0E 1D 20 16 
+       0D 14 20 22 
+       26 28 1E 17 
+       16 1A 1D 18 
+       0B 01 FA F0 
+       E0 CD C4 CB 
+       C9 BF C3 D9 
+       EC F5 07 22 
+       30 2D 2F 39 
+       39 2D 21 21 
+       1D 16 11 10 
+       13 17 0C FE 
+       F3 E0 D2 C8 
+       CB D3 D9 D2 
+       C7 CD E2 F5 
+       02 14 1C 1C 
+       12 0D 14 1B 
+       1E 27 2B 1F 
+       13 12 1A 1E 
+       19 0D 03 FB 
+       F0 DE CE C9 
+       CD C5 BB C5 
+       DC ED F5 0A 
+       26 2F 2C 33 
+       38 33 27 20 
+       1E 19 11 0C 
+       0F 14 16 0A 
+       FD ED DC D2 
+       CB CD D4 D8 
+       CE C8 D4 E9 
+       F7 06 18 20 
+       19 0B 0A 16 
+       1B 20 2B 28 
+       19 0D 12 1D 
+       20 16 09 00 
+       FB EF D9 CA 
+       CD D2 C1 BD 
+       CD E2 ED FA 
+       18 2D 2C 28 
+       32 38 30 23 
+       1C 19 14 0F 
+       0E 11 14 11 
+       03 F8 EA DB 
+       CE CD CF D8 
+       D8 CA CC DF 
+       F1 FE 0F 1D 
+       1E 10 04 0D 
+       1A 19 21 2D 
+       23 12 0C 15 
+       1E 1D 10 06 
+       01 F7 E7 D4 
+       CD D4 CD BC 
+       C3 D7 E8 F2 
+       06 21 2D 28 
+       2C 34 33 27 
+       1E 1C 16 10 
+       0C 0C 10 15 
+       0A FD F1 E4 
+       D5 CF D2 D6 
+       D9 CC C8 D9 
+       EC F7 05 14 
+       1E 19 03 00 
+       13 19 19 26 
+       28 1B 0C 0C 
+       18 1E 16 0B 
+       06 FE F2 E0 
+       D1 D2 D8 C8 
+       BF CD DE EB 
+       FA 15 28 29 
+       26 2E 34 2B 
+       1E 1B 17 11 
+       0D 09 09 10 
+       0B FD F3 EA 
+       DE D3 D5 D6 
+       DA D3 C9 D3 
+       E8 F2 FD 0D 
+       1B 20 0A FA 
+       09 16 16 20 
+       26 20 13 09 
+       0E 19 16 0A 
+       07 03 F8 E5 
+       D3 D2 DB D0 
+       C2 CA DA E5 
+       F1 0B 23 29 
+       27 2B 33 2D 
+       20 18 14 12 
+       10 0A 03 0B 
+       0C 01 F7 ED 
+       E4 DA D6 D5 
+       D8 D6 CA CD 
+       E0 F1 FA 08 
+       15 20 12 FA 
+       01 12 14 18 
+       22 22 18 08 
+       0A 1C 1C 0B 
+       06 09 FD EB 
+       D7 D2 DC D7 
+       C6 C8 D6 E1 
+       ED 02 1A 28 
+       29 2B 31 2D 
+       25 1C 12 0E 
+       10 0C 05 09 
+       0F 05 F8 EB 
+       E4 E0 DC D8 
+       DA D8 C6 C7 
+       DD EF FA 05 
+       0C 1B 17 FC 
+       FB 0D 12 19 
+       20 21 1B 0D 
+       0B 18 19 0E 
+       09 08 FF F2 
+       DE D5 DB D9 
+       CF CD D7 DD 
+       E7 FD 18 21 
+       25 2C 32 31 
+       26 1E 14 0A 
+       0B 10 0A 09 
+       0C 01 F6 EC 
+       E6 E1 DB D9 
+       DB D8 C7 C5 
+       DA EC F9 06 
+       0D 19 19 00 
+       FA 0A 11 19 
+       21 1F 1A 11 
+       0F 17 1A 11 
+       09 05 FF F1 
+       DF D7 DC DA 
+       D1 D1 DA E2 
+       E8 FC 12 1D 
+       24 2F 37 33 
+       26 1E 16 0C 
+       09 11 0D 08 
+       06 FC F4 EE 
+       E9 E0 DB DB 
+       DE D7 C6 C7 
+       D9 E9 F6 08 
+       13 1C 16 01 
+       FF 0D 12 18 
+       21 20 18 10 
+       11 19 1C 11 
+       07 06 00 EF 
+       DE D7 E0 DE 
+       CF D2 E1 E8 
+       EA FD 13 1B 
+       20 2E 3A 39 
+       2C 21 16 0C 
+       0D 12 0D 07 
+       07 FC F2 E9 
+       E9 E5 DD D9 
+       DD DB C5 C1 
+       D5 EA F8 07 
+       10 1E 1C 02 
+       FA 0C 14 19 
+       1F 1C 17 11 
+       11 1B 20 16 
+       0D 08 00 F2 
+       E0 D6 DF E1 
+       D4 D4 E0 EB 
+       EC FC 10 1C 
+       25 2E 3B 38 
+       2B 22 1A 0E 
+       0B 11 0E 09 
+       05 FE F5 EB 
+       E8 E3 E0 DE 
+       E0 D9 C4 BF 
+       D4 E9 F5 05 
+       11 1E 1C 04 
+       F9 08 12 1C 
+       26 21 16 0F 
+       11 1E 26 1D 
+       10 0A 00 F0 
+       E1 D9 E1 E2 
+       D6 D5 E0 EB 
+       EF FD 0E 1B 
+       22 2E 3C 3A 
+       2C 24 1C 0D 
+       0B 14 12 09 
+       05 FD F4 EC 
+       E9 E4 E0 DE 
+       DE DB C6 BE 
+       D1 E4 F2 05 
+       13 1F 1A 02 
+       FB 0B 14 1D 
+       25 1E 15 0F 
+       13 20 27 1C 
+       10 0B 03 F0 
+       DC D3 DE E3 
+       DA D7 E1 EB 
+       F0 FE 11 1D 
+       23 2C 34 37 
+       2E 28 1C 10 
+       0E 13 11 0A 
+       08 FF F6 E8 
+       E2 E1 E0 DC 
+       DF DB C2 B7 
+       CA E3 F8 06 
+       0C 1A 1A 05 
+       FC 08 10 19 
+       21 1F 17 0D 
+       14 21 25 1E 
+       16 0F 02 ED 
+       DC D5 DC E2 
+       D8 D8 E5 EE 
+       F1 00 12 1C 
+       21 2B 34 34 
+       2B 27 1F 13 
+       0E 11 0F 0A 
+       09 00 F4 E5 
+       DF DE E1 E1 
+       E1 D8 C0 BA 
+       CC E6 F7 06 
+       0C 19 1A 06 
+       FE 07 0C 16 
+       23 20 15 0B 
+       12 22 26 1D 
+       17 0F 00 EC 
+       D9 D3 DC E0 
+       D7 DB E9 F0 
+       F2 FF 14 1F 
+       22 28 31 32 
+       2B 27 1D 10 
+       0C 0F 11 0C 
+       05 FA F0 E5 
+       E3 DF DD DD 
+       DF DB C4 B9 
+       C9 E0 F1 01 
+       0B 19 1B 07 
+       FC 05 0E 16 
+       20 1D 13 0B 
+       12 21 25 1E 
+       18 11 04 EF 
+       D9 D1 DC E1 
+       D8 D8 E6 F0 
+       F2 FF 13 1E 
+       20 26 2F 30 
+       28 22 1B 10 
+       0F 11 0E 09 
+       06 FA EF E8 
+       E4 DF DC DB 
+       DF DD C4 B6 
+       C5 DC EE 00 
+       09 16 19 05 
+       FA 06 0E 15 
+       1E 1B 12 0A 
+       10 21 28 1E 
+       18 14 07 F1 
+       DB D2 DB E0 
+       D6 D7 E5 F0 
+       F1 FE 14 1D 
+       1E 24 2D 2F 
+       27 22 1A 10 
+       10 10 0E 09 
+       05 FA F1 EA 
+       E3 DD D9 DB 
+       DF DC C5 B4 
+       C1 DB EC FA 
+       07 16 1B 07 
+       FB 05 0D 13 
+       1E 1D 15 09 
+       0C 1F 28 21 
+       19 15 0B F3 
+       DC D3 DB E1 
+       D5 D3 E2 F0 
+       F1 FB 12 1F 
+       1E 23 2C 2F 
+       27 1F 18 10 
+       0F 11 0E 06 
+       05 FD F0 E9 
+       E3 DD D9 D9 
+       DC DE C9 B3 
+       BF DA EA F5 
+       04 14 20 0F 
+       FB 03 10 14 
+       1C 1E 17 0D 
+       09 18 27 23 
+       19 13 0A F7 
+       E2 D4 D6 E1 
+       D9 D2 DE EE 
+       F0 F8 10 20 
+       22 21 29 2E 
+       29 20 1B 12 
+       0E 12 11 08 
+       05 FF F2 EA 
+       E4 DB D5 D7 
+       DB DD CD B7 
+       BB D4 E5 F1 
+       FF 11 1F 16 
+       01 04 11 14 
+       1C 20 1A 10 
+       0D 16 24 24 
+       1D 17 0D FB 
+       E7 D8 D7 E1 
+       DC D0 D6 E7 
+       EF F4 06 1C 
+       21 20 26 2F 
+       2B 20 1B 16 
+       12 12 13 0A 
+       04 01 F6 ED 
+       E8 E0 D5 D2 
+       D8 DB D3 BE 
+       BA CB DF E9 
+       F9 0E 20 21 
+       0A 03 11 18 
+       1A 20 1E 15 
+       0F 11 1E 27 
+       20 16 0F 02 
+       EF DC D1 DA 
+       DF D1 D0 DF 
+       EC EE FA 15 
+       25 23 23 2D 
+       2F 26 1D 1A 
+       15 14 15 0E 
+       05 03 FC F3 
+       EE E4 D7 D0 
+       D4 D7 D4 C7 
+       B9 BF D3 E4 
+       F2 08 1B 24 
+       16 05 0E 1B 
+       1A 1C 21 1E 
+       16 11 1A 27 
+       26 1B 12 09 
+       FA E6 D6 D3 
+       DC D6 CC D4 
+       E2 EA F0 05 
+       1E 26 22 28 
+       2F 2A 20 1D 
+       1C 16 15 10 
+       06 03 04 FD 
+       F3 E9 DD D3 
+       D4 D8 D4 CE 
+       C0 BB CA DE 
+       EA FC 12 22 
+       21 0E 09 18 
+       1C 18 20 24 
+       1E 15 14 21 
+       29 21 15 0F 
+       04 EF DC D3 
+       D9 DB CE CE 
+       DC E5 E8 F9 
+       14 24 23 22 
+       2D 2F 27 1F 
+       20 1C 18 15 
+       09 02 05 05 
+       FA F0 E4 D8 
+       D0 D3 D4 D1 
+       CA BD BF D3 
+       E7 F3 09 20 
+       27 1B 0B 11 
+       1E 19 19 24 
+       27 1D 14 1B 
+       28 27 17 10 
+       0B FD E6 D4 
+       CE D7 D5 C9 
+       CF DA E2 E9 
+       01 1E 29 23 
+       27 31 30 27 
+       20 21 1E 19 
+       10 04 03 0A 
+       05 F5 EC E2 
+       D7 D0 CF CF 
+       CD C6 BD C2 
+       D8 E8 FA 15 
+       26 27 19 0F 
+       18 1F 18 21 
+       2C 27 19 16 
+       20 2A 23 14 
+       0D 07 F5 DD 
+       CC CB D8 D1 
+       C6 CB D9 E3 
+       EE 08 23 2B 
+       26 2A 33 31 
+       26 21 23 21 
+       17 0C 04 07 
+       0D 04 F5 EB 
+       E0 D4 CD CC 
+       CC CA C3 BC 
+       C5 DB EC 00 
+       19 28 29 1A 
+       11 1A 1E 1D 
+       29 2E 26 1D 
+       1A 20 27 20 
+       10 08 02 F1 
+       DA CC CD D7 
+       CD C4 CB DA 
+       E4 EF 09 25 
+       2D 29 2F 37 
+       31 24 21 27 
+       22 13 08 05 
+       09 0C 06 F9 
+       EC DE D1 CB 
+       CD CD CC C4 
+       BB C6 DF F3 
+       06 1D 28 28 
+       1C 13 1B 20 
+       23 2C 2D 24 
+       1E 1D 1F 23 
+       1B 0D 06 00 
+       ED D7 CB CE 
+       D8 CC C0 C8 
+       D9 E6 F2 0E 
+       28 2C 2A 33 
+       39 32 27 26 
+       28 1B 0F 0A 
+       08 09 0C 06 
+       F8 EB DC CD 
+       C6 CB CC CD 
+       C5 BD C9 E4 
+       F7 0A 21 29 
+       28 1D 14 1C 
+       24 25 2C 2D 
+       23 1E 1E 1E 
+       21 19 0B 04 
+       FC E8 D3 C8 
+       CD D2 C3 BA 
+       C7 D9 E3 EF 
+       0F 2D 2F 2C 
+       34 3D 36 29 
+       27 27 19 10 
+       0C 07 0A 11 
+       0A FA EA DA 
+       CB C2 C6 CA 
+       CC C6 BE C8 
+       E4 F8 0A 21 
+       29 28 1D 14 
+       1C 26 26 2C 
+       2E 24 1E 1D 
+       1D 20 18 09 
+       02 FB E9 D4 
+       C5 C7 CF C4 
+       B9 C3 D5 E3 
+       F0 0E 2D 34 
+       30 35 3C 37 
+       2A 26 25 19 
+       0F 0B 06 0B 
+       15 0F FB EA 
+       D9 C9 BF C5 
+       CB CC C7 BF 
+       CA E4 F5 08 
+       1F 27 27 1D 
+       12 1B 24 27 
+       2E 2F 24 1C 
+       19 17 1B 16 
+       09 00 F8 E8 
+       D5 C7 C4 CB 
+       C2 B7 BF D2 
+       E1 EF 0C 2B 
+       37 34 36 3C 
+       38 2A 24 25 
+       1A 10 0B 08 
+       0E 16 12 00 
+       EA D7 C6 BC 
+       C4 CB CB C9 
+       C0 C5 DF F4 
+       05 1C 23 24 
+       1E 13 19 25 
+       28 2B 2D 25 
+       1E 19 15 16 
+       13 09 00 F9 
+       EC D6 C5 C3 
+       C8 C1 B5 B9 
+       CD E1 ED 08 
+       29 37 35 36 
+       3C 38 29 23 
+       25 1A 0F 0D 
+       0C 10 15 12 
+       03 ED D8 C5 
+       BB C1 CA CC 
+       CC C4 C3 DB 
+       F2 00 17 22 
+       24 20 14 15 
+       24 2B 2A 2B 
+       24 1C 15 10 
+       11 11 08 FD 
+       F9 EF D8 C5 
+       BE C3 C1 B4 
+       B9 CC DE EA 
+       04 29 39 36 
+       36 3A 37 2A 
+       22 24 1B 10 
+       10 0F 10 13 
+       11 03 EC D8 
+       C6 B9 BC C7 
+       CC CE C6 C2 
+       D5 ED FC 12 
+       21 24 22 17 
+       16 24 2C 2B 
+       29 22 1A 13 
+       0E 0F 0F 08 
+       00 FA F0 DA 
+       C5 BB BE BF 
+       B3 B4 C6 DB 
+       EB 00 22 3B 
+       3A 35 38 39 
+       2E 23 23 1E 
+       14 13 12 0F 
+       14 12 04 EC 
+       D9 C8 BA B8 
+       C5 CE CC C7 
+       C1 CC E5 F7 
+       08 1B 21 23 
+       1F 18 23 30 
+       2E 2A 25 1C 
+       14 0E 0D 10 
+       0E 03 FA F2 
+       E2 CB B8 B5 
+       BC B7 B3 C0 
+       D7 E9 FA 19 
+       39 3E 35 34 
+       38 33 26 23 
+       21 17 14 15 
+       12 14 13 07 
+       F0 DE CE BE 
+       BA C5 CD CE 
+       CD C1 C5 DD 
+       F0 01 14 1E 
+       25 24 19 1F 
+       2E 2E 27 22 
+       1C 16 0F 0C 
+       10 10 06 FE 
+       F7 E9 D2 BC 
+       B4 BB BA B2 
+       BD D4 E7 F8 
+       11 31 3C 35 
+       34 38 35 28 
+       23 24 1C 15 
+       16 12 11 13 
+       0D F7 E0 CF 
+       C3 BE C4 CE 
+       D1 CF C4 C2 
+       D9 ED F8 0D 
+       1F 26 28 1F 
+       1F 2C 2C 26 
+       24 1F 16 10 
+       0D 11 13 0A 
+       01 FB EF D6 
+       BE B2 B9 BD 
+       B5 BB D2 E7 
+       F5 0A 2B 3C 
+       36 33 37 37 
+       2C 25 27 23 
+       1A 18 16 11 
+       10 0E FD E6 
+       D7 C8 BF C3 
+       CE D4 D3 C7 
+       C1 D3 E9 F8 
+       09 1B 27 2C 
+       22 20 2B 2D 
+       27 24 20 1A 
+       13 0E 12 16 
+       10 03 FC F2 
+       DC C3 B5 B7 
+       BE B7 BA D1 
+       E9 F6 03 21 
+       3A 39 33 37 
+       3B 3B 30 26 
+       2A 28 1E 19 
+       15 11 11 0E 
+       02 EA D9 CE 
+       C6 C5 D0 D6 
+       D3 CD C1 CC 
+       E6 F7 06 1A 
+       27 2D 28 1E 
+       26 2D 26 21 
+       1D 17 13 10 
+       0F 13 12 07 
+       FC F4 E3 CB 
+       BA B9 C5 C3 
+       BE CF E8 F8 
+       02 19 34 3A 
+       35 36 3A 33 
+       27 26 25 1C 
+       18 17 10 0C 
+       0C 06 F4 E5 
+       D9 CC C8 D3 
+       DA D7 D1 C5 
+       CA E2 F4 03 
+       18 23 28 27 
+       1D 20 29 24 
+       1D 1B 15 11 
+       0F 0D 13 17 
+       0F 02 F5 E5 
+       D2 C1 BD C9 
+       CC C7 D1 E3 
+       F3 FF 13 30 
+       39 33 32 34 
+       2F 27 25 23 
+       19 13 12 0E 
+       0E 10 0C FC 
+       ED E4 D8 D0 
+       D6 DD D9 D5 
+       CC CD DF F2 
+       FF 11 1E 23 
+       22 17 17 20 
+       1F 1D 17 0F 
+       0D 0F 12 18 
+       18 0F 04 F8 
+       E9 D9 CA C6 
+       D1 D3 CA D2 
+       E6 F4 FE 11 
+       2C 35 2D 2A 
+       2E 2D 24 1E 
+       1D 18 14 0F 
+       0D 0E 11 10 
+       06 F9 ED DE 
+       D3 D7 DD DE 
+       DB D2 CD DD 
+       F1 FA 0B 19 
+       1E 1D 14 11 
+       18 17 14 12 
+       0F 0F 12 16 
+       19 18 0F 05 
+       FB F1 E0 D1 
+       CD D5 D7 CF 
+       D5 E6 F6 FE 
+       0B 24 32 2A 
+       22 26 29 20 
+       18 1D 1C 12 
+       0A 0B 13 16 
+       15 0D FF F2 
+       E3 D8 D9 DE 
+       DF DD D5 D1 
+       DE EC F5 06 
+       14 18 18 0F 
+       0A 11 12 0E 
+       0F 10 11 16 
+       17 18 18 0E 
+       02 FC F4 E6 
+       DB D6 D7 D8 
+       D1 D6 E9 F7 
+       FD 07 1F 28 
+       1F 1D 25 26 
+       1A 16 1B 17 
+       0D 0D 12 16 
+       17 18 15 06 
+       F5 E5 DB D9 
+       E0 E3 E3 D8 
+       CE D8 E8 F4 
+       FF 0A 10 10 
+       08 04 0C 0B 
+       07 0D 12 16 
+       1A 18 17 19 
+       0F 04 FF F9 
+       F1 E8 DD DA 
+       DB D6 DC EC 
+       F9 FC 03 15 
+       1B 13 14 20 
+       1D 13 12 15 
+       0F 07 10 19 
+       1B 19 1B 19 
+       09 FA EF E3 
+       E0 E5 E6 E5 
+       DB D2 DA EA 
+       F2 F9 01 05 
+       09 03 FB 01 
+       03 04 0B 0F 
+       13 19 1A 17 
+       15 0B 05 02 
+       FF FE F1 E0 
+       DC E2 E1 E5 
+       F1 FB FE 03 
+       0D 11 0C 10 
+       17 14 10 0F 
+       0D 06 06 13 
+       1C 1B 1D 21 
+       1B 0A FD F0 
+       E6 E6 EA E9 
+       E4 DB D5 DC 
+       E9 F0 F8 FE 
+       FF 03 FD F7 
+       F7 FB 04 0D 
+       11 15 1B 19 
+       18 15 0F 09 
+       07 07 02 F2 
+       E2 E2 E7 E7 
+       EA F2 F8 FC 
+       02 07 06 05 
+       0B 10 0C 08 
+       08 07 02 07 
+       18 22 20 21 
+       24 1D 0E 00 
+       F5 EF ED EB 
+       E9 E3 D8 D4 
+       DF ED EE F0 
+       F4 FA FC F2 
+       ED F3 F8 00 
+       0A 12 17 1A 
+       19 1B 17 0E 
+       0C 0C 0D 08 
+       F9 EA EB F0 
+       ED EE F7 FA 
+       F9 FC 00 00 
+       FC 01 05 02 
+       01 FF 02 02 
+       08 19 22 22 
+       25 28 1C 0D 
+       04 FB F8 F6 
+       F0 EC E7 DC 
+       DB E7 EF E9 
+       E9 F0 F5 F2 
+       E6 E7 EE F4 
+       00 09 13 1A 
+       1A 1A 1C 15 
+       10 11 0C 10 
+       0E FD F2 F4 
+       F6 F5 F7 F8 
+       FA FC FD F9 
+       F5 F6 FA FA 
+       F7 F7 F8 F8 
+       FC 0B 1F 27 
+       25 28 28 1E 
+       0F 04 00 FD 
+       F4 F2 F4 E9 
+       DC E2 F0 F2 
+       EC E9 EB EE 
+       E5 DD E4 EA 
+       F1 FF 08 11 
+       1B 1D 1D 20 
+       17 11 12 10 
+       11 0F 03 FA 
+       F8 F7 FC FE 
+       FD FC FF FF 
+       F2 EA EF F7 
+       EF E9 ED F4 
+       F3 F8 0D 23 
+       2A 27 2C 2E 
+       21 10 07 08 
+       04 F8 F5 F4 
+       E7 E0 EB F6 
+       F2 E8 E2 E7 
+       E6 DB D9 DF 
+       E0 EB FD 06 
+       12 1B 1B 20 
+       21 17 15 15 
+       15 19 13 07 
+       04 FF FC 03 
+       06 FF FC 03 
+       FE ED E4 E9 
+       E9 DD DC E5 
+       E9 E9 F6 10 
+       25 29 2C 34 
+       32 21 13 0F 
+       10 07 FB FC 
+       F8 EA EB F6 
+       F9 F1 E6 E6 
+       E2 D6 D0 D4 
+       D8 DB EA F8 
+       01 0E 19 1E 
+       21 1D 14 1A 
+       1D 18 18 14 
+       0B 06 00 05 
+       10 09 FF 03 
+       0C FE E6 E0 
+       E4 E2 D4 D1 
+       DC E0 E5 F1 
+       0E 27 2A 28 
+       30 31 20 13 
+       11 13 0C 01 
+       FD F8 EE F3 
+       01 01 F9 EB 
+       DE D2 CC CE 
+       D3 D3 D6 E6 
+       F5 FD 0A 1C 
+       23 1F 18 13 
+       1A 1C 13 15 
+       1F 14 02 01 
+       11 16 0D 08 
+       0A 0D FA E1 
+       D9 DB D3 C4 
+       C7 D1 D9 E2 
+       F1 0B 25 2F 
+       2D 34 2C 1A 
+       18 1D 19 0D 
+       04 FF FA F7 
+       FF 0A 05 F4 
+       E5 D5 C9 CA 
+       CB C9 CE D4 
+       DF ED FB 0F 
+       1F 20 1F 1A 
+       11 1A 1D 1A 
+       20 21 13 09 
+       0A 12 1A 16 
+       0F 05 01 F9 
+       E1 CD C9 CA 
+       BC B5 C2 D3 
+       E2 EE 0A 26 
+       2E 2E 33 32 
+       23 1E 21 23 
+       15 06 09 0A 
+       00 FF 0A 05 
+       F4 DD C9 C6 
+       C7 C3 C8 D1 
+       CF D3 E2 F5 
+       0D 18 19 1B 
+       1B 12 16 1C 
+       1D 24 20 18 
+       18 18 16 1B 
+       1F 17 05 FD 
+       FC E2 C2 BD 
+       C5 B7 AB BD 
+       D2 DC E1 01 
+       27 30 2A 31 
+       39 28 1D 21 
+       27 1D 0D 0D 
+       11 0C 04 0A 
+       0A F3 D4 C4 
+       C3 C1 C3 C5 
+       CB D2 D6 E1 
+       F2 03 12 1F 
+       1D 1A 16 12 
+       1C 23 28 28 
+       24 1C 16 18 
+       1F 22 16 06 
+       FE FA DF BC 
+       B2 B7 AE A7 
+       B6 C6 D7 E3 
+       FA 21 35 34 
+       39 41 33 2A 
+       27 26 25 1B 
+       1B 1A 0E 05 
+       0C 09 F2 D9 
+       CA C0 B7 B9 
+       C2 C3 C5 CB 
+       DA ED FA 0A 
+       21 23 17 16 
+       1C 2B 2C 2A 
+       2F 2D 22 1D 
+       23 28 29 17 
+       05 FE F7 E1 
+       BC A8 AB AC 
+       A0 A8 BE CE 
+       DC F3 1A 35 
+       35 35 44 44 
+       35 2F 2E 2D 
+       25 25 26 19 
+       0C 0E 09 F5 
+       E0 CA BA B1 
+       B6 C0 BF BF 
+       C9 D7 E8 F5 
+       02 17 1F 1C 
+       20 22 29 30 
+       2D 33 36 2C 
+       24 28 2C 2C 
+       1E 07 FB F7 
+       E5 BC A0 A3 
+       A8 9D A4 BA 
+       CC DD EF 13 
+       37 3E 39 46 
+       4A 3C 39 38 
+       35 2D 2B 2D 
+       1C 09 08 0F 
+       FF E1 CA BE 
+       B2 AC BC C5 
+       C2 C6 D0 E5 
+       F6 FD 14 2C 
+       2B 22 22 2D 
+       38 35 35 3B 
+       32 22 27 2E 
+       2D 1C 04 FC 
+       FC ED BF 9B 
+       99 A4 A1 9F 
+       B7 CC D9 EC 
+       11 3D 44 3D 
+       4A 5A 4C 3F 
+       43 3D 34 31 
+       32 28 0F 02 
+       0A 05 E7 C9 
+       BA B2 AF B6 
+       BC C2 C6 CA 
+       DA F0 FF 16 
+       2D 2B 28 2C 
+       2F 38 39 3D 
+       40 35 25 27 
+       31 31 26 0E 
+       FB F7 EF CC 
+       A0 94 A0 A1 
+       9D AE C8 D8 
+       E6 06 2F 43 
+       42 4E 5F 53 
+       3F 3E 45 42 
+       37 33 2F 1C 
+       08 09 06 EF 
+       D3 C0 B7 B1 
+       B5 B6 B7 BF 
+       CA D8 E6 F4 
+       0F 2A 2B 27 
+       2F 35 3A 3A 
+       3B 3D 38 2A 
+       2B 34 35 2F 
+       1B 05 F4 EE 
+       DA B0 96 9C 
+       A2 9B A3 BC 
+       D6 E3 F6 1E 
+       40 43 42 56 
+       56 41 3B 43 
+       47 3B 30 2A 
+       20 0E 08 07 
+       F7 E3 CD BC 
+       B3 B6 BD BC 
+       C2 C8 CD E0 
+       F2 03 20 2A 
+       25 2D 30 33 
+       38 36 35 33 
+       2B 2B 31 2D 
+       2A 20 0C F2 
+       EA E5 BD 9B 
+       9A A9 A5 A4 
+       B8 D4 E3 ED 
+       0F 36 44 3E 
+       4A 56 48 3B 
+       3F 42 38 2F 
+       29 19 09 03 
+       03 FB E8 D0 
+       BE B5 B1 B7 
+       BB C2 C9 CA 
+       DA F4 04 17 
+       28 2C 34 33 
+       29 31 35 2E 
+       2E 2C 27 27 
+       22 25 25 0D 
+       F0 E4 E5 CA 
+       9D 90 A2 A5 
+       A0 AF CB E2 
+       E7 FF 30 4B 
+       3F 3D 52 50 
+       45 40 42 3A 
+       2C 27 1F 11 
+       04 06 FD ED 
+       D9 C1 B4 AE 
+       B7 BD B6 B8 
+       BD C9 E5 FD 
+       10 21 26 2A 
+       2F 2E 31 34 
+       30 2F 2C 28 
+       25 22 27 2B 
+       1A FB E5 E9 
+       D7 AB 91 9E 
+       AD 9F A2 BD 
+       D6 DC EE 19 
+       3B 3C 38 50 
+       55 48 3E 3F 
+       3D 2F 2A 23 
+       14 05 05 01 
+       F4 DF C8 BD 
+       B1 B1 BA B8 
+       B8 C0 CD E1 
+       F0 F9 12 25 
+       27 28 22 28 
+       31 2D 2C 34 
+       2D 21 24 29 
+       2F 1C F9 E8 
+       EC DD B1 95 
+       99 A8 A6 A6 
+       B9 CE D5 E7 
+       11 35 3D 35 
+       44 53 48 41 
+       40 38 2A 28 
+       27 1A 05 FD 
+       05 FB EA CE 
+       BD AF A8 B6 
+       BB B7 B8 BF 
+       D1 F2 05 12 
+       21 24 27 26 
+       26 2F 31 2B 
+       2E 2F 25 21 
+       21 27 1F 05 
+       EF E7 E0 BC 
+       9B 97 A9 AB 
+       A1 B1 C8 D5 
+       E2 02 26 38 
+       36 3F 55 4D 
+       3D 3C 3C 30 
+       29 29 20 0D 
+       FD 00 FC ED 
+       D3 C0 BA B0 
+       B1 B1 B5 BC 
+       C6 D4 E9 FC 
+       08 1A 27 2D 
+       27 1D 26 32 
+       30 30 2E 25 
+       22 26 2A 27 
+       0F EE E0 E3 
+       CD A7 97 A2 
+       AB A5 AC C5 
+       D4 DB FA 24 
+       3B 37 38 4C 
+       4F 41 3B 3E 
+       34 26 25 24 
+       17 05 02 02 
+       F6 E0 C9 BE 
+       B1 B3 B6 B5 
+       BE C4 CE E6 
+       FB 08 16 1E 
+       24 24 1D 26 
+       30 2D 2F 2F 
+       29 25 25 28 
+       27 14 F7 E9 
+       EA D8 B1 9E 
+       A6 AE A6 AB 
+       C4 D0 D5 F3 
+       1F 37 35 38 
+       4D 50 40 3C 
+       40 33 29 28 
+       27 17 04 0A 
+       0B FC DF C8 
+       C3 B9 B5 BB 
+       C3 C2 BD CD 
+       E8 FF 05 0E 
+       1E 25 1C 14 
+       24 31 2E 33 
+       38 2D 20 1D 
+       26 2E 1A F6 
+       E6 EE DB B8 
+       AA B2 B2 A5 
+       B3 CF D4 D2 
+       F1 1E 35 34 
+       3B 4D 4A 3B 
+       3E 47 35 23 
+       22 28 1E 0B 
+       08 08 FB DD 
+       CA C8 BE B5 
+       B8 C4 C7 C5 
+       D2 E7 01 0E 
+       14 1A 22 1B 
+       14 24 2F 34 
+       37 35 29 23 
+       21 27 30 1D 
+       F8 EA EF DD 
+       BD AE B2 AD 
+       A4 B5 D2 D9 
+       D9 F5 1D 33 
+       32 3D 4B 48 
+       38 36 3B 30 
+       24 24 2B 20 
+       0C 04 09 00 
+       E3 CE C3 BE 
+       BD BA C2 C8 
+       CD DC EC 06 
+       14 17 19 1C 
+       16 18 25 25 
+       2C 37 34 27 
+       1E 20 2C 2B 
+       18 FE F2 EB 
+       D4 BC B4 B6 
+       AC A7 BD D3 
+       D8 E4 00 26 
+       36 33 41 4B 
+       43 32 37 39 
+       2F 24 23 2A 
+       18 0C 0C 0B 
+       FB DF CE C6 
+       BD BB BE C5 
+       C5 CB E0 F5 
+       07 0F 19 21 
+       1B 0E 17 26 
+       25 30 3D 33 
+       24 1F 23 2B 
+       29 19 01 F5 
+       EA D0 BB B6 
+       B7 AE AB BD 
+       D3 DA E6 05 
+       2A 34 32 3E 
+       47 40 35 34 
+       31 2E 26 24 
+       24 19 12 0D 
+       07 F4 DC CF 
+       C9 C7 C0 BF 
+       C1 BD CD E5 
+       F8 08 12 16 
+       19 11 0B 1C 
+       25 28 36 38 
+       2B 20 1E 29 
+       2D 25 14 01 
+       F9 E8 CD BD 
+       BE BC AE B1 
+       C4 D0 D8 EF 
+       12 2B 2B 2F 
+       3E 3F 34 30 
+       31 2E 28 21 
+       23 21 17 0F 
+       0B 09 EF D6 
+       CF CC C8 C3 
+       C5 BF C2 D9 
+       EA FB 08 10 
+       17 18 05 03 
+       18 21 2A 35 
+       30 24 20 21 
+       2A 2B 20 0D 
+       01 F9 E1 C7 
+       BF C1 B6 AF 
+       BC CC D1 E0 
+       FD 1D 2B 29 
+       34 3C 35 28 
+       27 29 28 23 
+       1E 1C 18 12 
+       0C 0C FF E2 
+       D1 CC CD C9 
+       C7 C3 BF CE 
+       E2 F8 08 0F 
+       13 17 11 01 
+       05 13 1E 2C 
+       30 27 1D 17 
+       1C 27 27 16 
+       06 01 F0 CF 
+       C1 C7 C1 B4 
+       BB CB CF D7 
+       EF 0F 24 27 
+       31 3E 38 2A 
+       23 22 20 1F 
+       1B 18 16 12 
+       0C 05 01 EE 
+       D8 CD CC CA 
+       C6 C7 C0 C7 
+       DE F0 02 10 
+       13 14 12 05 
+       01 09 14 25 
+       2F 29 1D 17 
+       1A 21 24 1D 
+       0E 04 F6 DA 
+       C5 C8 C6 B6 
+       B8 C9 D0 CE 
+       E0 05 21 25 
+       2A 37 37 2C 
+       22 21 21 1C 
+       19 19 15 13 
+       11 07 01 F6 
+       E1 D3 D0 CE 
+       CB CB C0 BF 
+       D6 E8 FB 0F 
+       13 12 0D FD 
+       FB 08 0F 1B 
+       28 27 21 19 
+       17 1E 23 1E 
+       11 0A 01 E5 
+       C9 C8 CC BF 
+       BD CC D2 CE 
+       DA FB 1A 22 
+       25 31 34 28 
+       1F 1E 18 13 
+       18 1B 11 0E 
+       0F 05 FC F6 
+       E6 D9 D5 D3 
+       CB CD C6 C3 
+       D5 E7 FA 0F 
+       14 0E 10 05 
+       FE 01 06 13 
+       22 25 20 1F 
+       17 19 1D 1A 
+       10 0C 04 E9 
+       CB C5 CB C4 
+       C1 CF D7 CD 
+       D8 FB 19 1F 
+       24 34 3B 2D 
+       22 1D 13 0D 
+       17 22 15 0B 
+       0A 06 FC F2 
+       E7 DF D5 D0 
+       CB D0 C8 BB 
+       CF E4 F9 0A 
+       10 11 13 06 
+       F9 03 08 10 
+       1F 26 24 22 
+       19 19 21 1C 
+       10 0B 06 EB 
+       CC C9 D0 C8 
+       C0 D0 DE D5 
+       D6 F0 0F 1A 
+       22 33 3C 30 
+       1E 1A 17 11 
+       13 19 13 0D 
+       0B 05 FC F0 
+       E5 E0 DD D8 
+       D3 D0 C2 B9 
+       D2 EC FD 0B 
+       0F 12 0F 01 
+       FB 03 03 0C 
+       20 22 20 1D 
+       18 1E 21 1D 
+       10 0A 04 EB 
+       D0 CD D4 CB 
+       C7 D7 E2 DD 
+       E0 F7 12 19 
+       20 33 3D 30 
+       22 1C 14 0C 
+       0F 14 11 0E 
+       07 FC F6 EC 
+       DD DF E0 D5 
+       CE D0 C7 C5 
+       D6 E7 FF 17 
+       14 12 15 08 
+       FD 00 06 15 
+       24 21 1D 1D 
+       19 1C 22 1E 
+       0F 07 03 E7 
+       CB CA CE C9 
+       CB DF E9 E0 
+       DF F8 14 1E 
+       27 34 3F 37 
+       26 1D 13 0C 
+       14 19 11 0E 
+       09 FA F2 E9 
+       E1 E0 D9 D1 
+       D2 D2 C1 BF 
+       D9 EC FE 14 
+       1B 16 13 09 
+       02 02 03 15 
+       2B 26 19 1E 
+       20 1E 21 21 
+       16 0F 02 E3 
+       CC C8 CB CD 
+       D2 E2 EA E3 
+       E5 FF 1A 20 
+       26 33 39 32 
+       28 20 14 09 
+       11 19 12 0D 
+       08 F9 EE EA 
+       E2 E1 DD D0 
+       CE D7 C8 C0 
+       D8 EA FF 15 
+       19 16 11 05 
+       02 08 07 17 
+       2A 27 1C 1C 
+       1E 21 24 20 
+       14 0D 02 E4 
+       C9 C6 CE CC 
+       D3 E6 ED E5 
+       EB 08 1F 1C 
+       20 36 3D 35 
+       2D 22 13 0C 
+       13 1B 13 0B 
+       06 FB F0 E6 
+       DD DF E0 D6 
+       D1 D4 C4 BD 
+       D4 E9 FE 12 
+       15 16 14 03 
+       04 10 0F 14 
+       27 2B 22 1B 
+       18 21 2A 22 
+       11 10 07 E1 
+       C7 CC D0 C8 
+       CF EA F2 E4 
+       E7 07 1E 1B 
+       21 37 3E 32 
+       29 25 17 0C 
+       17 1B 12 0E 
+       07 F9 F2 E4 
+       D7 DD E1 D6 
+       D4 D7 C2 BC 
+       CF E7 04 16 
+       0E 11 19 0A 
+       01 0A 10 18 
+       23 24 21 22 
+       1C 1F 2B 26 
+       16 11 06 E1 
+       C9 CC CE C7 
+       CD E8 F4 E7 
+       E9 03 19 1C 
+       25 3B 3E 2F 
+       22 20 1A 12 
+       17 1C 16 0E 
+       05 F9 F0 E4 
+       DE E0 DD D3 
+       D0 D6 C3 B9 
+       D1 E8 FD 0E 
+       11 13 14 05 
+       04 13 10 12 
+       23 2A 21 19 
+       18 23 2F 25 
+       16 17 0B E3 
+       C5 C8 D3 CA 
+       CB E5 F2 E5 
+       E8 00 1A 20 
+       22 35 3C 2C 
+       21 20 19 12 
+       18 1E 16 0C 
+       06 FA F3 E7 
+       DD E0 DB D0 
+       CA D4 C9 B9 
+       CB E0 FA 0E 
+       0C 13 1B 07 
+       FA 0C 12 15 
+       24 24 1C 1B 
+       19 22 30 2C 
+       1B 16 0F ED 
+       CF C6 CA C8 
+       C6 DD F1 E5 
+       E0 F9 19 22 
+       24 34 3C 2E 
+       1D 1F 1C 14 
+       18 21 1C 0E 
+       07 FD F5 EC 
+       E1 DC D2 CA 
+       CA D0 C9 B6 
+       C4 DC EF 0A 
+       16 13 16 0C 
+       FF 0D 11 0F 
+       21 2A 1C 16 
+       19 24 30 2B 
+       1E 19 12 F0 
+       CF C9 D0 C8 
+       BE D4 EB E2 
+       DD F7 18 21 
+       1D 2D 3E 35 
+       20 22 23 17 
+       15 1F 21 0D 
+       01 FD FA F4 
+       E4 D9 D3 CD 
+       C9 CA D0 BE 
+       B9 D2 EC 02 
+       0F 0C 13 1A 
+       05 02 11 11 
+       1A 25 1F 1B 
+       1B 1D 2C 33 
+       28 17 10 FF 
+       DD C6 C8 D0 
+       C4 C5 DC E5 
+       E1 ED 08 21 
+       23 2A 3B 3A 
+       26 1D 21 1C 
+       1A 1E 20 12 
+       05 01 F9 F4 
+       ED DD D0 C7 
+       C9 CA CA C4 
+       BA CA E1 F3 
+       07 11 13 1E 
+       12 FF 0C 14 
+       15 27 2D 1C 
+       17 1F 2C 38 
+       31 19 11 0C 
+       EB CB C3 C8 
+       C4 BF CD E0 
+       DB DC F5 15 
+       28 29 32 3E 
+       36 22 21 25 
+       22 20 22 1D 
+       0B FE FA FB 
+       FA EA D6 C8 
+       C8 CA C0 C3 
+       C0 BC D1 E6 
+       F8 0D 15 18 
+       21 10 04 14 
+       1A 1E 2B 29 
+       1C 1D 27 30 
+       36 28 12 0B 
+       FE E0 C7 C3 
+       C7 C1 BD CE 
+       DA D8 E4 00 
+       1C 28 2D 39 
+       3E 2F 24 26 
+       25 23 23 1F 
+       15 08 FE FF 
+       01 F6 DF CE 
+       C4 C7 C4 BB 
+       C0 BC C3 DE 
+       EE FD 11 1A 
+       22 24 0E 0A 
+       19 19 1F 2C 
+       26 20 24 2A 
+       34 34 1E 0D 
+       07 F7 D9 C2 
+       BF C2 BC C0 
+       D3 D6 D6 ED 
+       0D 23 2A 2D 
+       39 3C 2E 25 
+       28 23 20 20 
+       1C 11 FF FC 
+       01 01 F0 D7 
+       C8 C8 CA BA 
+       BA C3 BB CB 
+       E5 F2 09 1B 
+       20 26 1F 0B 
+       14 1F 19 26 
+       31 27 1F 23 
+       2A 34 2B 13 
+       05 00 EA CC 
+       BF BF C0 B9 
+       C1 D3 D2 DA 
+       F5 15 28 2A 
+       31 3E 3F 2B 
+       26 2B 27 24 
+       1D 17 0E 04 
+       00 01 FE E9 
+       CE C5 C9 C7 
+       BA B9 BF BD 
+       D5 EA F5 0D 
+       1D 26 29 19 
+       08 16 1C 1E 
+       30 31 24 21 
+       28 32 37 29 
+       0F FF FA E6 
+       C7 BB BC BB 
+       B6 BD CD D2 
+       DB F2 19 2E 
+       2C 2E 3D 3E 
+       2D 2B 2C 28 
+       21 1B 19 0E 
+       05 02 06 FD 
+       E6 D1 C4 C6 
+       C5 BA BA BF 
+       C2 D2 E1 F5 
+       15 21 1C 21 
+       19 0D 18 1D 
+       28 36 2C 23 
+       28 2B 2B 2E 
+       23 0C FC F3 
+       E3 C8 B7 BC 
+       C0 B8 BB C9 
+       D4 DE F4 16 
+       29 28 32 44 
+       3E 2D 2B 2D 
+       2B 22 1B 18 
+       0F 03 FF 05 
+       FC E3 CB C1 
+       C3 C1 B8 BB 
+       C0 C4 D6 E8 
+       FE 16 1F 20 
+       22 15 12 1C 
+       1E 29 37 2D 
+       20 24 29 2C 
+       2A 1A 03 F9 
+       F3 D7 BD B6 
+       BC BA B5 C0 
+       CC D1 DE F9 
+       1B 2B 2D 3B 
+       47 37 28 2F 
+       31 2B 1D 16 
+       19 0D FB 00 
+       0C FE E1 CD 
+       C1 BA B7 B3 
+       BD C2 C3 D5 
+       EB 01 17 21 
+       26 25 10 0D 
+       23 29 2A 30 
+       2C 26 22 23 
+       2D 2B 16 FD 
+       F4 F3 D8 BB 
+       B3 B7 B7 AE 
+       B5 C6 D0 DD 
+       F9 1F 2D 2B 
+       38 49 3F 2B 
+       2A 2E 2B 1D 
+       16 18 0C 01 
+       04 0C 02 E7 
+       C7 BB C3 BD 
+       B3 B7 C3 C8 
+       D5 E9 FE 13 
+       1D 20 27 1B 
+       0E 1A 27 2E 
+       31 2B 22 20 
+       21 28 2B 1C 
+       01 F2 F0 DD 
+       BE AE B4 B7 
+       AA AB BD CE 
+       DB F4 17 2E 
+       35 37 42 44 
+       34 2E 2F 2C 
+       21 16 14 11 
+       0A 08 0F 05 
+       E9 CD BD BB 
+       BA B4 B2 BE 
+       C7 D1 E1 F4 
+       0D 1C 1D 22 
+       20 14 1C 2A 
+       30 32 2C 23 
+       21 22 25 27 
+       19 01 F4 F4 
+       E5 C2 AB AF 
+       B7 AD A9 B8 
+       CB D9 EE 12 
+       30 31 2E 42 
+       4B 38 31 34 
+       2E 22 19 1A 
+       14 08 09 0D 
+       03 E7 CA BB 
+       B8 B9 B8 B7 
+       C3 C9 CE E0 
+       F5 06 17 1F 
+       20 1F 15 1B 
+       28 2E 32 33 
+       26 1C 21 23 
+       24 1A 04 F3 
+       F4 EB C8 AA 
+       AA B3 AC AA 
+       BC CB D4 E6 
+       0E 33 38 36 
+       40 44 36 30 
+       33 32 23 19 
+       1F 18 0E 0E 
+       0E 03 EA D1 
+       BF B3 B6 BF 
+       BF C4 CC D0 
+       DC F0 FC 14 
+       23 1F 1F 1A 
+       19 24 2F 34 
+       32 29 1B 1D 
+       20 22 20 0C 
+       FA F5 F2 D2 
+       AE A8 B2 B1 
+       AA B8 C8 D6 
+       E7 07 2B 37 
+       38 3C 46 3F 
+       34 2F 2C 28 
+       22 22 18 0F 
+       0D 09 06 F9 
+       DF C6 B7 B8 
+       C2 C4 BF C7 
+       CE D9 EA F7 
+       08 1A 1E 22 
+       23 1E 26 30 
+       35 35 2A 1F 
+       1E 1F 1E 21 
+       16 03 FC F6 
+       E0 B9 A5 AF 
+       B5 AD B1 C2 
+       D0 E3 FC 21 
+       38 34 33 42 
+       46 3A 31 2C 
+       2F 2D 26 21 
+       17 0D 06 07 
+       FD E6 CF BD 
+       B8 BF C3 C4 
+       CD D1 D3 E3 
+       F0 FE 17 21 
+       24 26 1F 23 
+       30 32 31 31 
+       23 1A 21 24 
+       23 18 08 FE 
+       F9 E9 C1 A5 
+       A7 B2 B2 B2 
+       C1 CE DD F4 
+       15 35 39 35 
+       40 4A 40 33 
+       30 33 31 2B 
+       26 1C 0F 09 
+       07 01 EE D7 
+       C7 BD BD C5 
+       C7 C8 CE D2 
+       DA E9 F5 09 
+       1E 28 2B 27 
+       26 2D 33 32 
+       2F 28 1E 1F 
+       20 23 20 13 
+       04 F8 F1 D5 
+       AF A3 AF B7 
+       B3 BA CA DD 
+       F3 06 24 37 
+       36 39 46 46 
+       39 31 30 35 
+       33 2A 22 15 
+       0B 06 03 F8 
+       E5 D1 C0 BE 
+       C6 C8 C9 D0 
+       D2 D5 E4 F0 
+       FF 17 23 29 
+       2B 24 26 30 
+       2F 2D 2D 24 
+       20 25 26 24 
+       19 0A FD F7 
+       E4 BE A7 AA 
+       B5 B8 BD CC 
+       D7 E6 F9 15 
+       2E 35 37 42 
+       48 3B 31 33 
+       36 33 2B 27 
+       1D 0D 04 05 
+       01 ED DB CB 
+       C4 C5 C5 C8 
+       D1 D2 D1 E0 
+       EF FA 0F 22 
+       2A 2C 26 23 
+       2B 2D 29 2D 
+       28 1F 20 26 
+       26 1C 0E 00 
+       F7 EC CA AA 
+       A4 B1 B7 B8 
+       C8 D6 E3 F1 
+       09 26 34 37 
+       3D 4A 42 34 
+       35 36 35 30 
+       29 1C 10 09 
+       06 04 F4 E2 
+       D3 C6 C6 C9 
+       C8 C7 CC D0 
+       D9 E8 F3 05 
+       19 24 2C 29 
+       23 24 28 29 
+       2C 2B 22 22 
+       25 25 20 13 
+       01 F5 EF DA 
+       B6 A8 B1 BB 
+       BB C4 D2 DB 
+       E9 FC 18 2B 
+       2F 35 44 46 
+       37 32 33 35 
+       30 27 21 17 
+       08 04 07 FE 
+       ED DB CA C3 
+       C7 C8 CA CD 
+       CD D4 E4 F1 
+       01 16 1E 25 
+       25 1F 1F 24 
+       21 25 2A 21 
+       1E 24 28 20 
+       15 06 F9 F4 
+       E0 BF AC B0 
+       B7 BA C4 D0 
+       D8 E1 F2 12 
+       28 2D 32 41 
+       43 34 31 36 
+       36 2C 23 21 
+       16 0A 06 09 
+       00 EF DE CF 
+       C6 C4 C6 C6 
+       C8 CB D2 DE 
+       EE FC 11 1E 
+       22 21 1B 1D 
+       1F 20 26 2D 
+       24 1B 20 28 
+       26 19 07 FA 
+       F4 E4 C5 B2 
+       B1 B6 B6 BB 
+       CA D5 DA E9 
+       08 22 29 2D 
+       3C 46 37 2E 
+       32 34 2C 24 
+       22 17 0A 03 
+       09 06 F6 E2 
+       CE C3 C0 C5 
+       C6 C8 C9 CC 
+       D8 EB FA 0D 
+       1C 1E 1E 18 
+       19 1D 1D 21 
+       2C 26 19 1C 
+       23 25 1B 09 
+       FB F6 E9 CB 
+       B3 B1 B6 B5 
+       B8 C6 D1 D7 
+       E3 FF 1C 2B 
+       2E 36 43 3B 
+       2E 2E 30 2C 
+       23 1E 18 0E 
+       03 05 06 F8 
+       E7 D2 C4 BD 
+       BF C1 C4 C7 
+       CC D6 E7 F6 
+       05 15 1B 1E 
+       18 13 19 1C 
+       1E 29 28 1B 
+       19 21 25 1E 
+       0D FC F5 ED 
+       D3 B9 AF B5 
+       B8 B5 BE CB 
+       D5 DF F6 15 
+       28 2D 33 40 
+       3D 2E 29 2D 
+       2C 24 1F 18 
+       0C 02 05 07 
+       FB E9 D3 C6 
+       C0 BF C1 C7 
+       CB CB D5 E4 
+       F4 01 11 19 
+       1C 15 11 16 
+       19 1C 27 2A 
+       1E 1A 1E 22 
+       1D 0F FE F3 
+       F0 DB BF B0 
+       B3 B8 B4 BE 
+       CD D4 DA F1 
+       13 25 2D 32 
+       3F 3F 31 2B 
+       2E 2E 22 1D 
+       1B 10 07 06 
+       07 F9 E7 D7 
+       CA BE BA C0 
+       C3 C9 CF D7 
+       E3 EF FC 12 
+       1A 1A 19 14 
+       17 1B 20 28 
+       28 20 1D 1E 
+       21 1D 10 FF 
+       F5 F2 E3 C3 
+       B0 B3 B8 B2 
+       B9 CC D6 DC 
+       EC 10 27 2C 
+       31 3F 44 35 
+       2C 2C 2B 21 
+       1E 22 15 07 
+       07 0A FE EC 
+       D9 CA BE B9 
+       C1 C6 C8 CD 
+       D4 E0 F0 FD 
+       0F 17 17 15 
+       11 18 1C 1D 
+       26 2F 22 1A 
+       1F 24 1E 13 
+       06 FC F5 E6 
+       CB B6 B4 BA 
+       B3 B7 CB DA 
+       DF EB 0C 26 
+       2D 30 3E 41 
+       32 2B 29 27 
+       20 1C 1D 17 
+       0D 0B 0D FF 
+       EC D7 CC C8 
+       C0 C1 C7 CC 
+       CC D6 E6 F6 
+       01 0F 19 1A 
+       12 0C 19 1E 
+       1E 27 2D 21 
+       19 1C 21 21 
+       19 07 F6 F5 
+       E9 CE B9 B8 
+       BB B2 B6 CD 
+       DE E1 EC 0F 
+       29 2F 34 3E 
+       42 32 2A 2C 
+       2A 1F 1B 22 
+       1A 0E 07 09 
+       02 EC D6 CD 
+       C5 BF BF C8 
+       CD CC D8 E8 
+       F8 01 0F 18 
+       1D 16 0D 19 
+       1E 22 2E 2F 
+       1F 1A 21 23 
+       22 1C 0B FC 
+       F7 E6 CF BC 
+       BA BA B1 B6 
+       CC D9 DC F1 
+       10 28 2F 34 
+       3F 42 35 2C 
+       2C 2A 20 1E 
+       21 1C 11 0B 
+       0B 00 EE D9 
+       CF C7 C3 C1 
+       C4 C9 CB D9 
+       E8 F7 06 15 
+       19 1A 12 0D 
+       1B 22 25 30 
+       2F 20 1C 1D 
+       23 25 1B 0A 
+       FE F9 E4 C9 
+       B9 C0 BE B2 
+       BA CF D9 E3 
+       FA 18 2C 2E 
+       35 44 41 33 
+       2E 2A 29 23 
+       1F 21 19 0B 
+       0A 0B FA E3 
+       D5 CC C6 C5 
+       C7 CB C7 C9 
+       DE F4 FD 02 
+       12 1C 18 0B 
+       11 20 23 28 
+       31 31 23 19 
+       1C 28 27 18 
+       05 00 F9 E0 
+       C9 BE C3 BA 
+       B3 C3 D4 DA 
+       E6 01 1D 2D 
+       2D 33 3D 37 
+       2E 2B 29 26 
+       1E 1A 1E 19 
+       10 0B 08 F8 
+       E0 D4 D0 CD 
+       C8 CB D0 C7 
+       D0 E5 F6 03 
+       0B 12 1B 13 
+       03 10 1F 25 
+       30 31 23 1A 
+       1C 21 27 26 
+       12 01 FF F1 
+       D5 C4 C2 C0 
+       B7 BB C9 D4 
+       DF F5 11 26 
+       2C 33 3C 39 
+       32 2E 28 23 
+       22 21 1D 16 
+       12 0D 07 02 
+       F1 DC CF C8 
+       CA C7 CB C9 
+       C9 DD EC F9 
+       09 12 14 16 
+       0D 0B 1A 1F 
+       25 30 2D 20 
+       1B 1E 25 24 
+       19 0C 06 FC 
+       E3 CA C2 C8 
+       BD B6 C5 CE 
+       D4 E7 03 1C 
+       27 2D 36 3A 
+       32 2D 2B 22 
+       21 23 21 1A 
+       13 12 0A 06 
+       FC E5 D4 CB 
+       C9 CB CE CB 
+       C2 D1 E8 F4 
+       FF 0A 10 14 
+       0F 03 0F 1A 
+       19 29 34 2A 
+       1C 1D 23 25 
+       21 15 0C 05 
+       ED D5 C8 C9 
+       C4 B8 C2 CE 
+       D4 DE F7 10 
+       1F 26 2F 39 
+       33 28 29 20 
+       1B 24 22 15 
+       0E 14 0F 07 
+       FC EC DF D6 
+       D2 D2 D0 CD 
+       C2 C5 E2 F6 
+       FC FF 0A 13 
+       0F 01 07 17 
+       18 1F 2E 2E 
+       22 16 17 27 
+       2A 14 03 0A 
+       00 E4 CD D1 
+       D0 BE C3 D5 
+       D8 D5 E8 08 
+       1C 1E 26 34 
+       32 25 25 21 
+       17 16 1C 19 
+       0F 0F 0D 03 
+       FA EF E7 DE 
+       D3 CE D3 D7 
+       CA C8 DF F3 
+       FD 08 0D 11 
+       0C 00 00 0B 
+       13 1C 25 20 
+       1D 1D 19 1F 
+       23 17 08 08 
+       01 E7 D1 CF 
+       D1 C2 C8 DB 
+       DB D3 E5 08 
+       1C 20 27 34 
+       35 29 23 1D 
+       11 12 1B 1D 
+       0E 06 06 03 
+       FF F3 E4 DB 
+       D3 CA CD D7 
+       CC C3 D7 ED 
+       03 10 11 10 
+       0D FF FF 0F 
+       0F 16 26 23 
+       1E 1F 1B 1A 
+       1E 1A 0C 0A 
+       FF E3 CD CB 
+       D0 C3 C5 D4 
+       DB D8 E6 00 
+       15 1F 29 3A 
+       3B 2C 23 1C 
+       10 14 1D 1D 
+       10 09 08 04 
+       FE ED E4 DE 
+       D4 CE CD D1 
+       C2 B9 D2 EF 
+       FF 05 09 10 
+       10 00 FF 0F 
+       10 14 22 26 
+       23 1E 19 21 
+       27 1C 09 09 
+       04 E6 CC CC 
+       D5 C6 C3 D7 
+       E0 DB DE F8 
+       11 1C 24 32 
+       39 2C 25 1F 
+       12 11 17 1C 
+       17 0F 05 FE 
+       FC EC E1 E2 
+       DD D2 CE D2 
+       C7 C1 D3 EB 
+       FF 05 05 0C 
+       0E FE F9 06 
+       12 1A 23 21 
+       1D 19 16 22 
+       2B 1F 06 06 
+       04 EA D2 D1 
+       D8 CA CB DD 
+       E7 DF E1 F9 
+       11 1C 22 30 
+       38 2D 23 1D 
+       13 0D 12 1A 
+       12 0A 04 FD 
+       FB EB DD E1 
+       DD CF D1 DB 
+       CC C3 D5 EB 
+       05 14 0F 0C 
+       0B FC F7 07 
+       0F 1A 24 1D 
+       16 19 1B 20 
+       26 1F 0E 09 
+       FB E0 CF D0 
+       CF C7 D3 E1 
+       E5 E3 EC 02 
+       14 1F 2B 36 
+       3B 32 26 19 
+       0F 11 17 1A 
+       0F 0C 06 FB 
+       F5 EA E2 E2 
+       DD D2 D0 D2 
+       BE B9 D5 EE 
+       03 0E 0D 0F 
+       0D FF 00 0D 
+       10 17 24 22 
+       1E 19 17 27 
+       2D 1F 0C 0F 
+       02 E3 CC CE 
+       D4 CA D0 E6 
+       EB E3 EC 04 
+       14 1C 23 30 
+       3A 2D 23 1A 
+       13 0D 15 1C 
+       15 0F 04 FB 
+       F8 E8 DA E4 
+       E6 D3 D0 D7 
+       C5 C3 D8 EB 
+       05 13 0D 0C 
+       0C FE FC 05 
+       0C 1B 28 1E 
+       17 19 1B 26 
+       30 23 11 0C 
+       FC DD CD D3 
+       D1 C7 D3 E8 
+       EC E9 F3 09 
+       17 20 2B 36 
+       3A 32 25 17 
+       15 15 16 19 
+       11 0D 03 FA 
+       F6 E9 DE DF 
+       E0 D7 D7 D4 
+       BE BE D7 ED 
+       03 10 10 0F 
+       0A FF 05 0E 
+       12 1C 26 25 
+       1D 16 17 29 
+       33 21 10 0F 
+       FF DA C6 D2 
+       D5 CC D5 E9 
+       F0 E8 F0 07 
+       1B 23 28 32 
+       37 31 26 1B 
+       19 19 1A 17 
+       12 0E 04 FB 
+       EF E0 DC E3 
+       E0 D2 D6 D6 
+       BF C0 DC F1 
+       02 0E 10 11 
+       0D 00 02 0C 
+       15 23 29 1F 
+       1B 18 1C 2B 
+       30 22 14 12 
+       FD DE C9 CD 
+       CB C7 D9 EC 
+       EE E8 F5 0A 
+       19 23 2C 37 
+       39 2F 23 1A 
+       17 17 1E 1C 
+       12 0B FF F6 
+       F2 E9 E0 DE 
+       DC D2 D2 D4 
+       C3 C3 D6 E8 
+       FF 11 0F 0C 
+       0B 00 03 0E 
+       17 22 26 1D 
+       1A 1A 1E 2B 
+       2C 1E 15 15 
+       FD DC C7 CE 
+       D0 C9 D6 E8 
+       E9 E8 F8 0E 
+       1A 22 29 32 
+       37 2E 23 17 
+       14 19 21 1D 
+       0F 0A 00 F8 
+       F4 E5 D9 DA 
+       DA CF D2 D6 
+       BF BE D7 EF 
+       04 0F 0B 0B 
+       07 FA 01 0E 
+       10 18 23 1D 
+       18 18 1C 2D 
+       32 22 16 13 
+       FD DC C5 C9 
+       CF C7 CE E2 
+       EA EA F7 0D 
+       1C 22 29 33 
+       37 2B 1E 17 
+       14 19 20 1B 
+       0D 09 01 F7 
+       F6 EA D9 D2 
+       D7 D1 CF CF 
+       BC BE D3 E7 
+       FB 07 08 0C 
+       0B FE 02 0C 
+       0C 18 2A 22 
+       16 18 1C 29 
+       30 24 18 14 
+       FF DD C7 CB 
+       D1 C7 CB DE 
+       E6 E4 F0 09 
+       1A 1D 23 30 
+       36 2E 21 17 
+       12 1B 20 1B 
+       10 0C 05 F4 
+       F0 E9 DF D8 
+       D5 CF CE D0 
+       BE B9 CD E3 
+       F4 FF 05 0B 
+       0E 00 FF 0D 
+       0E 16 27 22 
+       15 14 18 28 
+       34 29 12 0D 
+       06 EA CB C8 
+       D2 C8 C6 D7 
+       E6 E4 E8 FD 
+       17 1E 22 2D 
+       35 2E 1F 19 
+       17 1D 1E 19 
+       0D 07 05 F9 
+       F1 EB DF D9 
+       D1 CA CB CF 
+       C2 B6 C8 E0 
+       ED F8 04 0D 
+       13 07 FE 0A 
+       0E 17 2A 26 
+       16 15 1B 27 
+       30 29 18 0F 
+       08 EF D4 C7 
+       C9 C7 C5 D3 
+       E0 DE DE F3 
+       13 20 20 27 
+       31 2F 21 19 
+       19 1A 1A 1A 
+       18 0A 03 FE 
+       F5 F3 EA DF 
+       D0 C7 C7 CA 
+       C9 BA C0 D4 
+       E4 F4 03 0B 
+       12 0D FE 05 
+       11 15 20 26 
+       1D 18 1B 28 
+       30 2C 1F 15 
+       0F F9 DE C6 
+       C7 CF C7 C9 
+       D3 D8 DB EC 
+       05 1A 1D 1F 
+       2D 33 28 1B 
+       16 19 1F 20 
+       1B 0F 05 02 
+       FD FE F4 DF 
+       CE CB CB C7 
+       C8 C0 BB CA 
+       E2 F4 FF 04 
+       0E 18 0A 02 
+       0E 0F 14 23 
+       24 1B 19 21 
+       2D 30 27 1A 
+       14 05 E9 CF 
+       C8 CD C5 C2 
+       CC D8 D8 E0 
+       F5 11 1F 22 
+       2F 36 2B 1D 
+       1E 1F 24 23 
+       19 10 08 08 
+       06 FC F5 E6 
+       D3 CA CE C9 
+       C1 C0 BB C4 
+       DA EA F2 FF 
+       0F 1D 18 07 
+       09 14 16 1F 
+       2B 28 1D 1C 
+       28 32 2F 1F 
+       13 0C FC DF 
+       C8 CB CB C1 
+       C3 D2 D9 D5 
+       E2 02 1C 1F 
+       26 33 33 29 
+       24 24 24 24 
+       22 1D 13 07 
+       03 FD F9 F5 
+       E2 CE C8 C7 
+       C4 C5 C5 C0 
+       CB DD ED FC 
+       0C 19 1D 10 
+       04 12 1B 19 
+       22 2C 23 1E 
+       26 2F 33 28 
+       1C 15 0A F0 
+       D2 C9 CF C8 
+       BE C4 D1 D4 
+       D9 EE 0E 21 
+       23 30 39 33 
+       28 26 25 27 
+       24 1B 15 0B 
+       05 05 FF FD 
+       F1 DA CD CC 
+       CA C3 C4 C0 
+       C1 D2 E5 F1 
+       02 13 1F 22 
+       11 0B 1B 1B 
+       19 2B 32 26 
+       1F 24 2F 34 
+       25 15 11 04 
+       E2 CA C9 CD 
+       C4 BB C3 D0 
+       D4 E0 FB 17 
+       21 27 35 37 
+       32 29 25 27 
+       2D 27 1B 14 
+       0C 08 04 FE 
+       FB F0 D7 C9 
+       CB C8 C0 C5 
+       C4 C6 D8 E7 
+       F8 10 1B 1E 
+       1E 10 0F 1B 
+       1B 21 2F 2D 
+       23 22 29 34 
+       34 20 0F 09 
+       FE E1 C8 C8 
+       CB BF B9 C7 
+       D2 D4 E3 FF 
+       1B 27 2E 38 
+       3A 31 27 2A 
+       2E 2C 25 1A 
+       11 0B 09 09 
+       03 F8 EA DB 
+       CD C8 C5 BF 
+       C4 C4 CC DD 
+       E9 FB 14 1E 
+       21 1E 0E 13 
+       1E 1C 25 30 
+       2B 26 26 29 
+       32 2C 17 0C 
+       07 F8 DB C2 
+       C0 C8 C2 B8 
+       C0 CD D4 E9 
+       05 21 2B 2C 
+       38 41 3B 2E 
+       2B 2E 30 24 
+       1A 14 0C 07 
+       07 05 FD E9 
+       D2 C5 C1 BD 
+       BE C3 C2 CA 
+       D8 E5 FB 13 
+       1E 24 20 12 
+       16 1F 1F 29 
+       34 2E 24 25 
+       2B 34 2B 16 
+       0B 06 F7 D9 
+       C1 C0 C5 B9 
+       B1 BD CB D4 
+       E4 FD 1D 2B 
+       2F 3C 42 3B 
+       2D 2B 33 34 
+       23 13 10 0E 
+       09 0C 0A FA 
+       E5 D2 C7 C3 
+       BC B8 C3 C3 
+       C9 D9 E6 F9 
+       13 20 26 23 
+       12 14 21 23 
+       2A 34 2E 24 
+       24 29 31 2A 
+       14 03 01 FA 
+       D8 BB BA BE 
+       B7 B0 B8 C8 
+       D4 E3 FF 21 
+       2D 30 3B 45 
+       40 31 2B 30 
+       32 24 17 13 
+       0B 08 0E 0B 
+       FE E8 CD BE 
+       BD BB BB C3 
+       C4 C5 D4 E5 
+       F8 10 1E 27 
+       25 14 13 23 
+       24 25 33 31 
+       24 22 26 2B 
+       26 13 05 02 
+       F8 D9 BD B5 
+       B9 B5 AC B0 
+       C4 D3 DF F8 
+       1B 30 33 3D 
+       44 42 36 2C 
+       2F 32 25 18 
+       15 10 0E 13 
+       0C FC EC D3 
+       C0 B9 B7 B7 
+       BE C3 C3 D0 
+       E3 F1 03 18 
+       25 23 14 13 
+       20 26 27 30 
+       33 27 1E 22 
+       2B 28 15 05 
+       00 FE E4 C1 
+       B3 B8 B6 A9 
+       AD C2 D1 DB 
+       F2 13 2D 33 
+       37 41 43 37 
+       2D 2D 2E 26 
+       1C 14 0D 0B 
+       11 0D FD E7 
+       CE C0 B9 BB 
+       BC C0 C6 C5 
+       CE E4 F4 01 
+       15 22 21 18 
+       12 1F 26 27 
+       2E 31 24 1B 
+       20 26 27 16 
+       02 FB FD E8 
+       C4 AF B3 B3 
+       AA AD BF CE 
+       DB F0 0F 30 
+       36 35 40 45 
+       39 2D 2B 2C 
+       28 21 1C 15 
+       0A 09 0B FF 
+       EC D5 C2 B4 
+       B2 B4 BC C9 
+       C7 CB DF EE 
+       FC 12 21 25 
+       1D 15 1E 28 
+       26 28 2D 28 
+       1F 20 22 25 
+       19 07 FD FD 
+       F2 CE B0 AB 
+       B2 AF AB B6 
+       CA D8 EA 01 
+       24 38 38 3F 
+       47 3F 2E 29 
+       2C 2F 28 20 
+       15 0D 0B 0B 
+       01 F0 DC C6 
+       B8 B7 B9 BE 
+       C7 CC CB D7 
+       E9 F2 04 17 
+       22 24 1F 1A 
+       25 2D 2B 2B 
+       2B 23 20 22 
+       20 1E 13 05 
+       F9 F5 E0 BA 
+       A7 AF B0 AD 
+       AE C3 D9 E8 
+       F9 16 35 38 
+       39 43 45 35 
+       2B 29 2E 2C 
+       26 1F 15 0E 
+       09 05 F7 E8 
+       D5 BE B5 BD 
+       BF C4 CE CE 
+       CF E2 ED FB 
+       11 1B 23 29 
+       22 20 2C 2C 
+       2A 29 26 22 
+       25 21 1D 19 
+       0D FE F8 EE 
+       CC AB A8 B4 
+       B1 AC BA D4 
+       E4 F2 08 2A 
+       39 37 40 48 
+       41 31 2A 2E 
+       33 2D 23 18 
+       10 0E 09 00 
+       F2 E1 CC BA 
+       BE C4 C3 C8 
+       CB CC DA E6 
+       EC 02 1A 25 
+       2B 29 23 27 
+       2A 29 2B 2B 
+       26 21 20 20 
+       21 16 07 FD 
+       F8 E0 B6 A6 
+       B3 B7 B0 B4 
+       C8 DD EB FA 
+       15 31 36 39 
+       42 45 39 2A 
+       29 32 36 2B 
+       1C 12 10 0C 
+       06 F9 EE E0 
+       C6 BC C5 C9 
+       C9 CC CA D2 
+       E3 E9 F4 10 
+       25 29 2A 23 
+       23 2C 26 21 
+       26 29 21 1D 
+       1F 23 1C 0D 
+       00 FD F2 CA 
+       AA AD BA B8 
+       B5 BF D6 E8 
+       F1 03 25 37 
+       37 3B 44 41 
+       31 28 2D 37 
+       2E 21 12 0C 
+       0E 08 FB EE 
+       E8 D7 C4 C2 
+       C7 C9 CB CB 
+       D0 DF E8 EC 
+       03 1F 2C 2F 
+       29 23 28 28 
+       21 21 26 26 
+       21 1E 20 1F 
+       10 02 FA F5 
+       DC B5 A6 B4 
+       BD B9 B9 CA 
+       E1 EF F9 10 
+       32 3A 3A 42 
+       46 3A 2F 30 
+       35 32 24 1A 
+       0D 08 09 02 
+       F7 F0 E1 C7 
+       BC C1 C8 CD 
+       CC CA CE DC 
+       EC FA 11 27 
+       2E 2A 21 23 
+       29 23 1D 27 
+       2B 22 1F 22 
+       21 15 0C 00 
+       F7 E8 C8 AD 
+       AD BA BC B8 
+       BE D2 E6 F1 
+       FF 20 35 37 
+       3D 44 3E 35 
+       2D 31 34 29 
+       1B 11 0C 0B 
+       08 FF F5 E8 
+       D3 C3 C4 C6 
+       C9 CD CA C9 
+       DB EA F1 05 
+       20 2D 2B 22 
+       1C 20 1F 1F 
+       24 26 20 1D 
+       1F 22 1B 0C 
+       FF F6 F1 D9 
+       B6 A9 B4 BB 
+       BA BE CC DD 
+       EC FA 13 32 
+       38 39 44 46 
+       3A 2D 2B 31 
+       2D 21 18 0D 
+       08 08 04 F9 
+       EF DE C5 BB 
+       BE C5 C9 C9 
+       C8 D0 E1 EE 
+       FE 14 28 2C 
+       25 1A 1D 22 
+       1D 1F 26 26 
+       20 1F 22 1E 
+       10 04 FD F6 
+       E5 C5 AD B0 
+       BE BE B5 BD 
+       D3 E6 F1 00 
+       21 35 39 40 
+       48 3F 30 2B 
+       2F 32 26 18 
+       0E 09 0C 0A 
+       FE F4 E7 CD 
+       BD C0 C4 C6 
+       C7 C8 CB D8 
+       E6 F3 09 1C 
+       27 26 19 19 
+       21 1E 1F 27 
+       25 1D 1C 21 
+       22 15 08 00 
+       F9 EE D2 B8 
+       B2 BA BD B5 
+       B7 CA DF EB 
+       F6 16 33 38 
+       3C 46 41 33 
+       2D 2E 2F 27 
+       19 10 0C 0B 
+       0A 02 F7 EC 
+       D8 C0 BA C0 
+       C6 C8 C8 CA 
+       D5 E4 F0 04 
+       18 24 25 1C 
+       16 1D 1E 1C 
+       24 27 1F 1B 
+       1C 20 1A 08 
+       FE F9 F4 E0 
+       C0 B0 B5 BB 
+       B5 B6 C7 D8 
+       E5 F3 10 30 
+       3A 3B 46 46 
+       36 2E 2B 2D 
+       2A 21 16 0B 
+       06 09 05 FC 
+       F1 DD C2 B6 
+       BC C6 CC CD 
+       C8 CE E3 F0 
+       FD 11 1F 26 
+       1F 11 16 1F 
+       1E 25 2C 25 
+       1B 19 1C 1D 
+       10 02 F7 F3 
+       E7 C9 B2 B2 
+       BC B8 B4 C2 
+       D3 E1 EF 0A 
+       29 37 3A 41 
+       47 3B 30 2A 
+       2A 2A 22 1A 
+       0F 0B 0C 07 
+       FB EE DD CA 
+       BB BD C2 C4 
+       CB CA CC E1 
+       EE F7 0C 19 
+       21 1F 13 14 
+       1C 20 29 29 
+       1F 1A 1A 1D 
+       1E 14 03 F7 
+       F5 EE D4 B7 
+       B1 B8 B7 B3 
+       C0 CF DE F0 
+       07 26 33 36 
+       40 4A 3E 2E 
+       26 27 29 24 
+       1D 14 08 08 
+       0C 03 F0 DB 
+       CD BE BB C1 
+       C7 CE C9 CE 
+       E0 ED F6 0A 
+       1A 1E 19 10 
+       16 1D 1E 26 
+       2D 20 18 1E 
+       24 22 16 06 
+       FD FB EE D3 
+       BA B3 BA B9 
+       B3 C1 CF DB 
+       EF 0A 27 32 
+       33 3B 48 3C 
+       28 22 29 27 
+       1E 1B 16 0E 
+       0B 0D 05 F4 
+       DB CF C6 C1 
+       C2 C7 CE CC 
+       D2 E1 EE FA 
+       0C 18 1C 15 
+       0D 14 1B 1E 
+       2A 2D 1F 14 
+       18 23 27 1A 
+       09 FF FB EE 
+       D5 C2 BB BC 
+       B6 B5 C5 D4 
+       E1 F2 0B 26 
+       30 31 3C 47 
+       37 24 23 28 
+       26 1F 1C 15 
+       0D 0A 0A 06 
+       F8 DE CB C5 
+       C4 C6 CB CE 
+       CB D6 E5 F2 
+       FF 0E 19 1C 
+       11 0A 19 1D 
+       19 27 30 20 
+       13 19 28 28 
+       18 08 01 00 
+       EE D4 C2 BE 
+       BE B6 B8 C9 
+       D8 E4 F4 10 
+       2C 30 33 3E 
+       41 35 29 21 
+       22 23 1E 17 
+       14 10 0D 08 
+       FD F2 DE D1 
+       CB C8 C8 CE 
+       CD CB DD ED 
+       F6 00 0E 1A 
+       1C 0C 0A 1B 
+       1D 21 2E 2D 
+       1F 14 19 27 
+       29 19 0A 00 
+       FC ED D1 C3 
+       C4 C1 B7 BE 
+       CF DC EB FC 
+       18 28 2A 33 
+       3E 3B 30 28 
+       21 21 21 1F 
+       1D 11 0B 0B 
+       06 FD E9 D8 
+       D0 CA C6 CD 
+       D7 CD D2 E7 
+       F4 00 0B 14 
+       19 13 05 0D 
+       1C 1D 25 2D 
+       24 17 18 25 
+       29 20 15 09 
+       02 F7 E1 CE 
+       C5 C4 BD BC 
+       C8 D4 E1 F3 
+       0A 25 2C 2E 
+       39 3B 33 2D 
+       27 22 1F 1D 
+       19 13 13 11 
+       0B 03 F4 E0 
+       D7 D1 CF CC 
+       CE CB C9 DD 
+       F1 FB 07 11 
+       16 17 09 05 
+       14 19 1C 2E 
+       2E 1D 15 1C 
+       28 29 1F 12 
+       0A 01 EC D8 
+       CC C8 C5 BA 
+       BE CE D7 E8 
+       FF 1A 28 28 
+       2E 3A 37 2C 
+       27 20 1D 1E 
+       1B 17 15 14 
+       0C 03 FF F0 
+       DC D2 D1 CF 
+       D0 D0 C6 D2 
+       EB F7 02 0E 
+       13 17 0D FC 
+       04 14 1A 25 
+       2B 21 19 16 
+       20 2B 24 18 
+       0E 0A F9 E1 
+       D0 CF CC C0 
+       C3 D1 D4 DE 
+       F5 0E 22 26 
+       2C 37 34 25 
+       24 20 1A 1B 
+       1C 15 0B 0D 
+       0F 06 00 F3 
+       E0 D7 D6 D3 
+       D4 D8 C9 CC 
+       E7 F7 03 0E 
+       12 14 11 00 
+       01 0E 11 1B 
+       28 23 19 16 
+       1B 24 23 1B 
+       10 0C 00 E7 
+       D2 CE D0 C7 
+       C4 D0 D6 D9 
+       EB 08 1F 25 
+       29 33 35 28 
+       21 1F 19 15 
+       19 18 0C 0A 
+       0E 04 FC F2 
+       E6 DC D6 D4 
+       D3 D5 C7 C8 
+       E3 F7 FF 08 
+       10 13 0F 02 
+       01 08 0A 18 
+       29 23 1A 19 
+       1E 21 1F 1A 
+       12 0D 03 EC 
+       D5 CE CF C9 
+       C8 D1 D6 DA 
+       E6 02 19 1E 
+       24 33 35 26 
+       1F 1B 14 11 
+       16 1B 11 07 
+       08 02 FC F2 
+       E6 E0 D9 D2 
+       D1 D8 CA C9 
+       E1 F3 00 0A 
+       10 12 0F FF 
+       FF 09 08 14 
+       26 21 16 14 
+       1D 25 1F 15 
+       0E 0D 03 ED 
+       D7 D0 D0 C8 
+       C7 D4 DD E0 
+       E4 FA 17 20 
+       26 32 36 29 
+       21 1A 13 11 
+       13 15 0C 05 
+       05 00 F9 EE 
+       E4 DF D9 D2 
+       D4 DA C7 C1 
+       DC F5 00 08 
+       0F 16 10 FD 
+       FD 0B 0C 12 
+       21 1E 15 15 
+       1C 23 21 16 
+       0C 08 00 EC 
+       D6 D0 D3 CB 
+       C8 D8 DF E1 
+       E8 FD 14 1B 
+       20 2F 36 2A 
+       21 1B 0F 0A 
+       12 17 11 09 
+       02 FD F8 EA 
+       DF DE DE D5 
+       D1 D5 C8 C4 
+       D7 EE 02 0F 
+       0D 0C 09 FB 
+       FB 03 05 17 
+       25 19 0E 12 
+       1E 28 25 18 
+       0F 0B FE E6 
+       D7 D4 D3 CA 
+       C9 D9 E0 E2 
+       E9 FE 12 18 
+       21 32 38 2A 
+       20 18 0D 08 
+       0C 11 0E 07 
+       01 F6 F1 EC 
+       E3 DF DD D5 
+       D4 D6 C5 C4 
+       D6 EB 03 0D 
+       0C 0F 0A F8 
+       F9 05 0C 16 
+       1D 19 13 11 
+       17 25 23 15 
+       0B 0A FE DF 
+       CE D0 D1 C8 
+       CC DC E2 E6 
+       ED 02 13 18 
+       21 32 39 2C 
+       22 19 0D 0B 
+       12 14 0A 05 
+       FE F3 ED E8 
+       E0 DE D9 CE 
+       D2 D4 C2 C2 
+       D1 E4 01 0F 
+       0C 0C 09 FC 
+       FB 03 0D 19 
+       20 1C 15 12 
+       1A 25 23 18 
+       11 0F FA D9 
+       C8 CF D1 C8 
+       CF DD E3 E4 
+       EE 05 13 17 
+       20 34 39 29 
+       1F 1A 14 10 
+       11 10 09 08 
+       FF F1 ED E3 
+       DA DB DF D7 
+       D2 CF C0 C7 
+       D5 E5 00 0D 
+       0A 09 08 FC 
+       FC 02 0D 1C 
+       23 1D 16 13 
+       1B 24 23 1B 
+       11 0C F7 D5 
+       C5 CF D3 C9 
+       CF E1 EC E8 
+       F0 09 17 1B 
+       23 34 3A 2B 
+       1E 1A 15 12 
+       12 10 08 0A 
+       03 EE E4 E1 
+       DD E0 DF D4 
+       D7 D0 BC C6 
+       DC EB 01 0B 
+       0C 0E 04 F8 
+       FB 05 10 1D 
+       21 1B 11 13 
+       1E 27 29 1E 
+       10 0A FA DA 
+       C8 CF D5 D1 
+       D6 E2 EB F0 
+       F3 07 1A 20 
+       27 34 35 28 
+       21 18 16 16 
+       16 12 08 08 
+       FE F1 EC E4 
+       DB DD DE D6 
+       DA D5 C5 C7 
+       D7 EF 07 0E 
+       0B 0B 07 F9 
+       FB 07 11 1B 
+       21 1B 12 14 
+       22 2C 28 1D 
+       18 13 F9 D8 
+       CB D8 D7 CD 
+       D7 E6 EB EC 
+       FA 11 1C 1D 
+       28 39 35 28 
+       21 1A 15 18 
+       1C 16 0D 0B 
+       00 F3 EF E8 
+       E0 DA DF DB 
+       DA D1 C3 C8 
+       D6 ED 07 0E 
+       08 0A 06 F9 
+       FD 08 12 20 
+       22 19 16 1D 
+       22 2D 32 28 
+       19 10 FE E0 
+       CD D4 DC D2 
+       D5 E4 EE F0 
+       FA 13 1F 1C 
+       26 37 34 25 
+       1F 1B 17 17 
+       1A 18 12 11 
+       03 F7 F2 E9 
+       E3 E1 DF D7 
+       DA D5 C4 C7 
+       D9 EF 04 0B 
+       0C 0C 03 F8 
+       FD 08 11 21 
+       26 19 13 1C 
+       2A 34 32 24 
+       1B 14 FF    
+04495D             0306   
+04495D             0307   
+04495D 17 00 85    0308   	.db     23,0,85h                    	; audio command
+044960 FF 05       0309   	.db     -1, 5                       	; sample number, sample management
+044962 03          0310   	.db     3                           	; set baseline freq
+044963 08 01       0311   	.dw     264								; the base freq
+044965             0312   
+044965             0313   
+044965 17 00 85 00 0314   	.db 23, 0, $85, 0, 4					; set ch0 to sample mode
+       04          
+04496A FF          0315   	.db -1									; set which sample
+04496B             0316   
+04496B             0317   
+04496B 17 00 85 00 0318   	.db 23, 0, $85, 0, 6, 1					; set ch0 envelope
+       06 01       
+044971 50 00       0319   	.dw 80									; Attack
+044973 78 00       0320   	.dw 120									; Decay
+044975 3F          0321   	.db 63									; Sustain
+044976 40 06       0322   	.dw 1600								; Release
+044978             0323   
+044978             0324   
+044978             0325   
+044978             0326   endSampleStr:
+044978             0327   
+044978             0328   
+044978             0329   
+044978             0330   ; ---------------------------------------------
+044978             0331   ; Adapted from Hexload source
+044978             0332   
+044978             0333   uart1_handler:
+044978 F3          0334   	DI
+044979 F5          0335   	PUSH	AF
+04497A ED 38 D5    0336   	IN0	A,(REG_LSR)				; Get the line status register
+04497D E6 01       0337   	AND	UART_LSR_RDY				; Check for characters in buffer
+04497F 28 18       0338   	JR	Z, noData 				; Nothing received
+044981             0339   
+044981 3E 01       0340   	LD	A,1   					; we got new data
+044983 32 A2 49 04 0341   	LD	(uart1_received),a 			; so set flag fro new data
+044987 ED 38 D0    0342   	IN0	A,(REG_RBR)				; Read the character from the UART receive buffer
+04498A 32 A1 49 04 0343   	LD	(uart1_buffer),A  			; store new byte of data
+04498E F1          0344   	POP	AF
+04498F FB          0345   	EI
+044990             0346   
+044990 3A A1 49 04 0347    	ld a, (uart1_buffer)				; check it is a control code. Exit if not
+044994 32 A2 49 04 0348   	LD (uart1_received), A				; store it
+044998             0349   
+044998 C9          0350   	RET
+044999             0351   
+044999             0352   noData:
+044999 AF          0353   	XOR 	A,A
+04499A 32 A2 49 04 0354   	LD	(uart1_received),A			; note that nothing is available
+04499E F1          0355   	POP	AF
+04499F FB          0356   	EI
+0449A0             0357   
+0449A0 C9          0358   	RET
+0449A1             0359   
+0449A1 01          0360   uart1_buffer:		.db	1			; 64 byte receive buffer
+0449A2 01          0361   uart1_received:		.db	1			; boolean
+0449A3 01          0362   uart1_data:		.db	1			; final pot value received
+0449A4 00          0363   uart1_command: 		.db 	0			; current command received
+0449A5             0364   
+0449A5             0365   ; ---------------------------------------------
+0449A5             0366   ;
+0449A5             0367   ;	UART CODE
+0449A5             0368   ;
+0449A5             0369   ; ---------------------------------------------
+0449A5             0370   
+0449A5             0371   openUART1:
+0449A5 DD 21 B4 49 0372   	ld ix, UART1_Struct
+       04          
+0449AA             0373   	MOSCALL $15					; open uart1
+0449AA 3E 15       0001M  	ld a, afunc
+0449AC 5B CF       0002M  	rst.lil $08
+0449AE C9          0374   	ret
+0449AF             0375   
+0449AF             0376   ; ---------------------------------------------
+0449AF             0377   
+0449AF             0378   closeUART1:
+0449AF             0379   	MOSCALL $16 					; close uart1
+0449AF 3E 16       0001M  	ld a, afunc
+0449B1 5B CF       0002M  	rst.lil $08
+0449B3 C9          0380   	ret
+0449B4             0381   
+0449B4             0382   ; ---------------------------------------------
+0449B4             0383   
+0449B4             0384   UART1_Struct:
+0449B4 00 C2 01    0385   	.dl 	115200; 9600					; baud (stored as three byte LONG)
+0449B7 08          0386   	.db 	8 					; data bits
+0449B8 01          0387   	.db 	1 					; stop bits
+0449B9 00          0388   	.db 	0 					; parity bits
+0449BA 00          0389   	.db 	0					; flow control
+0449BB 00          0390   	.db 	0					; interrupt bits
+0449BC             0391   
+0449BC             0392   ; ---------------------------------------------
+0449BC             0393   ;
+0449BC             0394   ;	EXIT CODE CLEANLY
+0449BC             0395   ;
+0449BC             0396   ; ---------------------------------------------
+0449BC             0397   
+0449BC             0398   exit_here:
+0449BC             0399   
+0449BC CD AF 49 04 0400   	call closeUART1
+0449C0 CD D0 49 04 0401   	call CLS
+0449C4             0402   							; reset all values before returning to MOS
+0449C4 FD E1       0403   	pop iy
+0449C6 DD E1       0404   	pop ix
+0449C8 D1          0405   	pop de
+0449C9 C1          0406   	pop bc
+0449CA F1          0407   	pop af
+0449CB 21 00 00 00 0408   	ld hl,0
+0449CF             0409   
+0449CF C9          0410   	ret						; return to MOS here
+0449D0             0411   
+0449D0             0412   ; ---------------------------------------------
+0449D0             0413   ;
+0449D0             0414   ;	OTHER ROUTINES
+0449D0             0415   ;
+0449D0             0416   ; ---------------------------------------------
+0449D0             0417   
+0449D0             0418   CLS:
+0449D0 3E 0C       0419   	ld a, 12
+0449D2 5B D7       0420   	rst.lil $10					; CLS
+0449D4 C9          0421   	ret
+0449D5             0422   
+0449D5             0423   ; ---------------------------------------------
+0449D5             0424   
+0449D5             0425   hidecursor:
+0449D5 F5          0426   	push af
+0449D6 3E 17       0427   	ld a, 23
+0449D8 5B D7       0428   	rst.lil $10
+0449DA 3E 01       0429   	ld a, 1
+0449DC 5B D7       0430   	rst.lil $10
+0449DE 3E 00       0431   	ld a,0
+0449E0 5B D7       0432   	rst.lil $10	;VDU 23,1,0
+0449E2 F1          0433   	pop af
+0449E3 C9          0434   	ret
+0449E4             0435   
+0449E4             0436   
+0449E4             0437   ; ---------------------------------------------
+0449E4             0438   ; strings used
+0449E4             0439   
+0449E4 0D 0A 00    0440   LINEFEED:           .asciz "\r\n"
+0449E7             0441   
+0449E7             0442   printString:                ; print zero terminated string
+0449E7 7E          0443       ld a,(hl)
+0449E8 B7          0444       or a
+0449E9 C8          0445       ret z
+0449EA 5B D7       0446       RST.LIL 10h
+0449EC 23          0447       inc hl
+0449ED 18 F8       0448       jr printString
+0449EF             0449   
+0449EF             0450   
+0449EF             0451   ; ---------------------------------------------
+0449EF             0452   ;
+0449EF             0453   ;	DEBUG ROUTINES
+0449EF             0454   ;
+0449EF             0455   ; ---------------------------------------------
+0449EF             0456   
+0449EF             0457   ; ---------------------------------
+0449EF             0458   ; print decimal value of 0 -> 255 to screen at current TAB position
+0449EF             0459   
+0449EF             0460   printDec:               ; debug A to screen as 3 char string pos
+0449EF             0461   
+0449EF 32 32 4A 04 0462       ld (base),a         ; save
+0449F3             0463   
+0449F3 FE C8       0464       cp 200              ; are we under 200 ?
+0449F5 38 0C       0465       jr c,_under200      ; not 200+
+0449F7 D6 C8       0466       sub a, 200
+0449F9 32 32 4A 04 0467       ld (base),a         ; sub 200 and save
+0449FD             0468   
+0449FD 3E 32       0469       ld a, '2'           ; 2 in ascii
+0449FF 5B D7       0470       rst.lil $10         ; print out a '200' digit
+044A01             0471   
+044A01 18 0E       0472       jr _under100
+044A03             0473   
+044A03             0474   _under200:
+044A03 FE 64       0475       cp 100              ; are we under 100 ?
+044A05 38 0A       0476       jr c,_under100      ; not 200+
+044A07 D6 64       0477       sub a, 100
+044A09 32 32 4A 04 0478       ld (base),a         ; sub 100 and save
+044A0D             0479   
+044A0D 3E 31       0480       ld a, '1'           ; 1 in ascii
+044A0F 5B D7       0481       rst.lil $10         ; print out a '100' digit
+044A11             0482   
+044A11             0483   _under100:
+044A11 3A 32 4A 04 0484       ld a, (base)        ; get last 2 digits as decimal
+044A15 4F          0485       ld c,a              ; store numerator in C
+044A16 16 0A       0486       ld d, 10            ; D will be denominator
+044A18 CD 33 4A 04 0487       call C_Div_D        ; divide C by 10 to get two parts.
+044A1C             0488                           ; A is the remainder, C is the int of C/D
+044A1C             0489   
+044A1C 47          0490       ld b, a             ; put remainder ascii into B
+044A1D             0491   
+044A1D 79          0492       ld a, c             ; get int div
+044A1E FE 00       0493       cp 0                ; if 0 (ie, number was <10)
+044A20 28 06       0494       jr z, _lastBut1    ; just do last digit
+044A22             0495   
+044A22 C6 30       0496       add a, 48           ; add 48 to make ascii of int C/D
+044A24 5B D7       0497       rst.lil $10         ; print out 10s digit
+044A26 18 04       0498       jr _lastDigit
+044A28             0499   
+044A28             0500   _lastBut1:
+044A28 C6 30       0501       add a, 48           ; add 48 to make ascii of int C/D
+044A2A 5B D7       0502       rst.lil $10         ; print out 10s digit
+044A2C             0503   
+044A2C             0504   _lastDigit:
+044A2C 78          0505       ld a,b              ; get remainder back
+044A2D C6 30       0506       add a, 48           ; add 48 to remainder to convert to ascii
+044A2F 5B D7       0507       rst.lil $10         ; print out last digit
+044A31             0508   
+044A31 C9          0509       ret
+044A32             0510   
+044A32 00          0511   base:   .db     0       ; used in calculations
+044A33             0512   
+044A33             0513   ; -----------------
+044A33             0514   
+044A33             0515   C_Div_D:
+044A33             0516   ;Inputs:
+044A33             0517   ;     C is the numerator
+044A33             0518   ;     D is the denominator
+044A33             0519   ;Outputs:
+044A33             0520   ;     A is the remainder
+044A33             0521   ;     B is 0
+044A33             0522   ;     C is the result of C/D
+044A33             0523   ;     D,E,H,L are not changed
+044A33             0524   ;
+044A33 06 08       0525       ld b,8              ; B is counter = 8
+044A35 AF          0526       xor a               ; [loop] clear flags
+044A36 CB 21       0527       sla c               ; C = C x 2
+044A38 17          0528       rla                 ; A = A x 2 + Carry
+044A39 BA          0529       cp d                ; compare A with Denominator
+044A3A 38 02       0530       jr c,$+4            ; if bigger go to loop
+044A3C 0C          0531       inc c               ; inc Numerator
+044A3D 92          0532       sub d               ; A = A - denominator
+044A3E 10 F6       0533       djnz $-8            ; go round loop
+044A40 C9          0534       ret                 ; done 8 times, so return
+044A41             0535   
+044A41             0536   ; not sure how this works, need to get my head around it!
+044A41             0537   ; ---------------------------------
+044A41             0538   
+044A41             0539   
+044A41             0540   debugA:				; debug A to screen as HEX byte pair at pos BC
+044A41 F5          0541   	push af
+044A42 32 7C 4A 04 0542   	ld (debug_char), a	; store A
+044A46             0543   				; first, print 'A=' at TAB 36,0
+044A46 3E 1F       0544   	ld a, 31		; TAB at x,y
+044A48 5B D7       0545   	rst.lil $10
+044A4A 78          0546   	ld a, b			; x=b
+044A4B 5B D7       0547   	rst.lil $10
+044A4D 79          0548   	ld a,c			; y=c
+044A4E 5B D7       0549   	rst.lil $10		; put tab at BC position
+044A50             0550   
+044A50 3A 7C 4A 04 0551   	ld a, (debug_char)	; get A from store, then split into two nibbles
+044A54 E6 F0       0552   	and 11110000b		; get higher nibble
+044A56 1F          0553   	rra
+044A57 1F          0554   	rra
+044A58 1F          0555   	rra
+044A59 1F          0556   	rra			; move across to lower nibble
+044A5A C6 30       0557   	add a,48		; increase to ascii code range 0-9
+044A5C FE 3A       0558   	cp 58			; is A less than 10? (58+)
+044A5E 38 02       0559   	jr c, nextbd1		; carry on if less
+044A60 C6 07       0560   	add a, 7		; add to get 'A' char if larger than 10
+044A62             0561   nextbd1:
+044A62 5B D7       0562   	rst.lil $10		; print the A char
+044A64             0563   
+044A64 3A 7C 4A 04 0564   	ld a, (debug_char)	; get A back again
+044A68 E6 0F       0565   	and 00001111b		; now just get lower nibble
+044A6A C6 30       0566   	add a,48		; increase to ascii code range 0-9
+044A6C FE 3A       0567   	cp 58			; is A less than 10 (58+)
+044A6E DA 74 4A 04 0568   	jp c, nextbd2		; carry on if less
+044A72 C6 07       0569   	add a, 7		; add to get 'A' char if larger than 10
+044A74             0570   nextbd2:
+044A74 5B D7       0571   	rst.lil $10		; print the A char
+044A76             0572   
+044A76 3A 7C 4A 04 0573   	ld a, (debug_char)
+044A7A F1          0574   	pop af
+044A7B C9          0575   	ret			; head back
+044A7C             0576   
+044A7C 00          0577   debug_char: 	.db 0
+044A7D             0578   
+044A7D             0579   ; ---------------------------------------------
+044A7D             0580   ;
+044A7D             0581   ;	TEXT AND DATA
+044A7D             0582   ;
+044A7D             0583   ; ---------------------------------------------
+044A7D             0584   
+044A7D             0585   text_data:
+044A7D             0586   
+044A7D 1F 00 00 4D 0587   	.db 31, 0, 0, "Midi reader"
+       69 64 69 20 
+       72 65 61 64 
+       65 72       
+044A8B 1F 00 02 4E 0588   	.db 31, 0, 2, "Note:"
+       6F 74 65 3A 
+044A93 1F 00 04 56 0589   	.db 31, 0, 4, "Value:"
+       61 6C 75 65 
+       3A          
+044A9C 1F 00 06 66 0590   	.db 31, 0, 6, "freq:"
+       72 65 71 3A 
+044AA4 1F 00 0A 6F 0591   	.db 31, 0, 10, "offset:"
+       66 66 73 65 
+       74 3A       
+044AAE             0592   
+044AAE             0593   end_text_data:
+044AAE             0594   
+044AAE             0595   ; set tab to B,C
+044AAE             0596   setTAB:
+044AAE F5          0597   	push af
+044AAF 3E 1F       0598   	ld a, 31
+044AB1 5B D7       0599   	rst.lil $10    ; send text colour comd
+044AB3 78          0600   	ld a, b
+044AB4 5B D7       0601   	rst.lil $10    ; send text colour comd
+044AB6 79          0602   	ld a, c
+044AB7 5B D7       0603   	rst.lil $10    ; send text colour comd
+044AB9 F1          0604   	pop af
+044ABA C9          0605   	ret
+044ABB             0606   
+044ABB             0607   ; ---------------------------------------------
+044ABB             0608   ;
+044ABB             0609   ;	PORT CONSTANTS - FOR REFERENCE, NOT ALLL ARE USED
+044ABB             0610   ;
+044ABB             0611   ; ---------------------------------------------
+044ABB             0612   
+044ABB             0613   PORT:			EQU	$D0		; UART1
+044ABB             0614   
+044ABB             0615   REG_RBR:		EQU	PORT+0		; Receive buffer
+044ABB             0616   REG_THR:		EQU	PORT+0		; Transmitter holding
+044ABB             0617   REG_DLL:		EQU	PORT+0		; Divisor latch low
+044ABB             0618   REG_IER:		EQU	PORT+1		; Interrupt enable
+044ABB             0619   REG_DLH:		EQU	PORT+1		; Divisor latch high
+044ABB             0620   REG_IIR:		EQU	PORT+2		; Interrupt identification
+044ABB             0621   REG_FCT:		EQU	PORT+2;		; Flow control
+044ABB             0622   REG_LCR:		EQU	PORT+3		; Line control
+044ABB             0623   REG_MCR:		EQU	PORT+4		; Modem control
+044ABB             0624   REG_LSR:		EQU	PORT+5		; Line status
+044ABB             0625   REG_MSR:		EQU	PORT+6		; Modem status
+044ABB             0626   REG_SCR:		EQU 	PORT+7		; Scratch
+044ABB             0627   TX_WAIT:		EQU	16384 		; Count before a TX times out
+044ABB             0628   UART_LSR_ERR:		EQU 	$80		; Error
+044ABB             0629   UART_LSR_ETX:		EQU 	$40		; Transmit empty
+044ABB             0630   UART_LSR_ETH:		EQU	$20		; Transmit holding register empty
+044ABB             0631   UART_LSR_RDY:		EQU	%01		; Data ready
+044ABB             0632   
+044ABB             0633   
+044ABB             0634   ; ---------------------------------------------
+044ABB             0635   ;
+044ABB             0636   ;	NOTE data
+044ABB             0637   ;
+044ABB             0638   ; ---------------------------------------------
+044ABB             0639   
+044ABB             0640   
+044ABB             0641   midiFrequencies:
+044ABB             0642   
+044ABB 00 00       0643        .dw 0    ; 0
+044ABD 00 00       0644        .dw 0    ; 1
+044ABF 00 00       0645        .dw 0    ; 2
+044AC1 00 00       0646        .dw 0    ; 3
+044AC3 00 00       0647        .dw 0    ; 4
+044AC5 00 00       0648        .dw 0    ; 5
+044AC7 00 00       0649        .dw 0    ; 6
+044AC9 00 00       0650        .dw 0    ; 7
+044ACB 00 00       0651        .dw 0    ; 8
+044ACD 00 00       0652        .dw 0    ; 9
+044ACF 00 00       0653        .dw 0    ; 10
+044AD1 0F 00       0654        .dw 15    ; 11    Cb0
+044AD3 10 00       0655        .dw 16    ; 12    C0
+044AD5 11 00       0656        .dw 17    ; 13    Db0
+044AD7 12 00       0657        .dw 18    ; 14    D0
+044AD9 13 00       0658        .dw 19    ; 15    Eb0
+044ADB 13 00       0659        .dw 19    ; 15    D#0
+044ADD 14 00       0660        .dw 20    ; 16    E0
+044ADF 15 00       0661        .dw 21    ; 17    F0
+044AE1 17 00       0662        .dw 23    ; 18    Gb0
+044AE3 18 00       0663        .dw 24    ; 19    G0
+044AE5 19 00       0664        .dw 25    ; 20    Ab0
+044AE7 1B 00       0665        .dw 27    ; 21    A0
+044AE9 1D 00       0666        .dw 29    ; 22    A#0
+044AEB 20 00       0667        .dw 32    ; 24    B#0
+044AED 22 00       0668        .dw 34    ; 25    C#1
+044AEF 24 00       0669        .dw 36    ; 26    D1
+044AF1 26 00       0670        .dw 38    ; 27    D#1
+044AF3 29 00       0671        .dw 41    ; 28    E1
+044AF5 2B 00       0672        .dw 43    ; 29    E#1
+044AF7 2E 00       0673        .dw 46    ; 30    F#1
+044AF9 30 00       0674        .dw 48    ; 31    G1
+044AFB 33 00       0675        .dw 51    ; 32    G#1
+044AFD 37 00       0676        .dw 55    ; 33    A1
+044AFF 3A 00       0677        .dw 58    ; 34    A#1
+044B01 3D 00       0678        .dw 61    ; 35    B1
+044B03 41 00       0679        .dw 65    ; 36    B#1
+044B05 45 00       0680        .dw 69    ; 37    C#2
+044B07 49 00       0681        .dw 73    ; 38    D2
+044B09 4D 00       0682        .dw 77    ; 39    D#2
+044B0B 52 00       0683        .dw 82    ; 40    E2
+044B0D 57 00       0684        .dw 87    ; 41    E#2
+044B0F 5C 00       0685        .dw 92    ; 42    F#2
+044B11 61 00       0686        .dw 97    ; 43    G2
+044B13 67 00       0687        .dw 103    ; 44    G#2
+044B15 6E 00       0688        .dw 110    ; 45    A2
+044B17 74 00       0689        .dw 116    ; 46    A#2
+044B19 7B 00       0690        .dw 123    ; 47    B2
+044B1B 82 00       0691        .dw 130    ; 48    B#2
+044B1D 8A 00       0692        .dw 138    ; 49    C#3
+044B1F 92 00       0693        .dw 146    ; 50    D3
+044B21 9B 00       0694        .dw 155    ; 51    D#3
+044B23 A4 00       0695        .dw 164    ; 52    E3
+044B25 AE 00       0696        .dw 174    ; 53    E#3
+044B27 B9 00       0697        .dw 185    ; 54    F#3
+044B29 C4 00       0698        .dw 196    ; 55    G3
+044B2B CF 00       0699        .dw 207    ; 56    G#3
+044B2D DC 00       0700        .dw 220    ; 57    A3
+044B2F E9 00       0701        .dw 233    ; 58    A#3
+044B31 F6 00       0702        .dw 246    ; 59    B3
+044B33 05 01       0703        .dw 261    ; 60    B#3
+044B35 15 01       0704        .dw 277    ; 61    C#4
+044B37 25 01       0705        .dw 293    ; 62    D4
+044B39 37 01       0706        .dw 311    ; 63    D#4
+044B3B 49 01       0707        .dw 329    ; 64    E4
+044B3D 5D 01       0708        .dw 349    ; 65    E#4
+044B3F 71 01       0709        .dw 369    ; 66    F#4
+044B41 88 01       0710        .dw 392    ; 67    G4
+044B43 9F 01       0711        .dw 415    ; 68    G#4
+044B45 B8 01       0712        .dw 440    ; 69    A4
+044B47 D2 01       0713        .dw 466    ; 70    A#4
+044B49 ED 01       0714        .dw 493    ; 71    B4
+044B4B 0B 02       0715        .dw 523    ; 72    B#4
+044B4D 2A 02       0716        .dw 554    ; 73    C#5
+044B4F 4B 02       0717        .dw 587    ; 74    D5
+044B51 6E 02       0718        .dw 622    ; 75    D#5
+044B53 93 02       0719        .dw 659    ; 76    E5
+044B55 BA 02       0720        .dw 698    ; 77    E#5
+044B57 E3 02       0721        .dw 739    ; 78    F#5
+044B59 0F 03       0722        .dw 783    ; 79    G5
+044B5B 3E 03       0723        .dw 830    ; 80    G#5
+044B5D 70 03       0724        .dw 880    ; 81    A5
+044B5F A4 03       0725        .dw 932    ; 82    A#5
+044B61 DB 03       0726        .dw 987    ; 83    B5
+044B63 16 04       0727        .dw 1046    ; 84    B#5
+044B65 54 04       0728        .dw 1108    ; 85    C#6
+044B67 96 04       0729        .dw 1174    ; 86    D6
+044B69 DC 04       0730        .dw 1244    ; 87    D#6
+044B6B 26 05       0731        .dw 1318    ; 88    E6
+044B6D 74 05       0732        .dw 1396    ; 89    F6
+044B6F C8 05       0733        .dw 1480    ; 90    F#6
+044B71 20 06       0734        .dw 1568    ; 91    G6
+044B73 7D 06       0735        .dw 1661    ; 92    G#6
+044B75 E0 06       0736        .dw 1760    ; 93    A6
+044B77 48 07       0737        .dw 1864    ; 94    A#6
+044B79 B7 07       0738        .dw 1975    ; 95    B6
+044B7B 2D 08       0739        .dw 2093    ; 96    B#6
+044B7D A9 08       0740        .dw 2217    ; 97    C#7
+044B7F 2D 09       0741        .dw 2349    ; 98    D7
+044B81 B9 09       0742        .dw 2489    ; 99    D#7
+044B83 4D 0A       0743        .dw 2637    ; 100    E7
+044B85 E9 0A       0744        .dw 2793    ; 101    E#7
+044B87 90 0B       0745        .dw 2960    ; 102    F#7
+044B89 40 0C       0746        .dw 3136    ; 103    G7
+044B8B FA 0C       0747        .dw 3322    ; 104    G#7
+044B8D C0 0D       0748        .dw 3520    ; 105    A7
+044B8F 91 0E       0749        .dw 3729    ; 106    A#7
+044B91 6F 0F       0750        .dw 3951    ; 107    B7
+044B93 5A 10       0751        .dw 4186    ; 108    B#7
+044B95 52 11       0752        .dw 4434    ; 109    C#8
+044B97 5A 12       0753        .dw 4698    ; 110    D8
+044B99 72 13       0754        .dw 4978    ; 111    D#8
+044B9B 9A 14       0755        .dw 5274    ; 112    E8
+044B9D D3 15       0756        .dw 5587    ; 113    E#8
+044B9F 1F 17       0757        .dw 5919    ; 114    F#8
+044BA1 7F 18       0758        .dw 6271    ; 115    G8
+044BA3 F4 19       0759        .dw 6644    ; 116    G#8
+044BA5 80 1B       0760        .dw 7040    ; 117    A8
+044BA7 22 1D       0761        .dw 7458    ; 118    A#8
+044BA9 DE 1E       0762        .dw 7902    ; 119    B8
+044BAB B4 20       0763        .dw 8372    ; 120    B#8
+044BAD A5 22       0764        .dw 8869    ; 121    C#9
+044BAF B5 24       0765        .dw 9397    ; 122    D9
+044BB1 E4 26       0766        .dw 9956    ; 123    D#9
+044BB3 34 29       0767        .dw 10548    ; 124    E9
+044BB5 A7 2B       0768        .dw 11175    ; 125    E#9
+044BB7 40 2E       0769        .dw 11840    ; 126    F#9
+044BB9 00 31       0770        .dw 12544    ; 127    G9
+044BBB EA 33       0771        .dw 13290    ; 128    G#9
+044BBD 00 37       0772        .dw 14080    ; 129    A9
+044BBF 45 3A       0773        .dw 14917    ; 130    A#9
+044BC1 BC 3D       0774        .dw 15804    ; 131    B9
+044BC3 68 41       0775        .dw 16744    ; 132    B#9
