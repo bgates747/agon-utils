@@ -39,10 +39,8 @@ hlu_sdiv256:
 @buffer: blkb 4,0
 
 ; hlu 1 byte right shift, unsigned
-; returns: hlu / 256, fractional portion in a
-; destroys: af
+; returns: hlu / 256
 hlu_udiv256:
-	ld a,l ; save the fractional portion
 	ld (@buffer),hl
 	ld hl,(@buffer+1)
 	ret
@@ -1518,6 +1516,73 @@ printHexUHL:
 	call printHex24
 	pop hl
 	ret
+
+
+; print registers to screen in hexidecimal format
+; inputs: none
+; outputs: values of every register printed to screen
+;    values of each register in global scratch memory
+; destroys: nothing
+dumpRegistersHex:
+; store everything in scratch
+    ld (@uhl),hl
+    ld (@ubc),bc
+    ld (@ude),de
+    ld (@uix),ix
+    ld (@uiy),iy
+    push af 
+    pop hl 
+    ld (@uaf),hl
+    push af 
+
+; print each register
+    call printInline
+    asciz "af="
+    ld hl,(@uaf)
+    call printHex24
+
+    call printInline
+    asciz " hl="
+    ld hl,(@uhl)
+    call printHex24
+
+    call printInline
+    asciz " bc="
+    ld hl,(@ubc)
+    call printHex24
+
+    call printInline
+    asciz " de="
+    ld hl,(@ude)
+    call printHex24
+
+    call printInline
+    asciz " ix="
+    ld hl,(@uix)
+    call printHex24
+
+    call printInline
+    asciz " iy="
+    ld hl,(@uiy)
+    call printHex24
+
+    call printNewLine
+; restore everything
+    ld hl, (@uhl)
+    ld bc, (@ubc)
+    ld de, (@ude)
+    ld ix, (@uix)
+    ld iy, (@uiy)
+    pop af
+; all done
+    ret
+
+@uaf: dl 0
+@uhl: dl 0
+@ubc: dl 0
+@ude: dl 0
+@uix: dl 0
+@uiy: dl 0
 
 ; Prints the right justified decimal value in HL without leading zeroes
 ; HL : Value to print
