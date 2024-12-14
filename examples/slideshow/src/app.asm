@@ -30,6 +30,7 @@ exit:
     ret 
 
     include "mos_api.inc"
+    include "maths.inc"
     include "functions.inc"
     include "input.inc"
     include "timer.inc"
