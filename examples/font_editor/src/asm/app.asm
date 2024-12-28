@@ -27,9 +27,13 @@ exit:
     ret
 
 ; API includes
+; API INCLUDES
     include "mos_api.inc"
+    include "macros.inc"
     include "functions.inc"
+    include "maths.inc"
     include "files.inc"
+    include "fonts.inc"
     include "timer.inc"
     include "vdu.inc"
     include "vdu_fonts.inc"

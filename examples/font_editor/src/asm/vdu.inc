@@ -1,7 +1,4 @@
-; &E8-&EF 	232-239 	Bitmap plot §
-plot_bmp: equ 0xE8
-; 5 	Plot absolute in current foreground colour
-dr_abs_fg: equ 5
+    align 256
 
 ; VDU 30: Home cursor
 vdu_home_cursor:
@@ -9,7 +6,7 @@ vdu_home_cursor:
 	rst.lil $10  
 	ret
 
-cursor_on:
+vdu_cursor_on:
 	ld hl,@cmd
 	ld bc,@end-@cmd
 	rst.lil $18
@@ -18,7 +15,7 @@ cursor_on:
 	db 23,1,1
 @end:
 
-cursor_off:	
+vdu_cursor_off:	
 	ld hl,@cmd
 	ld bc,@end-@cmd
 	rst.lil $18
@@ -27,6 +24,20 @@ cursor_off:
 	db 23,1,0
 @end:
 
+; VDU 5: Write text at graphics cursor
+; inputs: a is the character to write to the screen
+; prerequisites: the graphics cursor at the intended position on screen
+; outputs: see the name of the function
+; destroys: a, hl, bc
+vdu_char_to_gfx_cursor:
+	ld (@arg),a        
+	ld hl,@cmd         
+	ld bc,@end-@cmd    
+	rst.lil $18         
+	ret
+@cmd: db 5
+@arg: db 0 
+@end:
 ; VDU 9: Move cursor forward one character
 vdu_cursor_forward:
     ld a,9
@@ -66,6 +77,34 @@ vdu_clg:
 	rst.lil $10  
 	ret
 
+; https://github.com/breakintoprogram/agon-docs/wiki/VDP
+; VDU 23, 7: Scrolling
+;     VDU 23, 7, extent, direction, speed: Scroll the screen
+; inputs: a, extent; l, direction; h; speed
+vdu_scroll_down:
+	ld (@extent),a
+	ld (@dir),hl ; implicitly populates @speed
+	ld hl,@cmd
+	ld bc,@end-@cmd
+	rst.lil $18     ;; Sending command to VDP
+	ret
+@cmd:       db 23,7
+@extent:    db 0x00 ; 0 current text window, 1 entire screen, 2 curr gfx viewport
+@dir:       db 0x00 ; 0 right, 1 left, 2 down, 3 up
+@speed:     db 0x00 ; pixels
+@end:		db 0x00 ; padding
+
+; COLOUR MODES
+; Mode	Effect
+; 0	Set on-screen pixel to target colour value
+; 1	OR value with the on-screen pixel
+; 2	AND value with the on-screen pixel
+; 3	XOR value with the on-screen pixel
+; 4	Invert the on-screen pixel
+; 5	No operation
+; 6	AND the inverse of the specified colour with the on-screen pixel
+; 7	OR the inverse of the specified colour with the on-screen pixel
+
 ; VDU 17, colour: Define text colour (COLOUR)
 vdu_colour_text:
 	ld (@arg),a        
@@ -77,11 +116,11 @@ vdu_colour_text:
 @arg: db 0 
 @end:
 
-
-vdu_gcol_bg:
+; VDU 18, mode, colour: Set graphics colour (GCOL mode, colour)
+; inputs: a=mode, c=colour (add 128 to set background colour)
+vdu_gcol:
 	ld (@mode),a
     ld a,c
-    add a,128 
     ld (@col),a   
 	ld hl,@cmd         
 	ld bc,@end-@cmd    
@@ -120,6 +159,24 @@ vdu_vblank:
     JR	Z, @wait
     POP	IX
     RET
+
+; VDU 29, x; y;: Set graphics origin
+; This command sets the graphics origin. 
+; The origin is the point on the screen where the coordinates (0,0) are located.
+; inputs: bc=x0,de=y0
+; outputs; nothing
+; destroys: a might make it out alive
+vdu_set_gfx_origin:
+    ld (@x0),bc
+    ld (@y0),de
+    ld hl,@cmd
+    ld bc,@end-@cmd
+    rst.lil $18
+    ret
+@cmd:   db 29 ; set graphics origin command
+@x0: 	dw 0x0000 ; set by bc
+@y0: 	dw 0x0000 ; set by de
+@end:   db 0x00	  ; padding
 
 ; VDU 24, left; bottom; right; top;: Set graphics viewport 
 ; NOTE: the order of the y-coordinate parameters are inverted
@@ -241,24 +298,6 @@ vdu_bmp_create:
 @height:    dw 0x0000
 @fmt:       db 0x00
 @end:
-
-; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
-; &E8-&EF 	232-239 	Bitmap plot §
-; VDU 25, mode, x; y;: PLOT command
-; inputs: bc=x0, de=y0
-; prerequisites: vdu_buff_select
-vdu_plot_bmp:
-    ld (@x0),bc
-    ld (@y0),de
-	ld hl,@cmd
-	ld bc,@end-@cmd
-	rst.lil $18
-	ret
-@cmd:   db 25
-@mode:  db plot_bmp+dr_abs_fg ; 0xED
-@x0: 	dw 0x0000
-@y0: 	dw 0x0000
-@end:   db 0x00 ; padding
 
 ; load an rgba2222 image file to a working buffer and make it an rgba8888 bitmap in a target buffer
 ; inputs: bc,de image width,height ; hl = targetBufferId ; ix = file size ; iy = pointer to filename
@@ -468,12 +507,6 @@ vdu_load_buffer_from_file:
     ld de,8192 ; max we can read into onboard sram at one time
     MOSCALL mos_fread
 
-; ; DEBUG: print chunk size
-;     push de
-;     pop hl
-;     call printDec
-;     call printNewLine
-
 ; test de for zero bytes read
     ld hl,0
     xor a ; clear carry
@@ -487,10 +520,6 @@ vdu_load_buffer_from_file:
     pop bc
     ld de,filedata
     call vdu_load_buffer
-
-; ; print progress breadcrumbs
-;     ld a,'.'
-;     rst.lil 10h
 
 ; read the next block
     jp @read_file
