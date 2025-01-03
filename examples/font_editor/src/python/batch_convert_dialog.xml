@@ -5,7 +5,7 @@
         <widget_type>FontConfigTextBox</widget_type>
         <label_text>Font Src Dir</label_text>
         <data_type>string</data_type>
-        <default_value>examples/font_editor/src/fonts</default_value>
+        <default_value>src/fonts</default_value>
         <description></description>
         <event_handlers>
             <on_change>
@@ -22,7 +22,7 @@
         <widget_type>FontConfigTextBox</widget_type>
         <label_text>Font Tgt Dir</label_text>
         <data_type>string</data_type>
-        <default_value>examples/font_editor/tgt/fonts/cfonts</default_value>
+        <default_value>tgt/fonts/cfonts</default_value>
         <description></description>
         <event_handlers>
             <on_change>

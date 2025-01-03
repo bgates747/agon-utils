@@ -5,31 +5,49 @@ font_list_height: equ 3
 font_list_bufferId: equ 6
 font_list_filename: equ 9
 
-num_fonts: equ 7
+num_fonts: equ 13
 
 ; Index list:
 amiga_forever_8x8: equ 0
 computer_pixel_7_8x12: equ 1
 computer_pixel_7_8x16: equ 2
-Lat2_VGA8_8x8: equ 3
-Lat7_VGA8_8x8: equ 4
-Squarewave_Bold_8x12: equ 5
-wendy_neue_6x6: equ 6
+dopecre_8x8: equ 3
+gamer_2_8x8: equ 4
+Lat15_VGA8_8x8: equ 5
+Lat2_VGA8_8x8: equ 6
+Lat38_VGA8_8x8: equ 7
+Lat7_VGA8_8x8: equ 8
+planetary_contact_8x8: equ 9
+Squarewave_Bold_8x12: equ 10
+super_mario_bros_2_8x8: equ 11
+wendy_neue_6x6: equ 12
 
 font_list: ; width; height; bufferId; filename;:
 	dl 8, 8, 64000, fn_amiga_forever_8x8
 	dl 8, 12, 64001, fn_computer_pixel_7_8x12
 	dl 8, 16, 64002, fn_computer_pixel_7_8x16
-	dl 8, 8, 64003, fn_Lat2_VGA8_8x8
-	dl 8, 8, 64004, fn_Lat7_VGA8_8x8
-	dl 8, 12, 64005, fn_Squarewave_Bold_8x12
-	dl 6, 6, 64006, fn_wendy_neue_6x6
+	dl 8, 8, 64003, fn_dopecre_8x8
+	dl 8, 8, 64004, fn_gamer_2_8x8
+	dl 8, 8, 64005, fn_Lat15_VGA8_8x8
+	dl 8, 8, 64006, fn_Lat2_VGA8_8x8
+	dl 8, 8, 64007, fn_Lat38_VGA8_8x8
+	dl 8, 8, 64008, fn_Lat7_VGA8_8x8
+	dl 8, 8, 64009, fn_planetary_contact_8x8
+	dl 8, 12, 64010, fn_Squarewave_Bold_8x12
+	dl 8, 8, 64011, fn_super_mario_bros_2_8x8
+	dl 6, 6, 64012, fn_wendy_neue_6x6
 
 ; files_list: ; filename:
 fn_amiga_forever_8x8: db "/mos/fonts/amiga_forever_8x8.font",0
 fn_computer_pixel_7_8x12: db "/mos/fonts/computer_pixel_7_8x12.font",0
 fn_computer_pixel_7_8x16: db "/mos/fonts/computer_pixel_7_8x16.font",0
+fn_dopecre_8x8: db "/mos/fonts/dopecre_8x8.font",0
+fn_gamer_2_8x8: db "/mos/fonts/gamer_2_8x8.font",0
+fn_Lat15_VGA8_8x8: db "/mos/fonts/Lat15-VGA8_8x8.font",0
 fn_Lat2_VGA8_8x8: db "/mos/fonts/Lat2-VGA8_8x8.font",0
+fn_Lat38_VGA8_8x8: db "/mos/fonts/Lat38-VGA8_8x8.font",0
 fn_Lat7_VGA8_8x8: db "/mos/fonts/Lat7-VGA8_8x8.font",0
+fn_planetary_contact_8x8: db "/mos/fonts/planetary_contact_8x8.font",0
 fn_Squarewave_Bold_8x12: db "/mos/fonts/Squarewave_Bold_8x12.font",0
+fn_super_mario_bros_2_8x8: db "/mos/fonts/super_mario_bros_2_8x8.font",0
 fn_wendy_neue_6x6: db "/mos/fonts/wendy_neue_6x6.font",0

@@ -745,7 +745,7 @@ def write_rgba2_font(font_config, font_image, tgt_font_filepath):
         os.remove(temp_rgba2_filepath)
 
 if __name__ == '__main__':
-    font_source_dir = 'examples/font_editor/tgt'
+    font_source_dir = 'tgt'
     font_filename = 'Arial Black_Regular_12x12.xml'
     font_filepath = os.path.join(font_source_dir, font_filename)
     

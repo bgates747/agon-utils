@@ -90,7 +90,7 @@ class FontEditor(ttk.Frame):
     def open_assembly_dialog(self):
         """Open the assembly configuration dialog with the current font configuration."""
         font_config = self.font_config_editor.get_config()  # Get the current font config
-        config_editor_file = "examples/font_editor/src/python/asm_config_editor.xml"
+        config_editor_file = "src/python/asm_config_editor.xml"
         app_reference = self
 
         dialog = DoAssemblyDialog(self, config_editor_file, app_reference, font_config)
@@ -98,8 +98,8 @@ class FontEditor(ttk.Frame):
     def open_batch_convert_dialog(self):
         """Open the batch conversion dialog with the current font configuration."""
         app_reference = self
-        xml_values_filepath = 'examples/font_editor/src/python/batch_convert_values.xml'
-        xml_defaults_filepath = 'examples/font_editor/src/python/batch_convert_dialog.xml'
+        xml_values_filepath = 'src/python/batch_convert_values.xml'
+        xml_defaults_filepath = 'src/python/batch_convert_dialog.xml'
         values_dict = xml_values_to_dict(xml_defaults_filepath, xml_values_filepath)
         dialog = BatchConvertDialog(self, xml_defaults_filepath, app_reference, values_dict, xml_values_filepath)
 

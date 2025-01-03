@@ -2,14 +2,14 @@
 <settings>
   <setting name="font_filename" value="Apple Chancery_Narrow_16x32.font"/>
   <setting name="screen_mode" value="20"/>
-  <setting name="asm_dir" value="examples/font_editor/src/asm"/>
+  <setting name="asm_dir" value="src/asm"/>
   <setting name="asm_file" value="app.asm"/>
-  <setting name="tgt_bin_dir" value="examples/font_editor/tgt"/>
+  <setting name="tgt_bin_dir" value="tgt"/>
   <setting name="tgt_bin_file" value="font.bin"/>
-  <setting name="tgt_font_dir" value="examples/font_editor/tgt/fonts"/>
+  <setting name="tgt_font_dir" value="tgt/fonts"/>
   <setting name="emulator_dir" value="/home/smith/Agon/emulator"/>
-  <setting name="emulator_tgt_dir" value="/mystuff/agon-utils/examples/font_editor/tgt"/>
-  <setting name="sdcard_tgt_dir" value="/media/smith/Agon/emulator/sdcard/mystuff/agon-utils/examples/font_editor/tgt"/>
+  <setting name="emulator_tgt_dir" value="/mystuff/agon-utils/tgt"/>
+  <setting name="sdcard_tgt_dir" value="/media/smith/Agon/emulator/sdcard/mystuff/agon-utils/tgt"/>
   <setting name="emulator_exec" value="./fab-agon-emulator"/>
   <setting name="build_fonts" value="1"/>
   <setting name="assemble" value="1"/>

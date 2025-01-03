@@ -39,7 +39,7 @@
         <widget_type>FontConfigTextBox</widget_type>
         <label_text>Asm Src Dir</label_text>
         <data_type>string</data_type>
-        <default_value>examples/font_editor/src/asm</default_value>
+        <default_value>src/asm</default_value>
         <description></description>
         <event_handlers>
             <on_change>
@@ -73,7 +73,7 @@
         <widget_type>FontConfigTextBox</widget_type>
         <label_text>Tgt App Dir</label_text>
         <data_type>string</data_type>
-        <default_value>examples/font_editor/tgt</default_value>
+        <default_value>tgt</default_value>
         <description></description>
         <event_handlers>
             <on_change>
@@ -107,7 +107,7 @@
         <widget_type>FontConfigTextBox</widget_type>
         <label_text>Tgt App Dir</label_text>
         <data_type>string</data_type>
-        <default_value>examples/font_editor/tgt/fonts</default_value>
+        <default_value>tgt/fonts</default_value>
         <description></description>
         <event_handlers>
             <on_change>
@@ -141,7 +141,7 @@
         <widget_type>FontConfigTextBox</widget_type>
         <label_text>Emulator Tgt Dir</label_text>
         <data_type>string</data_type>
-        <default_value>/mystuff/agon-utils/examples/font_editor/tgt</default_value>
+        <default_value>/mystuff/agon-utils/tgt</default_value>
         <description></description>
         <event_handlers>
             <on_change>
@@ -158,7 +158,7 @@
         <widget_type>FontConfigTextBox</widget_type>
         <label_text>SD Card Tgt Dir</label_text>
         <data_type>string</data_type>
-        <default_value>/media/smith/Agon/emulator/sdcard/mystuff/agon-utils/examples/font_editor/tgt</default_value>
+        <default_value>/media/smith/Agon/emulator/sdcard/mystuff/agon-utils/tgt</default_value>
         <description></description>
         <event_handlers>
             <on_change>

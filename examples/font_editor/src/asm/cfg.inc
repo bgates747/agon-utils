@@ -1,2 +1,2 @@
 screen_mode: equ 20
-font_name: equ computer_pixel_7_8x12
+font_name: equ Lat7_VGA8_8x8

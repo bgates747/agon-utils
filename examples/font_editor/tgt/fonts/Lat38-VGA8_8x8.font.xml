@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <settings>
-  <setting name="original_font_path" value="/home/smith/Agon/emulator/sdcard/mystuff/agon-utils/src/fonts/pi/cfonts/Lat7-VGA8.psf"/>
-  <setting name="font_name" value="Lat7-VGA8"/>
+  <setting name="original_font_path" value="/home/smith/Agon/emulator/sdcard/mystuff/agon-utils/examples/font_editor/src/fonts/pi/cfonts/Lat38-VGA8.psf"/>
+  <setting name="font_name" value="Lat38-VGA8"/>
   <setting name="font_variant" value=""/>
   <setting name="font_width" value="8"/>
   <setting name="font_height" value="8"/>

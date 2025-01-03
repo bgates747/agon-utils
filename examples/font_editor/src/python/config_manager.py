@@ -406,8 +406,8 @@ def save_values_dict_to_xml(values_dict, xml_values_filepath):
         f.write(pretty_xml)
 
 if __name__ == "__main__":
-    xml_values_filepath = 'examples/font_editor/src/python/batch_convert_values.xml'
-    xml_defaults_filepath = 'examples/font_editor/src/python/batch_convert_dialog.xml'
+    xml_values_filepath = 'src/python/batch_convert_values.xml'
+    xml_defaults_filepath = 'src/python/batch_convert_dialog.xml'
 
     defaults_dict = xml_defaults_to_dict(xml_defaults_filepath)
     print(dict_to_text(defaults_dict))

@@ -212,8 +212,8 @@
 #     return relative_path
 
 # # Example usage
-# from_path = '/home/smith/Agon/emulator/sdcard/mystuff/agon-utils/examples/font_editor/src/fonts/mac/ttf/Arial Black.ttf'
-# to_path = '/home/smith/Agon/emulator/sdcard/mystuff/agon-utils/examples/font_editor/tgt/arial_black.rgba2'
+# from_path = '/home/smith/Agon/emulator/sdcard/mystuff/agon-utils/src/fonts/mac/ttf/Arial Black.ttf'
+# to_path = '/home/smith/Agon/emulator/sdcard/mystuff/agon-utils/tgt/arial_black.rgba2'
 
 # relative_path = compute_relative_path(from_path, to_path)
 # print(f"Relative path from '{from_path}' to '{to_path}': {relative_path}")
@@ -266,7 +266,7 @@ def copy_to_directory(src_dir, tgt_dir, include_pattern=None, recursive=False, d
         sys.exit(1)
 
 # Example usage
-src_dir = '/home/smith/Agon/emulator/sdcard/mystuff/agon-utils/examples/font_editor/src/fonts/mac/ttf'
+src_dir = '/home/smith/Agon/emulator/sdcard/mystuff/agon-utils/src/fonts/mac/ttf'
 tgt_dir = '/home/smith/Desktop/fonts/mac/ttf'
 include_pattern = r'.*\.ttf$'
 recursive = True

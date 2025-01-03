@@ -75,7 +75,7 @@ def copy_to_sdcard():
     try:
         # Define the source and target directories
         src_directory = "tgt"
-        tgt_directory = "/media/smith/Agon/emulator/sdcard/mystuff/agon-utils/examples/font_editor/tgt"
+        tgt_directory = "/media/smith/Agon/emulator/sdcard/mystuff/agon-utils/tgt"
 
         # Check if the target directory exists, if so, delete it recursively
         if os.path.exists(tgt_directory):
