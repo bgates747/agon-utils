@@ -141,3 +141,7 @@ custom_libs/
 
 # macOS directory attributes
 Icon?
+
+# jukebox project
+!examples/jukebox/build/
+!examples/jukebox/tgt/
