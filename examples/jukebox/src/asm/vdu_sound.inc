@@ -1,26 +1,23 @@
 ; load a sound file to a buffer
-; inputs: hl = bufferId ; ix = file size ; iy = pointer to filename
+; inputs: hl = bufferId ; de = sampleRate in Hz ; iy = pointer to filename
 vdu_load_sfx:
 ; back up input parameters
     push hl ; bufferId
+    push de ; sample rate
 ; load the sound
     call vdu_load_buffer_from_file
 ; now make the buffer a sound sample
+    pop de ; sample rate
     pop hl ; bufferId
-    xor a ; zero is the magic number for 8-bit signed PCM 16KHz
-    ; push hl ; bufferId
+    xor a ; zero is the magic number for mono 8-bit signed PCM
     call vdu_buffer_to_sound 
-; ; play the loaded sound
-;     ld c,0 ; channel
-;     ld b,127 ; full volume
-;     ld de,1000 ; 1 second duration
-;     pop hl ; bufferId
-;     call vdu_play_sample
     ret
 
 last_channel: db 0
-max_channels: equ 3
+max_channels: equ 1
 
+; play a sound effect from an already loaded buffer
+; inputs: hl = bufferId ; bc = duration in milliseconds
 vdu_play_sfx:
     ld (@bufferId),hl
     ld (@duration),bc
@@ -273,57 +270,88 @@ vdu_channel_waveform:
 @bufferId:  dw 0x0000
 @end:       db 0x00 ; padding
 
-
-
-; VDU 23, 0, &85, 0, 5, 2, bufferId; format
-; inputs: hl = bufferId; a = format
-; The format parameter is an 8-bit value that indicates the format of the sample data. The following values are supported:
-; Value 	Description
-; 0 	8-bit signed, 16KHz
-; 1 	8-bit unsigned, 16KHz
+; VDU 23, 0, &85, channel (ignored), 5, 2, bufferId; format, [sampleRate;]
+; inputs: hl = bufferId; a = format, de = sample rate in Hz
+; The format is a single byte giving the format of the sample data. The following formats are supported:
+; Value	Description
+; 0	8-bit signed
+; 1	8-bit unsigned
+; The format value can also have modifier bits set to modify the behaviour of the sample. The following modifier bits are supported:
+; Value	Description
+; 8	sample rate is sent in the next 16-bits
+; 16	sample is tuneable
+; The default sample rate for samples on the VDP is 16kHz (actually 16.384kHz to be precise).
 vdu_buffer_to_sound:
     ld (@bufferId),hl
+    add a,8 ; modify format byte to indicate sample rate argument is given
     ld (@format),a
+    ld (@sampleRate),de
     ld hl,@cmd         
     ld bc,@end-@cmd    
     rst.lil $18         
     ret
 @cmd:       db 23, 0, 0x85
-            db 0x00 ; a magic number that is always 0
+@channel:   db 0x00 ; ignored
             db 0x05 ; buffer to sound command
-            db 0x02 ; a magic number that is always 2
+            db 0x02 ; command 2 create sample
 @bufferId:  dw 0x0000
 @format:    db 0x00
-@end:       
+@sampleRate: dw 0x0000
+@end:       db 0x00 ; padding
 
+; Command 13: Set sample rate
+; VDU 23, 0, &85, channel, 13, sampleRate;
+; inputs: c = channel, hl = sampleRate (Hz)
+vdu_set_sample_rate:
+    ld a,c
+    ld (@channel),a
+    ld (@sampleRate),hl
+    ld hl,@cmd         
+    ld bc,@end-@cmd    
+    rst.lil $18         
+    ret
+@cmd:       db 23, 0, 0x85
+@channel:   db 0x00
+            db 13 ; set sample rate command
+@sampleRate: dw 0x0000
+@end:       db 0x00 ; padding
 
-; inputs: c = channel, b = volume, de = duration; hl = bufferId
+; inputs: c = channel, b = volume, de = sample rate; hl = bufferId
 vdu_play_sample:
     ; populate input parameters
     ld a,c
     ld (@channel0),a
     ld (@channel1),a
+    ld (@channel2),a
     ld a,b
     ld (@volume),a
-    ld (@frequency),de
+    ld (@sampleRate),de
     ld (@bufferId),hl
-    ; clean up byte that got stomped on by bufferId load from hl
+    ; clean up bytes that got stomped on by 24-bit loads
     ld a,23 
     ld (@cmd1),a 
+    ld (@cmd2),a
     ; prep the vdu command string
     ld hl, @cmd0
     ld bc, @end - @cmd0
     rst.lil $18
     ret 
+; set waveform command
 @cmd0:       db 23, 0, 0x85
 @channel0:   db 0x00
              db 0x04 ; set waveform command
 @waveform:   db 0x08 ; sample
 @bufferId:   dw 0x0000
+; set sample rate command
 @cmd1:       db 23, 0, 0x85
 @channel1:   db 0x00
+            db 13 ; set sample rate command
+@sampleRate: dw 0x0000
+; play note command
+@cmd2:       db 23, 0, 0x85
+@channel2:   db 0x00
              db 0x00 ; play note command
 @volume:     db 0x00
 @frequency:  dw 0x00 ; no effect unless buffer has been set to tuneable sample
-@duration:   dw 0x0000 ; milliseconds
+@duration:   dw 0x0000 ; milliseconds: set to -1 to loop indefinitely, 0 to play full duration once
 @end:        db 0x00 ; padding

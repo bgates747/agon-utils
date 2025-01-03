@@ -37,7 +37,7 @@ load_sfx_AFRICA:
 	ld a,mos_load
 	RST.LIL 08h
 	ld hl,BUF_AFRICA
-	ld ix,491536
+	ld de,15360
 	ld iy,FAFRICA
 	call vdu_load_sfx
 	ret
@@ -49,7 +49,7 @@ load_sfx_COME_UNDONE:
 	ld a,mos_load
 	RST.LIL 08h
 	ld hl,BUF_COME_UNDONE
-	ld ix,491536
+	ld de,15360
 	ld iy,FCOME_UNDONE
 	call vdu_load_sfx
 	ret
@@ -61,7 +61,7 @@ load_sfx_EVERY_BREATH_YOU_TAKE:
 	ld a,mos_load
 	RST.LIL 08h
 	ld hl,BUF_EVERY_BREATH_YOU_TAKE
-	ld ix,491536
+	ld de,15360
 	ld iy,FEVERY_BREATH_YOU_TAKE
 	call vdu_load_sfx
 	ret
@@ -73,7 +73,7 @@ load_sfx_RHIANNON:
 	ld a,mos_load
 	RST.LIL 08h
 	ld hl,BUF_RHIANNON
-	ld ix,491536
+	ld de,15360
 	ld iy,FRHIANNON
 	call vdu_load_sfx
 	ret
@@ -88,20 +88,20 @@ FRHIANNON: db "music/RHIANNON.raw",0
 
 sfx_play_africa:
 	ld hl,BUF_AFRICA
-	ld bc,29268
+	ld bc,0
 	jp vdu_play_sfx
 
 sfx_play_come_undone:
 	ld hl,BUF_COME_UNDONE
-	ld bc,29268
+	ld bc,0
 	jp vdu_play_sfx
 
 sfx_play_every_breath_you_take:
 	ld hl,BUF_EVERY_BREATH_YOU_TAKE
-	ld bc,29268
+	ld bc,0
 	jp vdu_play_sfx
 
 sfx_play_rhiannon:
 	ld hl,BUF_RHIANNON
-	ld bc,29268
+	ld bc,0
 	jp vdu_play_sfx

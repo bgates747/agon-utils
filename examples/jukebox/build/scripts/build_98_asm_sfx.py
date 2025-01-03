@@ -1,6 +1,6 @@
 import sqlite3
 
-def make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id):
+def make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate):
     # Connect to the database
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row  # Set row_factory to access columns by names
@@ -71,7 +71,8 @@ def make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id):
             f.write(f"\tld a,mos_load\n")
             f.write(f"\tRST.LIL 08h\n")
             f.write(f"\tld hl,{buf_label}\n")
-            f.write(f"\tld ix,{size}\n")
+            # f.write(f"\tld ix,{size}\n") # no longer required with progressive file load
+            f.write(f"\tld de,{sample_rate}\n")
             f.write(f"\tld iy,F{base_filename}\n")
             f.write(f"\tcall vdu_load_sfx\n")
             f.write(f"\tret\n")
@@ -92,7 +93,8 @@ def make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id):
             volume = 127
             f.write(f"\nsfx_play_{base_filename}:\n")
             f.write(f"\tld hl,{buf_label}\n")
-            f.write(f"\tld bc,{duration}\n")
+            # f.write(f"\tld bc,{duration}\n")
+            f.write(f"\tld bc,0\n") # 0 means play entire sample once
             f.write(f"\tjp vdu_play_sfx\n")
 
     # Close the connection
@@ -104,4 +106,6 @@ if __name__ == "__main__":
     asm_tgt_dir = 'music'
     sfx_inc_path = f"src/asm/music.inc"
     next_buffer_id = 0x3000
-    make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id)
+    # sample_rate = 16384 # default rate for Agon
+    sample_rate = 15360 # for 8-bit PCM this is 256 bytes per 1/60th of a second
+    make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate)

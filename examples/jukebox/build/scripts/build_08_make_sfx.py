@@ -25,7 +25,7 @@ def copy_to_temp(file_path):
     shutil.copy(file_path, temp_file.name)
     return temp_file.name
 
-def make_sfx(db_path, src_dir, tgt_dir, proc_dir):
+def make_sfx(db_path, src_dir, tgt_dir, proc_dir, sample_rate):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -94,7 +94,7 @@ def make_sfx(db_path, src_dir, tgt_dir, proc_dir):
             '-y',                                  # Overwrite output file
             '-i', temp_path,                      # Input file
             '-ac', '1',                           # Set audio channels to mono
-            '-ar', '16384',                       # Resample to 16 kHz
+            '-ar', f'{sample_rate}',                       # Resample rate in Hz
             proc_path                              # Output file
         ], check=True)
         os.remove(temp_path)
@@ -112,7 +112,7 @@ def make_sfx(db_path, src_dir, tgt_dir, proc_dir):
 
         # Calculate size and duration
         size = os.path.getsize(tgt_path)
-        duration = size // 16.384  # Assuming size is in bytes for 8-bit mono at 16 kHz
+        duration = size // (sample_rate / 1000)  # in milliseconds for 8-bit mono PCM at sample_rate in Hz
         cursor.execute("""
             INSERT INTO tbl_08_sfx (sfx_id, size, duration, filename)
             VALUES (?, ?, ?, ?);""", (sfx_id, size, duration, raw_filename))
@@ -121,9 +121,11 @@ def make_sfx(db_path, src_dir, tgt_dir, proc_dir):
     conn.close()
 
 if __name__ == '__main__':
+    # sample_rate = 16384 # default rate for Agon
+    sample_rate = 15360 # for 8-bit PCM this is 256 bytes per 1/60th of a second
     db_path = 'build/data/build.db'
     src_dir = 'assets/sound/music/trimmed'
     proc_dir = 'assets/sound/music/processed'
     tgt_dir = 'tgt/music'
 
-    make_sfx(db_path, src_dir, tgt_dir, proc_dir)
+    make_sfx(db_path, src_dir, tgt_dir, proc_dir, sample_rate)
