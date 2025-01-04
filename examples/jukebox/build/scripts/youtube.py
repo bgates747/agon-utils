@@ -40,8 +40,11 @@ if __name__ == "__main__":
     # youtube_url = "https://youtu.be/0xGPi-Al3zQ" # Rhiannon by Fleetwood Mac
     # youtube_url = "https://youtu.be/Epj84QVw2rc" # Come Undone by Duran Duran
     # youtube_url = "https://youtu.be/1lyu1KKwC74"  # Bitter Sweet Symphony by The Verve
-    youtube_url = "https://youtu.be/Kb7lAMjFuA0" # Africa by Toto
+    # youtube_url = "https://youtu.be/Kb7lAMjFuA0" # Africa by Toto
     # youtube_url = "https://youtu.be/6cucosmPj-A"  # Every Breath You Take by The Police
+    # youtube_url = "https://youtu.be/GUBOgWYMBwo"  # Take a Ride by Don Felder
+    # youtube_url = "https://youtu.be/VdOkQ6THDVw"  # Barracuda by Heart
+    youtube_url = "https://youtu.be/88T131rQCUc"  # Anytime by Journey
     output_directory = "assets/sound/music"
     try:
         mp3_path = download_youtube_audio(youtube_url, output_directory)
