@@ -28,8 +28,8 @@ PC     Output      Line
 040048 DD E5       0013        push ix
 04004A FD E5       0014        push iy
 04004C             0015    
-04004C CD AC 19 04 0016        call init
-040050 CD E8 19 04 0017        call main
+04004C CD 59 1E 04 0016        call init
+040050 CD 5A 1E 04 0017        call main
 040054             0018    
 040054             0019    exit:
 040054 FD E1       0020        pop iy
@@ -484,7 +484,7 @@ PC     Output      Line
 040087 E5          0046*       push hl ; preserve string pointer
 040088             0047*   ; move graphics cursor to x,y location
 040088 3E 44       0048*       ld a,plot_pt+mv_abs
-04008A CD 93 15 04 0049*       call vdu_plot
+04008A CD 1A 16 04 0049*       call vdu_plot
 04008E             0050*   ; print string
 04008E E1          0051*       pop hl ; restore string pointer
 04008F             0052*   @print_loop:
@@ -3643,7 +3643,7 @@ PC     Output      Line
 04128F C5          0317*       push bc
 041290             0318*   ; load the rgba2 image to working buffer 65534
 041290 21 FE FF 00 0319*       ld hl,65534 ; temporary working buffer id
-041294 CD 97 13 04 0320*   	call vdu_load_buffer_from_file
+041294 CD 6B 13 04 0320*   	call vdu_load_buffer_from_file
 041298             0321*   ; restore the image dimensions and target buffer id
 041298 C1          0322*       pop bc
 041299 D1          0323*       pop de
@@ -3750,147 +3750,120 @@ PC     Output      Line
 04132B 00 00       0420*   @length:	dw 0x0000
 04132D 00          0421*   @end: db 0 ; padding
 04132E             0422*   
-04132E             0423*   ; clear a buffer
-04132E             0424*   ; inputs: hl = bufferId
-04132E             0425*   vdu_clear_buffer:
+04132E             0423*   ; Command 14: Consolidate blocks in a buffer
+04132E             0424*   vdu_consolidate_buffer:
+04132E             0425*   ; set parameters for vdu call
 04132E 7D          0426*       ld a,l
 04132F 32 46 13 04 0427*       ld (@bufferId),a
 041333 7C          0428*       ld a,h
 041334 32 47 13 04 0429*       ld (@bufferId+1),a
-041338 21 43 13 04 0430*       ld hl,@cmd
-04133C 01 06 00 00 0431*       ld bc,@end-@cmd
+041338 21 43 13 04 0430*       ld hl,@beg
+04133C 01 06 00 00 0431*       ld bc,@end-@beg
 041340 5B DF       0432*       rst.lil $18
 041342 C9          0433*       ret
-041343 17 00 A0    0434*   @cmd:       db 23,0,0xA0
-041346 00 00       0435*   @bufferId:	dw 0x0000
-041348 02          0436*   		    db 2 ; clear buffer
-041349             0437*   @end:
-041349             0438*   
-041349             0439*   vdu_clear_all_buffers:
-041349             0440*   ; clear all buffers
-041349 21 54 13 04 0441*       ld hl,@beg
-04134D 01 06 00 00 0442*       ld bc,@end-@beg
-041351 5B DF       0443*       rst.lil $18
-041353 C9          0444*       ret
-041354 17 00 A0    0445*   @beg: db 23,0,$A0
-041357 FF FF       0446*         dw -1 ; clear all buffers
-041359 02          0447*         db 2  ; command 2: clear a buffer
-04135A             0448*   @end:
-04135A             0449*   
-04135A             0450*   ; Command 14: Consolidate blocks in a buffer
-04135A             0451*   vdu_consolidate_buffer:
-04135A             0452*   ; set parameters for vdu call
-04135A 7D          0453*       ld a,l
-04135B 32 72 13 04 0454*       ld (@bufferId),a
-04135F 7C          0455*       ld a,h
-041360 32 73 13 04 0456*       ld (@bufferId+1),a
-041364 21 6F 13 04 0457*       ld hl,@beg
-041368 01 06 00 00 0458*       ld bc,@end-@beg
-04136C 5B DF       0459*       rst.lil $18
-04136E C9          0460*       ret
-04136F             0461*   ; VDU 23, 0, &A0, bufferId; 14
-04136F 17 00 A0    0462*   @beg: db 23,0,0xA0
-041372 00 00       0463*   @bufferId: dw 0x0000
-041374 0E          0464*              db 14
-041375             0465*   @end:
-041375             0466*   
-041375             0467*   ; load an image file to a buffer and make it a bitmap
-041375             0468*   ; inputs: a = image type ; bc,de image width,height ; hl = bufferId ; ix = file size ; iy = pointer to filename
-041375             0469*   vdu_load_img:
-041375             0470*   ; back up image type and dimension parameters
-041375 22 FC 12 04 0471*       ld (bufferId0),hl
-041379 F5          0472*       push af
-04137A C5          0473*   	push bc
-04137B D5          0474*   	push de
-04137C             0475*   ; load the image
-04137C CD 97 13 04 0476*   	call vdu_load_buffer_from_file
-041380             0477*   ; now make it a bitmap
-041380 2A FC 12 04 0478*       ld hl,(bufferId0)
-041384 CD 5A 13 04 0479*       call vdu_consolidate_buffer
-041388 2A FC 12 04 0480*       ld hl,(bufferId0)
-04138C CD 57 12 04 0481*       call vdu_buff_select
-041390 D1          0482*   	pop de ; image height
-041391 C1          0483*   	pop bc ; image width
-041392 F1          0484*   	pop af ; image type
-041393 C3 6C 12 04 0485*   	jp vdu_bmp_create ; will return to caller from there
-041397             0486*   
-041397             0487*   ; inputs: hl = bufferId; iy = pointer to filename
-041397             0488*   vdu_load_buffer_from_file:
-041397 22 FC 12 04 0489*       ld (bufferId0),hl
-04139B             0490*   
-04139B             0491*   ; clear target buffer
-04139B CD 2E 13 04 0492*       call vdu_clear_buffer
-04139F             0493*   
-04139F             0494*   ; open the file in read mode
-04139F             0495*   ; Open a file
-04139F             0496*   ; HLU: Filename
-04139F             0497*   ;   C: Mode
-04139F             0498*   ; Returns:
-04139F             0499*   ;   A: Filehandle, or 0 if couldn't open
-04139F FD E5       0500*   	push iy ; pointer to filename
-0413A1 E1          0501*   	pop hl
-0413A2 0E 01       0502*   	ld c,fa_read
-0413A4             0503*       MOSCALL mos_fopen
-0413A4 3E 0A       0001*M1 			LD	A, function
-0413A6 5B CF       0002*M1 			RST.LIL	08h
-0413A8 32 E3 13 04 0504*       ld (@filehandle),a
-0413AC             0505*   
-0413AC             0506*   @read_file:
-0413AC             0507*   ; Read a block of data from a file
-0413AC             0508*   ;   C: Filehandle
-0413AC             0509*   ; HLU: Pointer to where to write the data to
-0413AC             0510*   ; DEU: Number of bytes to read
-0413AC             0511*   ; Returns:
-0413AC             0512*   ; DEU: Number of bytes read
-0413AC 3A E3 13 04 0513*       ld a,(@filehandle)
-0413B0 4F          0514*       ld c,a
-0413B1 21 00 E0 B7 0515*       ld hl,filedata
-0413B5 11 00 20 00 0516*       ld de,8192 ; max we can read into onboard sram at one time
-0413B9             0517*       MOSCALL mos_fread
-0413B9 3E 1A       0001*M1 			LD	A, function
-0413BB 5B CF       0002*M1 			RST.LIL	08h
-0413BD             0518*   
-0413BD             0519*   ; test de for zero bytes read
-0413BD 21 00 00 00 0520*       ld hl,0
-0413C1 AF          0521*       xor a ; clear carry
-0413C2 ED 52       0522*       sbc hl,de
-0413C4 CA DA 13 04 0523*       jp z,@close_file
-0413C8             0524*   
-0413C8             0525*   ; load a vdu buffer from local memory
-0413C8             0526*   ; inputs: hl = bufferId ; bc = length ; de = pointer to data
-0413C8 2A FC 12 04 0527*       ld hl,(bufferId0)
-0413CC D5          0528*       push de ; chunksize
-0413CD C1          0529*       pop bc
-0413CE 11 00 E0 B7 0530*       ld de,filedata
-0413D2 CD 02 13 04 0531*       call vdu_load_buffer
-0413D6             0532*   
-0413D6             0533*   ; read the next block
-0413D6 C3 AC 13 04 0534*       jp @read_file
-0413DA             0535*   
-0413DA             0536*   ; close the file
-0413DA             0537*   @close_file:
-0413DA 3A E3 13 04 0538*       ld a,(@filehandle)
-0413DE             0539*       MOSCALL mos_fclose
-0413DE 3E 0B       0001*M1 			LD	A, function
-0413E0 5B CF       0002*M1 			RST.LIL	08h
-0413E2 C9          0540*       ret ; vdu_load_buffer_from_file
-0413E3             0541*   
-0413E3 00          0542*   @filehandle: db 0 ; file handle
-0413E4 00 00 00    0543*   @fil: dl 0 ; pointer to FIL struct
-0413E7             0544*   
-0413E7 00 00 00    0545*   @chunkpointer: dl 0 ; pointer to current chunk
-0413EA             0546*   
-0413EA             0547*   ; File information structure (FILINFO)
-0413EA             0548*   @filinfo:
-0413EA 00 00 00 00 0549*   @filinfo_fsize:    blkb 4, 0   ; File size (4 bytes)
-0413EE 00 00       0550*   @filinfo_fdate:    blkb 2, 0   ; Modified date (2 bytes)
-0413F0 00 00       0551*   @filinfo_ftime:    blkb 2, 0   ; Modified time (2 bytes)
-0413F2 00          0552*   @filinfo_fattrib:  blkb 1, 0   ; File attribute (1 byte)
-0413F3 00 00 00 00 0553*   @filinfo_altname:  blkb 13, 0  ; Alternative file name (13 bytes)
+041343             0434*   ; VDU 23, 0, &A0, bufferId; 14
+041343 17 00 A0    0435*   @beg: db 23,0,0xA0
+041346 00 00       0436*   @bufferId: dw 0x0000
+041348 0E          0437*              db 14
+041349             0438*   @end:
+041349             0439*   
+041349             0440*   ; load an image file to a buffer and make it a bitmap
+041349             0441*   ; inputs: a = image type ; bc,de image width,height ; hl = bufferId ; ix = file size ; iy = pointer to filename
+041349             0442*   vdu_load_img:
+041349             0443*   ; back up image type and dimension parameters
+041349 22 FC 12 04 0444*       ld (bufferId0),hl
+04134D F5          0445*       push af
+04134E C5          0446*   	push bc
+04134F D5          0447*   	push de
+041350             0448*   ; load the image
+041350 CD 6B 13 04 0449*   	call vdu_load_buffer_from_file
+041354             0450*   ; now make it a bitmap
+041354 2A FC 12 04 0451*       ld hl,(bufferId0)
+041358 CD 2E 13 04 0452*       call vdu_consolidate_buffer
+04135C 2A FC 12 04 0453*       ld hl,(bufferId0)
+041360 CD 57 12 04 0454*       call vdu_buff_select
+041364 D1          0455*   	pop de ; image height
+041365 C1          0456*   	pop bc ; image width
+041366 F1          0457*   	pop af ; image type
+041367 C3 6C 12 04 0458*   	jp vdu_bmp_create ; will return to caller from there
+04136B             0459*   
+04136B             0460*   ; inputs: hl = bufferId; iy = pointer to filename
+04136B             0461*   vdu_load_buffer_from_file:
+04136B 22 FC 12 04 0462*       ld (bufferId0),hl
+04136F             0463*   
+04136F             0464*   ; clear target buffer
+04136F CD 11 15 04 0465*       call vdu_clear_buffer
+041373             0466*   
+041373             0467*   ; open the file in read mode
+041373             0468*   ; Open a file
+041373             0469*   ; HLU: Filename
+041373             0470*   ;   C: Mode
+041373             0471*   ; Returns:
+041373             0472*   ;   A: Filehandle, or 0 if couldn't open
+041373 FD E5       0473*   	push iy ; pointer to filename
+041375 E1          0474*   	pop hl
+041376 0E 01       0475*   	ld c,fa_read
+041378             0476*       MOSCALL mos_fopen
+041378 3E 0A       0001*M1 			LD	A, function
+04137A 5B CF       0002*M1 			RST.LIL	08h
+04137C 32 B7 13 04 0477*       ld (@filehandle),a
+041380             0478*   
+041380             0479*   @read_file:
+041380             0480*   ; Read a block of data from a file
+041380             0481*   ;   C: Filehandle
+041380             0482*   ; HLU: Pointer to where to write the data to
+041380             0483*   ; DEU: Number of bytes to read
+041380             0484*   ; Returns:
+041380             0485*   ; DEU: Number of bytes read
+041380 3A B7 13 04 0486*       ld a,(@filehandle)
+041384 4F          0487*       ld c,a
+041385 21 00 E0 B7 0488*       ld hl,filedata
+041389 11 00 20 00 0489*       ld de,8192 ; max we can read into onboard sram at one time
+04138D             0490*       MOSCALL mos_fread
+04138D 3E 1A       0001*M1 			LD	A, function
+04138F 5B CF       0002*M1 			RST.LIL	08h
+041391             0491*   
+041391             0492*   ; test de for zero bytes read
+041391 21 00 00 00 0493*       ld hl,0
+041395 AF          0494*       xor a ; clear carry
+041396 ED 52       0495*       sbc hl,de
+041398 CA AE 13 04 0496*       jp z,@close_file
+04139C             0497*   
+04139C             0498*   ; load a vdu buffer from local memory
+04139C             0499*   ; inputs: hl = bufferId ; bc = length ; de = pointer to data
+04139C 2A FC 12 04 0500*       ld hl,(bufferId0)
+0413A0 D5          0501*       push de ; chunksize
+0413A1 C1          0502*       pop bc
+0413A2 11 00 E0 B7 0503*       ld de,filedata
+0413A6 CD 02 13 04 0504*       call vdu_load_buffer
+0413AA             0505*   
+0413AA             0506*   ; read the next block
+0413AA C3 80 13 04 0507*       jp @read_file
+0413AE             0508*   
+0413AE             0509*   ; close the file
+0413AE             0510*   @close_file:
+0413AE 3A B7 13 04 0511*       ld a,(@filehandle)
+0413B2             0512*       MOSCALL mos_fclose
+0413B2 3E 0B       0001*M1 			LD	A, function
+0413B4 5B CF       0002*M1 			RST.LIL	08h
+0413B6 C9          0513*       ret ; vdu_load_buffer_from_file
+0413B7             0514*   
+0413B7 00          0515*   @filehandle: db 0 ; file handle
+0413B8 00 00 00    0516*   @fil: dl 0 ; pointer to FIL struct
+0413BB             0517*   
+0413BB 00 00 00    0518*   @chunkpointer: dl 0 ; pointer to current chunk
+0413BE             0519*   
+0413BE             0520*   ; File information structure (FILINFO)
+0413BE             0521*   @filinfo:
+0413BE 00 00 00 00 0522*   @filinfo_fsize:    blkb 4, 0   ; File size (4 bytes)
+0413C2 00 00       0523*   @filinfo_fdate:    blkb 2, 0   ; Modified date (2 bytes)
+0413C4 00 00       0524*   @filinfo_ftime:    blkb 2, 0   ; Modified time (2 bytes)
+0413C6 00          0525*   @filinfo_fattrib:  blkb 1, 0   ; File attribute (1 byte)
+0413C7 00 00 00 00 0526*   @filinfo_altname:  blkb 13, 0  ; Alternative file name (13 bytes)
        00 00 00 00 
        00 00 00 00 
        00          
-041400 00 00 00 00 0554*   @filinfo_fname:    blkb 256, 0 ; Primary file name (256 bytes)
+0413D4 00 00 00 00 0527*   @filinfo_fname:    blkb 256, 0 ; Primary file name (256 bytes)
        00 00 00 00 
        00 00 00 00 
        00 00 00 00 
@@ -3954,823 +3927,1336 @@ PC     Output      Line
        00 00 00 00 
        00 00 00 00 
        00 00 00 00 
-041500             0039        include "vdu_fonts.inc"
-041500             0001*   ; select font
-041500             0002*   ; inputs: hl = bufferId, a = font flags
-041500             0003*   ; Flags:
-041500             0004*   ; Bit	Description
-041500             0005*   ; 0	Adjust cursor position to ensure text baseline is aligned
-041500             0006*   ;   0: Do not adjust cursor position (best for changing font on a new line)
-041500             0007*   ;   1: Adjust cursor position (best for changing font in the middle of a line)
-041500             0008*   ; 1-7	Reserved for future use
-041500             0009*   ; VDU 23, 0, &95, 0, bufferId; flags: Select font
-041500             0010*   vdu_font_select:
-041500 22 17 15 04 0011*       ld (@bufferId),hl
-041504 32 19 15 04 0012*       ld (@flags),a
-041508 21 13 15 04 0013*       ld hl,@cmd
-04150C 01 07 00 00 0014*       ld bc,@end-@cmd
-041510 5B DF       0015*       rst.lil $18
-041512 C9          0016*       ret
-041513 17 00 95 00 0017*   @cmd: db 23, 0, 0x95, 0
-041517 00 00       0018*   @bufferId: dw 0x0000
-041519 00          0019*   @flags: db 0x00
-04151A             0020*   @end:
-04151A             0021*   
-04151A             0022*   ; create font from buffer
-04151A             0023*   ; inputs: hl = bufferId, e = width, d = height, d = ascent, a = flags
-04151A             0024*   ; VDU 23, 0, &95, 1, bufferId; width, height, ascent, flags: Create font from buffer
-04151A             0025*   vdu_font_create:
-04151A 22 3F 15 04 0026*       ld (@bufferId),hl
-04151E ED 53 41 15 0027*       ld (@width),de ; also loads height
+0414D4             0039        include "vdu_buffered_api.inc"
+0414D4             0001*   ; https://agonconsole8.github.io/agon-docs/vdp/Buffered-Commands-API/
+0414D4             0002*   
+0414D4             0003*   ; Command 0: Write block to a buffer
+0414D4             0004*   ; VDU 23, 0, &A0, bufferId; 0, length; <buffer-data>
+0414D4             0005*   ; inputs: hl = bufferId, bc = length of data, de = pointer to data
+0414D4             0006*   vdu_write_block_to_buffer:
+0414D4             0007*   ; back up input parameters
+0414D4 C5          0008*       push bc ; length of data
+0414D5             0009*   ; set up the vdu command string
+0414D5 22 F5 14 04 0010*       ld (@bufferId),hl
+0414D9 ED 43 F8 14 0011*       ld (@length),bc
        04          
-041523 32 44 15 04 0028*       ld (@flags),a
-041527 7A          0029*       ld a,d ; height
-041528 32 43 15 04 0030*       ld (@ascent),a ; ascent = height
-04152C             0031*   ; consolidate buffer
-04152C CD 5A 13 04 0032*       call vdu_consolidate_buffer
-041530             0033*   ; create font
-041530 21 3B 15 04 0034*       ld hl,@cmd
-041534 01 0A 00 00 0035*       ld bc,@end-@cmd
-041538 5B DF       0036*       rst.lil $18
-04153A C9          0037*       ret
-04153B 17 00 95 01 0038*   @cmd: db 23, 0, 0x95, 1
-04153F 00 00       0039*   @bufferId: dw 0x0000
-041541 00          0040*   @width: db 0x00
-041542 00          0041*   @height: db 0x00
-041543 00          0042*   @ascent: db 0x00
-041544 00          0043*   @flags: db 0x00
-041545             0044*   @end:
-041545             0045*   
-041545             0046*   ; set or adjust font property
-041545             0047*   ; inputs: hl = bufferId, a = field, de = value
-041545             0048*   ; VDU 23, 0, &95, 2, bufferId; field, value;: Set or adjust font property
-041545             0049*   vdu_font_property:
-041545 22 61 15 04 0050*       ld (@bufferId),hl
-041549 32 63 15 04 0051*       ld (@field),a
-04154D ED 53 64 15 0052*       ld (@value),de
+0414DE AF          0012*       xor a ; load buffer
+0414DF 32 F7 14 04 0013*       ld (@bufferId+2),a
+0414E3 2A F2 14 04 0014*       ld hl,(@cmd0)
+0414E7 01 08 00 00 0015*       ld bc,@end0-@cmd0
+0414EB 5B DF       0016*       rst.lil $18
+0414ED             0017*   ; send the buffer data
+0414ED C1          0018*       pop bc ; length of data
+0414EE EB          0019*       ex de,hl ; hl = pointer to data
+0414EF 5B DF       0020*       rst.lil $18 ; send it
+0414F1 C9          0021*       ret
+0414F2             0022*   ; command string data
+0414F2 17 00 A0    0023*   @cmd0:      db 23,0,0xA0
+0414F5 00 00       0024*   @bufferId:	dw 0x0000
+0414F7 00          0025*               db 0 ; load buffer
+0414F8 00 00       0026*   @length:	dw 0x0000
+0414FA 00          0027*   @end0:      db 0x00 ; padding
+0414FB             0028*   ; end vdu_write_block_to_buffer
+0414FB             0029*   
+0414FB             0030*   ; Command 1: Call a buffer
+0414FB             0031*   ; VDU 23, 0, &A0, bufferId; 1
+0414FB             0032*   ; inputs: hl = bufferId
+0414FB             0033*   vdu_call_buffer:
+0414FB 22 0E 15 04 0034*       ld (@bufferId),hl
+0414FF 21 0A 15 04 0035*       ld hl,@cmd
+041503 01 06 00 00 0036*       ld bc,@end-@cmd
+041507 5B DF       0037*       rst.lil $18
+041509 C9          0038*       ret
+04150A 17 00 A0    0039*   @cmd:     db 23,0,0xA0
+04150D 01          0040*              db 1 ; call buffer
+04150E 00 00       0041*   @bufferId: dw 0x0000
+041510 00          0042*   @end:     db 0x00 ; padding
+041511             0043*   ; end vdu_call_buffer
+041511             0044*   
+041511             0045*   ; Command 2: Clear a buffer
+041511             0046*   ; VDU 23, 0 &A0, bufferId; 2
+041511             0047*   ; inputs: hl = bufferId
+041511             0048*   vdu_clear_buffer:
+041511 22 24 15 04 0049*       ld (@bufferId),hl
+041515 21 20 15 04 0050*       ld hl,@cmd
+041519 01 06 00 00 0051*       ld bc,@end-@cmd
+04151D 5B DF       0052*       rst.lil $18
+04151F C9          0053*       ret
+041520 17 00 A0    0054*   @cmd:     db 23,0,0xA0
+041523 02          0055*              db 2 ; clear buffer
+041524 00 00       0056*   @bufferId: dw 0x0000
+041526 00          0057*   @end:     db 0x00 ; padding
+041527             0058*   ; end vdu_clear_buffer
+041527             0059*   
+041527             0060*   ; Clear all buffers
+041527             0061*   ; inputs: none
+041527             0062*   vdu_clear_all_buffers:
+041527             0063*   ; clear all buffers
+041527 21 32 15 04 0064*       ld hl,@beg
+04152B 01 06 00 00 0065*       ld bc,@end-@beg
+04152F 5B DF       0066*       rst.lil $18
+041531 C9          0067*       ret
+041532 17 00 A0    0068*   @beg: db 23,0,$A0
+041535 FF FF       0069*         dw -1 ; bufferId -1 (65535) means clear all buffers
+041537 02          0070*         db 2  ; command 2: clear a buffer
+041538             0071*   @end:
+041538             0072*   ; end vdu_clear_all_buffers
+041538             0073*   
+041538             0074*   ; Command 3: Create a writeable buffer
+041538             0075*   ; VDU 23, 0 &A0, bufferId; 3, length;
+041538             0076*   ; inputs: hl = bufferId, bc = length
+041538             0077*   vdu_create_writeable_buffer:
+041538 22 50 15 04 0078*       ld (@bufferId),hl
+04153C ED 43 52 15 0079*       ld (@length),bc
        04          
-041552 21 5D 15 04 0053*       ld hl,@cmd
-041556 01 09 00 00 0054*       ld bc,@end-@cmd
-04155A 5B DF       0055*       rst.lil $18
-04155C C9          0056*       ret
-04155D 17 00 95 02 0057*   @cmd: db 23, 0, 0x95, 2
-041561 00 00       0058*   @bufferId: dw 0x0000
-041563 00          0059*   @field: db 0x00
-041564 00 00       0060*   @value: dw 0x0000
-041566 00          0061*   @end: db 0x00 ; padding
-041567             0062*   
-041567             0063*   ; VDU 23, 0, &95, 3, bufferId; [<args>]: Reserved
-041567             0064*   
-041567             0065*   ; Clear/Delete font
-041567             0066*   ; inputs: hl = bufferId
-041567             0067*   ; VDU 23, 0, &95, 4, bufferId;: Clear/Delete font
-041567             0068*   vdu_font_clear:
-041567 22 7A 15 04 0069*       ld (@bufferId),hl
-04156B 21 76 15 04 0070*       ld hl,@cmd
-04156F 01 06 00 00 0071*       ld bc,@end-@cmd
-041573 5B DF       0072*       rst.lil $18
-041575 C9          0073*       ret
-041576 17 00 95 04 0074*   @cmd: db 23, 0, 0x95, 4
-04157A 00 00       0075*   @bufferId: dw 0x0000
-04157C 00          0076*   @end: db 0x00 ; padding
-04157D             0077*   
-04157D             0078*   ; Copy system font to buffer
-04157D             0079*   ; inputs: hl = bufferId
-04157D             0080*   ; VDU 23, 0, &95, 5, bufferId;: Copy system font to buffer
-04157D             0081*   vdu_font_copy_system:
-04157D 22 90 15 04 0082*       ld (@bufferId),hl
-041581 21 8C 15 04 0083*       ld hl,@cmd
-041585 01 06 00 00 0084*       ld bc,@end-@cmd
-041589 5B DF       0085*       rst.lil $18
-04158B C9          0086*       ret
-04158C 17 00 95 05 0087*   @cmd: db 23, 0, 0x95, 5
-041590 00 00       0088*   @bufferId: dw 0x0000
-041592 00          0089*   @end: db 0x00 ; padding
-041593             0040        include "vdu_plot.inc"
-041593             0001*   ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
-041593             0002*   ; PLOT code 	(Decimal) 	Effect
-041593             0003*   ; &00-&07 	0-7 	Solid line, includes both ends
-041593             0004*   plot_sl_both: equ 0x00
-041593             0005*   
-041593             0006*   ; &08-&0F 	8-15 	Solid line, final point omitted
-041593             0007*   plot_sl_first: equ 0x08
-041593             0008*   
-041593             0009*   ; &10-&17 	16-23 	Not supported (Dot-dash line, includes both ends, pattern restarted)
-041593             0010*   ; &18-&1F 	24-31 	Not supported (Dot-dash line, first point omitted, pattern restarted)
-041593             0011*   
-041593             0012*   ; &20-&27 	32-39 	Solid line, first point omitted
-041593             0013*   plot_sl_last: equ 0x20
-041593             0014*   
-041593             0015*   ; &28-&2F 	40-47 	Solid line, both points omitted
-041593             0016*   plot_sl_none: equ 0x28
-041593             0017*   
-041593             0018*   ; &30-&37 	48-55 	Not supported (Dot-dash line, first point omitted, pattern continued)
-041593             0019*   ; &38-&3F 	56-63 	Not supported (Dot-dash line, both points omitted, pattern continued)
-041593             0020*   
-041593             0021*   ; &40-&47 	64-71 	Point plot
-041593             0022*   plot_pt: equ 0x40
-041593             0023*   
-041593             0024*   ; &48-&4F 	72-79 	Line fill left and right to non-background §§
-041593             0025*   plot_lf_lr_non_bg: equ 0x48
-041593             0026*   
-041593             0027*   ; &50-&57 	80-87 	Triangle fill
-041593             0028*   plot_tf: equ 0x50
-041593             0029*   
-041593             0030*   ; &58-&5F 	88-95 	Line fill right to background §§
-041593             0031*   plot_lf_r_bg: equ 0x58
-041593             0032*   
-041593             0033*   ; &60-&67 	96-103 	Rectangle fill
-041593             0034*   plot_rf: equ 0x60
-041593             0035*   
-041593             0036*   ; &68-&6F 	104-111 	Line fill left and right to foreground §§
-041593             0037*   plot_lf_lr_fg: equ 0x60
-041593             0038*   
-041593             0039*   ; &70-&77 	112-119 	Parallelogram fill
-041593             0040*   plot_pf: equ 0x70
-041593             0041*   
-041593             0042*   ; &78-&7F 	120-127 	Line fill right to non-foreground §§
-041593             0043*   plot_lf_r_non_fg: equ 0x78
-041593             0044*   
-041593             0045*   ; &80-&87 	128-135 	Not supported (Flood until non-background)
-041593             0046*   ; &88-&8F 	136-143 	Not supported (Flood until foreground)
-041593             0047*   
-041593             0048*   ; &90-&97 	144-151 	Circle outline
-041593             0049*   plot_co: equ 0x90
-041593             0050*   
-041593             0051*   ; &98-&9F 	152-159 	Circle fill
-041593             0052*   plot_cf: equ 0x98
-041593             0053*   
-041593             0054*   ; &A0-&A7 	160-167 	Not supported (Circular arc)
-041593             0055*   ; &A8-&AF 	168-175 	Not supported (Circular segment)
-041593             0056*   ; &B0-&B7 	176-183 	Not supported (Circular sector)
-041593             0057*   
-041593             0058*   ; &B8-&BF 	184-191 	Rectangle copy/move
-041593             0059*   plot_rcm: equ 0xB8
-041593             0060*   
-041593             0061*   ; &C0-&C7 	192-199 	Not supported (Ellipse outline)
-041593             0062*   ; &C8-&CF 	200-207 	Not supported (Ellipse fill)
-041593             0063*   ; &D0-&D7 	208-215 	Not defined
-041593             0064*   ; &D8-&DF 	216-223 	Not defined
-041593             0065*   ; &E0-&E7 	224-231 	Not defined
-041593             0066*   
-041593             0067*   ; &E8-&EF 	232-239 	Bitmap plot §
-041593             0068*   plot_bmp: equ 0xE8
-041593             0069*   
-041593             0070*   ; &F0-&F7 	240-247 	Not defined
-041593             0071*   ; &F8-&FF 	248-255 	Not defined
-041593             0072*   
-041593             0073*   ; § Support added in Agon Console8 VDP 2.1.0 §§ Support added in
-041593             0074*   ; Agon Console8 VDP 2.2.0
-041593             0075*   
-041593             0076*   ; Within each group of eight plot codes, the effects are as follows:
-041593             0077*   ; Plot code 	Effect
-041593             0078*   ; 0 	Move relative
-041593             0079*   mv_rel: equ 0
-041593             0080*   
-041593             0081*   ; 1 	Plot relative in current foreground colour
-041593             0082*   dr_rel_fg: equ 1
-041593             0083*   
-041593             0084*   ; 2 	Not supported (Plot relative in logical inverse colour)
-041593             0085*   ; 3 	Plot relative in current background colour
-041593             0086*   dr_rel_bg: equ 3
-041593             0087*   
-041593             0088*   ; 4 	Move absolute
-041593             0089*   mv_abs: equ 4
-041593             0090*   
-041593             0091*   ; 5 	Plot absolute in current foreground colour
-041593             0092*   dr_abs_fg: equ 5
-041593             0093*   
-041593             0094*   ; 6 	Not supported (Plot absolute in logical inverse colour)
-041593             0095*   ; 7 	Plot absolute in current background colour
-041593             0096*   dr_abs_bg: equ 7
-041593             0097*   
-041593             0098*   ; Codes 0-3 use the position data provided as part of the command
-041593             0099*   ; as a relative position, adding the position given to the current
-041593             0100*   ; graphical cursor position. Codes 4-7 use the position data provided
-041593             0101*   ; as part of the command as an absolute position, setting the current
-041593             0102*   ; graphical cursor position to the position given.
-041593             0103*   
-041593             0104*   ; Codes 2 and 6 on Acorn systems plot using a logical inverse of the
-041593             0105*   ; current pixel colour. These operations cannot currently be supported
-041593             0106*   ; by the graphics system the Agon VDP uses, so these codes are not
-041593             0107*   ; supported. Support for these codes may be added in a future version
-041593             0108*   ; of the VDP firmware.
-041593             0109*   
-041593             0110*   ; 16 colour palette constants
-041593             0111*   c_black: equ 0
-041593             0112*   c_red_dk: equ 1
-041593             0113*   c_green_dk: equ 2
-041593             0114*   c_yellow_dk: equ 3
-041593             0115*   c_blue_dk: equ 4
-041593             0116*   c_magenta_dk: equ 5
-041593             0117*   c_cyan_dk: equ 6
-041593             0118*   c_grey: equ 7
-041593             0119*   c_grey_dk: equ 8
-041593             0120*   c_red: equ 9
-041593             0121*   c_green: equ 10
-041593             0122*   c_yellow: equ 11
-041593             0123*   c_blue: equ 12
-041593             0124*   c_magenta: equ 13
-041593             0125*   c_cyan: equ 14
-041593             0126*   c_white: equ 15
-041593             0127*   
-041593             0128*   ; VDU 25, mode, x; y;: PLOT command
-041593             0129*   ; inputs: a=mode, bc=x0, de=y0
-041593             0130*   vdu_plot:
-041593 32 AD 15 04 0131*       ld (@mode),a
-041597 ED 43 AE 15 0132*       ld (@x0),bc
+041541 21 4C 15 04 0080*       ld hl,@cmd
+041545 01 08 00 00 0081*       ld bc,@end-@cmd
+041549 5B DF       0082*       rst.lil $18
+04154B C9          0083*       ret
+04154C 17 00 A0    0084*   @cmd:     db 23,0,0xA0
+04154F 03          0085*              db 3 ; create writeable buffer
+041550 00 00       0086*   @bufferId: dw 0x0000
+041552 00 00       0087*   @length: dw 0x0000
+041554 00          0088*   @end:     db 0x00 ; padding
+041555             0089*   ; end vdu_create_writeable_buffer
+041555             0090*   
+041555             0091*   ; Command 4: Set output stream to a buffer
+041555             0092*   ; VDU 23, 0 &A0, bufferId; 4
+041555             0093*   ; inputs: hl = bufferId
+041555             0094*   vdu_set_output_stream_buffer:
+041555 22 68 15 04 0095*       ld (@bufferId),hl
+041559 21 64 15 04 0096*       ld hl,@cmd
+04155D 01 06 00 00 0097*       ld bc,@end-@cmd
+041561 5B DF       0098*       rst.lil $18
+041563 C9          0099*       ret
+041564 17 00 A0    0100*   @cmd:     db 23,0,0xA0
+041567 04          0101*              db 4 ; set output stream to buffer
+041568 00 00       0102*   @bufferId: dw 0x0000
+04156A 00          0103*   @end:     db 0x00 ; padding
+04156B             0104*   ; end vdu_set_output_stream_buffer
+04156B             0105*   
+04156B             0106*   ; Command 5: Adjust buffer contents
+04156B             0107*   ; VDU 23, 0, &A0, bufferId; 5, operation, offset; [count;] <operand>, [arguments]
+04156B             0108*   vdu_adjust_buffer:
+04156B C9          0109*       ret ; TODO: implement
+04156C             0110*   ; end vdu_adjust_buffer
+04156C             0111*   
+04156C             0112*   ; Command 6: Conditionally call a buffer
+04156C             0113*   ; VDU 23, 0, &A0, bufferId; 6, operation, checkBufferId; checkOffset; [arguments]
+04156C             0114*   vdu_call_buffer_conditional:
+04156C C9          0115*       ret ; TODO: implement
+04156D             0116*   ; end vdu_call_buffer_conditional
+04156D             0117*   
+04156D             0118*   ; Command 7: Jump to a buffer
+04156D             0119*   ; VDU 23, 0, &A0, bufferId; 7
+04156D             0120*   ; inputs: hl = bufferId
+04156D             0121*   vdu_jump_to_buffer:
+04156D 22 80 15 04 0122*       ld (@bufferId),hl
+041571 21 7C 15 04 0123*       ld hl,@cmd
+041575 01 06 00 00 0124*       ld bc,@end-@cmd
+041579 5B DF       0125*       rst.lil $18
+04157B C9          0126*       ret
+04157C 17 00 A0    0127*   @cmd:     db 23,0,0xA0
+04157F 07          0128*              db 7 ; jump to buffer
+041580 00 00       0129*   @bufferId: dw 0x0000
+041582 00          0130*   @end:     db 0x00 ; padding
+041583             0131*   ; end vdu_jump_to_buffer
+041583             0132*   
+041583             0133*   ; Command 8: Conditional Jump to a buffer
+041583             0134*   ; VDU 23, 0, &A0, bufferId; 8, operation, checkBufferId; checkOffset; [arguments]
+041583             0135*   vdu_jump_to_buffer_conditional:
+041583 C9          0136*       ret ; TODO: implement
+041584             0137*   ; end vdu_jump_to_buffer_conditional
+041584             0138*   
+041584             0139*   ; Command 9: Jump to an offset in a buffer
+041584             0140*   ; VDU 23, 0, &A0, bufferId; 9, offset; offsetHighByte, [blockNumber;]
+041584             0141*   vdu_jump_to_buffer_offset:
+041584 C9          0142*       ret ; TODO: implement
+041585             0143*   ; end vdu_jump_to_buffer_offset
+041585             0144*   
+041585             0145*   ; Command 10: Conditional jump to an offset in a buffer
+041585             0146*   ; VDU 23, 0, &A0, bufferId; 10, offset; offsetHighByte, [blockNumber;] [arguments]
+041585             0147*   vdu_jump_to_buffer_offset_conditional:
+041585 C9          0148*       ret ; TODO: implement
+041586             0149*   ; end vdu_jump_to_buffer_offset_conditional
+041586             0150*   
+041586             0151*   ; Command 11: Call buffer with an offset
+041586             0152*   ; VDU 23, 0, &A0, bufferId; 11, offset; offsetHighByte, [blockNumber;]
+041586             0153*   vdu_call_buffer_offset:
+041586 C9          0154*       ret ; TODO: implement
+041587             0155*   ; end vdu_call_buffer_offset
+041587             0156*   
+041587             0040        include "vdu_fonts.inc"
+041587             0001*   ; select font
+041587             0002*   ; inputs: hl = bufferId, a = font flags
+041587             0003*   ; Flags:
+041587             0004*   ; Bit	Description
+041587             0005*   ; 0	Adjust cursor position to ensure text baseline is aligned
+041587             0006*   ;   0: Do not adjust cursor position (best for changing font on a new line)
+041587             0007*   ;   1: Adjust cursor position (best for changing font in the middle of a line)
+041587             0008*   ; 1-7	Reserved for future use
+041587             0009*   ; VDU 23, 0, &95, 0, bufferId; flags: Select font
+041587             0010*   vdu_font_select:
+041587 22 9E 15 04 0011*       ld (@bufferId),hl
+04158B 32 A0 15 04 0012*       ld (@flags),a
+04158F 21 9A 15 04 0013*       ld hl,@cmd
+041593 01 07 00 00 0014*       ld bc,@end-@cmd
+041597 5B DF       0015*       rst.lil $18
+041599 C9          0016*       ret
+04159A 17 00 95 00 0017*   @cmd: db 23, 0, 0x95, 0
+04159E 00 00       0018*   @bufferId: dw 0x0000
+0415A0 00          0019*   @flags: db 0x00
+0415A1             0020*   @end:
+0415A1             0021*   
+0415A1             0022*   ; create font from buffer
+0415A1             0023*   ; inputs: hl = bufferId, e = width, d = height, d = ascent, a = flags
+0415A1             0024*   ; VDU 23, 0, &95, 1, bufferId; width, height, ascent, flags: Create font from buffer
+0415A1             0025*   vdu_font_create:
+0415A1 22 C6 15 04 0026*       ld (@bufferId),hl
+0415A5 ED 53 C8 15 0027*       ld (@width),de ; also loads height
        04          
-04159C ED 53 B0 15 0133*       ld (@y0),de
+0415AA 32 CB 15 04 0028*       ld (@flags),a
+0415AE 7A          0029*       ld a,d ; height
+0415AF 32 CA 15 04 0030*       ld (@ascent),a ; ascent = height
+0415B3             0031*   ; consolidate buffer
+0415B3 CD 2E 13 04 0032*       call vdu_consolidate_buffer
+0415B7             0033*   ; create font
+0415B7 21 C2 15 04 0034*       ld hl,@cmd
+0415BB 01 0A 00 00 0035*       ld bc,@end-@cmd
+0415BF 5B DF       0036*       rst.lil $18
+0415C1 C9          0037*       ret
+0415C2 17 00 95 01 0038*   @cmd: db 23, 0, 0x95, 1
+0415C6 00 00       0039*   @bufferId: dw 0x0000
+0415C8 00          0040*   @width: db 0x00
+0415C9 00          0041*   @height: db 0x00
+0415CA 00          0042*   @ascent: db 0x00
+0415CB 00          0043*   @flags: db 0x00
+0415CC             0044*   @end:
+0415CC             0045*   
+0415CC             0046*   ; set or adjust font property
+0415CC             0047*   ; inputs: hl = bufferId, a = field, de = value
+0415CC             0048*   ; VDU 23, 0, &95, 2, bufferId; field, value;: Set or adjust font property
+0415CC             0049*   vdu_font_property:
+0415CC 22 E8 15 04 0050*       ld (@bufferId),hl
+0415D0 32 EA 15 04 0051*       ld (@field),a
+0415D4 ED 53 EB 15 0052*       ld (@value),de
        04          
-0415A1 21 AC 15 04 0134*   	ld hl,@cmd
-0415A5 01 06 00 00 0135*   	ld bc,@end-@cmd
-0415A9 5B DF       0136*   	rst.lil $18
-0415AB C9          0137*   	ret
-0415AC 19          0138*   @cmd:   db 25
-0415AD 00          0139*   @mode:  db 0
-0415AE 00 00       0140*   @x0: 	dw 0
-0415B0 00 00       0141*   @y0: 	dw 0
-0415B2 00          0142*   @end:   db 0 ; extra byte to soak up deu
-0415B3             0143*   
-0415B3             0144*   ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
-0415B3             0145*   ; &E8-&EF 	232-239 	Bitmap plot §
-0415B3             0146*   ; VDU 25, mode, x; y;: PLOT command
-0415B3             0147*   ; inputs: bc=x0, de=y0
-0415B3             0148*   ; prerequisites: vdu_buff_select
-0415B3             0149*   vdu_plot_bmp:
-0415B3 ED 43 CA 15 0150*       ld (@x0),bc
+0415D9 21 E4 15 04 0053*       ld hl,@cmd
+0415DD 01 09 00 00 0054*       ld bc,@end-@cmd
+0415E1 5B DF       0055*       rst.lil $18
+0415E3 C9          0056*       ret
+0415E4 17 00 95 02 0057*   @cmd: db 23, 0, 0x95, 2
+0415E8 00 00       0058*   @bufferId: dw 0x0000
+0415EA 00          0059*   @field: db 0x00
+0415EB 00 00       0060*   @value: dw 0x0000
+0415ED 00          0061*   @end: db 0x00 ; padding
+0415EE             0062*   
+0415EE             0063*   ; VDU 23, 0, &95, 3, bufferId; [<args>]: Reserved
+0415EE             0064*   
+0415EE             0065*   ; Clear/Delete font
+0415EE             0066*   ; inputs: hl = bufferId
+0415EE             0067*   ; VDU 23, 0, &95, 4, bufferId;: Clear/Delete font
+0415EE             0068*   vdu_font_clear:
+0415EE 22 01 16 04 0069*       ld (@bufferId),hl
+0415F2 21 FD 15 04 0070*       ld hl,@cmd
+0415F6 01 06 00 00 0071*       ld bc,@end-@cmd
+0415FA 5B DF       0072*       rst.lil $18
+0415FC C9          0073*       ret
+0415FD 17 00 95 04 0074*   @cmd: db 23, 0, 0x95, 4
+041601 00 00       0075*   @bufferId: dw 0x0000
+041603 00          0076*   @end: db 0x00 ; padding
+041604             0077*   
+041604             0078*   ; Copy system font to buffer
+041604             0079*   ; inputs: hl = bufferId
+041604             0080*   ; VDU 23, 0, &95, 5, bufferId;: Copy system font to buffer
+041604             0081*   vdu_font_copy_system:
+041604 22 17 16 04 0082*       ld (@bufferId),hl
+041608 21 13 16 04 0083*       ld hl,@cmd
+04160C 01 06 00 00 0084*       ld bc,@end-@cmd
+041610 5B DF       0085*       rst.lil $18
+041612 C9          0086*       ret
+041613 17 00 95 05 0087*   @cmd: db 23, 0, 0x95, 5
+041617 00 00       0088*   @bufferId: dw 0x0000
+041619 00          0089*   @end: db 0x00 ; padding
+04161A             0041        include "vdu_plot.inc"
+04161A             0001*   ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
+04161A             0002*   ; PLOT code 	(Decimal) 	Effect
+04161A             0003*   ; &00-&07 	0-7 	Solid line, includes both ends
+04161A             0004*   plot_sl_both: equ 0x00
+04161A             0005*   
+04161A             0006*   ; &08-&0F 	8-15 	Solid line, final point omitted
+04161A             0007*   plot_sl_first: equ 0x08
+04161A             0008*   
+04161A             0009*   ; &10-&17 	16-23 	Not supported (Dot-dash line, includes both ends, pattern restarted)
+04161A             0010*   ; &18-&1F 	24-31 	Not supported (Dot-dash line, first point omitted, pattern restarted)
+04161A             0011*   
+04161A             0012*   ; &20-&27 	32-39 	Solid line, first point omitted
+04161A             0013*   plot_sl_last: equ 0x20
+04161A             0014*   
+04161A             0015*   ; &28-&2F 	40-47 	Solid line, both points omitted
+04161A             0016*   plot_sl_none: equ 0x28
+04161A             0017*   
+04161A             0018*   ; &30-&37 	48-55 	Not supported (Dot-dash line, first point omitted, pattern continued)
+04161A             0019*   ; &38-&3F 	56-63 	Not supported (Dot-dash line, both points omitted, pattern continued)
+04161A             0020*   
+04161A             0021*   ; &40-&47 	64-71 	Point plot
+04161A             0022*   plot_pt: equ 0x40
+04161A             0023*   
+04161A             0024*   ; &48-&4F 	72-79 	Line fill left and right to non-background §§
+04161A             0025*   plot_lf_lr_non_bg: equ 0x48
+04161A             0026*   
+04161A             0027*   ; &50-&57 	80-87 	Triangle fill
+04161A             0028*   plot_tf: equ 0x50
+04161A             0029*   
+04161A             0030*   ; &58-&5F 	88-95 	Line fill right to background §§
+04161A             0031*   plot_lf_r_bg: equ 0x58
+04161A             0032*   
+04161A             0033*   ; &60-&67 	96-103 	Rectangle fill
+04161A             0034*   plot_rf: equ 0x60
+04161A             0035*   
+04161A             0036*   ; &68-&6F 	104-111 	Line fill left and right to foreground §§
+04161A             0037*   plot_lf_lr_fg: equ 0x60
+04161A             0038*   
+04161A             0039*   ; &70-&77 	112-119 	Parallelogram fill
+04161A             0040*   plot_pf: equ 0x70
+04161A             0041*   
+04161A             0042*   ; &78-&7F 	120-127 	Line fill right to non-foreground §§
+04161A             0043*   plot_lf_r_non_fg: equ 0x78
+04161A             0044*   
+04161A             0045*   ; &80-&87 	128-135 	Not supported (Flood until non-background)
+04161A             0046*   ; &88-&8F 	136-143 	Not supported (Flood until foreground)
+04161A             0047*   
+04161A             0048*   ; &90-&97 	144-151 	Circle outline
+04161A             0049*   plot_co: equ 0x90
+04161A             0050*   
+04161A             0051*   ; &98-&9F 	152-159 	Circle fill
+04161A             0052*   plot_cf: equ 0x98
+04161A             0053*   
+04161A             0054*   ; &A0-&A7 	160-167 	Not supported (Circular arc)
+04161A             0055*   ; &A8-&AF 	168-175 	Not supported (Circular segment)
+04161A             0056*   ; &B0-&B7 	176-183 	Not supported (Circular sector)
+04161A             0057*   
+04161A             0058*   ; &B8-&BF 	184-191 	Rectangle copy/move
+04161A             0059*   plot_rcm: equ 0xB8
+04161A             0060*   
+04161A             0061*   ; &C0-&C7 	192-199 	Not supported (Ellipse outline)
+04161A             0062*   ; &C8-&CF 	200-207 	Not supported (Ellipse fill)
+04161A             0063*   ; &D0-&D7 	208-215 	Not defined
+04161A             0064*   ; &D8-&DF 	216-223 	Not defined
+04161A             0065*   ; &E0-&E7 	224-231 	Not defined
+04161A             0066*   
+04161A             0067*   ; &E8-&EF 	232-239 	Bitmap plot §
+04161A             0068*   plot_bmp: equ 0xE8
+04161A             0069*   
+04161A             0070*   ; &F0-&F7 	240-247 	Not defined
+04161A             0071*   ; &F8-&FF 	248-255 	Not defined
+04161A             0072*   
+04161A             0073*   ; § Support added in Agon Console8 VDP 2.1.0 §§ Support added in
+04161A             0074*   ; Agon Console8 VDP 2.2.0
+04161A             0075*   
+04161A             0076*   ; Within each group of eight plot codes, the effects are as follows:
+04161A             0077*   ; Plot code 	Effect
+04161A             0078*   ; 0 	Move relative
+04161A             0079*   mv_rel: equ 0
+04161A             0080*   
+04161A             0081*   ; 1 	Plot relative in current foreground colour
+04161A             0082*   dr_rel_fg: equ 1
+04161A             0083*   
+04161A             0084*   ; 2 	Not supported (Plot relative in logical inverse colour)
+04161A             0085*   ; 3 	Plot relative in current background colour
+04161A             0086*   dr_rel_bg: equ 3
+04161A             0087*   
+04161A             0088*   ; 4 	Move absolute
+04161A             0089*   mv_abs: equ 4
+04161A             0090*   
+04161A             0091*   ; 5 	Plot absolute in current foreground colour
+04161A             0092*   dr_abs_fg: equ 5
+04161A             0093*   
+04161A             0094*   ; 6 	Not supported (Plot absolute in logical inverse colour)
+04161A             0095*   ; 7 	Plot absolute in current background colour
+04161A             0096*   dr_abs_bg: equ 7
+04161A             0097*   
+04161A             0098*   ; Codes 0-3 use the position data provided as part of the command
+04161A             0099*   ; as a relative position, adding the position given to the current
+04161A             0100*   ; graphical cursor position. Codes 4-7 use the position data provided
+04161A             0101*   ; as part of the command as an absolute position, setting the current
+04161A             0102*   ; graphical cursor position to the position given.
+04161A             0103*   
+04161A             0104*   ; Codes 2 and 6 on Acorn systems plot using a logical inverse of the
+04161A             0105*   ; current pixel colour. These operations cannot currently be supported
+04161A             0106*   ; by the graphics system the Agon VDP uses, so these codes are not
+04161A             0107*   ; supported. Support for these codes may be added in a future version
+04161A             0108*   ; of the VDP firmware.
+04161A             0109*   
+04161A             0110*   ; 16 colour palette constants
+04161A             0111*   c_black: equ 0
+04161A             0112*   c_red_dk: equ 1
+04161A             0113*   c_green_dk: equ 2
+04161A             0114*   c_yellow_dk: equ 3
+04161A             0115*   c_blue_dk: equ 4
+04161A             0116*   c_magenta_dk: equ 5
+04161A             0117*   c_cyan_dk: equ 6
+04161A             0118*   c_grey: equ 7
+04161A             0119*   c_grey_dk: equ 8
+04161A             0120*   c_red: equ 9
+04161A             0121*   c_green: equ 10
+04161A             0122*   c_yellow: equ 11
+04161A             0123*   c_blue: equ 12
+04161A             0124*   c_magenta: equ 13
+04161A             0125*   c_cyan: equ 14
+04161A             0126*   c_white: equ 15
+04161A             0127*   
+04161A             0128*   ; VDU 25, mode, x; y;: PLOT command
+04161A             0129*   ; inputs: a=mode, bc=x0, de=y0
+04161A             0130*   vdu_plot:
+04161A 32 34 16 04 0131*       ld (@mode),a
+04161E ED 43 35 16 0132*       ld (@x0),bc
        04          
-0415B8 ED 53 CC 15 0151*       ld (@y0),de
+041623 ED 53 37 16 0133*       ld (@y0),de
        04          
-0415BD 21 C8 15 04 0152*   	ld hl,@cmd
-0415C1 01 06 00 00 0153*   	ld bc,@end-@cmd
-0415C5 5B DF       0154*   	rst.lil $18
-0415C7 C9          0155*   	ret
-0415C8 19          0156*   @cmd:   db 25
-0415C9 ED          0157*   @mode:  db plot_bmp+dr_abs_fg ; 0xED
-0415CA 00 00       0158*   @x0: 	dw 0x0000
-0415CC 00 00       0159*   @y0: 	dw 0x0000
-0415CE 00          0160*   @end:   db 0x00 ; padding
-0415CF             0161*   
-0415CF             0162*   ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
-0415CF             0163*   ; &E8-&EF 	232-239 	Bitmap plot §
-0415CF             0164*   ; VDU 25, mode, x; y;: PLOT command
-0415CF             0165*   ; inputs: bc=x0, de=y0
-0415CF             0166*   ; USING 16.8 FIXED POINT COORDINATES
-0415CF             0167*   ; inputs: ub.c is x coordinate, ud.e is y coordinate
-0415CF             0168*   ;   the fractional portiion of the inputs are truncated
-0415CF             0169*   ;   leaving only the 16-bit integer portion
-0415CF             0170*   ; prerequisites: vdu_buff_select
-0415CF             0171*   vdu_plot_bmp168:
-0415CF             0172*   ; populate in the reverse of normal to keep the
-0415CF             0173*   ; inputs from stomping on each other
-0415CF ED 53 ED 15 0174*       ld (@y0-1),de
+041628 21 33 16 04 0134*   	ld hl,@cmd
+04162C 01 06 00 00 0135*   	ld bc,@end-@cmd
+041630 5B DF       0136*   	rst.lil $18
+041632 C9          0137*   	ret
+041633 19          0138*   @cmd:   db 25
+041634 00          0139*   @mode:  db 0
+041635 00 00       0140*   @x0: 	dw 0
+041637 00 00       0141*   @y0: 	dw 0
+041639 00          0142*   @end:   db 0 ; extra byte to soak up deu
+04163A             0143*   
+04163A             0144*   ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
+04163A             0145*   ; &E8-&EF 	232-239 	Bitmap plot §
+04163A             0146*   ; VDU 25, mode, x; y;: PLOT command
+04163A             0147*   ; inputs: bc=x0, de=y0
+04163A             0148*   ; prerequisites: vdu_buff_select
+04163A             0149*   vdu_plot_bmp:
+04163A ED 43 51 16 0150*       ld (@x0),bc
        04          
-0415D4 ED 43 EB 15 0175*       ld (@x0-1),bc
+04163F ED 53 53 16 0151*       ld (@y0),de
        04          
-0415D9 3E ED       0176*       ld a,plot_bmp+dr_abs_fg ; 0xED
-0415DB 32 EB 15 04 0177*       ld (@mode),a ; restore the mode byte that got stomped on by bcu
-0415DF 21 EA 15 04 0178*   	ld hl,@cmd
-0415E3 01 06 00 00 0179*   	ld bc,@end-@cmd
-0415E7 5B DF       0180*   	rst.lil $18
-0415E9 C9          0181*   	ret
-0415EA 19          0182*   @cmd:   db 25
-0415EB ED          0183*   @mode:  db plot_bmp+dr_abs_fg ; 0xED
-0415EC 00 00       0184*   @x0: 	dw 0x0000
-0415EE 00 00       0185*   @y0: 	dw 0x0000
-0415F0             0186*   @end:  ; no padding required b/c we shifted de right
-0415F0             0187*   
-0415F0             0188*   ; draw a filled rectangle
-0415F0             0189*   vdu_plot_rf:
-0415F0 ED 43 17 16 0190*       ld (@x0),bc
+041644 21 4F 16 04 0152*   	ld hl,@cmd
+041648 01 06 00 00 0153*   	ld bc,@end-@cmd
+04164C 5B DF       0154*   	rst.lil $18
+04164E C9          0155*   	ret
+04164F 19          0156*   @cmd:   db 25
+041650 ED          0157*   @mode:  db plot_bmp+dr_abs_fg ; 0xED
+041651 00 00       0158*   @x0: 	dw 0x0000
+041653 00 00       0159*   @y0: 	dw 0x0000
+041655 00          0160*   @end:   db 0x00 ; padding
+041656             0161*   
+041656             0162*   ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
+041656             0163*   ; &E8-&EF 	232-239 	Bitmap plot §
+041656             0164*   ; VDU 25, mode, x; y;: PLOT command
+041656             0165*   ; inputs: bc=x0, de=y0
+041656             0166*   ; USING 16.8 FIXED POINT COORDINATES
+041656             0167*   ; inputs: ub.c is x coordinate, ud.e is y coordinate
+041656             0168*   ;   the fractional portiion of the inputs are truncated
+041656             0169*   ;   leaving only the 16-bit integer portion
+041656             0170*   ; prerequisites: vdu_buff_select
+041656             0171*   vdu_plot_bmp168:
+041656             0172*   ; populate in the reverse of normal to keep the
+041656             0173*   ; inputs from stomping on each other
+041656 ED 53 74 16 0174*       ld (@y0-1),de
        04          
-0415F5 ED 53 19 16 0191*       ld (@y0),de
+04165B ED 43 72 16 0175*       ld (@x0-1),bc
        04          
-0415FA DD 22 1D 16 0192*       ld (@x1),ix
+041660 3E ED       0176*       ld a,plot_bmp+dr_abs_fg ; 0xED
+041662 32 72 16 04 0177*       ld (@mode),a ; restore the mode byte that got stomped on by bcu
+041666 21 71 16 04 0178*   	ld hl,@cmd
+04166A 01 06 00 00 0179*   	ld bc,@end-@cmd
+04166E 5B DF       0180*   	rst.lil $18
+041670 C9          0181*   	ret
+041671 19          0182*   @cmd:   db 25
+041672 ED          0183*   @mode:  db plot_bmp+dr_abs_fg ; 0xED
+041673 00 00       0184*   @x0: 	dw 0x0000
+041675 00 00       0185*   @y0: 	dw 0x0000
+041677             0186*   @end:  ; no padding required b/c we shifted de right
+041677             0187*   
+041677             0188*   ; draw a filled rectangle
+041677             0189*   vdu_plot_rf:
+041677 ED 43 9E 16 0190*       ld (@x0),bc
        04          
-0415FF FD 22 1F 16 0193*       ld (@y1),iy
+04167C ED 53 A0 16 0191*       ld (@y0),de
        04          
-041604 3E 19       0194*       ld a,25 ; we have to reload the 2nd plot command
-041606 32 1B 16 04 0195*       ld (@cmd1),a ; because the 24-bit y0 load stomped on it
-04160A 21 15 16 04 0196*   	ld hl,@cmd0
-04160E 01 0C 00 00 0197*   	ld bc,@end-@cmd0
-041612 5B DF       0198*   	rst.lil $18
-041614 C9          0199*       ret
-041615 19          0200*   @cmd0:  db 25 ; plot
-041616 04          0201*   @arg0:  db plot_sl_both+mv_abs
-041617 00 00       0202*   @x0:    dw 0x0000
-041619 00 00       0203*   @y0:    dw 0x0000
-04161B 19          0204*   @cmd1:  db 25 ; plot
-04161C 65          0205*   @arg1:  db plot_rf+dr_abs_fg
-04161D 00 00       0206*   @x1:    dw 0x0000
-04161F 00 00       0207*   @y1:    dw 0x0000
-041621 00          0208*   @end:   db 0x00 ; padding
-041622             0209*   
-041622             0210*   ; draw a filled circle
-041622             0211*   vdu_plot_cf:
-041622 ED 43 49 16 0212*       ld (@x0),bc
+041681 DD 22 A4 16 0192*       ld (@x1),ix
        04          
-041627 ED 53 4B 16 0213*       ld (@y0),de
+041686 FD 22 A6 16 0193*       ld (@y1),iy
        04          
-04162C DD 22 4F 16 0214*       ld (@x1),ix
+04168B 3E 19       0194*       ld a,25 ; we have to reload the 2nd plot command
+04168D 32 A2 16 04 0195*       ld (@cmd1),a ; because the 24-bit y0 load stomped on it
+041691 21 9C 16 04 0196*   	ld hl,@cmd0
+041695 01 0C 00 00 0197*   	ld bc,@end-@cmd0
+041699 5B DF       0198*   	rst.lil $18
+04169B C9          0199*       ret
+04169C 19          0200*   @cmd0:  db 25 ; plot
+04169D 04          0201*   @arg0:  db plot_sl_both+mv_abs
+04169E 00 00       0202*   @x0:    dw 0x0000
+0416A0 00 00       0203*   @y0:    dw 0x0000
+0416A2 19          0204*   @cmd1:  db 25 ; plot
+0416A3 65          0205*   @arg1:  db plot_rf+dr_abs_fg
+0416A4 00 00       0206*   @x1:    dw 0x0000
+0416A6 00 00       0207*   @y1:    dw 0x0000
+0416A8 00          0208*   @end:   db 0x00 ; padding
+0416A9             0209*   
+0416A9             0210*   ; draw a filled circle
+0416A9             0211*   vdu_plot_cf:
+0416A9 ED 43 D0 16 0212*       ld (@x0),bc
        04          
-041631 FD 22 51 16 0215*       ld (@y1),iy
+0416AE ED 53 D2 16 0213*       ld (@y0),de
        04          
-041636 3E 19       0216*       ld a,25 ; we have to reload the 2nd plot command
-041638 32 4D 16 04 0217*       ld (@cmd1),a ; because the 24-bit y0 load stomped on it
-04163C 21 47 16 04 0218*   	ld hl,@cmd0
-041640 01 0C 00 00 0219*   	ld bc,@end-@cmd0
-041644 5B DF       0220*   	rst.lil $18
-041646 C9          0221*       ret
-041647 19          0222*   @cmd0:  db 25 ; plot
-041648 04          0223*   @arg0:  db plot_sl_both+mv_abs
-041649 00 00       0224*   @x0:    dw 0x0000
-04164B 00 00       0225*   @y0:    dw 0x0000
-04164D 19          0226*   @cmd1:  db 25 ; plot
-04164E 9D          0227*   @arg1:  db plot_cf+dr_abs_fg
-04164F 00 00       0228*   @x1:    dw 0x0000
-041651 00 00       0229*   @y1:    dw 0x0000
-041653 00          0230*   @end:   db 0x00 ; padding
-041654             0041        include "vdu_sound.inc"
-041654             0001*   ; load a sound file to a buffer
-041654             0002*   ; inputs: hl = bufferId ; de = sampleRate in Hz ; iy = pointer to filename
-041654             0003*   vdu_load_sfx:
-041654             0004*   ; back up input parameters
-041654 E5          0005*       push hl ; bufferId
-041655 D5          0006*       push de ; sample rate
-041656             0007*   ; load the sound
-041656 CD 97 13 04 0008*       call vdu_load_buffer_from_file
-04165A             0009*   ; now make the buffer a sound sample
-04165A D1          0010*       pop de ; sample rate
-04165B E1          0011*       pop hl ; bufferId
-04165C AF          0012*       xor a ; zero is the magic number for mono 8-bit signed PCM
-04165D CD 99 17 04 0013*       call vdu_buffer_to_sound
-041661 C9          0014*       ret
-041662             0015*   
-041662 00          0016*   last_channel: db 0
-041663             0017*   max_channels: equ 1
-041663             0018*   
-041663             0019*   ; play a sound effect from an already loaded buffer
-041663             0020*   ; inputs: hl = bufferId ; bc = duration in milliseconds
-041663             0021*   vdu_play_sfx:
-041663 22 9B 16 04 0022*       ld (@bufferId),hl
-041667 ED 43 A5 16 0023*       ld (@duration),bc
+0416B3 DD 22 D6 16 0214*       ld (@x1),ix
        04          
-04166C 3E 17       0024*       ld a,23
-04166E 32 9D 16 04 0025*       ld (@bufferId+2),a
-041672 3A 62 16 04 0026*       ld a,(last_channel)
-041676 3C          0027*       inc a
-041677             0028*       ; and 31 ; modulo 32
-041677 FE 01       0029*       cp max_channels
-041679 C2 7E 16 04 0030*       jp nz,@load_channel
-04167D AF          0031*       xor a
-04167E             0032*   @load_channel:
-04167E 32 62 16 04 0033*       ld (last_channel),a
-041682 32 98 16 04 0034*       ld (@channel0),a
-041686 32 A0 16 04 0035*       ld (@channel1),a
-04168A 21 95 16 04 0036*       ld hl, @sample
-04168E 01 12 00 00 0037*       ld bc, @sample_end - @sample
-041692 5B DF       0038*       rst.lil $18
-041694 C9          0039*       ret
-041695             0040*   @sample:
-041695             0041*   ; Command 4: Set waveform
-041695             0042*   ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
-041695 17 00 85    0043*       .db 23,0,$85                        ; do sound
-041698             0044*   @channel0:
-041698 00 04 08    0045*       .db 0,4,8 ; channel, command, waveform
-04169B             0046*   @bufferId:
-04169B 00 00       0047*       .dw 0x0000
-04169D             0048*   ; Command 0: Play note
-04169D             0049*   ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
-04169D 17 00 85    0050*       .db 23,0,$85                        ; do sound
-0416A0             0051*   @channel1:
-0416A0 00 00 7F    0052*       .db 0,0,127                ; channel, volume
-0416A3 00 00       0053*       .dw 0
-0416A5             0054*   @duration:                              ; freq (tuneable samples only)
-0416A5 00 00       0055*       .dw 0x0000                        ; duration
-0416A7             0056*   @sample_end:
-0416A7 00          0057*       .db 0x00 ; padding
-0416A8             0058*   
-0416A8             0059*   ; enable enough additional channels so that total enabled = max_channels
-0416A8             0060*   ; inputs: max_channels set
-0416A8             0061*   ; returns: nothing
-0416A8             0062*   ; destroys: af, bc, hl
-0416A8             0063*   vdu_enable_channels:
-0416A8 3E 01       0064*       ld a,max_channels
-0416AA D6 03       0065*       sub 3 ; subtract number of default channels already enabled
-0416AC F2 B3 16 04 0066*       jp p,@loop
-0416B0 C9          0067*       ret
-0416B1 3E 03       0068*       ld a,3 ; first non-default channel
-0416B3             0069*   @loop:
-0416B3 32 CE 16 04 0070*       ld (@channel),a
-0416B7 21 CB 16 04 0071*       ld hl,@beg
-0416BB 01 05 00 00 0072*       ld bc,@end-@beg
-0416BF F5          0073*       push af
-0416C0 5B DF       0074*       rst.lil $18
-0416C2 F1          0075*       pop af
-0416C3 3C          0076*       inc a
-0416C4 FE 01       0077*       cp max_channels
-0416C6 C2 B3 16 04 0078*       jp nz,@loop
-0416CA C9          0079*       ret
-0416CB             0080*   @beg:
-0416CB 17 00 85    0081*               db 23, 0, $85
-0416CE 00          0082*   @channel:   db 0
-0416CF 08          0083*               db 8 ; command 8: enable channel
-0416D0             0084*   @end:
-0416D0             0085*   
-0416D0             0086*   ; disable all but the three default sound channels
-0416D0             0087*   ; inputs: max_channels set
-0416D0             0088*   ; outputs: none
-0416D0             0089*   ; destroys: ah,hl,bc
-0416D0             0090*   vdu_disable_channels:
-0416D0 3E 01       0091*       ld a,max_channels
-0416D2 D6 03       0092*       sub 3 ; subtract number of default channels already enabled
-0416D4 F2 DB 16 04 0093*       jp p,@loop
-0416D8 C9          0094*       ret
-0416D9 3E 03       0095*       ld a,3 ; first non-default channel
-0416DB             0096*   @loop:
-0416DB 32 F6 16 04 0097*       ld (@channel),a
-0416DF 21 F3 16 04 0098*       ld hl,@beg
-0416E3 01 05 00 00 0099*       ld bc,@end-@beg
-0416E7 F5          0100*       push af
-0416E8 5B DF       0101*       rst.lil $18
-0416EA F1          0102*       pop af
-0416EB 3C          0103*       inc a
-0416EC FE 01       0104*       cp max_channels
-0416EE C2 DB 16 04 0105*       jp nz,@loop
-0416F2 C9          0106*       ret
-0416F3             0107*   @beg:
-0416F3 17 00 85    0108*       db 23, 0, $85
-0416F6 00          0109*   @channel: db 0
-0416F7 09          0110*       db 9 ; command 9: disable channel
-0416F8             0111*   @end:
-0416F8             0112*   
-0416F8             0113*   
-0416F8             0114*   ; ############################################################
-0416F8             0115*   ; VDU SOUND API
-0416F8             0116*   ; ############################################################
-0416F8             0117*   ; Command 0: Play note
-0416F8             0118*   ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
-0416F8             0119*       MACRO PLAY_NOTE channel, volume, frequency, duration
-0416F8             0120*       ld hl, @PLAY_NOTE_CMD        ; Start of command block
-0416F8             0121*       ld bc, @PLAY_NOTE_END - @PLAY_NOTE_CMD  ; Command block size
-0416F8             0122*       rst.lil $18
-0416F8             0123*       jr @PLAY_NOTE_END
-0416F8             0124*   @PLAY_NOTE_CMD:  db 23, 0, 0x85               ; Command header
-0416F8             0125*                    db channel                  ; Channel, 0 (commented out)
-0416F8             0126*                    db 0                        ; Play note command
-0416F8             0127*                    db volume                   ; Volume
-0416F8             0128*                    dw frequency                ; Frequency
-0416F8             0129*                    dw duration                 ; Duration
-0416F8             0130*   @PLAY_NOTE_END:
-0416F8             0131*       ENDMACRO
-0416F8             0132*   
-0416F8             0133*       MACRO MUTE_CHANNEL channel
-0416F8             0134*       ld hl, @MUTE_CHANNEL_CMD     ; Start of command block
-0416F8             0135*       ld bc, @MUTE_CHANNEL_END - @MUTE_CHANNEL_CMD  ; Command block size
-0416F8             0136*       rst.lil $18
-0416F8             0137*       jr @MUTE_CHANNEL_END
-0416F8             0138*   @MUTE_CHANNEL_CMD: db 23, 0, 0x85             ; Command header
-0416F8             0139*                      db channel                ; Channel, 0 (commented out)
-0416F8             0140*                      db 2                      ; Set volume command
-0416F8             0141*                      db 0                      ; Volume (mute)
-0416F8             0142*   @MUTE_CHANNEL_END:
-0416F8             0143*       ENDMACRO
-0416F8             0144*   
-0416F8             0145*   ; inputs: c = channel, b = volume, hl = frequency; de = duration;
-0416F8             0146*   vdu_play_note:
-0416F8 79          0147*       ld a,c
-0416F9 32 19 17 04 0148*       ld (@channel),a
-0416FD 78          0149*       ld a,b
-0416FE 32 1B 17 04 0150*       ld (@volume),a
-041702 22 1C 17 04 0151*       ld (@frequency),hl
-041706 ED 53 1E 17 0152*       ld (@duration),de
+0416B8 FD 22 D8 16 0215*       ld (@y1),iy
        04          
-04170B 21 16 17 04 0153*       ld hl,@cmd
-04170F 01 0A 00 00 0154*       ld bc,@end-@cmd
-041713 5B DF       0155*       rst.lil $18
-041715 C9          0156*       ret
-041716 17 00 85    0157*   @cmd:       db 23, 0, 0x85
-041719 00          0158*   @channel:   db 0x00
-04171A 00          0159*               db 0x00 ; play note command
-04171B 00          0160*   @volume:    db 0x00
-04171C 00 00       0161*   @frequency: dw 0x0000
-04171E 00 00       0162*   @duration:  dw 0x0000
-041720 00          0163*   @end:       db 0x00 ; padding
-041721             0164*   
-041721             0165*   ; Command 1: Status
-041721             0166*   ; VDU 23, 0, &85, channel, 1
-041721             0167*   ; inputs: a = channel
-041721             0168*   ; Returns a bit mask indicating the status of the specified channel, or 255 if the channel is not valid, or has been disabled. The bit mask is as follows:
-041721             0169*   ; Bit 	Name 	Meaning
-041721             0170*   ; 0 	Active 	When set this indicates the channel is in use (has an active waveform)
-041721             0171*   ; 1 	Playing 	Indicates the channel is actively playing a note, and thus will reject calls to play a new note
-041721             0172*   ; 2 	Indefinite 	Set if the channel is playing an indefinite duration note
-041721             0173*   ; 3 	Has Volume Envelope 	Set if the channel has a volume envelope
-041721             0174*   ; 4 	Has Frequency Envelope 	Set if the channel has a frequency envelope
-041721             0175*   
-041721             0176*   ; Bits 5-7 are reserved for future use and, for enabled channels, will currently always be zero.
-041721             0177*   vdu_channel_status:
-041721 32 33 17 04 0178*       ld (@channel),a
-041725 21 30 17 04 0179*       ld hl,@cmd
-041729 01 05 00 00 0180*       ld bc,@end-@cmd
-04172D 5B DF       0181*       rst.lil $18
-04172F C9          0182*       ret
-041730 17 00 85    0183*   @cmd:       db 23, 0, 0x85
-041733 00          0184*   @channel:   db 0x00
-041734 01          0185*               db 0x01 ; get channel status command
-041735             0186*   @end:
-041735             0187*   
-041735             0188*   ; VDU 23, 0, &85, channel, 2, volume
-041735             0189*   ; inputs: c = channel, b = volume
-041735             0190*   ; Sets the volume of the specified channel. The volume is a value from 0 to 127, where 0 is silent and 127 is full volume. Values over 127 will be treated as 127 (with one exception described later).
-041735             0191*   
-041735             0192*   ; Specifying a channel of -1 (or 255) will set the global sound system volume level. (Requires Console8 VDP 2.5.0 or later.)
-041735             0193*   
-041735             0194*   ; Using this command provides more direct control over a channel than the play note command. It can be used to adjust the volume of a channel that is already playing a note.
-041735             0195*   vdu_channel_volume:
-041735 79          0196*       ld a,c
-041736 32 4D 17 04 0197*       ld (@channel),a
-04173A 78          0198*       ld a,b
-04173B 32 4F 17 04 0199*       ld (@volume),a
-04173F 21 4A 17 04 0200*       ld hl,@cmd
-041743 01 06 00 00 0201*       ld bc,@end-@cmd
-041747 5B DF       0202*       rst.lil $18
-041749 C9          0203*       ret
-04174A 17 00 85    0204*   @cmd:       db 23, 0, 0x85
-04174D 00          0205*   @channel:   db 0x00
-04174E 02          0206*               db 0x02 ; set volume command
-04174F 00          0207*   @volume:    db 0x00
-041750             0208*   @end:
-041750             0209*   
-041750             0210*   ; VDU 23, 0, &85, channel, 3, frequency;
-041750             0211*   
-041750             0212*   ; Sets the frequency of the specified channel. The frequency is a 16-bit value specifying in Hz the frequency of the note to be played.
-041750             0213*   
-041750             0214*   ; Using this command provides more direct control over a channel than the play note command. It can be used to adjust the frequency of a channel that is already playing a note.
-041750             0215*   
-041750             0216*   ; Returns 1 on success, 0 for failure.
-041750             0217*   vdu_channel_frequency:
-041750 79          0218*       ld a,c
-041751 32 68 17 04 0219*       ld (@channel),a
-041755 ED 53 6A 17 0220*       ld (@frequency),de
+0416BD 3E 19       0216*       ld a,25 ; we have to reload the 2nd plot command
+0416BF 32 D4 16 04 0217*       ld (@cmd1),a ; because the 24-bit y0 load stomped on it
+0416C3 21 CE 16 04 0218*   	ld hl,@cmd0
+0416C7 01 0C 00 00 0219*   	ld bc,@end-@cmd0
+0416CB 5B DF       0220*   	rst.lil $18
+0416CD C9          0221*       ret
+0416CE 19          0222*   @cmd0:  db 25 ; plot
+0416CF 04          0223*   @arg0:  db plot_sl_both+mv_abs
+0416D0 00 00       0224*   @x0:    dw 0x0000
+0416D2 00 00       0225*   @y0:    dw 0x0000
+0416D4 19          0226*   @cmd1:  db 25 ; plot
+0416D5 9D          0227*   @arg1:  db plot_cf+dr_abs_fg
+0416D6 00 00       0228*   @x1:    dw 0x0000
+0416D8 00 00       0229*   @y1:    dw 0x0000
+0416DA 00          0230*   @end:   db 0x00 ; padding
+0416DB             0042        include "vdu_sound.inc"
+0416DB             0001*   ; load a sound file to a buffer
+0416DB             0002*   ; inputs: hl = bufferId ; de = sampleRate in Hz ; iy = pointer to filename
+0416DB             0003*   vdu_load_sfx:
+0416DB             0004*   ; back up input parameters
+0416DB E5          0005*       push hl ; bufferId
+0416DC D5          0006*       push de ; sample rate
+0416DD             0007*   ; load the sound
+0416DD CD 6B 13 04 0008*       call vdu_load_buffer_from_file
+0416E1             0009*   ; now make the buffer a sound sample
+0416E1 D1          0010*       pop de ; sample rate
+0416E2 E1          0011*       pop hl ; bufferId
+0416E3 AF          0012*       xor a ; zero is the magic number for mono 8-bit signed PCM
+0416E4 CD 20 18 04 0013*       call vdu_buffer_to_sound
+0416E8 C9          0014*       ret
+0416E9             0015*   
+0416E9 00          0016*   last_channel: db 0
+0416EA             0017*   max_channels: equ 1
+0416EA             0018*   
+0416EA             0019*   ; play a sound effect from an already loaded buffer
+0416EA             0020*   ; inputs: hl = bufferId ; bc = duration in milliseconds
+0416EA             0021*   vdu_play_sfx:
+0416EA 22 22 17 04 0022*       ld (@bufferId),hl
+0416EE ED 43 2C 17 0023*       ld (@duration),bc
        04          
-04175A 21 65 17 04 0221*       ld hl,@cmd
-04175E 01 07 00 00 0222*       ld bc,@end-@cmd
-041762 5B DF       0223*       rst.lil $18
-041764 C9          0224*       ret
-041765 17 00 85    0225*   @cmd:       db 23, 0, 0x85
-041768 00          0226*   @channel:   db 0x00
-041769 03          0227*               db 0x03 ; set frequency command
-04176A 00 00       0228*   @frequency: dw 0x0000
-04176C 00          0229*   @end:       db 0x00 ; padding
-04176D             0230*   
-04176D             0231*   
-04176D             0232*   ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
-04176D             0233*   ; inputs: c = channel, b = waveformOrSample, [hl = bufferId]
-04176D             0234*   ; Sets the waveform type for a channel to use. The waveformOrSample value is a single byte treated as a signed value.
-04176D             0235*   
-04176D             0236*   ; Using a negative value for the waveform indicates that a sample should be used instead. For more information see the documentation for the sample command.
-04176D             0237*   
-04176D             0238*   ; By default a channel is set to use waveform 0 (square wave).
-04176D             0239*   
-04176D             0240*   ; Valid waveform values are as follows:
-04176D             0241*   ; Value 	Waveform
-04176D             0242*   ; 0 	Square wave
-04176D             0243*   ; 1 	Triangle wave
-04176D             0244*   ; 2 	Sawtooth wave
-04176D             0245*   ; 3 	Sine wave
-04176D             0246*   ; 4 	Noise (simple white noise with no frequency support)
-04176D             0247*   ; 5 	VIC Noise (emulates a VIC6561; supports frequency)
-04176D             0248*   ; 8 	Sample (specifying a 16-bit buffer ID for sample data)
-04176D             0249*   
-04176D             0250*   vdu_channel_waveform:
-04176D 79          0251*       ld a,c
-04176E 32 93 17 04 0252*       ld (@channel),a
-041772 78          0253*       ld a,b
-041773 32 95 17 04 0254*       ld (@waveform),a
-041777 FE 08       0255*       cp 8 ; check if the waveform is a sample
-041779 28 06       0256*       jr z, @sample
-04177B 01 06 00 00 0257*       ld bc,@bufferId-@cmd
-04177F 18 08       0258*       jr @sendToVdu
-041781             0259*   @sample:
-041781 22 96 17 04 0260*       ld (@bufferId),hl
-041785 01 08 00 00 0261*       ld bc,@end-@cmd
-041789             0262*   @sendToVdu:
-041789 21 90 17 04 0263*       ld hl,@cmd
-04178D 5B DF       0264*       rst.lil $18
-04178F C9          0265*       ret
-041790 17 00 85    0266*   @cmd:       db 23, 0, 0x85
-041793 00          0267*   @channel:   db 0x00
-041794 04          0268*               db 0x04 ; set waveform command
-041795 00          0269*   @waveform:  db 0x00
-041796 00 00       0270*   @bufferId:  dw 0x0000
-041798 00          0271*   @end:       db 0x00 ; padding
-041799             0272*   
-041799             0273*   ; VDU 23, 0, &85, channel (ignored), 5, 2, bufferId; format, [sampleRate;]
-041799             0274*   ; inputs: hl = bufferId; a = format, de = sample rate in Hz
-041799             0275*   ; The format is a single byte giving the format of the sample data. The following formats are supported:
-041799             0276*   ; Value	Description
-041799             0277*   ; 0	8-bit signed
-041799             0278*   ; 1	8-bit unsigned
-041799             0279*   ; The format value can also have modifier bits set to modify the behaviour of the sample. The following modifier bits are supported:
-041799             0280*   ; Value	Description
-041799             0281*   ; 8	sample rate is sent in the next 16-bits
-041799             0282*   ; 16	sample is tuneable
-041799             0283*   ; The default sample rate for samples on the VDP is 16kHz (actually 16.384kHz to be precise).
-041799             0284*   vdu_buffer_to_sound:
-041799 22 B9 17 04 0285*       ld (@bufferId),hl
-04179D C6 08       0286*       add a,8 ; modify format byte to indicate sample rate argument is given
-04179F 32 BB 17 04 0287*       ld (@format),a
-0417A3 ED 53 BC 17 0288*       ld (@sampleRate),de
+0416F3 3E 17       0024*       ld a,23
+0416F5 32 24 17 04 0025*       ld (@bufferId+2),a
+0416F9 3A E9 16 04 0026*       ld a,(last_channel)
+0416FD 3C          0027*       inc a
+0416FE             0028*       ; and 31 ; modulo 32
+0416FE FE 01       0029*       cp max_channels
+041700 C2 05 17 04 0030*       jp nz,@load_channel
+041704 AF          0031*       xor a
+041705             0032*   @load_channel:
+041705 32 E9 16 04 0033*       ld (last_channel),a
+041709 32 1F 17 04 0034*       ld (@channel0),a
+04170D 32 27 17 04 0035*       ld (@channel1),a
+041711 21 1C 17 04 0036*       ld hl, @sample
+041715 01 12 00 00 0037*       ld bc, @sample_end - @sample
+041719 5B DF       0038*       rst.lil $18
+04171B C9          0039*       ret
+04171C             0040*   @sample:
+04171C             0041*   ; Command 4: Set waveform
+04171C             0042*   ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
+04171C 17 00 85    0043*       .db 23,0,$85                        ; do sound
+04171F             0044*   @channel0:
+04171F 00 04 08    0045*       .db 0,4,8 ; channel, command, waveform
+041722             0046*   @bufferId:
+041722 00 00       0047*       .dw 0x0000
+041724             0048*   ; Command 0: Play note
+041724             0049*   ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
+041724 17 00 85    0050*       .db 23,0,$85                        ; do sound
+041727             0051*   @channel1:
+041727 00 00 7F    0052*       .db 0,0,127                ; channel, volume
+04172A 00 00       0053*       .dw 0
+04172C             0054*   @duration:                              ; freq (tuneable samples only)
+04172C 00 00       0055*       .dw 0x0000                        ; duration
+04172E             0056*   @sample_end:
+04172E 00          0057*       .db 0x00 ; padding
+04172F             0058*   
+04172F             0059*   ; enable enough additional channels so that total enabled = max_channels
+04172F             0060*   ; inputs: max_channels set
+04172F             0061*   ; returns: nothing
+04172F             0062*   ; destroys: af, bc, hl
+04172F             0063*   vdu_enable_channels:
+04172F 3E 01       0064*       ld a,max_channels
+041731 D6 03       0065*       sub 3 ; subtract number of default channels already enabled
+041733 F2 3A 17 04 0066*       jp p,@loop
+041737 C9          0067*       ret
+041738 3E 03       0068*       ld a,3 ; first non-default channel
+04173A             0069*   @loop:
+04173A 32 55 17 04 0070*       ld (@channel),a
+04173E 21 52 17 04 0071*       ld hl,@beg
+041742 01 05 00 00 0072*       ld bc,@end-@beg
+041746 F5          0073*       push af
+041747 5B DF       0074*       rst.lil $18
+041749 F1          0075*       pop af
+04174A 3C          0076*       inc a
+04174B FE 01       0077*       cp max_channels
+04174D C2 3A 17 04 0078*       jp nz,@loop
+041751 C9          0079*       ret
+041752             0080*   @beg:
+041752 17 00 85    0081*               db 23, 0, $85
+041755 00          0082*   @channel:   db 0
+041756 08          0083*               db 8 ; command 8: enable channel
+041757             0084*   @end:
+041757             0085*   
+041757             0086*   ; disable all but the three default sound channels
+041757             0087*   ; inputs: max_channels set
+041757             0088*   ; outputs: none
+041757             0089*   ; destroys: ah,hl,bc
+041757             0090*   vdu_disable_channels:
+041757 3E 01       0091*       ld a,max_channels
+041759 D6 03       0092*       sub 3 ; subtract number of default channels already enabled
+04175B F2 62 17 04 0093*       jp p,@loop
+04175F C9          0094*       ret
+041760 3E 03       0095*       ld a,3 ; first non-default channel
+041762             0096*   @loop:
+041762 32 7D 17 04 0097*       ld (@channel),a
+041766 21 7A 17 04 0098*       ld hl,@beg
+04176A 01 05 00 00 0099*       ld bc,@end-@beg
+04176E F5          0100*       push af
+04176F 5B DF       0101*       rst.lil $18
+041771 F1          0102*       pop af
+041772 3C          0103*       inc a
+041773 FE 01       0104*       cp max_channels
+041775 C2 62 17 04 0105*       jp nz,@loop
+041779 C9          0106*       ret
+04177A             0107*   @beg:
+04177A 17 00 85    0108*       db 23, 0, $85
+04177D 00          0109*   @channel: db 0
+04177E 09          0110*       db 9 ; command 9: disable channel
+04177F             0111*   @end:
+04177F             0112*   
+04177F             0113*   
+04177F             0114*   ; ############################################################
+04177F             0115*   ; VDU SOUND API
+04177F             0116*   ; ############################################################
+04177F             0117*   ; Command 0: Play note
+04177F             0118*   ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
+04177F             0119*       MACRO PLAY_NOTE channel, volume, frequency, duration
+04177F             0120*       ld hl, @PLAY_NOTE_CMD        ; Start of command block
+04177F             0121*       ld bc, @PLAY_NOTE_END - @PLAY_NOTE_CMD  ; Command block size
+04177F             0122*       rst.lil $18
+04177F             0123*       jr @PLAY_NOTE_END
+04177F             0124*   @PLAY_NOTE_CMD:  db 23, 0, 0x85               ; Command header
+04177F             0125*                    db channel                  ; Channel, 0 (commented out)
+04177F             0126*                    db 0                        ; Play note command
+04177F             0127*                    db volume                   ; Volume
+04177F             0128*                    dw frequency                ; Frequency
+04177F             0129*                    dw duration                 ; Duration
+04177F             0130*   @PLAY_NOTE_END:
+04177F             0131*       ENDMACRO
+04177F             0132*   
+04177F             0133*       MACRO MUTE_CHANNEL channel
+04177F             0134*       ld hl, @MUTE_CHANNEL_CMD     ; Start of command block
+04177F             0135*       ld bc, @MUTE_CHANNEL_END - @MUTE_CHANNEL_CMD  ; Command block size
+04177F             0136*       rst.lil $18
+04177F             0137*       jr @MUTE_CHANNEL_END
+04177F             0138*   @MUTE_CHANNEL_CMD: db 23, 0, 0x85             ; Command header
+04177F             0139*                      db channel                ; Channel, 0 (commented out)
+04177F             0140*                      db 2                      ; Set volume command
+04177F             0141*                      db 0                      ; Volume (mute)
+04177F             0142*   @MUTE_CHANNEL_END:
+04177F             0143*       ENDMACRO
+04177F             0144*   
+04177F             0145*   ; inputs: c = channel, b = volume, hl = frequency; de = duration;
+04177F             0146*   vdu_play_note:
+04177F 79          0147*       ld a,c
+041780 32 A0 17 04 0148*       ld (@channel),a
+041784 78          0149*       ld a,b
+041785 32 A2 17 04 0150*       ld (@volume),a
+041789 22 A3 17 04 0151*       ld (@frequency),hl
+04178D ED 53 A5 17 0152*       ld (@duration),de
        04          
-0417A8 21 B3 17 04 0289*       ld hl,@cmd
-0417AC 01 0B 00 00 0290*       ld bc,@end-@cmd
-0417B0 5B DF       0291*       rst.lil $18
-0417B2 C9          0292*       ret
-0417B3 17 00 85    0293*   @cmd:       db 23, 0, 0x85
-0417B6 00          0294*   @channel:   db 0x00 ; ignored
-0417B7 05          0295*               db 0x05 ; buffer to sound command
-0417B8 02          0296*               db 0x02 ; command 2 create sample
-0417B9 00 00       0297*   @bufferId:  dw 0x0000
-0417BB 00          0298*   @format:    db 0x00
-0417BC 00 00       0299*   @sampleRate: dw 0x0000
-0417BE 00          0300*   @end:       db 0x00 ; padding
-0417BF             0301*   
-0417BF             0302*   ; Command 13: Set sample rate
-0417BF             0303*   ; VDU 23, 0, &85, channel, 13, sampleRate;
-0417BF             0304*   ; inputs: c = channel, hl = sampleRate (Hz)
-0417BF             0305*   vdu_set_sample_rate:
-0417BF 79          0306*       ld a,c
-0417C0 32 D6 17 04 0307*       ld (@channel),a
-0417C4 22 D8 17 04 0308*       ld (@sampleRate),hl
-0417C8 21 D3 17 04 0309*       ld hl,@cmd
-0417CC 01 07 00 00 0310*       ld bc,@end-@cmd
-0417D0 5B DF       0311*       rst.lil $18
-0417D2 C9          0312*       ret
-0417D3 17 00 85    0313*   @cmd:       db 23, 0, 0x85
-0417D6 00          0314*   @channel:   db 0x00
-0417D7 0D          0315*               db 13 ; set sample rate command
-0417D8 00 00       0316*   @sampleRate: dw 0x0000
-0417DA 00          0317*   @end:       db 0x00 ; padding
-0417DB             0318*   
-0417DB             0319*   ; inputs: c = channel, b = volume, de = sample rate; hl = bufferId
-0417DB             0320*   vdu_play_sample:
-0417DB             0321*       ; populate input parameters
-0417DB 79          0322*       ld a,c
-0417DC 32 0E 18 04 0323*       ld (@channel0),a
-0417E0 32 16 18 04 0324*       ld (@channel1),a
-0417E4 32 1D 18 04 0325*       ld (@channel2),a
-0417E8 78          0326*       ld a,b
-0417E9 32 1F 18 04 0327*       ld (@volume),a
-0417ED ED 53 18 18 0328*       ld (@sampleRate),de
+041792 21 9D 17 04 0153*       ld hl,@cmd
+041796 01 0A 00 00 0154*       ld bc,@end-@cmd
+04179A 5B DF       0155*       rst.lil $18
+04179C C9          0156*       ret
+04179D 17 00 85    0157*   @cmd:       db 23, 0, 0x85
+0417A0 00          0158*   @channel:   db 0x00
+0417A1 00          0159*               db 0x00 ; play note command
+0417A2 00          0160*   @volume:    db 0x00
+0417A3 00 00       0161*   @frequency: dw 0x0000
+0417A5 00 00       0162*   @duration:  dw 0x0000
+0417A7 00          0163*   @end:       db 0x00 ; padding
+0417A8             0164*   
+0417A8             0165*   ; Command 1: Status
+0417A8             0166*   ; VDU 23, 0, &85, channel, 1
+0417A8             0167*   ; inputs: a = channel
+0417A8             0168*   ; Returns a bit mask indicating the status of the specified channel, or 255 if the channel is not valid, or has been disabled. The bit mask is as follows:
+0417A8             0169*   ; Bit 	Name 	Meaning
+0417A8             0170*   ; 0 	Active 	When set this indicates the channel is in use (has an active waveform)
+0417A8             0171*   ; 1 	Playing 	Indicates the channel is actively playing a note, and thus will reject calls to play a new note
+0417A8             0172*   ; 2 	Indefinite 	Set if the channel is playing an indefinite duration note
+0417A8             0173*   ; 3 	Has Volume Envelope 	Set if the channel has a volume envelope
+0417A8             0174*   ; 4 	Has Frequency Envelope 	Set if the channel has a frequency envelope
+0417A8             0175*   
+0417A8             0176*   ; Bits 5-7 are reserved for future use and, for enabled channels, will currently always be zero.
+0417A8             0177*   vdu_channel_status:
+0417A8 32 BA 17 04 0178*       ld (@channel),a
+0417AC 21 B7 17 04 0179*       ld hl,@cmd
+0417B0 01 05 00 00 0180*       ld bc,@end-@cmd
+0417B4 5B DF       0181*       rst.lil $18
+0417B6 C9          0182*       ret
+0417B7 17 00 85    0183*   @cmd:       db 23, 0, 0x85
+0417BA 00          0184*   @channel:   db 0x00
+0417BB 01          0185*               db 0x01 ; get channel status command
+0417BC             0186*   @end:
+0417BC             0187*   
+0417BC             0188*   ; VDU 23, 0, &85, channel, 2, volume
+0417BC             0189*   ; inputs: c = channel, b = volume
+0417BC             0190*   ; Sets the volume of the specified channel. The volume is a value from 0 to 127, where 0 is silent and 127 is full volume. Values over 127 will be treated as 127 (with one exception described later).
+0417BC             0191*   
+0417BC             0192*   ; Specifying a channel of -1 (or 255) will set the global sound system volume level. (Requires Console8 VDP 2.5.0 or later.)
+0417BC             0193*   
+0417BC             0194*   ; Using this command provides more direct control over a channel than the play note command. It can be used to adjust the volume of a channel that is already playing a note.
+0417BC             0195*   vdu_channel_volume:
+0417BC 79          0196*       ld a,c
+0417BD 32 D4 17 04 0197*       ld (@channel),a
+0417C1 78          0198*       ld a,b
+0417C2 32 D6 17 04 0199*       ld (@volume),a
+0417C6 21 D1 17 04 0200*       ld hl,@cmd
+0417CA 01 06 00 00 0201*       ld bc,@end-@cmd
+0417CE 5B DF       0202*       rst.lil $18
+0417D0 C9          0203*       ret
+0417D1 17 00 85    0204*   @cmd:       db 23, 0, 0x85
+0417D4 00          0205*   @channel:   db 0x00
+0417D5 02          0206*               db 0x02 ; set volume command
+0417D6 00          0207*   @volume:    db 0x00
+0417D7             0208*   @end:
+0417D7             0209*   
+0417D7             0210*   ; VDU 23, 0, &85, channel, 3, frequency;
+0417D7             0211*   
+0417D7             0212*   ; Sets the frequency of the specified channel. The frequency is a 16-bit value specifying in Hz the frequency of the note to be played.
+0417D7             0213*   
+0417D7             0214*   ; Using this command provides more direct control over a channel than the play note command. It can be used to adjust the frequency of a channel that is already playing a note.
+0417D7             0215*   
+0417D7             0216*   ; Returns 1 on success, 0 for failure.
+0417D7             0217*   vdu_channel_frequency:
+0417D7 79          0218*       ld a,c
+0417D8 32 EF 17 04 0219*       ld (@channel),a
+0417DC ED 53 F1 17 0220*       ld (@frequency),de
        04          
-0417F2 22 11 18 04 0329*       ld (@bufferId),hl
-0417F6             0330*       ; clean up bytes that got stomped on by 24-bit loads
-0417F6 3E 17       0331*       ld a,23
-0417F8 32 13 18 04 0332*       ld (@cmd1),a
-0417FC 32 1A 18 04 0333*       ld (@cmd2),a
-041800             0334*       ; prep the vdu command string
-041800 21 0B 18 04 0335*       ld hl, @cmd0
-041804 01 19 00 00 0336*       ld bc, @end - @cmd0
-041808 5B DF       0337*       rst.lil $18
-04180A C9          0338*       ret
-04180B             0339*   ; set waveform command
-04180B 17 00 85    0340*   @cmd0:       db 23, 0, 0x85
-04180E 00          0341*   @channel0:   db 0x00
-04180F 04          0342*                db 0x04 ; set waveform command
-041810 08          0343*   @waveform:   db 0x08 ; sample
-041811 00 00       0344*   @bufferId:   dw 0x0000
-041813             0345*   ; set sample rate command
-041813 17 00 85    0346*   @cmd1:       db 23, 0, 0x85
-041816 00          0347*   @channel1:   db 0x00
-041817 0D          0348*               db 13 ; set sample rate command
-041818 00 00       0349*   @sampleRate: dw 0x0000
-04181A             0350*   ; play note command
-04181A 17 00 85    0351*   @cmd2:       db 23, 0, 0x85
-04181D 00          0352*   @channel2:   db 0x00
-04181E 00          0353*                db 0x00 ; play note command
-04181F 00          0354*   @volume:     db 0x00
-041820 00 00       0355*   @frequency:  dw 0x00 ; no effect unless buffer has been set to tuneable sample
-041822 00 00       0356*   @duration:   dw 0x0000 ; milliseconds: set to -1 to loop indefinitely, 0 to play full duration once
-041824 00          0357*   @end:        db 0x00 ; padding
-041825             0042    
-041825             0043    ; APPLICATION INCLUDES
-041825             0044        include "music.inc"
-041825             0001*   ; This file is created by build_98_asm_sfx.py, do not edit it!
-041825             0002*   
-041825             0003*   SFX_num_buffers: equ 5
-041825             0004*   ; SFX buffer ids:
-041825             0005*   BUF_AFRICA: equ 0x3000
-041825             0006*   BUF_COME_UNDONE: equ 0x3001
-041825             0007*   BUF_EVERY_BREATH_YOU_TAKE: equ 0x3002
-041825             0008*   BUF_RHIANNON: equ 0x3003
-041825             0009*   BUF_SPACE_ADVENTURE: equ 0x3004
-041825             0010*   
-041825             0011*   ; SFX buffer id reverse lookup:
-041825             0012*   SFX_buffer_id_lut:
-041825 00 30 00    0013*   	dl BUF_AFRICA
-041828 01 30 00    0014*   	dl BUF_COME_UNDONE
-04182B 02 30 00    0015*   	dl BUF_EVERY_BREATH_YOU_TAKE
-04182E 03 30 00    0016*   	dl BUF_RHIANNON
-041831 04 30 00    0017*   	dl BUF_SPACE_ADVENTURE
-041834             0018*   
-041834             0019*   ; SFX duration lookup:
-041834             0020*   SFX_duration_lut:
-041834 54 72 00    0021*   	dl 29268 ; AFRICA
-041837 54 72 00    0022*   	dl 29268 ; COME_UNDONE
-04183A 54 72 00    0023*   	dl 29268 ; EVERY_BREATH_YOU_TAKE
-04183D 54 72 00    0024*   	dl 29268 ; RHIANNON
-041840 5C 72 00    0025*   	dl 29276 ; SPACE_ADVENTURE
-041843             0026*   
-041843             0027*   ; SFX load routines jump table:
-041843             0028*   SFX_load_routines_table:
-041843 52 18 04    0029*   	dl load_sfx_AFRICA
-041846 74 18 04    0030*   	dl load_sfx_COME_UNDONE
-041849 96 18 04    0031*   	dl load_sfx_EVERY_BREATH_YOU_TAKE
-04184C B8 18 04    0032*   	dl load_sfx_RHIANNON
-04184F DA 18 04    0033*   	dl load_sfx_SPACE_ADVENTURE
-041852             0034*   
-041852             0035*   ; Import sfx .raw files and load them into VDP buffers
-041852             0036*   
-041852             0037*   load_sfx_AFRICA:
-041852 21 FC 18 04 0038*   	ld hl,FAFRICA
-041856 11 00 E0 B7 0039*   	ld de,filedata
-04185A 01 00 00 01 0040*   	ld bc,65536
-04185E 3E 01       0041*   	ld a,mos_load
-041860 5B CF       0042*   	RST.LIL 08h
-041862 21 00 30 00 0043*   	ld hl,BUF_AFRICA
-041866 11 00 3C 00 0044*   	ld de,15360
-04186A FD 21 FC 18 0045*   	ld iy,FAFRICA
+0417E1 21 EC 17 04 0221*       ld hl,@cmd
+0417E5 01 07 00 00 0222*       ld bc,@end-@cmd
+0417E9 5B DF       0223*       rst.lil $18
+0417EB C9          0224*       ret
+0417EC 17 00 85    0225*   @cmd:       db 23, 0, 0x85
+0417EF 00          0226*   @channel:   db 0x00
+0417F0 03          0227*               db 0x03 ; set frequency command
+0417F1 00 00       0228*   @frequency: dw 0x0000
+0417F3 00          0229*   @end:       db 0x00 ; padding
+0417F4             0230*   
+0417F4             0231*   
+0417F4             0232*   ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
+0417F4             0233*   ; inputs: c = channel, b = waveformOrSample, [hl = bufferId]
+0417F4             0234*   ; Sets the waveform type for a channel to use. The waveformOrSample value is a single byte treated as a signed value.
+0417F4             0235*   
+0417F4             0236*   ; Using a negative value for the waveform indicates that a sample should be used instead. For more information see the documentation for the sample command.
+0417F4             0237*   
+0417F4             0238*   ; By default a channel is set to use waveform 0 (square wave).
+0417F4             0239*   
+0417F4             0240*   ; Valid waveform values are as follows:
+0417F4             0241*   ; Value 	Waveform
+0417F4             0242*   ; 0 	Square wave
+0417F4             0243*   ; 1 	Triangle wave
+0417F4             0244*   ; 2 	Sawtooth wave
+0417F4             0245*   ; 3 	Sine wave
+0417F4             0246*   ; 4 	Noise (simple white noise with no frequency support)
+0417F4             0247*   ; 5 	VIC Noise (emulates a VIC6561; supports frequency)
+0417F4             0248*   ; 8 	Sample (specifying a 16-bit buffer ID for sample data)
+0417F4             0249*   
+0417F4             0250*   vdu_channel_waveform:
+0417F4 79          0251*       ld a,c
+0417F5 32 1A 18 04 0252*       ld (@channel),a
+0417F9 78          0253*       ld a,b
+0417FA 32 1C 18 04 0254*       ld (@waveform),a
+0417FE FE 08       0255*       cp 8 ; check if the waveform is a sample
+041800 28 06       0256*       jr z, @sample
+041802 01 06 00 00 0257*       ld bc,@bufferId-@cmd
+041806 18 08       0258*       jr @sendToVdu
+041808             0259*   @sample:
+041808 22 1D 18 04 0260*       ld (@bufferId),hl
+04180C 01 08 00 00 0261*       ld bc,@end-@cmd
+041810             0262*   @sendToVdu:
+041810 21 17 18 04 0263*       ld hl,@cmd
+041814 5B DF       0264*       rst.lil $18
+041816 C9          0265*       ret
+041817 17 00 85    0266*   @cmd:       db 23, 0, 0x85
+04181A 00          0267*   @channel:   db 0x00
+04181B 04          0268*               db 0x04 ; set waveform command
+04181C 00          0269*   @waveform:  db 0x00
+04181D 00 00       0270*   @bufferId:  dw 0x0000
+04181F 00          0271*   @end:       db 0x00 ; padding
+041820             0272*   
+041820             0273*   ; VDU 23, 0, &85, channel (ignored), 5, 2, bufferId; format, [sampleRate;]
+041820             0274*   ; inputs: hl = bufferId; a = format, de = sample rate in Hz
+041820             0275*   ; The format is a single byte giving the format of the sample data. The following formats are supported:
+041820             0276*   ; Value	Description
+041820             0277*   ; 0	8-bit signed
+041820             0278*   ; 1	8-bit unsigned
+041820             0279*   ; The format value can also have modifier bits set to modify the behaviour of the sample. The following modifier bits are supported:
+041820             0280*   ; Value	Description
+041820             0281*   ; 8	sample rate is sent in the next 16-bits
+041820             0282*   ; 16	sample is tuneable
+041820             0283*   ; The default sample rate for samples on the VDP is 16kHz (actually 16.384kHz to be precise).
+041820             0284*   vdu_buffer_to_sound:
+041820 22 40 18 04 0285*       ld (@bufferId),hl
+041824 C6 08       0286*       add a,8 ; modify format byte to indicate sample rate argument is given
+041826 32 42 18 04 0287*       ld (@format),a
+04182A ED 53 43 18 0288*       ld (@sampleRate),de
        04          
-04186F CD 54 16 04 0046*   	call vdu_load_sfx
-041873 C9          0047*   	ret
-041874             0048*   
-041874             0049*   load_sfx_COME_UNDONE:
-041874 21 0D 19 04 0050*   	ld hl,FCOME_UNDONE
-041878 11 00 E0 B7 0051*   	ld de,filedata
-04187C 01 00 00 01 0052*   	ld bc,65536
-041880 3E 01       0053*   	ld a,mos_load
-041882 5B CF       0054*   	RST.LIL 08h
-041884 21 01 30 00 0055*   	ld hl,BUF_COME_UNDONE
-041888 11 00 3C 00 0056*   	ld de,15360
-04188C FD 21 0D 19 0057*   	ld iy,FCOME_UNDONE
+04182F 21 3A 18 04 0289*       ld hl,@cmd
+041833 01 0B 00 00 0290*       ld bc,@end-@cmd
+041837 5B DF       0291*       rst.lil $18
+041839 C9          0292*       ret
+04183A 17 00 85    0293*   @cmd:       db 23, 0, 0x85
+04183D 00          0294*   @channel:   db 0x00 ; ignored
+04183E 05          0295*               db 0x05 ; buffer to sound command
+04183F 02          0296*               db 0x02 ; command 2 create sample
+041840 00 00       0297*   @bufferId:  dw 0x0000
+041842 00          0298*   @format:    db 0x00
+041843 00 00       0299*   @sampleRate: dw 0x0000
+041845 00          0300*   @end:       db 0x00 ; padding
+041846             0301*   
+041846             0302*   ; Command 13: Set sample rate
+041846             0303*   ; VDU 23, 0, &85, channel, 13, sampleRate;
+041846             0304*   ; inputs: c = channel, hl = sampleRate (Hz)
+041846             0305*   vdu_set_sample_rate:
+041846 79          0306*       ld a,c
+041847 32 5D 18 04 0307*       ld (@channel),a
+04184B 22 5F 18 04 0308*       ld (@sampleRate),hl
+04184F 21 5A 18 04 0309*       ld hl,@cmd
+041853 01 07 00 00 0310*       ld bc,@end-@cmd
+041857 5B DF       0311*       rst.lil $18
+041859 C9          0312*       ret
+04185A 17 00 85    0313*   @cmd:       db 23, 0, 0x85
+04185D 00          0314*   @channel:   db 0x00
+04185E 0D          0315*               db 13 ; set sample rate command
+04185F 00 00       0316*   @sampleRate: dw 0x0000
+041861 00          0317*   @end:       db 0x00 ; padding
+041862             0318*   
+041862             0319*   ; inputs: c = channel, b = volume, de = sample rate; hl = bufferId
+041862             0320*   vdu_play_sample:
+041862             0321*       ; populate input parameters
+041862 79          0322*       ld a,c
+041863 32 95 18 04 0323*       ld (@channel0),a
+041867 32 9D 18 04 0324*       ld (@channel1),a
+04186B 32 A4 18 04 0325*       ld (@channel2),a
+04186F 78          0326*       ld a,b
+041870 32 A6 18 04 0327*       ld (@volume),a
+041874 ED 53 9F 18 0328*       ld (@sampleRate),de
        04          
-041891 CD 54 16 04 0058*   	call vdu_load_sfx
-041895 C9          0059*   	ret
-041896             0060*   
-041896             0061*   load_sfx_EVERY_BREATH_YOU_TAKE:
-041896 21 23 19 04 0062*   	ld hl,FEVERY_BREATH_YOU_TAKE
-04189A 11 00 E0 B7 0063*   	ld de,filedata
-04189E 01 00 00 01 0064*   	ld bc,65536
-0418A2 3E 01       0065*   	ld a,mos_load
-0418A4 5B CF       0066*   	RST.LIL 08h
-0418A6 21 02 30 00 0067*   	ld hl,BUF_EVERY_BREATH_YOU_TAKE
-0418AA 11 00 3C 00 0068*   	ld de,15360
-0418AE FD 21 23 19 0069*   	ld iy,FEVERY_BREATH_YOU_TAKE
+041879 22 98 18 04 0329*       ld (@bufferId),hl
+04187D             0330*       ; clean up bytes that got stomped on by 24-bit loads
+04187D 3E 17       0331*       ld a,23
+04187F 32 9A 18 04 0332*       ld (@cmd1),a
+041883 32 A1 18 04 0333*       ld (@cmd2),a
+041887             0334*       ; prep the vdu command string
+041887 21 92 18 04 0335*       ld hl, @cmd0
+04188B 01 19 00 00 0336*       ld bc, @end - @cmd0
+04188F 5B DF       0337*       rst.lil $18
+041891 C9          0338*       ret
+041892             0339*   ; set waveform command
+041892 17 00 85    0340*   @cmd0:       db 23, 0, 0x85
+041895 00          0341*   @channel0:   db 0x00
+041896 04          0342*                db 0x04 ; set waveform command
+041897 08          0343*   @waveform:   db 0x08 ; sample
+041898 00 00       0344*   @bufferId:   dw 0x0000
+04189A             0345*   ; set sample rate command
+04189A 17 00 85    0346*   @cmd1:       db 23, 0, 0x85
+04189D 00          0347*   @channel1:   db 0x00
+04189E 0D          0348*               db 13 ; set sample rate command
+04189F 00 00       0349*   @sampleRate: dw 0x0000
+0418A1             0350*   ; play note command
+0418A1 17 00 85    0351*   @cmd2:       db 23, 0, 0x85
+0418A4 00          0352*   @channel2:   db 0x00
+0418A5 00          0353*                db 0x00 ; play note command
+0418A6 00          0354*   @volume:     db 0x00
+0418A7 00 00       0355*   @frequency:  dw 0x00 ; no effect unless buffer has been set to tuneable sample
+0418A9 00 00       0356*   @duration:   dw 0x0000 ; milliseconds: set to -1 to loop indefinitely, 0 to play full duration once
+0418AB 00          0357*   @end:        db 0x00 ; padding
+0418AC             0358*   
+0418AC             0359*   
+0418AC             0360*   ; stream a song from the SD card
+0418AC             0361*   ; inputs: hl = pointer to filename
+0418AC             0362*   ; requirements: the file must be 8-bit signed PCM mono sampled at 15360 Hz
+0418AC             0363*   ; uses: sound channels 0 and 1, buffers 0x3000 and 0x3001
+0418AC FF FF FF FF 0364*       align 256 ; align to 256-byte boundary (may be helpful ... or not)
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+041900 00 00 00 00 0365*   song_data: blkw 256,0 ; buffer for sound data
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+041B00             0366*   ch0_buffer: equ 0x3000
+041B00             0367*   ch1_buffer: equ 0x3001
+041B00             0368*   cmd0_buffer: equ 0x3002
+041B00             0369*   cmd1_buffer: equ 0x3003
+041B00             0370*   vdu_play_song:
+041B00             0371*   ; initialize sound channels
+041B00 21 00 30 00 0372*       ld hl,ch0_buffer
+041B04 0E 00       0373*       ld c,0 ; channel
+041B06 06 08       0374*       ld b,8 ; waveform is sample
+041B08 CD F4 17 04 0375*       call vdu_channel_waveform
+041B0C             0376*   
+041B0C 21 01 30 00 0377*       ld hl,ch1_buffer
+041B10 0E 01       0378*       ld c,1 ; channel
+041B12 06 08       0379*       ld b,8 ; waveform is sample
+041B14 CD F4 17 04 0380*       call vdu_channel_waveform
+041B18             0381*   
+041B18             0382*   ; initialize channel command buffers
+041B18 21 02 30 00 0383*       ld hl,cmd0_buffer
+041B1C CD 11 15 04 0384*       call vdu_clear_buffer
+041B20 21 02 30 00 0385*       ld hl,cmd0_buffer
+041B24 01 0A 00 00 0386*       ld bc,@ch0_play_end-@ch0_play
+041B28 11 A1 1B 04 0387*       ld de,@ch0_play
+041B2C CD D4 14 04 0388*       call vdu_write_block_to_buffer
+041B30             0389*   
+041B30 21 03 30 00 0390*       ld hl,cmd1_buffer
+041B34 CD 11 15 04 0391*       call vdu_clear_buffer
+041B38 21 03 30 00 0392*       ld hl,cmd1_buffer
+041B3C 01 0A 00 00 0393*       ld bc,@ch1_play_end-@ch1_play
+041B40 11 AB 1B 04 0394*       ld de,@ch1_play
+041B44 CD D4 14 04 0395*       call vdu_write_block_to_buffer
+041B48             0396*   
+041B48             0397*   ; open the file in read mode
+041B48             0398*   ; Open a file
+041B48             0399*   ; HLU: Filename
+041B48             0400*   ;   C: Mode
+041B48             0401*   ; Returns:
+041B48             0402*   ;   A: Filehandle, or 0 if couldn't open
+041B48 FD E5       0403*   	push iy ; pointer to filename
+041B4A E1          0404*   	pop hl
+041B4B 0E 01       0405*   	ld c,fa_read
+041B4D             0406*       MOSCALL mos_fopen
+041B4D 3E 0A       0001*M1 			LD	A, function
+041B4F 5B CF       0002*M1 			RST.LIL	08h
+041B51 32 B5 1B 04 0407*       ld (@filehandle),a
+041B55             0408*   
+041B55             0409*   ; initialize channel flip-flop
+041B55 3E 01       0410*       ld a,1
+041B57 F5          0411*       push af
+041B58             0412*   
+041B58             0413*   @read_file:
+041B58             0414*   
+041B58             0415*   ; Read a block of data from a file
+041B58             0416*   ;   C: Filehandle
+041B58             0417*   ; HLU: Pointer to where to write the data to
+041B58             0418*   ; DEU: Number of bytes to read
+041B58             0419*   ; Returns:
+041B58             0420*   ; DEU: Number of bytes read
+041B58 3A B5 1B 04 0421*       ld a,(@filehandle)
+041B5C 4F          0422*       ld c,a
+041B5D 21 00 19 04 0423*       ld hl,song_data
+041B61 11 00 01 00 0424*       ld de,256
+041B65             0425*       MOSCALL mos_fread
+041B65 3E 1A       0001*M1 			LD	A, function
+041B67 5B CF       0002*M1 			RST.LIL	08h
+041B69             0426*   
+041B69             0427*   ; test de for zero bytes read
+041B69 21 00 00 00 0428*       ld hl,0
+041B6D AF          0429*       xor a ; clear carry
+041B6E ED 52       0430*       sbc hl,de
+041B70 CA 97 1B 04 0431*       jp z,@close_file
+041B74             0432*   
+041B74             0433*   ; load a vdu buffer from local memory
+041B74             0434*   ; inputs: hl = bufferId ; bc = length ; de = pointer to data
+041B74 21 00 30 00 0435*       ld hl,ch0_buffer
+041B78 F1          0436*       pop af ; flip-flop
+041B79 3C          0437*       inc a
+041B7A E6 01       0438*       and 1
+041B7C 6F          0439*       ld l,a
+041B7D F5          0440*       push af
+041B7E E5          0441*       push hl ; sample bufferId
+041B7F D5          0442*       push de ; chunksize
+041B80 C1          0443*       pop bc
+041B81 11 00 19 04 0444*       ld de,song_data
+041B85 CD 02 13 04 0445*       call vdu_load_buffer
+041B89 CD D6 11 04 0446*       call vdu_vblank ; wait for vblank
+041B8D E1          0447*       pop hl
+041B8E 2C          0448*       inc l ; play commmand bufferId
+041B8F CD FB 14 04 0449*       call vdu_call_buffer
+041B93             0450*   
+041B93             0451*   ; read the next block
+041B93 C3 58 1B 04 0452*       jp @read_file
+041B97             0453*   
+041B97             0454*   ; close the file
+041B97             0455*   @close_file:
+041B97 F1          0456*       pop af ; dummy pop to balance stack
+041B98 3A B5 1B 04 0457*       ld a,(@filehandle)
+041B9C             0458*       MOSCALL mos_fclose
+041B9C 3E 0B       0001*M1 			LD	A, function
+041B9E 5B CF       0002*M1 			RST.LIL	08h
+041BA0 C9          0459*       ret
+041BA1             0460*   
+041BA1             0461*   @ch0_play:
+041BA1 17 00 85    0462*       db 23,0,0x85
+041BA4 00          0463*       db 0   ; channel 0
+041BA5 00          0464*       db 0   ; play note command
+041BA6 7F          0465*       db 127 ; volume
+041BA7 00 00       0466*       dw 0   ; frequency (relevant only for tuneable samples)
+041BA9 00 00       0467*       dw 0   ; duration - 0 means play full duration one time
+041BAB             0468*   @ch0_play_end:
+041BAB             0469*   
+041BAB             0470*   @ch1_play:
+041BAB 17 00 85    0471*       db 23,0,0x85
+041BAE 01          0472*       db 1   ; channel 1
+041BAF 00          0473*       db 0   ; play note command
+041BB0 7F          0474*       db 127 ; volume
+041BB1 00 00       0475*       dw 0   ; frequency (relevant only for tuneable samples)
+041BB3 00 00       0476*       dw 0   ; duration - 0 means play full duration one time
+041BB5             0477*   @ch1_play_end:
+041BB5             0478*   
+041BB5             0479*   
+041BB5 00          0480*   @filehandle: db 0 ; file handle
+041BB6 00 00 00    0481*   @fil: dl 0 ; pointer to FIL struct
+041BB9             0482*   
+041BB9 00 00 00    0483*   @chunkpointer: dl 0 ; pointer to current chunk
+041BBC             0484*   
+041BBC             0485*   ; File information structure (FILINFO)
+041BBC             0486*   @filinfo:
+041BBC 00 00 00 00 0487*   @filinfo_fsize:    blkb 4, 0   ; File size (4 bytes)
+041BC0 00 00       0488*   @filinfo_fdate:    blkb 2, 0   ; Modified date (2 bytes)
+041BC2 00 00       0489*   @filinfo_ftime:    blkb 2, 0   ; Modified time (2 bytes)
+041BC4 00          0490*   @filinfo_fattrib:  blkb 1, 0   ; File attribute (1 byte)
+041BC5 00 00 00 00 0491*   @filinfo_altname:  blkb 13, 0  ; Alternative file name (13 bytes)
+       00 00 00 00 
+       00 00 00 00 
+       00          
+041BD2 00 00 00 00 0492*   @filinfo_fname:    blkb 256, 0 ; Primary file name (256 bytes)
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+041CD2             0043    
+041CD2             0044    ; APPLICATION INCLUDES
+041CD2             0045        include "music.inc"
+041CD2             0001*   ; This file is created by build_98_asm_sfx.py, do not edit it!
+041CD2             0002*   
+041CD2             0003*   SFX_num_buffers: equ 5
+041CD2             0004*   ; SFX buffer ids:
+041CD2             0005*   BUF_AFRICA: equ 0x3000
+041CD2             0006*   BUF_COME_UNDONE: equ 0x3001
+041CD2             0007*   BUF_EVERY_BREATH_YOU_TAKE: equ 0x3002
+041CD2             0008*   BUF_RHIANNON: equ 0x3003
+041CD2             0009*   BUF_SPACE_ADVENTURE: equ 0x3004
+041CD2             0010*   
+041CD2             0011*   ; SFX buffer id reverse lookup:
+041CD2             0012*   SFX_buffer_id_lut:
+041CD2 00 30 00    0013*   	dl BUF_AFRICA
+041CD5 01 30 00    0014*   	dl BUF_COME_UNDONE
+041CD8 02 30 00    0015*   	dl BUF_EVERY_BREATH_YOU_TAKE
+041CDB 03 30 00    0016*   	dl BUF_RHIANNON
+041CDE 04 30 00    0017*   	dl BUF_SPACE_ADVENTURE
+041CE1             0018*   
+041CE1             0019*   ; SFX duration lookup:
+041CE1             0020*   SFX_duration_lut:
+041CE1 54 72 00    0021*   	dl 29268 ; AFRICA
+041CE4 54 72 00    0022*   	dl 29268 ; COME_UNDONE
+041CE7 54 72 00    0023*   	dl 29268 ; EVERY_BREATH_YOU_TAKE
+041CEA 54 72 00    0024*   	dl 29268 ; RHIANNON
+041CED 5C 72 00    0025*   	dl 29276 ; SPACE_ADVENTURE
+041CF0             0026*   
+041CF0             0027*   ; SFX load routines jump table:
+041CF0             0028*   SFX_load_routines_table:
+041CF0 FF 1C 04    0029*   	dl load_sfx_AFRICA
+041CF3 21 1D 04    0030*   	dl load_sfx_COME_UNDONE
+041CF6 43 1D 04    0031*   	dl load_sfx_EVERY_BREATH_YOU_TAKE
+041CF9 65 1D 04    0032*   	dl load_sfx_RHIANNON
+041CFC 87 1D 04    0033*   	dl load_sfx_SPACE_ADVENTURE
+041CFF             0034*   
+041CFF             0035*   ; Import sfx .raw files and load them into VDP buffers
+041CFF             0036*   
+041CFF             0037*   load_sfx_AFRICA:
+041CFF 21 A9 1D 04 0038*   	ld hl,FAFRICA
+041D03 11 00 E0 B7 0039*   	ld de,filedata
+041D07 01 00 00 01 0040*   	ld bc,65536
+041D0B 3E 01       0041*   	ld a,mos_load
+041D0D 5B CF       0042*   	RST.LIL 08h
+041D0F 21 00 30 00 0043*   	ld hl,BUF_AFRICA
+041D13 11 00 3C 00 0044*   	ld de,15360
+041D17 FD 21 A9 1D 0045*   	ld iy,FAFRICA
        04          
-0418B3 CD 54 16 04 0070*   	call vdu_load_sfx
-0418B7 C9          0071*   	ret
-0418B8             0072*   
-0418B8             0073*   load_sfx_RHIANNON:
-0418B8 21 43 19 04 0074*   	ld hl,FRHIANNON
-0418BC 11 00 E0 B7 0075*   	ld de,filedata
-0418C0 01 00 00 01 0076*   	ld bc,65536
-0418C4 3E 01       0077*   	ld a,mos_load
-0418C6 5B CF       0078*   	RST.LIL 08h
-0418C8 21 03 30 00 0079*   	ld hl,BUF_RHIANNON
-0418CC 11 00 3C 00 0080*   	ld de,15360
-0418D0 FD 21 43 19 0081*   	ld iy,FRHIANNON
+041D1C CD DB 16 04 0046*   	call vdu_load_sfx
+041D20 C9          0047*   	ret
+041D21             0048*   
+041D21             0049*   load_sfx_COME_UNDONE:
+041D21 21 BA 1D 04 0050*   	ld hl,FCOME_UNDONE
+041D25 11 00 E0 B7 0051*   	ld de,filedata
+041D29 01 00 00 01 0052*   	ld bc,65536
+041D2D 3E 01       0053*   	ld a,mos_load
+041D2F 5B CF       0054*   	RST.LIL 08h
+041D31 21 01 30 00 0055*   	ld hl,BUF_COME_UNDONE
+041D35 11 00 3C 00 0056*   	ld de,15360
+041D39 FD 21 BA 1D 0057*   	ld iy,FCOME_UNDONE
        04          
-0418D5 CD 54 16 04 0082*   	call vdu_load_sfx
-0418D9 C9          0083*   	ret
-0418DA             0084*   
-0418DA             0085*   load_sfx_SPACE_ADVENTURE:
-0418DA 21 56 19 04 0086*   	ld hl,FSPACE_ADVENTURE
-0418DE 11 00 E0 B7 0087*   	ld de,filedata
-0418E2 01 00 00 01 0088*   	ld bc,65536
-0418E6 3E 01       0089*   	ld a,mos_load
-0418E8 5B CF       0090*   	RST.LIL 08h
-0418EA 21 04 30 00 0091*   	ld hl,BUF_SPACE_ADVENTURE
-0418EE 11 00 3C 00 0092*   	ld de,15360
-0418F2 FD 21 56 19 0093*   	ld iy,FSPACE_ADVENTURE
+041D3E CD DB 16 04 0058*   	call vdu_load_sfx
+041D42 C9          0059*   	ret
+041D43             0060*   
+041D43             0061*   load_sfx_EVERY_BREATH_YOU_TAKE:
+041D43 21 D0 1D 04 0062*   	ld hl,FEVERY_BREATH_YOU_TAKE
+041D47 11 00 E0 B7 0063*   	ld de,filedata
+041D4B 01 00 00 01 0064*   	ld bc,65536
+041D4F 3E 01       0065*   	ld a,mos_load
+041D51 5B CF       0066*   	RST.LIL 08h
+041D53 21 02 30 00 0067*   	ld hl,BUF_EVERY_BREATH_YOU_TAKE
+041D57 11 00 3C 00 0068*   	ld de,15360
+041D5B FD 21 D0 1D 0069*   	ld iy,FEVERY_BREATH_YOU_TAKE
        04          
-0418F7 CD 54 16 04 0094*   	call vdu_load_sfx
-0418FB C9          0095*   	ret
-0418FC             0096*   
-0418FC             0097*   ; File name lookups:
-0418FC 6D 75 73 69 0098*   FAFRICA: db "music/AFRICA.raw",0
+041D60 CD DB 16 04 0070*   	call vdu_load_sfx
+041D64 C9          0071*   	ret
+041D65             0072*   
+041D65             0073*   load_sfx_RHIANNON:
+041D65 21 F0 1D 04 0074*   	ld hl,FRHIANNON
+041D69 11 00 E0 B7 0075*   	ld de,filedata
+041D6D 01 00 00 01 0076*   	ld bc,65536
+041D71 3E 01       0077*   	ld a,mos_load
+041D73 5B CF       0078*   	RST.LIL 08h
+041D75 21 03 30 00 0079*   	ld hl,BUF_RHIANNON
+041D79 11 00 3C 00 0080*   	ld de,15360
+041D7D FD 21 F0 1D 0081*   	ld iy,FRHIANNON
+       04          
+041D82 CD DB 16 04 0082*   	call vdu_load_sfx
+041D86 C9          0083*   	ret
+041D87             0084*   
+041D87             0085*   load_sfx_SPACE_ADVENTURE:
+041D87 21 03 1E 04 0086*   	ld hl,FSPACE_ADVENTURE
+041D8B 11 00 E0 B7 0087*   	ld de,filedata
+041D8F 01 00 00 01 0088*   	ld bc,65536
+041D93 3E 01       0089*   	ld a,mos_load
+041D95 5B CF       0090*   	RST.LIL 08h
+041D97 21 04 30 00 0091*   	ld hl,BUF_SPACE_ADVENTURE
+041D9B 11 00 3C 00 0092*   	ld de,15360
+041D9F FD 21 03 1E 0093*   	ld iy,FSPACE_ADVENTURE
+       04          
+041DA4 CD DB 16 04 0094*   	call vdu_load_sfx
+041DA8 C9          0095*   	ret
+041DA9             0096*   
+041DA9             0097*   ; File name lookups:
+041DA9 6D 75 73 69 0098*   FAFRICA: db "music/AFRICA.raw",0
        63 2F 41 46 
        52 49 43 41 
        2E 72 61 77 
        00          
-04190D 6D 75 73 69 0099*   FCOME_UNDONE: db "music/COME_UNDONE.raw",0
+041DBA 6D 75 73 69 0099*   FCOME_UNDONE: db "music/COME_UNDONE.raw",0
        63 2F 43 4F 
        4D 45 5F 55 
        4E 44 4F 4E 
        45 2E 72 61 
        77 00       
-041923 6D 75 73 69 0100*   FEVERY_BREATH_YOU_TAKE: db "music/EVERY_BREATH_YOU_TAKE.raw",0
+041DD0 6D 75 73 69 0100*   FEVERY_BREATH_YOU_TAKE: db "music/EVERY_BREATH_YOU_TAKE.raw",0
        63 2F 45 56 
        45 52 59 5F 
        42 52 45 41 
@@ -4778,85 +5264,70 @@ PC     Output      Line
        4F 55 5F 54 
        41 4B 45 2E 
        72 61 77 00 
-041943 6D 75 73 69 0101*   FRHIANNON: db "music/RHIANNON.raw",0
+041DF0 6D 75 73 69 0101*   FRHIANNON: db "music/RHIANNON.raw",0
        63 2F 52 48 
        49 41 4E 4E 
        4F 4E 2E 72 
        61 77 00    
-041956 6D 75 73 69 0102*   FSPACE_ADVENTURE: db "music/SPACE_ADVENTURE.raw",0
+041E03 6D 75 73 69 0102*   FSPACE_ADVENTURE: db "music/SPACE_ADVENTURE.raw",0
        63 2F 53 50 
        41 43 45 5F 
        41 44 56 45 
        4E 54 55 52 
        45 2E 72 61 
        77 00       
-041970             0103*   
-041970             0104*   ; Play sfx routines
-041970             0105*   
-041970             0106*   sfx_play_AFRICA:
-041970 21 00 30 00 0107*   	ld hl,BUF_AFRICA
-041974 01 00 00 00 0108*   	ld bc,0
-041978 C3 63 16 04 0109*   	jp vdu_play_sfx
-04197C             0110*   
-04197C             0111*   sfx_play_COME_UNDONE:
-04197C 21 01 30 00 0112*   	ld hl,BUF_COME_UNDONE
-041980 01 00 00 00 0113*   	ld bc,0
-041984 C3 63 16 04 0114*   	jp vdu_play_sfx
-041988             0115*   
-041988             0116*   sfx_play_EVERY_BREATH_YOU_TAKE:
-041988 21 02 30 00 0117*   	ld hl,BUF_EVERY_BREATH_YOU_TAKE
-04198C 01 00 00 00 0118*   	ld bc,0
-041990 C3 63 16 04 0119*   	jp vdu_play_sfx
-041994             0120*   
-041994             0121*   sfx_play_RHIANNON:
-041994 21 03 30 00 0122*   	ld hl,BUF_RHIANNON
-041998 01 00 00 00 0123*   	ld bc,0
-04199C C3 63 16 04 0124*   	jp vdu_play_sfx
-0419A0             0125*   
-0419A0             0126*   sfx_play_SPACE_ADVENTURE:
-0419A0 21 04 30 00 0127*   	ld hl,BUF_SPACE_ADVENTURE
-0419A4 01 00 00 00 0128*   	ld bc,0
-0419A8 C3 63 16 04 0129*   	jp vdu_play_sfx
-0419AC             0045    
-0419AC             0046    ; --- MAIN PROGRAM FILE ---
-0419AC             0047    init:
-0419AC             0048    ; load sound effects files
-0419AC CD 60 00 04 0049        call printInline
-0419B0 4C 6F 61 64 0050        asciz "Loading SFX...\r\n"
-       69 6E 67 20 
-       53 46 58 2E 
-       2E 2E 0D 0A 
-       00          
-0419C1 CD 52 18 04 0051        call load_sfx_AFRICA
-0419C5 CD 74 18 04 0052        call load_sfx_COME_UNDONE
-0419C9 CD 96 18 04 0053        call load_sfx_EVERY_BREATH_YOU_TAKE
-0419CD CD B8 18 04 0054        call load_sfx_RHIANNON
-0419D1 CD DA 18 04 0055        call load_sfx_SPACE_ADVENTURE
-0419D5 CD 60 00 04 0056        call printInline
-0419D9 53 46 58 20 0057        asciz "SFX loaded.\r\n"
-       6C 6F 61 64 
-       65 64 2E 0D 
-       0A 00       
-0419E7 C9          0058        ret
-0419E8             0059    ; end init
-0419E8             0060    
-0419E8             0061    main:
-0419E8             0062    
-0419E8             0063    
-0419E8             0064    @loop:
-0419E8 CD 5A 03 04 0065        call waitKeypress
-0419EC FE 1B       0066        cp '\e'
-0419EE C8          0067        ret z
-0419EF FE 31       0068        cp '1'
-0419F1 CC 70 19 04 0069        call z, sfx_play_AFRICA
-0419F5 FE 32       0070        cp '2'
-0419F7 CC 7C 19 04 0071        call z, sfx_play_COME_UNDONE
-0419FB FE 33       0072        cp '3'
-0419FD CC 88 19 04 0073        call z, sfx_play_EVERY_BREATH_YOU_TAKE
-041A01 FE 34       0074        cp '4'
-041A03 CC 94 19 04 0075        call z, sfx_play_RHIANNON
-041A07 FE 35       0076        cp '5'
-041A09 CC A0 19 04 0077        call z, sfx_play_SPACE_ADVENTURE
-041A0D C3 E8 19 04 0078        jp @loop
-041A11             0079    ; end main
-041A11             0080    
+041E1D             0103*   
+041E1D             0104*   ; Play sfx routines
+041E1D             0105*   
+041E1D             0106*   sfx_play_AFRICA:
+041E1D 21 00 30 00 0107*   	ld hl,BUF_AFRICA
+041E21 01 00 00 00 0108*   	ld bc,0
+041E25 C3 EA 16 04 0109*   	jp vdu_play_sfx
+041E29             0110*   
+041E29             0111*   sfx_play_COME_UNDONE:
+041E29 21 01 30 00 0112*   	ld hl,BUF_COME_UNDONE
+041E2D 01 00 00 00 0113*   	ld bc,0
+041E31 C3 EA 16 04 0114*   	jp vdu_play_sfx
+041E35             0115*   
+041E35             0116*   sfx_play_EVERY_BREATH_YOU_TAKE:
+041E35 21 02 30 00 0117*   	ld hl,BUF_EVERY_BREATH_YOU_TAKE
+041E39 01 00 00 00 0118*   	ld bc,0
+041E3D C3 EA 16 04 0119*   	jp vdu_play_sfx
+041E41             0120*   
+041E41             0121*   sfx_play_RHIANNON:
+041E41 21 03 30 00 0122*   	ld hl,BUF_RHIANNON
+041E45 01 00 00 00 0123*   	ld bc,0
+041E49 C3 EA 16 04 0124*   	jp vdu_play_sfx
+041E4D             0125*   
+041E4D             0126*   sfx_play_SPACE_ADVENTURE:
+041E4D 21 04 30 00 0127*   	ld hl,BUF_SPACE_ADVENTURE
+041E51 01 00 00 00 0128*   	ld bc,0
+041E55 C3 EA 16 04 0129*   	jp vdu_play_sfx
+041E59             0046    
+041E59             0047    ; --- MAIN PROGRAM FILE ---
+041E59             0048    init:
+041E59             0049    ; ; load sound effects files
+041E59             0050    ;     call printInline
+041E59             0051    ;     asciz "Loading SFX...\r\n"
+041E59             0052    ;     call load_sfx_AFRICA
+041E59             0053    ;     call load_sfx_COME_UNDONE
+041E59             0054    ;     call load_sfx_EVERY_BREATH_YOU_TAKE
+041E59             0055    ;     call load_sfx_RHIANNON
+041E59             0056    ;     call load_sfx_SPACE_ADVENTURE
+041E59             0057    ;     call printInline
+041E59             0058    ;     asciz "SFX loaded.\r\n"
+041E59 C9          0059        ret
+041E5A             0060    ; end init
+041E5A             0061    
+041E5A             0062    main:
+041E5A             0063    
+041E5A             0064    
+041E5A             0065    @loop:
+041E5A CD 5A 03 04 0066        call waitKeypress
+041E5E FE 1B       0067        cp '\e'
+041E60 C8          0068        ret z
+041E61 21 F0 1D 04 0069        ld hl,FRHIANNON
+041E65 CD 00 1B 04 0070        call vdu_play_song
+041E69 C3 5A 1E 04 0071        jp @loop
+041E6D             0072    ; end main
+041E6D             0073    

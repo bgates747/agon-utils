@@ -46,16 +46,16 @@ exit:
 
 ; --- MAIN PROGRAM FILE ---
 init:
-; ; load sound effects files
-;     call printInline
-;     asciz "Loading SFX...\r\n"
-;     call load_sfx_AFRICA
-;     call load_sfx_COME_UNDONE
-;     call load_sfx_EVERY_BREATH_YOU_TAKE
-;     call load_sfx_RHIANNON
-;     call load_sfx_SPACE_ADVENTURE
-;     call printInline
-;     asciz "SFX loaded.\r\n"
+; load sound effects files
+    call printInline
+    asciz "Loading SFX...\r\n"
+    call load_sfx_AFRICA
+    call load_sfx_COME_UNDONE
+    call load_sfx_EVERY_BREATH_YOU_TAKE
+    call load_sfx_RHIANNON
+    call load_sfx_SPACE_ADVENTURE
+    call printInline
+    asciz "SFX loaded.\r\n"
     ret
 ; end init
 
@@ -66,8 +66,16 @@ main:
     call waitKeypress
     cp '\e'
     ret z
-    ld hl,FRHIANNON
-    call vdu_play_song
+    cp '1'
+    call z, sfx_play_AFRICA
+    cp '2'
+    call z, sfx_play_COME_UNDONE
+    cp '3'
+    call z, sfx_play_EVERY_BREATH_YOU_TAKE
+    cp '4'
+    call z, sfx_play_RHIANNON
+    cp '5'
+    call z, sfx_play_SPACE_ADVENTURE
     jp @loop
 ; end main
 
