@@ -89,7 +89,7 @@ def make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate
         for row in rows:
             sfx_id, size, duration, filename = row['sfx_id'], row['size'], row['duration'], row['filename']
             buf_label = f"BUF_{row['filename'].split('.')[0].upper()}"
-            base_filename = filename.split('.')[0].lower()
+            base_filename = filename.split('.')[0].upper() #.lower()
             volume = 127
             f.write(f"\nsfx_play_{base_filename}:\n")
             f.write(f"\tld hl,{buf_label}\n")

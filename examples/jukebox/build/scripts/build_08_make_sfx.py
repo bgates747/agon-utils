@@ -70,6 +70,7 @@ def make_sfx(db_path, src_dir, tgt_dir, proc_dir, sample_rate):
             '-y',                                  # Overwrite output file
             '-i', temp_path,                      # Input file
             '-ac', '1',                           # Set audio channels to mono
+            # '-af', 'acompressor=threshold=-20dB:ratio=3:attack=5:release=50:makeup=5',  # Compression settings
             '-af', 'acompressor=threshold=-20dB:ratio=3:attack=5:release=50:makeup=5',  # Compression settings
             proc_path                              # Output file
         ], check=True)
