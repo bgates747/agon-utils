@@ -13,6 +13,7 @@ start:
     push ix
     push iy
 
+    call init
     call main
 
 exit:
@@ -45,55 +46,164 @@ exit:
     include "debug.inc"
 
 ; --- MAIN PROGRAM FILE ---
-main:
-    call vdu_clear_all_buffers
-
-    call printInline
-    asciz "Loading SFX...\r\n"
-	call load_sfx_AMBIENT_BEAT70
-    call printInline
-    asciz "SFX loaded.\r\n"
-
+init:
+; initialize channel command buffers
+    ld hl,cmd0_buffer
+    ld de,ch0_buffer
+    ld c,0
     call load_command_buffer
 
+    ld hl,cmd1_buffer
+    ld de,ch1_buffer
+    ld c,1
+    call load_command_buffer
+
+    ret
+; end init
+
+main:
 @loop:
     call waitKeypress
     cp '\e'
     ret z
     cp '1'
-    call z,play_song_temp
+    call z,play_song
     jp @loop
 ; end main
 
-
-play_song_temp:
+; stream a song from the SD card
+; inputs: hl = pointer to filename
+; requirements: the file must be 8-bit signed PCM mono sampled at 15360 Hz
+; uses: sound channels 0 and 1, buffers 0x3000 and 0x3001
+    align 256 ; align to 256-byte boundary (may be helpful ... or not)
+song_data: blkw 256,0 ; buffer for sound data
+ch0_buffer: equ 0x3000
+ch1_buffer: equ 0x3001
+cmd0_buffer: equ 0x3002
+cmd1_buffer: equ 0x3003
+play_song:
     call printInline
     asciz "Playing song...\r\n"
+; TEMPORARY
+    ld hl,FAMBIENT_BEAT70
+; END TEMPORARY
+
+; open the file in read mode
+; Open a file
+; HLU: Filename
+;   C: Mode
+; Returns:
+;   A: Filehandle, or 0 if couldn't open
+	push iy ; pointer to filename
+	pop hl
+	ld c,fa_read
+    MOSCALL mos_fopen
+    ld (@filehandle),a
+
+; initialize channel flip-flop
+    ld a,1
+    push af
+
+@read_file:
+
+; Read a block of data from a file
+;   C: Filehandle
+; HLU: Pointer to where to write the data to
+; DEU: Number of bytes to read
+; Returns:
+; DEU: Number of bytes read
+    ld a,(@filehandle)
+    ld c,a
+    ld hl,song_data
+    ld de,256
+    MOSCALL mos_fread
+
+; test de for zero bytes read
+    ld hl,0
+    xor a ; clear carry
+    sbc hl,de
+    jp z,@close_file
+
+; load a vdu buffer from local memory
+; inputs: hl = bufferId ; bc = length ; de = pointer to data
     ld hl,ch0_buffer
+    pop af ; flip-flop
+    inc a
+    and 1
+    ld l,a
+    push af
+    push hl ; sample bufferId
+    push de ; chunksize
+    pop bc
+    ld de,song_data
+    call vdu_load_buffer
+    call vdu_vblank ; wait for vblank
+    pop hl
+    inc l ; play commmand bufferId
     call vdu_call_buffer
 
-    ; ld hl,BUF_AMBIENT_BEAT70
-    ; ld c,0 ; channel 0
-    ; ld b,8 ; waveform = sample
-    ; call vdu_channel_waveform
+; read the next block
+    jp @read_file
 
-    ; ld b,127 ; volume
-    ; ld c,0 ; channel 0
-    ; ld hl,0 ; frequency (doesn't matter for samples)
-    ; ld de,0 ; duration 0 means play whole sample once
-    ; call vdu_play_note
-
+; close the file
+@close_file:
+    pop af ; dummy pop to balance stack
+    ld a,(@filehandle)
+    MOSCALL mos_fclose
     ret
 
+@ch0_play:
+    db 23,0,0x85
+    db 0   ; channel 0
+    db 0   ; play note command
+    db 127 ; volume
+    dw 0   ; frequency (relevant only for tuneable samples)
+    dw 0   ; duration - 0 means play full duration one time
+@ch0_play_end:
 
+@ch1_play:
+    db 23,0,0x85
+    db 1   ; channel 1
+    db 0   ; play note command
+    db 127 ; volume
+    dw 0   ; frequency (relevant only for tuneable samples)
+    dw 0   ; duration - 0 means play full duration one time
+@ch1_play_end:
+
+
+@filehandle: db 0 ; file handle
+@fil: dl 0 ; pointer to FIL struct
+
+@chunkpointer: dl 0 ; pointer to current chunk
+
+; File information structure (FILINFO)
+@filinfo:
+@filinfo_fsize:    blkb 4, 0   ; File size (4 bytes)
+@filinfo_fdate:    blkb 2, 0   ; Modified date (2 bytes)
+@filinfo_ftime:    blkb 2, 0   ; Modified time (2 bytes)
+@filinfo_fattrib:  blkb 1, 0   ; File attribute (1 byte)
+@filinfo_altname:  blkb 13, 0  ; Alternative file name (13 bytes)
+@filinfo_fname:    blkb 256, 0 ; Primary file name (256 bytes)
+
+
+; load a sound effect command buffer
+; inputs: hl = command bufferId, de = sound sample bufferId, c = audio channel
 load_command_buffer:
-    ld hl,ch0_buffer
+    ld a,c
+    ld (@channel0),a
+    ld (@channel1),a
+    ld (@bufferId),de
+    ld a,23
+    ld (@bufferId+2),a
+
+    push hl
     call vdu_clear_buffer
 
-    ld hl,ch0_buffer
+    pop hl
     ld bc,@sample_end-@sample
     ld de,@sample
     call vdu_write_block_to_buffer
+
     ret
 @sample: 
 ; Command 4: Set waveform
@@ -102,7 +212,7 @@ load_command_buffer:
 @channel0:   
     .db 0,4,8 ; channel, command, waveform
 @bufferId:    
-    .dw BUF_AMBIENT_BEAT70
+    .dw 0x0000 ; bufferId of containing the sound sample
 ; Command 0: Play note
 ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
     .db 23,0,$85                        ; do sound
