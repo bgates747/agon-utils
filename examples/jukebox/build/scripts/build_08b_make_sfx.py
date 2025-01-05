@@ -256,20 +256,13 @@ def make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate):
         resample_wav(temp_path, proc_path, sample_rate)
         os.remove(temp_path)
 
-        # # Convert .wav file to unsigned 8-bit PCM
-        # temp_path = copy_to_temp(proc_path)
-        # convert_to_unsigned_pcm(temp_path, proc_path, sample_rate)
-        # # convert_to_unsigned_pcm_with_dither(temp_path, proc_path)
-        # os.remove(temp_path)
-
         # # Apply noise gate
         # temp_path = copy_to_temp(proc_path)
         # noise_gate(temp_path, proc_path)
         # os.remove(temp_path)
 
         # FINAL STEP: Convert .wav file to signed 8-bit PCM .raw
-        # convert_to_signed_raw(proc_path, tgt_path, sample_rate)
-        convert_to_unsigned_raw(proc_path, tgt_path, sample_rate)
+        convert_to_signed_raw(proc_path, tgt_path, sample_rate)
 
         # Calculate size and duration
         size = os.path.getsize(tgt_path)
@@ -286,7 +279,7 @@ if __name__ == '__main__':
     # sample_rate = 44100 # standard high quality audio
     # sample_rate = 16384 # default rate for Agon
     # sample_rate = 16000 # A standard Audacity option
-    # sample_rate = 15360 # for 8-bit PCM this is 256 bytes per 1/60th of a second
+    sample_rate = 15360 # for 8-bit PCM this is 256 bytes per 1/60th of a second
     db_path = 'build/data/build.db'
     src_dir = 'assets/sound/music/trimmed'
     proc_dir = 'assets/sound/music/processed'
