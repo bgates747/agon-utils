@@ -105,7 +105,7 @@ def make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate
 def assemble_jukebox():
     """
     Executes the equivalent of the shell command:
-    (cd src/asm && ez80asm -l jukebox_old.asm ../../tgt/jukebox.bin)
+    (cd src/asm && ez80asm -l jukebox.asm ../../tgt/jukebox.bin)
     Ensures the working directory is restored to its original state.
     """
     original_cwd = os.getcwd()  # Save the current working directory
@@ -113,7 +113,7 @@ def assemble_jukebox():
         os.chdir('src/asm')  # Change to the target directory
         # Run the subprocess command
         subprocess.run(
-            ['ez80asm', '-l', 'jukebox_old.asm', '../../tgt/jukebox.bin'],
+            ['ez80asm', '-l', 'jukebox.asm', '../../tgt/jukebox.bin'],
             check=True
         )
     except subprocess.CalledProcessError as e:
