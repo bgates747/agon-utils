@@ -42,45 +42,73 @@ exit:
 
 ; APPLICATION INCLUDES
     include "music.inc"
+    include "debug.inc"
 
 ; --- MAIN PROGRAM FILE ---
 main:
+    call vdu_clear_all_buffers
+
     call printInline
     asciz "Loading SFX...\r\n"
-	; call load_sfx_AFRICA
-	; call load_sfx_ANYTIME
-	; call load_sfx_BARRACUDA
-	; call load_sfx_COME_UNDONE
-	; call load_sfx_EVERY_BREATH_YOU_TAKE
-	call load_sfx_RHIANNON
-	; call load_sfx_TAKE_A_RIDE
-	; call load_sfx_AMBIENT_BEAT70
-	; call load_sfx_SPACE_ADVENTURE
+	call load_sfx_AMBIENT_BEAT70
     call printInline
     asciz "SFX loaded.\r\n"
+
+    call load_command_buffer
 
 @loop:
     call waitKeypress
     cp '\e'
     ret z
     cp '1'
-    call z,sfx_play_AFRICA
-    cp '2'
-    call z,sfx_play_ANYTIME
-    cp '3'
-    call z,sfx_play_BARRACUDA
-    cp '4'
-    call z,sfx_play_COME_UNDONE
-    cp '5'
-    call z,sfx_play_EVERY_BREATH_YOU_TAKE
-    cp '6'
-    call z,sfx_play_RHIANNON
-    cp '7'
-    call z,sfx_play_TAKE_A_RIDE
-    cp '8'
-    call z,sfx_play_AMBIENT_BEAT70
-    cp '9'
-    call z,sfx_play_SPACE_ADVENTURE
+    call z,play_song_temp
     jp @loop
 ; end main
 
+
+play_song_temp:
+    call printInline
+    asciz "Playing song...\r\n"
+    ld hl,ch0_buffer
+    call vdu_call_buffer
+
+    ; ld hl,BUF_AMBIENT_BEAT70
+    ; ld c,0 ; channel 0
+    ; ld b,8 ; waveform = sample
+    ; call vdu_channel_waveform
+
+    ; ld b,127 ; volume
+    ; ld c,0 ; channel 0
+    ; ld hl,0 ; frequency (doesn't matter for samples)
+    ; ld de,0 ; duration 0 means play whole sample once
+    ; call vdu_play_note
+
+    ret
+
+
+load_command_buffer:
+    ld hl,ch0_buffer
+    call vdu_clear_buffer
+
+    ld hl,ch0_buffer
+    ld bc,@sample_end-@sample
+    ld de,@sample
+    call vdu_write_block_to_buffer
+    ret
+@sample: 
+; Command 4: Set waveform
+; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
+    .db 23,0,$85                        ; do sound
+@channel0:   
+    .db 0,4,8 ; channel, command, waveform
+@bufferId:    
+    .dw BUF_AMBIENT_BEAT70
+; Command 0: Play note
+; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
+    .db 23,0,$85                        ; do sound
+@channel1:    
+    .db 0,0,127                ; channel, volume
+    .dw 0 
+@duration:                              ; freq (tuneable samples only)
+    .dw 0x0000                        ; duration
+@sample_end:

@@ -5,18 +5,19 @@
 ; inputs: hl = bufferId, bc = length of data, de = pointer to data
 vdu_write_block_to_buffer:
 ; back up input parameters
+    push de ; pointer to data
     push bc ; length of data
 ; set up the vdu command string
     ld (@bufferId),hl
     ld (@length),bc
     xor a ; load buffer
     ld (@bufferId+2),a
-    ld hl,(@cmd0)
+    ld hl,@cmd0
     ld bc,@end0-@cmd0
     rst.lil $18
 ; send the buffer data
     pop bc ; length of data
-    ex de,hl ; hl = pointer to data
+    pop hl ; pointer to data (was de)
     rst.lil $18 ; send it
     ret
 ; command string data
@@ -32,14 +33,16 @@ vdu_write_block_to_buffer:
 ; inputs: hl = bufferId
 vdu_call_buffer:
     ld (@bufferId),hl
+    ld a,1 ; call buffer
+    ld (@bufferId+2),a
     ld hl,@cmd
     ld bc,@end-@cmd
     rst.lil $18
     ret
 @cmd:     db 23,0,0xA0
-           db 1 ; call buffer
 @bufferId: dw 0x0000
-@end:     db 0x00 ; padding
+           db 1 ; call buffer
+@end:
 ; end vdu_call_buffer
 
 ; Command 2: Clear a buffer
@@ -47,14 +50,16 @@ vdu_call_buffer:
 ; inputs: hl = bufferId
 vdu_clear_buffer:
     ld (@bufferId),hl
+    ld a,2 ; clear buffer
+    ld (@bufferId+2),a
     ld hl,@cmd
     ld bc,@end-@cmd
     rst.lil $18
     ret
 @cmd:     db 23,0,0xA0
-           db 2 ; clear buffer
 @bufferId: dw 0x0000
-@end:     db 0x00 ; padding
+           db 2 ; clear buffer
+@end: 
 ; end vdu_clear_buffer
 
 ; Clear all buffers
@@ -77,13 +82,15 @@ vdu_clear_all_buffers:
 vdu_create_writeable_buffer:
     ld (@bufferId),hl
     ld (@length),bc
+    ld a,3 ; create writeable buffer
+    ld (@bufferId+2),a
     ld hl,@cmd
     ld bc,@end-@cmd
     rst.lil $18
     ret
 @cmd:     db 23,0,0xA0
-           db 3 ; create writeable buffer
 @bufferId: dw 0x0000
+           db 3 ; create writeable buffer
 @length: dw 0x0000
 @end:     db 0x00 ; padding
 ; end vdu_create_writeable_buffer
@@ -93,13 +100,15 @@ vdu_create_writeable_buffer:
 ; inputs: hl = bufferId
 vdu_set_output_stream_buffer:
     ld (@bufferId),hl
+    ld a,4 ; set output stream to buffer
+    ld (@bufferId+2),a
     ld hl,@cmd
     ld bc,@end-@cmd
     rst.lil $18
     ret
 @cmd:     db 23,0,0xA0
-           db 4 ; set output stream to buffer
 @bufferId: dw 0x0000
+           db 4 ; set output stream to buffer
 @end:     db 0x00 ; padding
 ; end vdu_set_output_stream_buffer
 
@@ -120,13 +129,15 @@ vdu_call_buffer_conditional:
 ; inputs: hl = bufferId
 vdu_jump_to_buffer:
     ld (@bufferId),hl
+    ld a,7 ; jump to buffer
+    ld (@bufferId+2),a
     ld hl,@cmd
     ld bc,@end-@cmd
     rst.lil $18
     ret
 @cmd:     db 23,0,0xA0
-           db 7 ; jump to buffer
 @bufferId: dw 0x0000
+           db 7 ; jump to buffer
 @end:     db 0x00 ; padding
 ; end vdu_jump_to_buffer
 

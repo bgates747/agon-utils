@@ -28,7 +28,7 @@ PC     Output      Line
 040048 DD E5       0013        push ix
 04004A FD E5       0014        push iy
 04004C             0015    
-04004C CD 8A 1F 04 0016        call main
+04004C CD 9D 23 04 0016        call main
 040050             0017    
 040050             0018    exit:
 040050 FD E1       0019        pop iy
@@ -483,7 +483,7 @@ PC     Output      Line
 040083 E5          0046*       push hl ; preserve string pointer
 040084             0047*   ; move graphics cursor to x,y location
 040084 3E 44       0048*       ld a,plot_pt+mv_abs
-040086 CD 16 16 04 0049*       call vdu_plot
+040086 CD 33 16 04 0049*       call vdu_plot
 04008A             0050*   ; print string
 04008A E1          0051*       pop hl ; restore string pointer
 04008B             0052*   @print_loop:
@@ -3791,7 +3791,7 @@ PC     Output      Line
 041367 22 F8 12 04 0462*       ld (bufferId0),hl
 04136B             0463*   
 04136B             0464*   ; clear target buffer
-04136B CD 0D 15 04 0465*       call vdu_clear_buffer
+04136B CD 13 15 04 0465*       call vdu_clear_buffer
 04136F             0466*   
 04136F             0467*   ; open the file in read mode
 04136F             0468*   ; Open a file
@@ -3934,864 +3934,875 @@ PC     Output      Line
 0414D0             0005*   ; inputs: hl = bufferId, bc = length of data, de = pointer to data
 0414D0             0006*   vdu_write_block_to_buffer:
 0414D0             0007*   ; back up input parameters
-0414D0 C5          0008*       push bc ; length of data
-0414D1             0009*   ; set up the vdu command string
-0414D1 22 F1 14 04 0010*       ld (@bufferId),hl
-0414D5 ED 43 F4 14 0011*       ld (@length),bc
+0414D0 D5          0008*       push de ; pointer to data
+0414D1 C5          0009*       push bc ; length of data
+0414D2             0010*   ; set up the vdu command string
+0414D2 22 F2 14 04 0011*       ld (@bufferId),hl
+0414D6 ED 43 F5 14 0012*       ld (@length),bc
        04          
-0414DA AF          0012*       xor a ; load buffer
-0414DB 32 F3 14 04 0013*       ld (@bufferId+2),a
-0414DF 2A EE 14 04 0014*       ld hl,(@cmd0)
-0414E3 01 08 00 00 0015*       ld bc,@end0-@cmd0
-0414E7 5B DF       0016*       rst.lil $18
-0414E9             0017*   ; send the buffer data
-0414E9 C1          0018*       pop bc ; length of data
-0414EA EB          0019*       ex de,hl ; hl = pointer to data
-0414EB 5B DF       0020*       rst.lil $18 ; send it
-0414ED C9          0021*       ret
-0414EE             0022*   ; command string data
-0414EE 17 00 A0    0023*   @cmd0:      db 23,0,0xA0
-0414F1 00 00       0024*   @bufferId:	dw 0x0000
-0414F3 00          0025*               db 0 ; load buffer
-0414F4 00 00       0026*   @length:	dw 0x0000
-0414F6 00          0027*   @end0:      db 0x00 ; padding
-0414F7             0028*   ; end vdu_write_block_to_buffer
-0414F7             0029*   
-0414F7             0030*   ; Command 1: Call a buffer
-0414F7             0031*   ; VDU 23, 0, &A0, bufferId; 1
-0414F7             0032*   ; inputs: hl = bufferId
-0414F7             0033*   vdu_call_buffer:
-0414F7 22 0A 15 04 0034*       ld (@bufferId),hl
-0414FB 21 06 15 04 0035*       ld hl,@cmd
-0414FF 01 06 00 00 0036*       ld bc,@end-@cmd
-041503 5B DF       0037*       rst.lil $18
-041505 C9          0038*       ret
-041506 17 00 A0    0039*   @cmd:     db 23,0,0xA0
-041509 01          0040*              db 1 ; call buffer
-04150A 00 00       0041*   @bufferId: dw 0x0000
-04150C 00          0042*   @end:     db 0x00 ; padding
-04150D             0043*   ; end vdu_call_buffer
-04150D             0044*   
-04150D             0045*   ; Command 2: Clear a buffer
-04150D             0046*   ; VDU 23, 0 &A0, bufferId; 2
-04150D             0047*   ; inputs: hl = bufferId
-04150D             0048*   vdu_clear_buffer:
-04150D 22 20 15 04 0049*       ld (@bufferId),hl
-041511 21 1C 15 04 0050*       ld hl,@cmd
-041515 01 06 00 00 0051*       ld bc,@end-@cmd
-041519 5B DF       0052*       rst.lil $18
-04151B C9          0053*       ret
-04151C 17 00 A0    0054*   @cmd:     db 23,0,0xA0
-04151F 02          0055*              db 2 ; clear buffer
-041520 00 00       0056*   @bufferId: dw 0x0000
-041522 00          0057*   @end:     db 0x00 ; padding
-041523             0058*   ; end vdu_clear_buffer
-041523             0059*   
-041523             0060*   ; Clear all buffers
-041523             0061*   ; inputs: none
-041523             0062*   vdu_clear_all_buffers:
-041523             0063*   ; clear all buffers
-041523 21 2E 15 04 0064*       ld hl,@beg
-041527 01 06 00 00 0065*       ld bc,@end-@beg
-04152B 5B DF       0066*       rst.lil $18
-04152D C9          0067*       ret
-04152E 17 00 A0    0068*   @beg: db 23,0,$A0
-041531 FF FF       0069*         dw -1 ; bufferId -1 (65535) means clear all buffers
-041533 02          0070*         db 2  ; command 2: clear a buffer
-041534             0071*   @end:
-041534             0072*   ; end vdu_clear_all_buffers
-041534             0073*   
-041534             0074*   ; Command 3: Create a writeable buffer
-041534             0075*   ; VDU 23, 0 &A0, bufferId; 3, length;
-041534             0076*   ; inputs: hl = bufferId, bc = length
-041534             0077*   vdu_create_writeable_buffer:
-041534 22 4C 15 04 0078*       ld (@bufferId),hl
-041538 ED 43 4E 15 0079*       ld (@length),bc
+0414DB AF          0013*       xor a ; load buffer
+0414DC 32 F4 14 04 0014*       ld (@bufferId+2),a
+0414E0 21 EF 14 04 0015*       ld hl,@cmd0
+0414E4 01 08 00 00 0016*       ld bc,@end0-@cmd0
+0414E8 5B DF       0017*       rst.lil $18
+0414EA             0018*   ; send the buffer data
+0414EA C1          0019*       pop bc ; length of data
+0414EB E1          0020*       pop hl ; pointer to data (was de)
+0414EC 5B DF       0021*       rst.lil $18 ; send it
+0414EE C9          0022*       ret
+0414EF             0023*   ; command string data
+0414EF 17 00 A0    0024*   @cmd0:      db 23,0,0xA0
+0414F2 00 00       0025*   @bufferId:	dw 0x0000
+0414F4 00          0026*               db 0 ; load buffer
+0414F5 00 00       0027*   @length:	dw 0x0000
+0414F7 00          0028*   @end0:      db 0x00 ; padding
+0414F8             0029*   ; end vdu_write_block_to_buffer
+0414F8             0030*   
+0414F8             0031*   ; Command 1: Call a buffer
+0414F8             0032*   ; VDU 23, 0, &A0, bufferId; 1
+0414F8             0033*   ; inputs: hl = bufferId
+0414F8             0034*   vdu_call_buffer:
+0414F8 22 10 15 04 0035*       ld (@bufferId),hl
+0414FC 3E 01       0036*       ld a,1 ; call buffer
+0414FE 32 12 15 04 0037*       ld (@bufferId+2),a
+041502 21 0D 15 04 0038*       ld hl,@cmd
+041506 01 06 00 00 0039*       ld bc,@end-@cmd
+04150A 5B DF       0040*       rst.lil $18
+04150C C9          0041*       ret
+04150D 17 00 A0    0042*   @cmd:     db 23,0,0xA0
+041510 00 00       0043*   @bufferId: dw 0x0000
+041512 01          0044*              db 1 ; call buffer
+041513             0045*   @end:
+041513             0046*   ; end vdu_call_buffer
+041513             0047*   
+041513             0048*   ; Command 2: Clear a buffer
+041513             0049*   ; VDU 23, 0 &A0, bufferId; 2
+041513             0050*   ; inputs: hl = bufferId
+041513             0051*   vdu_clear_buffer:
+041513 22 2B 15 04 0052*       ld (@bufferId),hl
+041517 3E 02       0053*       ld a,2 ; clear buffer
+041519 32 2D 15 04 0054*       ld (@bufferId+2),a
+04151D 21 28 15 04 0055*       ld hl,@cmd
+041521 01 06 00 00 0056*       ld bc,@end-@cmd
+041525 5B DF       0057*       rst.lil $18
+041527 C9          0058*       ret
+041528 17 00 A0    0059*   @cmd:     db 23,0,0xA0
+04152B 00 00       0060*   @bufferId: dw 0x0000
+04152D 02          0061*              db 2 ; clear buffer
+04152E             0062*   @end:
+04152E             0063*   ; end vdu_clear_buffer
+04152E             0064*   
+04152E             0065*   ; Clear all buffers
+04152E             0066*   ; inputs: none
+04152E             0067*   vdu_clear_all_buffers:
+04152E             0068*   ; clear all buffers
+04152E 21 39 15 04 0069*       ld hl,@beg
+041532 01 06 00 00 0070*       ld bc,@end-@beg
+041536 5B DF       0071*       rst.lil $18
+041538 C9          0072*       ret
+041539 17 00 A0    0073*   @beg: db 23,0,$A0
+04153C FF FF       0074*         dw -1 ; bufferId -1 (65535) means clear all buffers
+04153E 02          0075*         db 2  ; command 2: clear a buffer
+04153F             0076*   @end:
+04153F             0077*   ; end vdu_clear_all_buffers
+04153F             0078*   
+04153F             0079*   ; Command 3: Create a writeable buffer
+04153F             0080*   ; VDU 23, 0 &A0, bufferId; 3, length;
+04153F             0081*   ; inputs: hl = bufferId, bc = length
+04153F             0082*   vdu_create_writeable_buffer:
+04153F 22 5C 15 04 0083*       ld (@bufferId),hl
+041543 ED 43 5F 15 0084*       ld (@length),bc
        04          
-04153D 21 48 15 04 0080*       ld hl,@cmd
-041541 01 08 00 00 0081*       ld bc,@end-@cmd
-041545 5B DF       0082*       rst.lil $18
-041547 C9          0083*       ret
-041548 17 00 A0    0084*   @cmd:     db 23,0,0xA0
-04154B 03          0085*              db 3 ; create writeable buffer
-04154C 00 00       0086*   @bufferId: dw 0x0000
-04154E 00 00       0087*   @length: dw 0x0000
-041550 00          0088*   @end:     db 0x00 ; padding
-041551             0089*   ; end vdu_create_writeable_buffer
-041551             0090*   
-041551             0091*   ; Command 4: Set output stream to a buffer
-041551             0092*   ; VDU 23, 0 &A0, bufferId; 4
-041551             0093*   ; inputs: hl = bufferId
-041551             0094*   vdu_set_output_stream_buffer:
-041551 22 64 15 04 0095*       ld (@bufferId),hl
-041555 21 60 15 04 0096*       ld hl,@cmd
-041559 01 06 00 00 0097*       ld bc,@end-@cmd
-04155D 5B DF       0098*       rst.lil $18
-04155F C9          0099*       ret
-041560 17 00 A0    0100*   @cmd:     db 23,0,0xA0
-041563 04          0101*              db 4 ; set output stream to buffer
-041564 00 00       0102*   @bufferId: dw 0x0000
-041566 00          0103*   @end:     db 0x00 ; padding
-041567             0104*   ; end vdu_set_output_stream_buffer
-041567             0105*   
-041567             0106*   ; Command 5: Adjust buffer contents
-041567             0107*   ; VDU 23, 0, &A0, bufferId; 5, operation, offset; [count;] <operand>, [arguments]
-041567             0108*   vdu_adjust_buffer:
-041567 C9          0109*       ret ; TODO: implement
-041568             0110*   ; end vdu_adjust_buffer
-041568             0111*   
-041568             0112*   ; Command 6: Conditionally call a buffer
-041568             0113*   ; VDU 23, 0, &A0, bufferId; 6, operation, checkBufferId; checkOffset; [arguments]
-041568             0114*   vdu_call_buffer_conditional:
-041568 C9          0115*       ret ; TODO: implement
-041569             0116*   ; end vdu_call_buffer_conditional
-041569             0117*   
-041569             0118*   ; Command 7: Jump to a buffer
-041569             0119*   ; VDU 23, 0, &A0, bufferId; 7
-041569             0120*   ; inputs: hl = bufferId
-041569             0121*   vdu_jump_to_buffer:
-041569 22 7C 15 04 0122*       ld (@bufferId),hl
-04156D 21 78 15 04 0123*       ld hl,@cmd
-041571 01 06 00 00 0124*       ld bc,@end-@cmd
-041575 5B DF       0125*       rst.lil $18
-041577 C9          0126*       ret
-041578 17 00 A0    0127*   @cmd:     db 23,0,0xA0
-04157B 07          0128*              db 7 ; jump to buffer
-04157C 00 00       0129*   @bufferId: dw 0x0000
-04157E 00          0130*   @end:     db 0x00 ; padding
-04157F             0131*   ; end vdu_jump_to_buffer
-04157F             0132*   
-04157F             0133*   ; Command 8: Conditional Jump to a buffer
-04157F             0134*   ; VDU 23, 0, &A0, bufferId; 8, operation, checkBufferId; checkOffset; [arguments]
-04157F             0135*   vdu_jump_to_buffer_conditional:
-04157F C9          0136*       ret ; TODO: implement
-041580             0137*   ; end vdu_jump_to_buffer_conditional
-041580             0138*   
-041580             0139*   ; Command 9: Jump to an offset in a buffer
-041580             0140*   ; VDU 23, 0, &A0, bufferId; 9, offset; offsetHighByte, [blockNumber;]
-041580             0141*   vdu_jump_to_buffer_offset:
-041580 C9          0142*       ret ; TODO: implement
-041581             0143*   ; end vdu_jump_to_buffer_offset
-041581             0144*   
-041581             0145*   ; Command 10: Conditional jump to an offset in a buffer
-041581             0146*   ; VDU 23, 0, &A0, bufferId; 10, offset; offsetHighByte, [blockNumber;] [arguments]
-041581             0147*   vdu_jump_to_buffer_offset_conditional:
-041581 C9          0148*       ret ; TODO: implement
-041582             0149*   ; end vdu_jump_to_buffer_offset_conditional
-041582             0150*   
-041582             0151*   ; Command 11: Call buffer with an offset
-041582             0152*   ; VDU 23, 0, &A0, bufferId; 11, offset; offsetHighByte, [blockNumber;]
-041582             0153*   vdu_call_buffer_offset:
-041582 C9          0154*       ret ; TODO: implement
-041583             0155*   ; end vdu_call_buffer_offset
-041583             0156*   
-041583             0039        include "vdu_fonts.inc"
-041583             0001*   ; select font
-041583             0002*   ; inputs: hl = bufferId, a = font flags
-041583             0003*   ; Flags:
-041583             0004*   ; Bit	Description
-041583             0005*   ; 0	Adjust cursor position to ensure text baseline is aligned
-041583             0006*   ;   0: Do not adjust cursor position (best for changing font on a new line)
-041583             0007*   ;   1: Adjust cursor position (best for changing font in the middle of a line)
-041583             0008*   ; 1-7	Reserved for future use
-041583             0009*   ; VDU 23, 0, &95, 0, bufferId; flags: Select font
-041583             0010*   vdu_font_select:
-041583 22 9A 15 04 0011*       ld (@bufferId),hl
-041587 32 9C 15 04 0012*       ld (@flags),a
-04158B 21 96 15 04 0013*       ld hl,@cmd
-04158F 01 07 00 00 0014*       ld bc,@end-@cmd
-041593 5B DF       0015*       rst.lil $18
-041595 C9          0016*       ret
-041596 17 00 95 00 0017*   @cmd: db 23, 0, 0x95, 0
-04159A 00 00       0018*   @bufferId: dw 0x0000
-04159C 00          0019*   @flags: db 0x00
-04159D             0020*   @end:
-04159D             0021*   
-04159D             0022*   ; create font from buffer
-04159D             0023*   ; inputs: hl = bufferId, e = width, d = height, d = ascent, a = flags
-04159D             0024*   ; VDU 23, 0, &95, 1, bufferId; width, height, ascent, flags: Create font from buffer
-04159D             0025*   vdu_font_create:
-04159D 22 C2 15 04 0026*       ld (@bufferId),hl
-0415A1 ED 53 C4 15 0027*       ld (@width),de ; also loads height
+041548 3E 03       0085*       ld a,3 ; create writeable buffer
+04154A 32 5E 15 04 0086*       ld (@bufferId+2),a
+04154E 21 59 15 04 0087*       ld hl,@cmd
+041552 01 08 00 00 0088*       ld bc,@end-@cmd
+041556 5B DF       0089*       rst.lil $18
+041558 C9          0090*       ret
+041559 17 00 A0    0091*   @cmd:     db 23,0,0xA0
+04155C 00 00       0092*   @bufferId: dw 0x0000
+04155E 03          0093*              db 3 ; create writeable buffer
+04155F 00 00       0094*   @length: dw 0x0000
+041561 00          0095*   @end:     db 0x00 ; padding
+041562             0096*   ; end vdu_create_writeable_buffer
+041562             0097*   
+041562             0098*   ; Command 4: Set output stream to a buffer
+041562             0099*   ; VDU 23, 0 &A0, bufferId; 4
+041562             0100*   ; inputs: hl = bufferId
+041562             0101*   vdu_set_output_stream_buffer:
+041562 22 7A 15 04 0102*       ld (@bufferId),hl
+041566 3E 04       0103*       ld a,4 ; set output stream to buffer
+041568 32 7C 15 04 0104*       ld (@bufferId+2),a
+04156C 21 77 15 04 0105*       ld hl,@cmd
+041570 01 06 00 00 0106*       ld bc,@end-@cmd
+041574 5B DF       0107*       rst.lil $18
+041576 C9          0108*       ret
+041577 17 00 A0    0109*   @cmd:     db 23,0,0xA0
+04157A 00 00       0110*   @bufferId: dw 0x0000
+04157C 04          0111*              db 4 ; set output stream to buffer
+04157D 00          0112*   @end:     db 0x00 ; padding
+04157E             0113*   ; end vdu_set_output_stream_buffer
+04157E             0114*   
+04157E             0115*   ; Command 5: Adjust buffer contents
+04157E             0116*   ; VDU 23, 0, &A0, bufferId; 5, operation, offset; [count;] <operand>, [arguments]
+04157E             0117*   vdu_adjust_buffer:
+04157E C9          0118*       ret ; TODO: implement
+04157F             0119*   ; end vdu_adjust_buffer
+04157F             0120*   
+04157F             0121*   ; Command 6: Conditionally call a buffer
+04157F             0122*   ; VDU 23, 0, &A0, bufferId; 6, operation, checkBufferId; checkOffset; [arguments]
+04157F             0123*   vdu_call_buffer_conditional:
+04157F C9          0124*       ret ; TODO: implement
+041580             0125*   ; end vdu_call_buffer_conditional
+041580             0126*   
+041580             0127*   ; Command 7: Jump to a buffer
+041580             0128*   ; VDU 23, 0, &A0, bufferId; 7
+041580             0129*   ; inputs: hl = bufferId
+041580             0130*   vdu_jump_to_buffer:
+041580 22 98 15 04 0131*       ld (@bufferId),hl
+041584 3E 07       0132*       ld a,7 ; jump to buffer
+041586 32 9A 15 04 0133*       ld (@bufferId+2),a
+04158A 21 95 15 04 0134*       ld hl,@cmd
+04158E 01 06 00 00 0135*       ld bc,@end-@cmd
+041592 5B DF       0136*       rst.lil $18
+041594 C9          0137*       ret
+041595 17 00 A0    0138*   @cmd:     db 23,0,0xA0
+041598 00 00       0139*   @bufferId: dw 0x0000
+04159A 07          0140*              db 7 ; jump to buffer
+04159B 00          0141*   @end:     db 0x00 ; padding
+04159C             0142*   ; end vdu_jump_to_buffer
+04159C             0143*   
+04159C             0144*   ; Command 8: Conditional Jump to a buffer
+04159C             0145*   ; VDU 23, 0, &A0, bufferId; 8, operation, checkBufferId; checkOffset; [arguments]
+04159C             0146*   vdu_jump_to_buffer_conditional:
+04159C C9          0147*       ret ; TODO: implement
+04159D             0148*   ; end vdu_jump_to_buffer_conditional
+04159D             0149*   
+04159D             0150*   ; Command 9: Jump to an offset in a buffer
+04159D             0151*   ; VDU 23, 0, &A0, bufferId; 9, offset; offsetHighByte, [blockNumber;]
+04159D             0152*   vdu_jump_to_buffer_offset:
+04159D C9          0153*       ret ; TODO: implement
+04159E             0154*   ; end vdu_jump_to_buffer_offset
+04159E             0155*   
+04159E             0156*   ; Command 10: Conditional jump to an offset in a buffer
+04159E             0157*   ; VDU 23, 0, &A0, bufferId; 10, offset; offsetHighByte, [blockNumber;] [arguments]
+04159E             0158*   vdu_jump_to_buffer_offset_conditional:
+04159E C9          0159*       ret ; TODO: implement
+04159F             0160*   ; end vdu_jump_to_buffer_offset_conditional
+04159F             0161*   
+04159F             0162*   ; Command 11: Call buffer with an offset
+04159F             0163*   ; VDU 23, 0, &A0, bufferId; 11, offset; offsetHighByte, [blockNumber;]
+04159F             0164*   vdu_call_buffer_offset:
+04159F C9          0165*       ret ; TODO: implement
+0415A0             0166*   ; end vdu_call_buffer_offset
+0415A0             0167*   
+0415A0             0039        include "vdu_fonts.inc"
+0415A0             0001*   ; select font
+0415A0             0002*   ; inputs: hl = bufferId, a = font flags
+0415A0             0003*   ; Flags:
+0415A0             0004*   ; Bit	Description
+0415A0             0005*   ; 0	Adjust cursor position to ensure text baseline is aligned
+0415A0             0006*   ;   0: Do not adjust cursor position (best for changing font on a new line)
+0415A0             0007*   ;   1: Adjust cursor position (best for changing font in the middle of a line)
+0415A0             0008*   ; 1-7	Reserved for future use
+0415A0             0009*   ; VDU 23, 0, &95, 0, bufferId; flags: Select font
+0415A0             0010*   vdu_font_select:
+0415A0 22 B7 15 04 0011*       ld (@bufferId),hl
+0415A4 32 B9 15 04 0012*       ld (@flags),a
+0415A8 21 B3 15 04 0013*       ld hl,@cmd
+0415AC 01 07 00 00 0014*       ld bc,@end-@cmd
+0415B0 5B DF       0015*       rst.lil $18
+0415B2 C9          0016*       ret
+0415B3 17 00 95 00 0017*   @cmd: db 23, 0, 0x95, 0
+0415B7 00 00       0018*   @bufferId: dw 0x0000
+0415B9 00          0019*   @flags: db 0x00
+0415BA             0020*   @end:
+0415BA             0021*   
+0415BA             0022*   ; create font from buffer
+0415BA             0023*   ; inputs: hl = bufferId, e = width, d = height, d = ascent, a = flags
+0415BA             0024*   ; VDU 23, 0, &95, 1, bufferId; width, height, ascent, flags: Create font from buffer
+0415BA             0025*   vdu_font_create:
+0415BA 22 DF 15 04 0026*       ld (@bufferId),hl
+0415BE ED 53 E1 15 0027*       ld (@width),de ; also loads height
        04          
-0415A6 32 C7 15 04 0028*       ld (@flags),a
-0415AA 7A          0029*       ld a,d ; height
-0415AB 32 C6 15 04 0030*       ld (@ascent),a ; ascent = height
-0415AF             0031*   ; consolidate buffer
-0415AF CD 2A 13 04 0032*       call vdu_consolidate_buffer
-0415B3             0033*   ; create font
-0415B3 21 BE 15 04 0034*       ld hl,@cmd
-0415B7 01 0A 00 00 0035*       ld bc,@end-@cmd
-0415BB 5B DF       0036*       rst.lil $18
-0415BD C9          0037*       ret
-0415BE 17 00 95 01 0038*   @cmd: db 23, 0, 0x95, 1
-0415C2 00 00       0039*   @bufferId: dw 0x0000
-0415C4 00          0040*   @width: db 0x00
-0415C5 00          0041*   @height: db 0x00
-0415C6 00          0042*   @ascent: db 0x00
-0415C7 00          0043*   @flags: db 0x00
-0415C8             0044*   @end:
-0415C8             0045*   
-0415C8             0046*   ; set or adjust font property
-0415C8             0047*   ; inputs: hl = bufferId, a = field, de = value
-0415C8             0048*   ; VDU 23, 0, &95, 2, bufferId; field, value;: Set or adjust font property
-0415C8             0049*   vdu_font_property:
-0415C8 22 E4 15 04 0050*       ld (@bufferId),hl
-0415CC 32 E6 15 04 0051*       ld (@field),a
-0415D0 ED 53 E7 15 0052*       ld (@value),de
+0415C3 32 E4 15 04 0028*       ld (@flags),a
+0415C7 7A          0029*       ld a,d ; height
+0415C8 32 E3 15 04 0030*       ld (@ascent),a ; ascent = height
+0415CC             0031*   ; consolidate buffer
+0415CC CD 2A 13 04 0032*       call vdu_consolidate_buffer
+0415D0             0033*   ; create font
+0415D0 21 DB 15 04 0034*       ld hl,@cmd
+0415D4 01 0A 00 00 0035*       ld bc,@end-@cmd
+0415D8 5B DF       0036*       rst.lil $18
+0415DA C9          0037*       ret
+0415DB 17 00 95 01 0038*   @cmd: db 23, 0, 0x95, 1
+0415DF 00 00       0039*   @bufferId: dw 0x0000
+0415E1 00          0040*   @width: db 0x00
+0415E2 00          0041*   @height: db 0x00
+0415E3 00          0042*   @ascent: db 0x00
+0415E4 00          0043*   @flags: db 0x00
+0415E5             0044*   @end:
+0415E5             0045*   
+0415E5             0046*   ; set or adjust font property
+0415E5             0047*   ; inputs: hl = bufferId, a = field, de = value
+0415E5             0048*   ; VDU 23, 0, &95, 2, bufferId; field, value;: Set or adjust font property
+0415E5             0049*   vdu_font_property:
+0415E5 22 01 16 04 0050*       ld (@bufferId),hl
+0415E9 32 03 16 04 0051*       ld (@field),a
+0415ED ED 53 04 16 0052*       ld (@value),de
        04          
-0415D5 21 E0 15 04 0053*       ld hl,@cmd
-0415D9 01 09 00 00 0054*       ld bc,@end-@cmd
-0415DD 5B DF       0055*       rst.lil $18
-0415DF C9          0056*       ret
-0415E0 17 00 95 02 0057*   @cmd: db 23, 0, 0x95, 2
-0415E4 00 00       0058*   @bufferId: dw 0x0000
-0415E6 00          0059*   @field: db 0x00
-0415E7 00 00       0060*   @value: dw 0x0000
-0415E9 00          0061*   @end: db 0x00 ; padding
-0415EA             0062*   
-0415EA             0063*   ; VDU 23, 0, &95, 3, bufferId; [<args>]: Reserved
-0415EA             0064*   
-0415EA             0065*   ; Clear/Delete font
-0415EA             0066*   ; inputs: hl = bufferId
-0415EA             0067*   ; VDU 23, 0, &95, 4, bufferId;: Clear/Delete font
-0415EA             0068*   vdu_font_clear:
-0415EA 22 FD 15 04 0069*       ld (@bufferId),hl
-0415EE 21 F9 15 04 0070*       ld hl,@cmd
-0415F2 01 06 00 00 0071*       ld bc,@end-@cmd
-0415F6 5B DF       0072*       rst.lil $18
-0415F8 C9          0073*       ret
-0415F9 17 00 95 04 0074*   @cmd: db 23, 0, 0x95, 4
-0415FD 00 00       0075*   @bufferId: dw 0x0000
-0415FF 00          0076*   @end: db 0x00 ; padding
-041600             0077*   
-041600             0078*   ; Copy system font to buffer
-041600             0079*   ; inputs: hl = bufferId
-041600             0080*   ; VDU 23, 0, &95, 5, bufferId;: Copy system font to buffer
-041600             0081*   vdu_font_copy_system:
-041600 22 13 16 04 0082*       ld (@bufferId),hl
-041604 21 0F 16 04 0083*       ld hl,@cmd
-041608 01 06 00 00 0084*       ld bc,@end-@cmd
-04160C 5B DF       0085*       rst.lil $18
-04160E C9          0086*       ret
-04160F 17 00 95 05 0087*   @cmd: db 23, 0, 0x95, 5
-041613 00 00       0088*   @bufferId: dw 0x0000
-041615 00          0089*   @end: db 0x00 ; padding
-041616             0040        include "vdu_plot.inc"
-041616             0001*   ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
-041616             0002*   ; PLOT code 	(Decimal) 	Effect
-041616             0003*   ; &00-&07 	0-7 	Solid line, includes both ends
-041616             0004*   plot_sl_both: equ 0x00
-041616             0005*   
-041616             0006*   ; &08-&0F 	8-15 	Solid line, final point omitted
-041616             0007*   plot_sl_first: equ 0x08
-041616             0008*   
-041616             0009*   ; &10-&17 	16-23 	Not supported (Dot-dash line, includes both ends, pattern restarted)
-041616             0010*   ; &18-&1F 	24-31 	Not supported (Dot-dash line, first point omitted, pattern restarted)
-041616             0011*   
-041616             0012*   ; &20-&27 	32-39 	Solid line, first point omitted
-041616             0013*   plot_sl_last: equ 0x20
-041616             0014*   
-041616             0015*   ; &28-&2F 	40-47 	Solid line, both points omitted
-041616             0016*   plot_sl_none: equ 0x28
-041616             0017*   
-041616             0018*   ; &30-&37 	48-55 	Not supported (Dot-dash line, first point omitted, pattern continued)
-041616             0019*   ; &38-&3F 	56-63 	Not supported (Dot-dash line, both points omitted, pattern continued)
-041616             0020*   
-041616             0021*   ; &40-&47 	64-71 	Point plot
-041616             0022*   plot_pt: equ 0x40
-041616             0023*   
-041616             0024*   ; &48-&4F 	72-79 	Line fill left and right to non-background §§
-041616             0025*   plot_lf_lr_non_bg: equ 0x48
-041616             0026*   
-041616             0027*   ; &50-&57 	80-87 	Triangle fill
-041616             0028*   plot_tf: equ 0x50
-041616             0029*   
-041616             0030*   ; &58-&5F 	88-95 	Line fill right to background §§
-041616             0031*   plot_lf_r_bg: equ 0x58
-041616             0032*   
-041616             0033*   ; &60-&67 	96-103 	Rectangle fill
-041616             0034*   plot_rf: equ 0x60
-041616             0035*   
-041616             0036*   ; &68-&6F 	104-111 	Line fill left and right to foreground §§
-041616             0037*   plot_lf_lr_fg: equ 0x60
-041616             0038*   
-041616             0039*   ; &70-&77 	112-119 	Parallelogram fill
-041616             0040*   plot_pf: equ 0x70
-041616             0041*   
-041616             0042*   ; &78-&7F 	120-127 	Line fill right to non-foreground §§
-041616             0043*   plot_lf_r_non_fg: equ 0x78
-041616             0044*   
-041616             0045*   ; &80-&87 	128-135 	Not supported (Flood until non-background)
-041616             0046*   ; &88-&8F 	136-143 	Not supported (Flood until foreground)
-041616             0047*   
-041616             0048*   ; &90-&97 	144-151 	Circle outline
-041616             0049*   plot_co: equ 0x90
-041616             0050*   
-041616             0051*   ; &98-&9F 	152-159 	Circle fill
-041616             0052*   plot_cf: equ 0x98
-041616             0053*   
-041616             0054*   ; &A0-&A7 	160-167 	Not supported (Circular arc)
-041616             0055*   ; &A8-&AF 	168-175 	Not supported (Circular segment)
-041616             0056*   ; &B0-&B7 	176-183 	Not supported (Circular sector)
-041616             0057*   
-041616             0058*   ; &B8-&BF 	184-191 	Rectangle copy/move
-041616             0059*   plot_rcm: equ 0xB8
-041616             0060*   
-041616             0061*   ; &C0-&C7 	192-199 	Not supported (Ellipse outline)
-041616             0062*   ; &C8-&CF 	200-207 	Not supported (Ellipse fill)
-041616             0063*   ; &D0-&D7 	208-215 	Not defined
-041616             0064*   ; &D8-&DF 	216-223 	Not defined
-041616             0065*   ; &E0-&E7 	224-231 	Not defined
-041616             0066*   
-041616             0067*   ; &E8-&EF 	232-239 	Bitmap plot §
-041616             0068*   plot_bmp: equ 0xE8
-041616             0069*   
-041616             0070*   ; &F0-&F7 	240-247 	Not defined
-041616             0071*   ; &F8-&FF 	248-255 	Not defined
-041616             0072*   
-041616             0073*   ; § Support added in Agon Console8 VDP 2.1.0 §§ Support added in
-041616             0074*   ; Agon Console8 VDP 2.2.0
-041616             0075*   
-041616             0076*   ; Within each group of eight plot codes, the effects are as follows:
-041616             0077*   ; Plot code 	Effect
-041616             0078*   ; 0 	Move relative
-041616             0079*   mv_rel: equ 0
-041616             0080*   
-041616             0081*   ; 1 	Plot relative in current foreground colour
-041616             0082*   dr_rel_fg: equ 1
-041616             0083*   
-041616             0084*   ; 2 	Not supported (Plot relative in logical inverse colour)
-041616             0085*   ; 3 	Plot relative in current background colour
-041616             0086*   dr_rel_bg: equ 3
-041616             0087*   
-041616             0088*   ; 4 	Move absolute
-041616             0089*   mv_abs: equ 4
-041616             0090*   
-041616             0091*   ; 5 	Plot absolute in current foreground colour
-041616             0092*   dr_abs_fg: equ 5
-041616             0093*   
-041616             0094*   ; 6 	Not supported (Plot absolute in logical inverse colour)
-041616             0095*   ; 7 	Plot absolute in current background colour
-041616             0096*   dr_abs_bg: equ 7
-041616             0097*   
-041616             0098*   ; Codes 0-3 use the position data provided as part of the command
-041616             0099*   ; as a relative position, adding the position given to the current
-041616             0100*   ; graphical cursor position. Codes 4-7 use the position data provided
-041616             0101*   ; as part of the command as an absolute position, setting the current
-041616             0102*   ; graphical cursor position to the position given.
-041616             0103*   
-041616             0104*   ; Codes 2 and 6 on Acorn systems plot using a logical inverse of the
-041616             0105*   ; current pixel colour. These operations cannot currently be supported
-041616             0106*   ; by the graphics system the Agon VDP uses, so these codes are not
-041616             0107*   ; supported. Support for these codes may be added in a future version
-041616             0108*   ; of the VDP firmware.
-041616             0109*   
-041616             0110*   ; 16 colour palette constants
-041616             0111*   c_black: equ 0
-041616             0112*   c_red_dk: equ 1
-041616             0113*   c_green_dk: equ 2
-041616             0114*   c_yellow_dk: equ 3
-041616             0115*   c_blue_dk: equ 4
-041616             0116*   c_magenta_dk: equ 5
-041616             0117*   c_cyan_dk: equ 6
-041616             0118*   c_grey: equ 7
-041616             0119*   c_grey_dk: equ 8
-041616             0120*   c_red: equ 9
-041616             0121*   c_green: equ 10
-041616             0122*   c_yellow: equ 11
-041616             0123*   c_blue: equ 12
-041616             0124*   c_magenta: equ 13
-041616             0125*   c_cyan: equ 14
-041616             0126*   c_white: equ 15
-041616             0127*   
-041616             0128*   ; VDU 25, mode, x; y;: PLOT command
-041616             0129*   ; inputs: a=mode, bc=x0, de=y0
-041616             0130*   vdu_plot:
-041616 32 30 16 04 0131*       ld (@mode),a
-04161A ED 43 31 16 0132*       ld (@x0),bc
+0415F2 21 FD 15 04 0053*       ld hl,@cmd
+0415F6 01 09 00 00 0054*       ld bc,@end-@cmd
+0415FA 5B DF       0055*       rst.lil $18
+0415FC C9          0056*       ret
+0415FD 17 00 95 02 0057*   @cmd: db 23, 0, 0x95, 2
+041601 00 00       0058*   @bufferId: dw 0x0000
+041603 00          0059*   @field: db 0x00
+041604 00 00       0060*   @value: dw 0x0000
+041606 00          0061*   @end: db 0x00 ; padding
+041607             0062*   
+041607             0063*   ; VDU 23, 0, &95, 3, bufferId; [<args>]: Reserved
+041607             0064*   
+041607             0065*   ; Clear/Delete font
+041607             0066*   ; inputs: hl = bufferId
+041607             0067*   ; VDU 23, 0, &95, 4, bufferId;: Clear/Delete font
+041607             0068*   vdu_font_clear:
+041607 22 1A 16 04 0069*       ld (@bufferId),hl
+04160B 21 16 16 04 0070*       ld hl,@cmd
+04160F 01 06 00 00 0071*       ld bc,@end-@cmd
+041613 5B DF       0072*       rst.lil $18
+041615 C9          0073*       ret
+041616 17 00 95 04 0074*   @cmd: db 23, 0, 0x95, 4
+04161A 00 00       0075*   @bufferId: dw 0x0000
+04161C 00          0076*   @end: db 0x00 ; padding
+04161D             0077*   
+04161D             0078*   ; Copy system font to buffer
+04161D             0079*   ; inputs: hl = bufferId
+04161D             0080*   ; VDU 23, 0, &95, 5, bufferId;: Copy system font to buffer
+04161D             0081*   vdu_font_copy_system:
+04161D 22 30 16 04 0082*       ld (@bufferId),hl
+041621 21 2C 16 04 0083*       ld hl,@cmd
+041625 01 06 00 00 0084*       ld bc,@end-@cmd
+041629 5B DF       0085*       rst.lil $18
+04162B C9          0086*       ret
+04162C 17 00 95 05 0087*   @cmd: db 23, 0, 0x95, 5
+041630 00 00       0088*   @bufferId: dw 0x0000
+041632 00          0089*   @end: db 0x00 ; padding
+041633             0040        include "vdu_plot.inc"
+041633             0001*   ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
+041633             0002*   ; PLOT code 	(Decimal) 	Effect
+041633             0003*   ; &00-&07 	0-7 	Solid line, includes both ends
+041633             0004*   plot_sl_both: equ 0x00
+041633             0005*   
+041633             0006*   ; &08-&0F 	8-15 	Solid line, final point omitted
+041633             0007*   plot_sl_first: equ 0x08
+041633             0008*   
+041633             0009*   ; &10-&17 	16-23 	Not supported (Dot-dash line, includes both ends, pattern restarted)
+041633             0010*   ; &18-&1F 	24-31 	Not supported (Dot-dash line, first point omitted, pattern restarted)
+041633             0011*   
+041633             0012*   ; &20-&27 	32-39 	Solid line, first point omitted
+041633             0013*   plot_sl_last: equ 0x20
+041633             0014*   
+041633             0015*   ; &28-&2F 	40-47 	Solid line, both points omitted
+041633             0016*   plot_sl_none: equ 0x28
+041633             0017*   
+041633             0018*   ; &30-&37 	48-55 	Not supported (Dot-dash line, first point omitted, pattern continued)
+041633             0019*   ; &38-&3F 	56-63 	Not supported (Dot-dash line, both points omitted, pattern continued)
+041633             0020*   
+041633             0021*   ; &40-&47 	64-71 	Point plot
+041633             0022*   plot_pt: equ 0x40
+041633             0023*   
+041633             0024*   ; &48-&4F 	72-79 	Line fill left and right to non-background §§
+041633             0025*   plot_lf_lr_non_bg: equ 0x48
+041633             0026*   
+041633             0027*   ; &50-&57 	80-87 	Triangle fill
+041633             0028*   plot_tf: equ 0x50
+041633             0029*   
+041633             0030*   ; &58-&5F 	88-95 	Line fill right to background §§
+041633             0031*   plot_lf_r_bg: equ 0x58
+041633             0032*   
+041633             0033*   ; &60-&67 	96-103 	Rectangle fill
+041633             0034*   plot_rf: equ 0x60
+041633             0035*   
+041633             0036*   ; &68-&6F 	104-111 	Line fill left and right to foreground §§
+041633             0037*   plot_lf_lr_fg: equ 0x60
+041633             0038*   
+041633             0039*   ; &70-&77 	112-119 	Parallelogram fill
+041633             0040*   plot_pf: equ 0x70
+041633             0041*   
+041633             0042*   ; &78-&7F 	120-127 	Line fill right to non-foreground §§
+041633             0043*   plot_lf_r_non_fg: equ 0x78
+041633             0044*   
+041633             0045*   ; &80-&87 	128-135 	Not supported (Flood until non-background)
+041633             0046*   ; &88-&8F 	136-143 	Not supported (Flood until foreground)
+041633             0047*   
+041633             0048*   ; &90-&97 	144-151 	Circle outline
+041633             0049*   plot_co: equ 0x90
+041633             0050*   
+041633             0051*   ; &98-&9F 	152-159 	Circle fill
+041633             0052*   plot_cf: equ 0x98
+041633             0053*   
+041633             0054*   ; &A0-&A7 	160-167 	Not supported (Circular arc)
+041633             0055*   ; &A8-&AF 	168-175 	Not supported (Circular segment)
+041633             0056*   ; &B0-&B7 	176-183 	Not supported (Circular sector)
+041633             0057*   
+041633             0058*   ; &B8-&BF 	184-191 	Rectangle copy/move
+041633             0059*   plot_rcm: equ 0xB8
+041633             0060*   
+041633             0061*   ; &C0-&C7 	192-199 	Not supported (Ellipse outline)
+041633             0062*   ; &C8-&CF 	200-207 	Not supported (Ellipse fill)
+041633             0063*   ; &D0-&D7 	208-215 	Not defined
+041633             0064*   ; &D8-&DF 	216-223 	Not defined
+041633             0065*   ; &E0-&E7 	224-231 	Not defined
+041633             0066*   
+041633             0067*   ; &E8-&EF 	232-239 	Bitmap plot §
+041633             0068*   plot_bmp: equ 0xE8
+041633             0069*   
+041633             0070*   ; &F0-&F7 	240-247 	Not defined
+041633             0071*   ; &F8-&FF 	248-255 	Not defined
+041633             0072*   
+041633             0073*   ; § Support added in Agon Console8 VDP 2.1.0 §§ Support added in
+041633             0074*   ; Agon Console8 VDP 2.2.0
+041633             0075*   
+041633             0076*   ; Within each group of eight plot codes, the effects are as follows:
+041633             0077*   ; Plot code 	Effect
+041633             0078*   ; 0 	Move relative
+041633             0079*   mv_rel: equ 0
+041633             0080*   
+041633             0081*   ; 1 	Plot relative in current foreground colour
+041633             0082*   dr_rel_fg: equ 1
+041633             0083*   
+041633             0084*   ; 2 	Not supported (Plot relative in logical inverse colour)
+041633             0085*   ; 3 	Plot relative in current background colour
+041633             0086*   dr_rel_bg: equ 3
+041633             0087*   
+041633             0088*   ; 4 	Move absolute
+041633             0089*   mv_abs: equ 4
+041633             0090*   
+041633             0091*   ; 5 	Plot absolute in current foreground colour
+041633             0092*   dr_abs_fg: equ 5
+041633             0093*   
+041633             0094*   ; 6 	Not supported (Plot absolute in logical inverse colour)
+041633             0095*   ; 7 	Plot absolute in current background colour
+041633             0096*   dr_abs_bg: equ 7
+041633             0097*   
+041633             0098*   ; Codes 0-3 use the position data provided as part of the command
+041633             0099*   ; as a relative position, adding the position given to the current
+041633             0100*   ; graphical cursor position. Codes 4-7 use the position data provided
+041633             0101*   ; as part of the command as an absolute position, setting the current
+041633             0102*   ; graphical cursor position to the position given.
+041633             0103*   
+041633             0104*   ; Codes 2 and 6 on Acorn systems plot using a logical inverse of the
+041633             0105*   ; current pixel colour. These operations cannot currently be supported
+041633             0106*   ; by the graphics system the Agon VDP uses, so these codes are not
+041633             0107*   ; supported. Support for these codes may be added in a future version
+041633             0108*   ; of the VDP firmware.
+041633             0109*   
+041633             0110*   ; 16 colour palette constants
+041633             0111*   c_black: equ 0
+041633             0112*   c_red_dk: equ 1
+041633             0113*   c_green_dk: equ 2
+041633             0114*   c_yellow_dk: equ 3
+041633             0115*   c_blue_dk: equ 4
+041633             0116*   c_magenta_dk: equ 5
+041633             0117*   c_cyan_dk: equ 6
+041633             0118*   c_grey: equ 7
+041633             0119*   c_grey_dk: equ 8
+041633             0120*   c_red: equ 9
+041633             0121*   c_green: equ 10
+041633             0122*   c_yellow: equ 11
+041633             0123*   c_blue: equ 12
+041633             0124*   c_magenta: equ 13
+041633             0125*   c_cyan: equ 14
+041633             0126*   c_white: equ 15
+041633             0127*   
+041633             0128*   ; VDU 25, mode, x; y;: PLOT command
+041633             0129*   ; inputs: a=mode, bc=x0, de=y0
+041633             0130*   vdu_plot:
+041633 32 4D 16 04 0131*       ld (@mode),a
+041637 ED 43 4E 16 0132*       ld (@x0),bc
        04          
-04161F ED 53 33 16 0133*       ld (@y0),de
+04163C ED 53 50 16 0133*       ld (@y0),de
        04          
-041624 21 2F 16 04 0134*   	ld hl,@cmd
-041628 01 06 00 00 0135*   	ld bc,@end-@cmd
-04162C 5B DF       0136*   	rst.lil $18
-04162E C9          0137*   	ret
-04162F 19          0138*   @cmd:   db 25
-041630 00          0139*   @mode:  db 0
-041631 00 00       0140*   @x0: 	dw 0
-041633 00 00       0141*   @y0: 	dw 0
-041635 00          0142*   @end:   db 0 ; extra byte to soak up deu
-041636             0143*   
-041636             0144*   ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
-041636             0145*   ; &E8-&EF 	232-239 	Bitmap plot §
-041636             0146*   ; VDU 25, mode, x; y;: PLOT command
-041636             0147*   ; inputs: bc=x0, de=y0
-041636             0148*   ; prerequisites: vdu_buff_select
-041636             0149*   vdu_plot_bmp:
-041636 ED 43 4D 16 0150*       ld (@x0),bc
+041641 21 4C 16 04 0134*   	ld hl,@cmd
+041645 01 06 00 00 0135*   	ld bc,@end-@cmd
+041649 5B DF       0136*   	rst.lil $18
+04164B C9          0137*   	ret
+04164C 19          0138*   @cmd:   db 25
+04164D 00          0139*   @mode:  db 0
+04164E 00 00       0140*   @x0: 	dw 0
+041650 00 00       0141*   @y0: 	dw 0
+041652 00          0142*   @end:   db 0 ; extra byte to soak up deu
+041653             0143*   
+041653             0144*   ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
+041653             0145*   ; &E8-&EF 	232-239 	Bitmap plot §
+041653             0146*   ; VDU 25, mode, x; y;: PLOT command
+041653             0147*   ; inputs: bc=x0, de=y0
+041653             0148*   ; prerequisites: vdu_buff_select
+041653             0149*   vdu_plot_bmp:
+041653 ED 43 6A 16 0150*       ld (@x0),bc
        04          
-04163B ED 53 4F 16 0151*       ld (@y0),de
+041658 ED 53 6C 16 0151*       ld (@y0),de
        04          
-041640 21 4B 16 04 0152*   	ld hl,@cmd
-041644 01 06 00 00 0153*   	ld bc,@end-@cmd
-041648 5B DF       0154*   	rst.lil $18
-04164A C9          0155*   	ret
-04164B 19          0156*   @cmd:   db 25
-04164C ED          0157*   @mode:  db plot_bmp+dr_abs_fg ; 0xED
-04164D 00 00       0158*   @x0: 	dw 0x0000
-04164F 00 00       0159*   @y0: 	dw 0x0000
-041651 00          0160*   @end:   db 0x00 ; padding
-041652             0161*   
-041652             0162*   ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
-041652             0163*   ; &E8-&EF 	232-239 	Bitmap plot §
-041652             0164*   ; VDU 25, mode, x; y;: PLOT command
-041652             0165*   ; inputs: bc=x0, de=y0
-041652             0166*   ; USING 16.8 FIXED POINT COORDINATES
-041652             0167*   ; inputs: ub.c is x coordinate, ud.e is y coordinate
-041652             0168*   ;   the fractional portiion of the inputs are truncated
-041652             0169*   ;   leaving only the 16-bit integer portion
-041652             0170*   ; prerequisites: vdu_buff_select
-041652             0171*   vdu_plot_bmp168:
-041652             0172*   ; populate in the reverse of normal to keep the
-041652             0173*   ; inputs from stomping on each other
-041652 ED 53 70 16 0174*       ld (@y0-1),de
+04165D 21 68 16 04 0152*   	ld hl,@cmd
+041661 01 06 00 00 0153*   	ld bc,@end-@cmd
+041665 5B DF       0154*   	rst.lil $18
+041667 C9          0155*   	ret
+041668 19          0156*   @cmd:   db 25
+041669 ED          0157*   @mode:  db plot_bmp+dr_abs_fg ; 0xED
+04166A 00 00       0158*   @x0: 	dw 0x0000
+04166C 00 00       0159*   @y0: 	dw 0x0000
+04166E 00          0160*   @end:   db 0x00 ; padding
+04166F             0161*   
+04166F             0162*   ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
+04166F             0163*   ; &E8-&EF 	232-239 	Bitmap plot §
+04166F             0164*   ; VDU 25, mode, x; y;: PLOT command
+04166F             0165*   ; inputs: bc=x0, de=y0
+04166F             0166*   ; USING 16.8 FIXED POINT COORDINATES
+04166F             0167*   ; inputs: ub.c is x coordinate, ud.e is y coordinate
+04166F             0168*   ;   the fractional portiion of the inputs are truncated
+04166F             0169*   ;   leaving only the 16-bit integer portion
+04166F             0170*   ; prerequisites: vdu_buff_select
+04166F             0171*   vdu_plot_bmp168:
+04166F             0172*   ; populate in the reverse of normal to keep the
+04166F             0173*   ; inputs from stomping on each other
+04166F ED 53 8D 16 0174*       ld (@y0-1),de
        04          
-041657 ED 43 6E 16 0175*       ld (@x0-1),bc
+041674 ED 43 8B 16 0175*       ld (@x0-1),bc
        04          
-04165C 3E ED       0176*       ld a,plot_bmp+dr_abs_fg ; 0xED
-04165E 32 6E 16 04 0177*       ld (@mode),a ; restore the mode byte that got stomped on by bcu
-041662 21 6D 16 04 0178*   	ld hl,@cmd
-041666 01 06 00 00 0179*   	ld bc,@end-@cmd
-04166A 5B DF       0180*   	rst.lil $18
-04166C C9          0181*   	ret
-04166D 19          0182*   @cmd:   db 25
-04166E ED          0183*   @mode:  db plot_bmp+dr_abs_fg ; 0xED
-04166F 00 00       0184*   @x0: 	dw 0x0000
-041671 00 00       0185*   @y0: 	dw 0x0000
-041673             0186*   @end:  ; no padding required b/c we shifted de right
-041673             0187*   
-041673             0188*   ; draw a filled rectangle
-041673             0189*   vdu_plot_rf:
-041673 ED 43 9A 16 0190*       ld (@x0),bc
+041679 3E ED       0176*       ld a,plot_bmp+dr_abs_fg ; 0xED
+04167B 32 8B 16 04 0177*       ld (@mode),a ; restore the mode byte that got stomped on by bcu
+04167F 21 8A 16 04 0178*   	ld hl,@cmd
+041683 01 06 00 00 0179*   	ld bc,@end-@cmd
+041687 5B DF       0180*   	rst.lil $18
+041689 C9          0181*   	ret
+04168A 19          0182*   @cmd:   db 25
+04168B ED          0183*   @mode:  db plot_bmp+dr_abs_fg ; 0xED
+04168C 00 00       0184*   @x0: 	dw 0x0000
+04168E 00 00       0185*   @y0: 	dw 0x0000
+041690             0186*   @end:  ; no padding required b/c we shifted de right
+041690             0187*   
+041690             0188*   ; draw a filled rectangle
+041690             0189*   vdu_plot_rf:
+041690 ED 43 B7 16 0190*       ld (@x0),bc
        04          
-041678 ED 53 9C 16 0191*       ld (@y0),de
+041695 ED 53 B9 16 0191*       ld (@y0),de
        04          
-04167D DD 22 A0 16 0192*       ld (@x1),ix
+04169A DD 22 BD 16 0192*       ld (@x1),ix
        04          
-041682 FD 22 A2 16 0193*       ld (@y1),iy
+04169F FD 22 BF 16 0193*       ld (@y1),iy
        04          
-041687 3E 19       0194*       ld a,25 ; we have to reload the 2nd plot command
-041689 32 9E 16 04 0195*       ld (@cmd1),a ; because the 24-bit y0 load stomped on it
-04168D 21 98 16 04 0196*   	ld hl,@cmd0
-041691 01 0C 00 00 0197*   	ld bc,@end-@cmd0
-041695 5B DF       0198*   	rst.lil $18
-041697 C9          0199*       ret
-041698 19          0200*   @cmd0:  db 25 ; plot
-041699 04          0201*   @arg0:  db plot_sl_both+mv_abs
-04169A 00 00       0202*   @x0:    dw 0x0000
-04169C 00 00       0203*   @y0:    dw 0x0000
-04169E 19          0204*   @cmd1:  db 25 ; plot
-04169F 65          0205*   @arg1:  db plot_rf+dr_abs_fg
-0416A0 00 00       0206*   @x1:    dw 0x0000
-0416A2 00 00       0207*   @y1:    dw 0x0000
-0416A4 00          0208*   @end:   db 0x00 ; padding
-0416A5             0209*   
-0416A5             0210*   ; draw a filled circle
-0416A5             0211*   vdu_plot_cf:
-0416A5 ED 43 CC 16 0212*       ld (@x0),bc
+0416A4 3E 19       0194*       ld a,25 ; we have to reload the 2nd plot command
+0416A6 32 BB 16 04 0195*       ld (@cmd1),a ; because the 24-bit y0 load stomped on it
+0416AA 21 B5 16 04 0196*   	ld hl,@cmd0
+0416AE 01 0C 00 00 0197*   	ld bc,@end-@cmd0
+0416B2 5B DF       0198*   	rst.lil $18
+0416B4 C9          0199*       ret
+0416B5 19          0200*   @cmd0:  db 25 ; plot
+0416B6 04          0201*   @arg0:  db plot_sl_both+mv_abs
+0416B7 00 00       0202*   @x0:    dw 0x0000
+0416B9 00 00       0203*   @y0:    dw 0x0000
+0416BB 19          0204*   @cmd1:  db 25 ; plot
+0416BC 65          0205*   @arg1:  db plot_rf+dr_abs_fg
+0416BD 00 00       0206*   @x1:    dw 0x0000
+0416BF 00 00       0207*   @y1:    dw 0x0000
+0416C1 00          0208*   @end:   db 0x00 ; padding
+0416C2             0209*   
+0416C2             0210*   ; draw a filled circle
+0416C2             0211*   vdu_plot_cf:
+0416C2 ED 43 E9 16 0212*       ld (@x0),bc
        04          
-0416AA ED 53 CE 16 0213*       ld (@y0),de
+0416C7 ED 53 EB 16 0213*       ld (@y0),de
        04          
-0416AF DD 22 D2 16 0214*       ld (@x1),ix
+0416CC DD 22 EF 16 0214*       ld (@x1),ix
        04          
-0416B4 FD 22 D4 16 0215*       ld (@y1),iy
+0416D1 FD 22 F1 16 0215*       ld (@y1),iy
        04          
-0416B9 3E 19       0216*       ld a,25 ; we have to reload the 2nd plot command
-0416BB 32 D0 16 04 0217*       ld (@cmd1),a ; because the 24-bit y0 load stomped on it
-0416BF 21 CA 16 04 0218*   	ld hl,@cmd0
-0416C3 01 0C 00 00 0219*   	ld bc,@end-@cmd0
-0416C7 5B DF       0220*   	rst.lil $18
-0416C9 C9          0221*       ret
-0416CA 19          0222*   @cmd0:  db 25 ; plot
-0416CB 04          0223*   @arg0:  db plot_sl_both+mv_abs
-0416CC 00 00       0224*   @x0:    dw 0x0000
-0416CE 00 00       0225*   @y0:    dw 0x0000
-0416D0 19          0226*   @cmd1:  db 25 ; plot
-0416D1 9D          0227*   @arg1:  db plot_cf+dr_abs_fg
-0416D2 00 00       0228*   @x1:    dw 0x0000
-0416D4 00 00       0229*   @y1:    dw 0x0000
-0416D6 00          0230*   @end:   db 0x00 ; padding
-0416D7             0041        include "vdu_sound.inc"
-0416D7             0001*   ; load a sound file to a buffer
-0416D7             0002*   ; inputs: hl = bufferId ; de = sampleRate in Hz ; iy = pointer to filename
-0416D7             0003*   vdu_load_sfx:
-0416D7             0004*   ; back up input parameters
-0416D7 E5          0005*       push hl ; bufferId
-0416D8 D5          0006*       push de ; sample rate
-0416D9             0007*   ; load the sound
-0416D9 CD 67 13 04 0008*       call vdu_load_buffer_from_file
-0416DD             0009*   ; now make the buffer a sound sample
-0416DD D1          0010*       pop de ; sample rate
-0416DE E1          0011*       pop hl ; bufferId
-0416DF AF          0012*       xor a ; zero is the magic number for mono 8-bit signed PCM
-0416E0 CD 1C 18 04 0013*       call vdu_buffer_to_sound
-0416E4 C9          0014*       ret
-0416E5             0015*   
-0416E5 00          0016*   last_channel: db 0
-0416E6             0017*   max_channels: equ 1
-0416E6             0018*   
-0416E6             0019*   ; play a sound effect from an already loaded buffer
-0416E6             0020*   ; inputs: hl = bufferId ; bc = duration in milliseconds
-0416E6             0021*   vdu_play_sfx:
-0416E6 22 1E 17 04 0022*       ld (@bufferId),hl
-0416EA ED 43 28 17 0023*       ld (@duration),bc
+0416D6 3E 19       0216*       ld a,25 ; we have to reload the 2nd plot command
+0416D8 32 ED 16 04 0217*       ld (@cmd1),a ; because the 24-bit y0 load stomped on it
+0416DC 21 E7 16 04 0218*   	ld hl,@cmd0
+0416E0 01 0C 00 00 0219*   	ld bc,@end-@cmd0
+0416E4 5B DF       0220*   	rst.lil $18
+0416E6 C9          0221*       ret
+0416E7 19          0222*   @cmd0:  db 25 ; plot
+0416E8 04          0223*   @arg0:  db plot_sl_both+mv_abs
+0416E9 00 00       0224*   @x0:    dw 0x0000
+0416EB 00 00       0225*   @y0:    dw 0x0000
+0416ED 19          0226*   @cmd1:  db 25 ; plot
+0416EE 9D          0227*   @arg1:  db plot_cf+dr_abs_fg
+0416EF 00 00       0228*   @x1:    dw 0x0000
+0416F1 00 00       0229*   @y1:    dw 0x0000
+0416F3 00          0230*   @end:   db 0x00 ; padding
+0416F4             0041        include "vdu_sound.inc"
+0416F4             0001*   ; load a sound file to a buffer
+0416F4             0002*   ; inputs: hl = bufferId ; de = sampleRate in Hz ; iy = pointer to filename
+0416F4             0003*   vdu_load_sfx:
+0416F4             0004*   ; back up input parameters
+0416F4 E5          0005*       push hl ; bufferId
+0416F5 D5          0006*       push de ; sample rate
+0416F6             0007*   ; load the sound
+0416F6 CD 67 13 04 0008*       call vdu_load_buffer_from_file
+0416FA             0009*   ; now make the buffer a sound sample
+0416FA D1          0010*       pop de ; sample rate
+0416FB E1          0011*       pop hl ; bufferId
+0416FC AF          0012*       xor a ; zero is the magic number for mono 8-bit signed PCM
+0416FD CD 39 18 04 0013*       call vdu_buffer_to_sound
+041701 C9          0014*       ret
+041702             0015*   
+041702 00          0016*   last_channel: db 0
+041703             0017*   max_channels: equ 1
+041703             0018*   
+041703             0019*   ; play a sound effect from an already loaded buffer
+041703             0020*   ; inputs: hl = bufferId ; bc = duration in milliseconds
+041703             0021*   vdu_play_sfx:
+041703 22 3B 17 04 0022*       ld (@bufferId),hl
+041707 ED 43 45 17 0023*       ld (@duration),bc
        04          
-0416EF 3E 17       0024*       ld a,23
-0416F1 32 20 17 04 0025*       ld (@bufferId+2),a
-0416F5 3A E5 16 04 0026*       ld a,(last_channel)
-0416F9 3C          0027*       inc a
-0416FA             0028*       ; and 31 ; modulo 32
-0416FA FE 01       0029*       cp max_channels
-0416FC C2 01 17 04 0030*       jp nz,@load_channel
-041700 AF          0031*       xor a
-041701             0032*   @load_channel:
-041701 32 E5 16 04 0033*       ld (last_channel),a
-041705 32 1B 17 04 0034*       ld (@channel0),a
-041709 32 23 17 04 0035*       ld (@channel1),a
-04170D 21 18 17 04 0036*       ld hl, @sample
-041711 01 12 00 00 0037*       ld bc, @sample_end - @sample
-041715 5B DF       0038*       rst.lil $18
-041717 C9          0039*       ret
-041718             0040*   @sample:
-041718             0041*   ; Command 4: Set waveform
-041718             0042*   ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
-041718 17 00 85    0043*       .db 23,0,$85                        ; do sound
-04171B             0044*   @channel0:
-04171B 00 04 08    0045*       .db 0,4,8 ; channel, command, waveform
-04171E             0046*   @bufferId:
-04171E 00 00       0047*       .dw 0x0000
-041720             0048*   ; Command 0: Play note
-041720             0049*   ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
-041720 17 00 85    0050*       .db 23,0,$85                        ; do sound
-041723             0051*   @channel1:
-041723 00 00 7F    0052*       .db 0,0,127                ; channel, volume
-041726 00 00       0053*       .dw 0
-041728             0054*   @duration:                              ; freq (tuneable samples only)
-041728 00 00       0055*       .dw 0x0000                        ; duration
-04172A             0056*   @sample_end:
-04172A 00          0057*       .db 0x00 ; padding
-04172B             0058*   
-04172B             0059*   ; enable enough additional channels so that total enabled = max_channels
-04172B             0060*   ; inputs: max_channels set
-04172B             0061*   ; returns: nothing
-04172B             0062*   ; destroys: af, bc, hl
-04172B             0063*   vdu_enable_channels:
-04172B 3E 01       0064*       ld a,max_channels
-04172D D6 03       0065*       sub 3 ; subtract number of default channels already enabled
-04172F F2 36 17 04 0066*       jp p,@loop
-041733 C9          0067*       ret
-041734 3E 03       0068*       ld a,3 ; first non-default channel
-041736             0069*   @loop:
-041736 32 51 17 04 0070*       ld (@channel),a
-04173A 21 4E 17 04 0071*       ld hl,@beg
-04173E 01 05 00 00 0072*       ld bc,@end-@beg
-041742 F5          0073*       push af
-041743 5B DF       0074*       rst.lil $18
-041745 F1          0075*       pop af
-041746 3C          0076*       inc a
-041747 FE 01       0077*       cp max_channels
-041749 C2 36 17 04 0078*       jp nz,@loop
-04174D C9          0079*       ret
-04174E             0080*   @beg:
-04174E 17 00 85    0081*               db 23, 0, $85
-041751 00          0082*   @channel:   db 0
-041752 08          0083*               db 8 ; command 8: enable channel
-041753             0084*   @end:
-041753             0085*   
-041753             0086*   ; disable all but the three default sound channels
-041753             0087*   ; inputs: max_channels set
-041753             0088*   ; outputs: none
-041753             0089*   ; destroys: ah,hl,bc
-041753             0090*   vdu_disable_channels:
-041753 3E 01       0091*       ld a,max_channels
-041755 D6 03       0092*       sub 3 ; subtract number of default channels already enabled
-041757 F2 5E 17 04 0093*       jp p,@loop
-04175B C9          0094*       ret
-04175C 3E 03       0095*       ld a,3 ; first non-default channel
-04175E             0096*   @loop:
-04175E 32 79 17 04 0097*       ld (@channel),a
-041762 21 76 17 04 0098*       ld hl,@beg
-041766 01 05 00 00 0099*       ld bc,@end-@beg
-04176A F5          0100*       push af
-04176B 5B DF       0101*       rst.lil $18
-04176D F1          0102*       pop af
-04176E 3C          0103*       inc a
-04176F FE 01       0104*       cp max_channels
-041771 C2 5E 17 04 0105*       jp nz,@loop
-041775 C9          0106*       ret
-041776             0107*   @beg:
-041776 17 00 85    0108*       db 23, 0, $85
-041779 00          0109*   @channel: db 0
-04177A 09          0110*       db 9 ; command 9: disable channel
-04177B             0111*   @end:
-04177B             0112*   
-04177B             0113*   
-04177B             0114*   ; ############################################################
-04177B             0115*   ; VDU SOUND API
-04177B             0116*   ; ############################################################
-04177B             0117*   ; Command 0: Play note
-04177B             0118*   ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
-04177B             0119*       MACRO PLAY_NOTE channel, volume, frequency, duration
-04177B             0120*       ld hl, @PLAY_NOTE_CMD        ; Start of command block
-04177B             0121*       ld bc, @PLAY_NOTE_END - @PLAY_NOTE_CMD  ; Command block size
-04177B             0122*       rst.lil $18
-04177B             0123*       jr @PLAY_NOTE_END
-04177B             0124*   @PLAY_NOTE_CMD:  db 23, 0, 0x85               ; Command header
-04177B             0125*                    db channel                  ; Channel, 0 (commented out)
-04177B             0126*                    db 0                        ; Play note command
-04177B             0127*                    db volume                   ; Volume
-04177B             0128*                    dw frequency                ; Frequency
-04177B             0129*                    dw duration                 ; Duration
-04177B             0130*   @PLAY_NOTE_END:
-04177B             0131*       ENDMACRO
-04177B             0132*   
-04177B             0133*       MACRO MUTE_CHANNEL channel
-04177B             0134*       ld hl, @MUTE_CHANNEL_CMD     ; Start of command block
-04177B             0135*       ld bc, @MUTE_CHANNEL_END - @MUTE_CHANNEL_CMD  ; Command block size
-04177B             0136*       rst.lil $18
-04177B             0137*       jr @MUTE_CHANNEL_END
-04177B             0138*   @MUTE_CHANNEL_CMD: db 23, 0, 0x85             ; Command header
-04177B             0139*                      db channel                ; Channel, 0 (commented out)
-04177B             0140*                      db 2                      ; Set volume command
-04177B             0141*                      db 0                      ; Volume (mute)
-04177B             0142*   @MUTE_CHANNEL_END:
-04177B             0143*       ENDMACRO
-04177B             0144*   
-04177B             0145*   ; inputs: c = channel, b = volume, hl = frequency; de = duration;
-04177B             0146*   vdu_play_note:
-04177B 79          0147*       ld a,c
-04177C 32 9C 17 04 0148*       ld (@channel),a
-041780 78          0149*       ld a,b
-041781 32 9E 17 04 0150*       ld (@volume),a
-041785 22 9F 17 04 0151*       ld (@frequency),hl
-041789 ED 53 A1 17 0152*       ld (@duration),de
+04170C 3E 17       0024*       ld a,23
+04170E 32 3D 17 04 0025*       ld (@bufferId+2),a
+041712 3A 02 17 04 0026*       ld a,(last_channel)
+041716 3C          0027*       inc a
+041717             0028*       ; and 31 ; modulo 32
+041717 FE 01       0029*       cp max_channels
+041719 C2 1E 17 04 0030*       jp nz,@load_channel
+04171D AF          0031*       xor a
+04171E             0032*   @load_channel:
+04171E 32 02 17 04 0033*       ld (last_channel),a
+041722 32 38 17 04 0034*       ld (@channel0),a
+041726 32 40 17 04 0035*       ld (@channel1),a
+04172A 21 35 17 04 0036*       ld hl, @sample
+04172E 01 12 00 00 0037*       ld bc, @sample_end - @sample
+041732 5B DF       0038*       rst.lil $18
+041734 C9          0039*       ret
+041735             0040*   @sample:
+041735             0041*   ; Command 4: Set waveform
+041735             0042*   ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
+041735 17 00 85    0043*       .db 23,0,$85                        ; do sound
+041738             0044*   @channel0:
+041738 00 04 08    0045*       .db 0,4,8 ; channel, command, waveform
+04173B             0046*   @bufferId:
+04173B 00 00       0047*       .dw 0x0000
+04173D             0048*   ; Command 0: Play note
+04173D             0049*   ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
+04173D 17 00 85    0050*       .db 23,0,$85                        ; do sound
+041740             0051*   @channel1:
+041740 00 00 7F    0052*       .db 0,0,127                ; channel, volume
+041743 00 00       0053*       .dw 0
+041745             0054*   @duration:                              ; freq (tuneable samples only)
+041745 00 00       0055*       .dw 0x0000                        ; duration
+041747             0056*   @sample_end:
+041747 00          0057*       .db 0x00 ; padding
+041748             0058*   
+041748             0059*   ; enable enough additional channels so that total enabled = max_channels
+041748             0060*   ; inputs: max_channels set
+041748             0061*   ; returns: nothing
+041748             0062*   ; destroys: af, bc, hl
+041748             0063*   vdu_enable_channels:
+041748 3E 01       0064*       ld a,max_channels
+04174A D6 03       0065*       sub 3 ; subtract number of default channels already enabled
+04174C F2 53 17 04 0066*       jp p,@loop
+041750 C9          0067*       ret
+041751 3E 03       0068*       ld a,3 ; first non-default channel
+041753             0069*   @loop:
+041753 32 6E 17 04 0070*       ld (@channel),a
+041757 21 6B 17 04 0071*       ld hl,@beg
+04175B 01 05 00 00 0072*       ld bc,@end-@beg
+04175F F5          0073*       push af
+041760 5B DF       0074*       rst.lil $18
+041762 F1          0075*       pop af
+041763 3C          0076*       inc a
+041764 FE 01       0077*       cp max_channels
+041766 C2 53 17 04 0078*       jp nz,@loop
+04176A C9          0079*       ret
+04176B             0080*   @beg:
+04176B 17 00 85    0081*               db 23, 0, $85
+04176E 00          0082*   @channel:   db 0
+04176F 08          0083*               db 8 ; command 8: enable channel
+041770             0084*   @end:
+041770             0085*   
+041770             0086*   ; disable all but the three default sound channels
+041770             0087*   ; inputs: max_channels set
+041770             0088*   ; outputs: none
+041770             0089*   ; destroys: ah,hl,bc
+041770             0090*   vdu_disable_channels:
+041770 3E 01       0091*       ld a,max_channels
+041772 D6 03       0092*       sub 3 ; subtract number of default channels already enabled
+041774 F2 7B 17 04 0093*       jp p,@loop
+041778 C9          0094*       ret
+041779 3E 03       0095*       ld a,3 ; first non-default channel
+04177B             0096*   @loop:
+04177B 32 96 17 04 0097*       ld (@channel),a
+04177F 21 93 17 04 0098*       ld hl,@beg
+041783 01 05 00 00 0099*       ld bc,@end-@beg
+041787 F5          0100*       push af
+041788 5B DF       0101*       rst.lil $18
+04178A F1          0102*       pop af
+04178B 3C          0103*       inc a
+04178C FE 01       0104*       cp max_channels
+04178E C2 7B 17 04 0105*       jp nz,@loop
+041792 C9          0106*       ret
+041793             0107*   @beg:
+041793 17 00 85    0108*       db 23, 0, $85
+041796 00          0109*   @channel: db 0
+041797 09          0110*       db 9 ; command 9: disable channel
+041798             0111*   @end:
+041798             0112*   
+041798             0113*   
+041798             0114*   ; ############################################################
+041798             0115*   ; VDU SOUND API
+041798             0116*   ; ############################################################
+041798             0117*   ; Command 0: Play note
+041798             0118*   ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
+041798             0119*       MACRO PLAY_NOTE channel, volume, frequency, duration
+041798             0120*       ld hl, @PLAY_NOTE_CMD        ; Start of command block
+041798             0121*       ld bc, @PLAY_NOTE_END - @PLAY_NOTE_CMD  ; Command block size
+041798             0122*       rst.lil $18
+041798             0123*       jr @PLAY_NOTE_END
+041798             0124*   @PLAY_NOTE_CMD:  db 23, 0, 0x85               ; Command header
+041798             0125*                    db channel                  ; Channel, 0 (commented out)
+041798             0126*                    db 0                        ; Play note command
+041798             0127*                    db volume                   ; Volume
+041798             0128*                    dw frequency                ; Frequency
+041798             0129*                    dw duration                 ; Duration
+041798             0130*   @PLAY_NOTE_END:
+041798             0131*       ENDMACRO
+041798             0132*   
+041798             0133*       MACRO MUTE_CHANNEL channel
+041798             0134*       ld hl, @MUTE_CHANNEL_CMD     ; Start of command block
+041798             0135*       ld bc, @MUTE_CHANNEL_END - @MUTE_CHANNEL_CMD  ; Command block size
+041798             0136*       rst.lil $18
+041798             0137*       jr @MUTE_CHANNEL_END
+041798             0138*   @MUTE_CHANNEL_CMD: db 23, 0, 0x85             ; Command header
+041798             0139*                      db channel                ; Channel, 0 (commented out)
+041798             0140*                      db 2                      ; Set volume command
+041798             0141*                      db 0                      ; Volume (mute)
+041798             0142*   @MUTE_CHANNEL_END:
+041798             0143*       ENDMACRO
+041798             0144*   
+041798             0145*   ; inputs: c = channel, b = volume, hl = frequency; de = duration;
+041798             0146*   vdu_play_note:
+041798 79          0147*       ld a,c
+041799 32 B9 17 04 0148*       ld (@channel),a
+04179D 78          0149*       ld a,b
+04179E 32 BB 17 04 0150*       ld (@volume),a
+0417A2 22 BC 17 04 0151*       ld (@frequency),hl
+0417A6 ED 53 BE 17 0152*       ld (@duration),de
        04          
-04178E 21 99 17 04 0153*       ld hl,@cmd
-041792 01 0A 00 00 0154*       ld bc,@end-@cmd
-041796 5B DF       0155*       rst.lil $18
-041798 C9          0156*       ret
-041799 17 00 85    0157*   @cmd:       db 23, 0, 0x85
-04179C 00          0158*   @channel:   db 0x00
-04179D 00          0159*               db 0x00 ; play note command
-04179E 00          0160*   @volume:    db 0x00
-04179F 00 00       0161*   @frequency: dw 0x0000
-0417A1 00 00       0162*   @duration:  dw 0x0000
-0417A3 00          0163*   @end:       db 0x00 ; padding
-0417A4             0164*   
-0417A4             0165*   ; Command 1: Status
-0417A4             0166*   ; VDU 23, 0, &85, channel, 1
-0417A4             0167*   ; inputs: a = channel
-0417A4             0168*   ; Returns a bit mask indicating the status of the specified channel, or 255 if the channel is not valid, or has been disabled. The bit mask is as follows:
-0417A4             0169*   ; Bit 	Name 	Meaning
-0417A4             0170*   ; 0 	Active 	When set this indicates the channel is in use (has an active waveform)
-0417A4             0171*   ; 1 	Playing 	Indicates the channel is actively playing a note, and thus will reject calls to play a new note
-0417A4             0172*   ; 2 	Indefinite 	Set if the channel is playing an indefinite duration note
-0417A4             0173*   ; 3 	Has Volume Envelope 	Set if the channel has a volume envelope
-0417A4             0174*   ; 4 	Has Frequency Envelope 	Set if the channel has a frequency envelope
-0417A4             0175*   
-0417A4             0176*   ; Bits 5-7 are reserved for future use and, for enabled channels, will currently always be zero.
-0417A4             0177*   vdu_channel_status:
-0417A4 32 B6 17 04 0178*       ld (@channel),a
-0417A8 21 B3 17 04 0179*       ld hl,@cmd
-0417AC 01 05 00 00 0180*       ld bc,@end-@cmd
-0417B0 5B DF       0181*       rst.lil $18
-0417B2 C9          0182*       ret
-0417B3 17 00 85    0183*   @cmd:       db 23, 0, 0x85
-0417B6 00          0184*   @channel:   db 0x00
-0417B7 01          0185*               db 0x01 ; get channel status command
-0417B8             0186*   @end:
-0417B8             0187*   
-0417B8             0188*   ; VDU 23, 0, &85, channel, 2, volume
-0417B8             0189*   ; inputs: c = channel, b = volume
-0417B8             0190*   ; Sets the volume of the specified channel. The volume is a value from 0 to 127, where 0 is silent and 127 is full volume. Values over 127 will be treated as 127 (with one exception described later).
-0417B8             0191*   
-0417B8             0192*   ; Specifying a channel of -1 (or 255) will set the global sound system volume level. (Requires Console8 VDP 2.5.0 or later.)
-0417B8             0193*   
-0417B8             0194*   ; Using this command provides more direct control over a channel than the play note command. It can be used to adjust the volume of a channel that is already playing a note.
-0417B8             0195*   vdu_channel_volume:
-0417B8 79          0196*       ld a,c
-0417B9 32 D0 17 04 0197*       ld (@channel),a
-0417BD 78          0198*       ld a,b
-0417BE 32 D2 17 04 0199*       ld (@volume),a
-0417C2 21 CD 17 04 0200*       ld hl,@cmd
-0417C6 01 06 00 00 0201*       ld bc,@end-@cmd
-0417CA 5B DF       0202*       rst.lil $18
-0417CC C9          0203*       ret
-0417CD 17 00 85    0204*   @cmd:       db 23, 0, 0x85
-0417D0 00          0205*   @channel:   db 0x00
-0417D1 02          0206*               db 0x02 ; set volume command
-0417D2 00          0207*   @volume:    db 0x00
-0417D3             0208*   @end:
-0417D3             0209*   
-0417D3             0210*   ; VDU 23, 0, &85, channel, 3, frequency;
-0417D3             0211*   
-0417D3             0212*   ; Sets the frequency of the specified channel. The frequency is a 16-bit value specifying in Hz the frequency of the note to be played.
-0417D3             0213*   
-0417D3             0214*   ; Using this command provides more direct control over a channel than the play note command. It can be used to adjust the frequency of a channel that is already playing a note.
-0417D3             0215*   
-0417D3             0216*   ; Returns 1 on success, 0 for failure.
-0417D3             0217*   vdu_channel_frequency:
-0417D3 79          0218*       ld a,c
-0417D4 32 EB 17 04 0219*       ld (@channel),a
-0417D8 ED 53 ED 17 0220*       ld (@frequency),de
+0417AB 21 B6 17 04 0153*       ld hl,@cmd
+0417AF 01 0A 00 00 0154*       ld bc,@end-@cmd
+0417B3 5B DF       0155*       rst.lil $18
+0417B5 C9          0156*       ret
+0417B6 17 00 85    0157*   @cmd:       db 23, 0, 0x85
+0417B9 00          0158*   @channel:   db 0x00
+0417BA 00          0159*               db 0x00 ; play note command
+0417BB 00          0160*   @volume:    db 0x00
+0417BC 00 00       0161*   @frequency: dw 0x0000
+0417BE 00 00       0162*   @duration:  dw 0x0000
+0417C0 00          0163*   @end:       db 0x00 ; padding
+0417C1             0164*   
+0417C1             0165*   ; Command 1: Status
+0417C1             0166*   ; VDU 23, 0, &85, channel, 1
+0417C1             0167*   ; inputs: a = channel
+0417C1             0168*   ; Returns a bit mask indicating the status of the specified channel, or 255 if the channel is not valid, or has been disabled. The bit mask is as follows:
+0417C1             0169*   ; Bit 	Name 	Meaning
+0417C1             0170*   ; 0 	Active 	When set this indicates the channel is in use (has an active waveform)
+0417C1             0171*   ; 1 	Playing 	Indicates the channel is actively playing a note, and thus will reject calls to play a new note
+0417C1             0172*   ; 2 	Indefinite 	Set if the channel is playing an indefinite duration note
+0417C1             0173*   ; 3 	Has Volume Envelope 	Set if the channel has a volume envelope
+0417C1             0174*   ; 4 	Has Frequency Envelope 	Set if the channel has a frequency envelope
+0417C1             0175*   
+0417C1             0176*   ; Bits 5-7 are reserved for future use and, for enabled channels, will currently always be zero.
+0417C1             0177*   vdu_channel_status:
+0417C1 32 D3 17 04 0178*       ld (@channel),a
+0417C5 21 D0 17 04 0179*       ld hl,@cmd
+0417C9 01 05 00 00 0180*       ld bc,@end-@cmd
+0417CD 5B DF       0181*       rst.lil $18
+0417CF C9          0182*       ret
+0417D0 17 00 85    0183*   @cmd:       db 23, 0, 0x85
+0417D3 00          0184*   @channel:   db 0x00
+0417D4 01          0185*               db 0x01 ; get channel status command
+0417D5             0186*   @end:
+0417D5             0187*   
+0417D5             0188*   ; VDU 23, 0, &85, channel, 2, volume
+0417D5             0189*   ; inputs: c = channel, b = volume
+0417D5             0190*   ; Sets the volume of the specified channel. The volume is a value from 0 to 127, where 0 is silent and 127 is full volume. Values over 127 will be treated as 127 (with one exception described later).
+0417D5             0191*   
+0417D5             0192*   ; Specifying a channel of -1 (or 255) will set the global sound system volume level. (Requires Console8 VDP 2.5.0 or later.)
+0417D5             0193*   
+0417D5             0194*   ; Using this command provides more direct control over a channel than the play note command. It can be used to adjust the volume of a channel that is already playing a note.
+0417D5             0195*   vdu_channel_volume:
+0417D5 79          0196*       ld a,c
+0417D6 32 ED 17 04 0197*       ld (@channel),a
+0417DA 78          0198*       ld a,b
+0417DB 32 EF 17 04 0199*       ld (@volume),a
+0417DF 21 EA 17 04 0200*       ld hl,@cmd
+0417E3 01 06 00 00 0201*       ld bc,@end-@cmd
+0417E7 5B DF       0202*       rst.lil $18
+0417E9 C9          0203*       ret
+0417EA 17 00 85    0204*   @cmd:       db 23, 0, 0x85
+0417ED 00          0205*   @channel:   db 0x00
+0417EE 02          0206*               db 0x02 ; set volume command
+0417EF 00          0207*   @volume:    db 0x00
+0417F0             0208*   @end:
+0417F0             0209*   
+0417F0             0210*   ; VDU 23, 0, &85, channel, 3, frequency;
+0417F0             0211*   
+0417F0             0212*   ; Sets the frequency of the specified channel. The frequency is a 16-bit value specifying in Hz the frequency of the note to be played.
+0417F0             0213*   
+0417F0             0214*   ; Using this command provides more direct control over a channel than the play note command. It can be used to adjust the frequency of a channel that is already playing a note.
+0417F0             0215*   
+0417F0             0216*   ; Returns 1 on success, 0 for failure.
+0417F0             0217*   vdu_channel_frequency:
+0417F0 79          0218*       ld a,c
+0417F1 32 08 18 04 0219*       ld (@channel),a
+0417F5 ED 53 0A 18 0220*       ld (@frequency),de
        04          
-0417DD 21 E8 17 04 0221*       ld hl,@cmd
-0417E1 01 07 00 00 0222*       ld bc,@end-@cmd
-0417E5 5B DF       0223*       rst.lil $18
-0417E7 C9          0224*       ret
-0417E8 17 00 85    0225*   @cmd:       db 23, 0, 0x85
-0417EB 00          0226*   @channel:   db 0x00
-0417EC 03          0227*               db 0x03 ; set frequency command
-0417ED 00 00       0228*   @frequency: dw 0x0000
-0417EF 00          0229*   @end:       db 0x00 ; padding
-0417F0             0230*   
-0417F0             0231*   
-0417F0             0232*   ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
-0417F0             0233*   ; inputs: c = channel, b = waveformOrSample, [hl = bufferId]
-0417F0             0234*   ; Sets the waveform type for a channel to use. The waveformOrSample value is a single byte treated as a signed value.
-0417F0             0235*   
-0417F0             0236*   ; Using a negative value for the waveform indicates that a sample should be used instead. For more information see the documentation for the sample command.
-0417F0             0237*   
-0417F0             0238*   ; By default a channel is set to use waveform 0 (square wave).
-0417F0             0239*   
-0417F0             0240*   ; Valid waveform values are as follows:
-0417F0             0241*   ; Value 	Waveform
-0417F0             0242*   ; 0 	Square wave
-0417F0             0243*   ; 1 	Triangle wave
-0417F0             0244*   ; 2 	Sawtooth wave
-0417F0             0245*   ; 3 	Sine wave
-0417F0             0246*   ; 4 	Noise (simple white noise with no frequency support)
-0417F0             0247*   ; 5 	VIC Noise (emulates a VIC6561; supports frequency)
-0417F0             0248*   ; 8 	Sample (specifying a 16-bit buffer ID for sample data)
-0417F0             0249*   
-0417F0             0250*   vdu_channel_waveform:
-0417F0 79          0251*       ld a,c
-0417F1 32 16 18 04 0252*       ld (@channel),a
-0417F5 78          0253*       ld a,b
-0417F6 32 18 18 04 0254*       ld (@waveform),a
-0417FA FE 08       0255*       cp 8 ; check if the waveform is a sample
-0417FC 28 06       0256*       jr z, @sample
-0417FE 01 06 00 00 0257*       ld bc,@bufferId-@cmd
-041802 18 08       0258*       jr @sendToVdu
-041804             0259*   @sample:
-041804 22 19 18 04 0260*       ld (@bufferId),hl
-041808 01 08 00 00 0261*       ld bc,@end-@cmd
-04180C             0262*   @sendToVdu:
-04180C 21 13 18 04 0263*       ld hl,@cmd
-041810 5B DF       0264*       rst.lil $18
-041812 C9          0265*       ret
-041813 17 00 85    0266*   @cmd:       db 23, 0, 0x85
-041816 00          0267*   @channel:   db 0x00
-041817 04          0268*               db 0x04 ; set waveform command
-041818 00          0269*   @waveform:  db 0x00
-041819 00 00       0270*   @bufferId:  dw 0x0000
-04181B 00          0271*   @end:       db 0x00 ; padding
-04181C             0272*   
-04181C             0273*   ; VDU 23, 0, &85, channel (ignored), 5, 2, bufferId; format, [sampleRate;]
-04181C             0274*   ; inputs: hl = bufferId; a = format, de = sample rate in Hz
-04181C             0275*   ; The format is a single byte giving the format of the sample data. The following formats are supported:
-04181C             0276*   ; Value	Description
-04181C             0277*   ; 0	8-bit signed
-04181C             0278*   ; 1	8-bit unsigned
-04181C             0279*   ; The format value can also have modifier bits set to modify the behaviour of the sample. The following modifier bits are supported:
-04181C             0280*   ; Value	Description
-04181C             0281*   ; 8	sample rate is sent in the next 16-bits
-04181C             0282*   ; 16	sample is tuneable
-04181C             0283*   ; The default sample rate for samples on the VDP is 16kHz (actually 16.384kHz to be precise).
-04181C             0284*   vdu_buffer_to_sound:
-04181C 22 3C 18 04 0285*       ld (@bufferId),hl
-041820 C6 08       0286*       add a,8 ; modify format byte to indicate sample rate argument is given
-041822 32 3E 18 04 0287*       ld (@format),a
-041826 ED 53 3F 18 0288*       ld (@sampleRate),de
+0417FA 21 05 18 04 0221*       ld hl,@cmd
+0417FE 01 07 00 00 0222*       ld bc,@end-@cmd
+041802 5B DF       0223*       rst.lil $18
+041804 C9          0224*       ret
+041805 17 00 85    0225*   @cmd:       db 23, 0, 0x85
+041808 00          0226*   @channel:   db 0x00
+041809 03          0227*               db 0x03 ; set frequency command
+04180A 00 00       0228*   @frequency: dw 0x0000
+04180C 00          0229*   @end:       db 0x00 ; padding
+04180D             0230*   
+04180D             0231*   
+04180D             0232*   ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
+04180D             0233*   ; inputs: c = channel, b = waveformOrSample, [hl = bufferId]
+04180D             0234*   ; Sets the waveform type for a channel to use. The waveformOrSample value is a single byte treated as a signed value.
+04180D             0235*   
+04180D             0236*   ; Using a negative value for the waveform indicates that a sample should be used instead. For more information see the documentation for the sample command.
+04180D             0237*   
+04180D             0238*   ; By default a channel is set to use waveform 0 (square wave).
+04180D             0239*   
+04180D             0240*   ; Valid waveform values are as follows:
+04180D             0241*   ; Value 	Waveform
+04180D             0242*   ; 0 	Square wave
+04180D             0243*   ; 1 	Triangle wave
+04180D             0244*   ; 2 	Sawtooth wave
+04180D             0245*   ; 3 	Sine wave
+04180D             0246*   ; 4 	Noise (simple white noise with no frequency support)
+04180D             0247*   ; 5 	VIC Noise (emulates a VIC6561; supports frequency)
+04180D             0248*   ; 8 	Sample (specifying a 16-bit buffer ID for sample data)
+04180D             0249*   
+04180D             0250*   vdu_channel_waveform:
+04180D 79          0251*       ld a,c
+04180E 32 33 18 04 0252*       ld (@channel),a
+041812 78          0253*       ld a,b
+041813 32 35 18 04 0254*       ld (@waveform),a
+041817 FE 08       0255*       cp 8 ; check if the waveform is a sample
+041819 28 06       0256*       jr z, @sample
+04181B 01 06 00 00 0257*       ld bc,@bufferId-@cmd
+04181F 18 08       0258*       jr @sendToVdu
+041821             0259*   @sample:
+041821 22 36 18 04 0260*       ld (@bufferId),hl
+041825 01 08 00 00 0261*       ld bc,@end-@cmd
+041829             0262*   @sendToVdu:
+041829 21 30 18 04 0263*       ld hl,@cmd
+04182D 5B DF       0264*       rst.lil $18
+04182F C9          0265*       ret
+041830 17 00 85    0266*   @cmd:       db 23, 0, 0x85
+041833 00          0267*   @channel:   db 0x00
+041834 04          0268*               db 0x04 ; set waveform command
+041835 00          0269*   @waveform:  db 0x00
+041836 00 00       0270*   @bufferId:  dw 0x0000
+041838 00          0271*   @end:       db 0x00 ; padding
+041839             0272*   
+041839             0273*   ; VDU 23, 0, &85, channel (ignored), 5, 2, bufferId; format, [sampleRate;]
+041839             0274*   ; inputs: hl = bufferId; a = format, de = sample rate in Hz
+041839             0275*   ; The format is a single byte giving the format of the sample data. The following formats are supported:
+041839             0276*   ; Value	Description
+041839             0277*   ; 0	8-bit signed
+041839             0278*   ; 1	8-bit unsigned
+041839             0279*   ; The format value can also have modifier bits set to modify the behaviour of the sample. The following modifier bits are supported:
+041839             0280*   ; Value	Description
+041839             0281*   ; 8	sample rate is sent in the next 16-bits
+041839             0282*   ; 16	sample is tuneable
+041839             0283*   ; The default sample rate for samples on the VDP is 16kHz (actually 16.384kHz to be precise).
+041839             0284*   vdu_buffer_to_sound:
+041839 22 59 18 04 0285*       ld (@bufferId),hl
+04183D C6 08       0286*       add a,8 ; modify format byte to indicate sample rate argument is given
+04183F 32 5B 18 04 0287*       ld (@format),a
+041843 ED 53 5C 18 0288*       ld (@sampleRate),de
        04          
-04182B 21 36 18 04 0289*       ld hl,@cmd
-04182F 01 0B 00 00 0290*       ld bc,@end-@cmd
-041833 5B DF       0291*       rst.lil $18
-041835 C9          0292*       ret
-041836 17 00 85    0293*   @cmd:       db 23, 0, 0x85
-041839 00          0294*   @channel:   db 0x00 ; ignored
-04183A 05          0295*               db 0x05 ; buffer to sound command
-04183B 02          0296*               db 0x02 ; command 2 create sample
-04183C 00 00       0297*   @bufferId:  dw 0x0000
-04183E 00          0298*   @format:    db 0x00
-04183F 00 00       0299*   @sampleRate: dw 0x0000
-041841 00          0300*   @end:       db 0x00 ; padding
-041842             0301*   
-041842             0302*   ; Command 13: Set sample rate
-041842             0303*   ; VDU 23, 0, &85, channel, 13, sampleRate;
-041842             0304*   ; inputs: c = channel, hl = sampleRate (Hz)
-041842             0305*   vdu_set_sample_rate:
-041842 79          0306*       ld a,c
-041843 32 59 18 04 0307*       ld (@channel),a
-041847 22 5B 18 04 0308*       ld (@sampleRate),hl
-04184B 21 56 18 04 0309*       ld hl,@cmd
-04184F 01 07 00 00 0310*       ld bc,@end-@cmd
-041853 5B DF       0311*       rst.lil $18
-041855 C9          0312*       ret
-041856 17 00 85    0313*   @cmd:       db 23, 0, 0x85
-041859 00          0314*   @channel:   db 0x00
-04185A 0D          0315*               db 13 ; set sample rate command
-04185B 00 00       0316*   @sampleRate: dw 0x0000
-04185D 00          0317*   @end:       db 0x00 ; padding
-04185E             0318*   
-04185E             0319*   ; inputs: c = channel, b = volume, de = sample rate; hl = bufferId
-04185E             0320*   vdu_play_sample:
-04185E             0321*       ; populate input parameters
-04185E 79          0322*       ld a,c
-04185F 32 91 18 04 0323*       ld (@channel0),a
-041863 32 99 18 04 0324*       ld (@channel1),a
-041867 32 A0 18 04 0325*       ld (@channel2),a
-04186B 78          0326*       ld a,b
-04186C 32 A2 18 04 0327*       ld (@volume),a
-041870 ED 53 9B 18 0328*       ld (@sampleRate),de
+041848 21 53 18 04 0289*       ld hl,@cmd
+04184C 01 0B 00 00 0290*       ld bc,@end-@cmd
+041850 5B DF       0291*       rst.lil $18
+041852 C9          0292*       ret
+041853 17 00 85    0293*   @cmd:       db 23, 0, 0x85
+041856 00          0294*   @channel:   db 0x00 ; ignored
+041857 05          0295*               db 0x05 ; buffer to sound command
+041858 02          0296*               db 0x02 ; command 2 create sample
+041859 00 00       0297*   @bufferId:  dw 0x0000
+04185B 00          0298*   @format:    db 0x00
+04185C 00 00       0299*   @sampleRate: dw 0x0000
+04185E 00          0300*   @end:       db 0x00 ; padding
+04185F             0301*   
+04185F             0302*   ; Command 13: Set sample rate
+04185F             0303*   ; VDU 23, 0, &85, channel, 13, sampleRate;
+04185F             0304*   ; inputs: c = channel, hl = sampleRate (Hz)
+04185F             0305*   vdu_set_sample_rate:
+04185F 79          0306*       ld a,c
+041860 32 76 18 04 0307*       ld (@channel),a
+041864 22 78 18 04 0308*       ld (@sampleRate),hl
+041868 21 73 18 04 0309*       ld hl,@cmd
+04186C 01 07 00 00 0310*       ld bc,@end-@cmd
+041870 5B DF       0311*       rst.lil $18
+041872 C9          0312*       ret
+041873 17 00 85    0313*   @cmd:       db 23, 0, 0x85
+041876 00          0314*   @channel:   db 0x00
+041877 0D          0315*               db 13 ; set sample rate command
+041878 00 00       0316*   @sampleRate: dw 0x0000
+04187A 00          0317*   @end:       db 0x00 ; padding
+04187B             0318*   
+04187B             0319*   ; inputs: c = channel, b = volume, de = sample rate; hl = bufferId
+04187B             0320*   vdu_play_sample:
+04187B             0321*       ; populate input parameters
+04187B 79          0322*       ld a,c
+04187C 32 AE 18 04 0323*       ld (@channel0),a
+041880 32 B6 18 04 0324*       ld (@channel1),a
+041884 32 BD 18 04 0325*       ld (@channel2),a
+041888 78          0326*       ld a,b
+041889 32 BF 18 04 0327*       ld (@volume),a
+04188D ED 53 B8 18 0328*       ld (@sampleRate),de
        04          
-041875 22 94 18 04 0329*       ld (@bufferId),hl
-041879             0330*       ; clean up bytes that got stomped on by 24-bit loads
-041879 3E 17       0331*       ld a,23
-04187B 32 96 18 04 0332*       ld (@cmd1),a
-04187F 32 9D 18 04 0333*       ld (@cmd2),a
-041883             0334*       ; prep the vdu command string
-041883 21 8E 18 04 0335*       ld hl, @cmd0
-041887 01 19 00 00 0336*       ld bc, @end - @cmd0
-04188B 5B DF       0337*       rst.lil $18
-04188D C9          0338*       ret
-04188E             0339*   ; set waveform command
-04188E 17 00 85    0340*   @cmd0:       db 23, 0, 0x85
-041891 00          0341*   @channel0:   db 0x00
-041892 04          0342*                db 0x04 ; set waveform command
-041893 08          0343*   @waveform:   db 0x08 ; sample
-041894 00 00       0344*   @bufferId:   dw 0x0000
-041896             0345*   ; set sample rate command
-041896 17 00 85    0346*   @cmd1:       db 23, 0, 0x85
-041899 00          0347*   @channel1:   db 0x00
-04189A 0D          0348*               db 13 ; set sample rate command
-04189B 00 00       0349*   @sampleRate: dw 0x0000
-04189D             0350*   ; play note command
-04189D 17 00 85    0351*   @cmd2:       db 23, 0, 0x85
-0418A0 00          0352*   @channel2:   db 0x00
-0418A1 00          0353*                db 0x00 ; play note command
-0418A2 00          0354*   @volume:     db 0x00
-0418A3 00 00       0355*   @frequency:  dw 0x00 ; no effect unless buffer has been set to tuneable sample
-0418A5 00 00       0356*   @duration:   dw 0x0000 ; milliseconds: set to -1 to loop indefinitely, 0 to play full duration once
-0418A7 00          0357*   @end:        db 0x00 ; padding
-0418A8             0358*   
-0418A8             0359*   
-0418A8             0360*   ; stream a song from the SD card
-0418A8             0361*   ; inputs: hl = pointer to filename
-0418A8             0362*   ; requirements: the file must be 8-bit signed PCM mono sampled at 15360 Hz
-0418A8             0363*   ; uses: sound channels 0 and 1, buffers 0x3000 and 0x3001
-0418A8 FF FF FF FF 0364*       align 256 ; align to 256-byte boundary (may be helpful ... or not)
+041892 22 B1 18 04 0329*       ld (@bufferId),hl
+041896             0330*       ; clean up bytes that got stomped on by 24-bit loads
+041896 3E 17       0331*       ld a,23
+041898 32 B3 18 04 0332*       ld (@cmd1),a
+04189C 32 BA 18 04 0333*       ld (@cmd2),a
+0418A0             0334*       ; prep the vdu command string
+0418A0 21 AB 18 04 0335*       ld hl, @cmd0
+0418A4 01 19 00 00 0336*       ld bc, @end - @cmd0
+0418A8 5B DF       0337*       rst.lil $18
+0418AA C9          0338*       ret
+0418AB             0339*   ; set waveform command
+0418AB 17 00 85    0340*   @cmd0:       db 23, 0, 0x85
+0418AE 00          0341*   @channel0:   db 0x00
+0418AF 04          0342*                db 0x04 ; set waveform command
+0418B0 08          0343*   @waveform:   db 0x08 ; sample
+0418B1 00 00       0344*   @bufferId:   dw 0x0000
+0418B3             0345*   ; set sample rate command
+0418B3 17 00 85    0346*   @cmd1:       db 23, 0, 0x85
+0418B6 00          0347*   @channel1:   db 0x00
+0418B7 0D          0348*               db 13 ; set sample rate command
+0418B8 00 00       0349*   @sampleRate: dw 0x0000
+0418BA             0350*   ; play note command
+0418BA 17 00 85    0351*   @cmd2:       db 23, 0, 0x85
+0418BD 00          0352*   @channel2:   db 0x00
+0418BE 00          0353*                db 0x00 ; play note command
+0418BF 00          0354*   @volume:     db 0x00
+0418C0 00 00       0355*   @frequency:  dw 0x00 ; no effect unless buffer has been set to tuneable sample
+0418C2 00 00       0356*   @duration:   dw 0x0000 ; milliseconds: set to -1 to loop indefinitely, 0 to play full duration once
+0418C4 00          0357*   @end:        db 0x00 ; padding
+0418C5             0358*   
+0418C5             0359*   
+0418C5             0360*   ; stream a song from the SD card
+0418C5             0361*   ; inputs: hl = pointer to filename
+0418C5             0362*   ; requirements: the file must be 8-bit signed PCM mono sampled at 15360 Hz
+0418C5             0363*   ; uses: sound channels 0 and 1, buffers 0x3000 and 0x3001
+0418C5 FF FF FF FF 0364*       align 256 ; align to 256-byte boundary (may be helpful ... or not)
        FF FF FF FF 
        FF FF FF FF 
        FF FF FF FF 
@@ -4805,14 +4816,7 @@ PC     Output      Line
        FF FF FF FF 
        FF FF FF FF 
        FF FF FF FF 
-       FF FF FF FF 
-       FF FF FF FF 
-       FF FF FF FF 
-       FF FF FF FF 
-       FF FF FF FF 
-       FF FF FF FF 
-       FF FF FF FF 
-       FF FF FF FF 
+       FF FF FF    
 041900 00 00 00 00 0365*   song_data: blkw 256,0 ; buffer for sound data
        00 00 00 00 
        00 00 00 00 
@@ -4950,23 +4954,23 @@ PC     Output      Line
 041B00 21 00 30 00 0372*       ld hl,ch0_buffer
 041B04 0E 00       0373*       ld c,0 ; channel
 041B06 06 08       0374*       ld b,8 ; waveform is sample
-041B08 CD F0 17 04 0375*       call vdu_channel_waveform
+041B08 CD 0D 18 04 0375*       call vdu_channel_waveform
 041B0C             0376*   
 041B0C 21 01 30 00 0377*       ld hl,ch1_buffer
 041B10 0E 01       0378*       ld c,1 ; channel
 041B12 06 08       0379*       ld b,8 ; waveform is sample
-041B14 CD F0 17 04 0380*       call vdu_channel_waveform
+041B14 CD 0D 18 04 0380*       call vdu_channel_waveform
 041B18             0381*   
 041B18             0382*   ; initialize channel command buffers
 041B18 21 02 30 00 0383*       ld hl,cmd0_buffer
-041B1C CD 0D 15 04 0384*       call vdu_clear_buffer
+041B1C CD 13 15 04 0384*       call vdu_clear_buffer
 041B20 21 02 30 00 0385*       ld hl,cmd0_buffer
 041B24 01 0A 00 00 0386*       ld bc,@ch0_play_end-@ch0_play
 041B28 11 A1 1B 04 0387*       ld de,@ch0_play
 041B2C CD D0 14 04 0388*       call vdu_write_block_to_buffer
 041B30             0389*   
 041B30 21 03 30 00 0390*       ld hl,cmd1_buffer
-041B34 CD 0D 15 04 0391*       call vdu_clear_buffer
+041B34 CD 13 15 04 0391*       call vdu_clear_buffer
 041B38 21 03 30 00 0392*       ld hl,cmd1_buffer
 041B3C 01 0A 00 00 0393*       ld bc,@ch1_play_end-@ch1_play
 041B40 11 AB 1B 04 0394*       ld de,@ch1_play
@@ -5028,7 +5032,7 @@ PC     Output      Line
 041B89 CD D2 11 04 0446*       call vdu_vblank ; wait for vblank
 041B8D E1          0447*       pop hl
 041B8E 2C          0448*       inc l ; play commmand bufferId
-041B8F CD F7 14 04 0449*       call vdu_call_buffer
+041B8F CD F8 14 04 0449*       call vdu_call_buffer
 041B93             0450*   
 041B93             0451*   ; read the next block
 041B93 C3 58 1B 04 0452*       jp @read_file
@@ -5205,7 +5209,7 @@ PC     Output      Line
 041D37 11 00 3C 00 0060*   	ld de,15360
 041D3B FD 21 55 1E 0061*   	ld iy,FAFRICA
        04          
-041D40 CD D7 16 04 0062*   	call vdu_load_sfx
+041D40 CD F4 16 04 0062*   	call vdu_load_sfx
 041D44 C9          0063*   	ret
 041D45             0064*   
 041D45             0065*   load_sfx_ANYTIME:
@@ -5218,7 +5222,7 @@ PC     Output      Line
 041D59 11 00 3C 00 0072*   	ld de,15360
 041D5D FD 21 66 1E 0073*   	ld iy,FANYTIME
        04          
-041D62 CD D7 16 04 0074*   	call vdu_load_sfx
+041D62 CD F4 16 04 0074*   	call vdu_load_sfx
 041D66 C9          0075*   	ret
 041D67             0076*   
 041D67             0077*   load_sfx_BARRACUDA:
@@ -5231,7 +5235,7 @@ PC     Output      Line
 041D7B 11 00 3C 00 0084*   	ld de,15360
 041D7F FD 21 78 1E 0085*   	ld iy,FBARRACUDA
        04          
-041D84 CD D7 16 04 0086*   	call vdu_load_sfx
+041D84 CD F4 16 04 0086*   	call vdu_load_sfx
 041D88 C9          0087*   	ret
 041D89             0088*   
 041D89             0089*   load_sfx_COME_UNDONE:
@@ -5244,7 +5248,7 @@ PC     Output      Line
 041D9D 11 00 3C 00 0096*   	ld de,15360
 041DA1 FD 21 8C 1E 0097*   	ld iy,FCOME_UNDONE
        04          
-041DA6 CD D7 16 04 0098*   	call vdu_load_sfx
+041DA6 CD F4 16 04 0098*   	call vdu_load_sfx
 041DAA C9          0099*   	ret
 041DAB             0100*   
 041DAB             0101*   load_sfx_EVERY_BREATH_YOU_TAKE:
@@ -5257,7 +5261,7 @@ PC     Output      Line
 041DBF 11 00 3C 00 0108*   	ld de,15360
 041DC3 FD 21 A2 1E 0109*   	ld iy,FEVERY_BREATH_YOU_TAKE
        04          
-041DC8 CD D7 16 04 0110*   	call vdu_load_sfx
+041DC8 CD F4 16 04 0110*   	call vdu_load_sfx
 041DCC C9          0111*   	ret
 041DCD             0112*   
 041DCD             0113*   load_sfx_RHIANNON:
@@ -5270,7 +5274,7 @@ PC     Output      Line
 041DE1 11 00 3C 00 0120*   	ld de,15360
 041DE5 FD 21 C2 1E 0121*   	ld iy,FRHIANNON
        04          
-041DEA CD D7 16 04 0122*   	call vdu_load_sfx
+041DEA CD F4 16 04 0122*   	call vdu_load_sfx
 041DEE C9          0123*   	ret
 041DEF             0124*   
 041DEF             0125*   load_sfx_TAKE_A_RIDE:
@@ -5283,7 +5287,7 @@ PC     Output      Line
 041E03 11 00 3C 00 0132*   	ld de,15360
 041E07 FD 21 D5 1E 0133*   	ld iy,FTAKE_A_RIDE
        04          
-041E0C CD D7 16 04 0134*   	call vdu_load_sfx
+041E0C CD F4 16 04 0134*   	call vdu_load_sfx
 041E10 C9          0135*   	ret
 041E11             0136*   
 041E11             0137*   load_sfx_AMBIENT_BEAT70:
@@ -5296,7 +5300,7 @@ PC     Output      Line
 041E25 11 00 3C 00 0144*   	ld de,15360
 041E29 FD 21 EB 1E 0145*   	ld iy,FAMBIENT_BEAT70
        04          
-041E2E CD D7 16 04 0146*   	call vdu_load_sfx
+041E2E CD F4 16 04 0146*   	call vdu_load_sfx
 041E32 C9          0147*   	ret
 041E33             0148*   
 041E33             0149*   load_sfx_SPACE_ADVENTURE:
@@ -5309,7 +5313,7 @@ PC     Output      Line
 041E47 11 00 3C 00 0156*   	ld de,15360
 041E4B FD 21 04 1F 0157*   	ld iy,FSPACE_ADVENTURE
        04          
-041E50 CD D7 16 04 0158*   	call vdu_load_sfx
+041E50 CD F4 16 04 0158*   	call vdu_load_sfx
 041E54 C9          0159*   	ret
 041E55             0160*   
 041E55             0161*   ; File name lookups:
@@ -5373,93 +5377,848 @@ PC     Output      Line
 041F1E             0174*   sfx_play_AFRICA:
 041F1E 21 00 30 00 0175*   	ld hl,BUF_AFRICA
 041F22 01 00 00 00 0176*   	ld bc,0
-041F26 C3 E6 16 04 0177*   	jp vdu_play_sfx
+041F26 C3 03 17 04 0177*   	jp vdu_play_sfx
 041F2A             0178*   
 041F2A             0179*   sfx_play_ANYTIME:
 041F2A 21 01 30 00 0180*   	ld hl,BUF_ANYTIME
 041F2E 01 00 00 00 0181*   	ld bc,0
-041F32 C3 E6 16 04 0182*   	jp vdu_play_sfx
+041F32 C3 03 17 04 0182*   	jp vdu_play_sfx
 041F36             0183*   
 041F36             0184*   sfx_play_BARRACUDA:
 041F36 21 02 30 00 0185*   	ld hl,BUF_BARRACUDA
 041F3A 01 00 00 00 0186*   	ld bc,0
-041F3E C3 E6 16 04 0187*   	jp vdu_play_sfx
+041F3E C3 03 17 04 0187*   	jp vdu_play_sfx
 041F42             0188*   
 041F42             0189*   sfx_play_COME_UNDONE:
 041F42 21 03 30 00 0190*   	ld hl,BUF_COME_UNDONE
 041F46 01 00 00 00 0191*   	ld bc,0
-041F4A C3 E6 16 04 0192*   	jp vdu_play_sfx
+041F4A C3 03 17 04 0192*   	jp vdu_play_sfx
 041F4E             0193*   
 041F4E             0194*   sfx_play_EVERY_BREATH_YOU_TAKE:
 041F4E 21 04 30 00 0195*   	ld hl,BUF_EVERY_BREATH_YOU_TAKE
 041F52 01 00 00 00 0196*   	ld bc,0
-041F56 C3 E6 16 04 0197*   	jp vdu_play_sfx
+041F56 C3 03 17 04 0197*   	jp vdu_play_sfx
 041F5A             0198*   
 041F5A             0199*   sfx_play_RHIANNON:
 041F5A 21 05 30 00 0200*   	ld hl,BUF_RHIANNON
 041F5E 01 00 00 00 0201*   	ld bc,0
-041F62 C3 E6 16 04 0202*   	jp vdu_play_sfx
+041F62 C3 03 17 04 0202*   	jp vdu_play_sfx
 041F66             0203*   
 041F66             0204*   sfx_play_TAKE_A_RIDE:
 041F66 21 06 30 00 0205*   	ld hl,BUF_TAKE_A_RIDE
 041F6A 01 00 00 00 0206*   	ld bc,0
-041F6E C3 E6 16 04 0207*   	jp vdu_play_sfx
+041F6E C3 03 17 04 0207*   	jp vdu_play_sfx
 041F72             0208*   
 041F72             0209*   sfx_play_AMBIENT_BEAT70:
 041F72 21 07 30 00 0210*   	ld hl,BUF_AMBIENT_BEAT70
 041F76 01 00 00 00 0211*   	ld bc,0
-041F7A C3 E6 16 04 0212*   	jp vdu_play_sfx
+041F7A C3 03 17 04 0212*   	jp vdu_play_sfx
 041F7E             0213*   
 041F7E             0214*   sfx_play_SPACE_ADVENTURE:
 041F7E 21 08 30 00 0215*   	ld hl,BUF_SPACE_ADVENTURE
 041F82 01 00 00 00 0216*   	ld bc,0
-041F86 C3 E6 16 04 0217*   	jp vdu_play_sfx
-041F8A             0045    
-041F8A             0046    ; --- MAIN PROGRAM FILE ---
-041F8A             0047    main:
-041F8A CD 5C 00 04 0048        call printInline
-041F8E 4C 6F 61 64 0049        asciz "Loading SFX...\r\n"
+041F86 C3 03 17 04 0217*   	jp vdu_play_sfx
+041F8A             0045        include "debug.inc"
+041F8A             0001*   printHexA:
+041F8A F5          0002*       push af
+041F8B C5          0003*       push bc
+041F8C CD AA 00 04 0004*       call printHex8
+041F90 3E 20       0005*       ld a,' '
+041F92 5B D7       0006*       rst.lil 10h
+041F94 C1          0007*       pop bc
+041F95 F1          0008*       pop af
+041F96 C9          0009*       ret
+041F97             0010*   
+041F97             0011*   printHexHL:
+041F97 F5          0012*       push af
+041F98 C5          0013*       push bc
+041F99 CD A4 00 04 0014*       call printHex16
+041F9D 3E 20       0015*       ld a,' '
+041F9F 5B D7       0016*       rst.lil 10h
+041FA1 C1          0017*       pop bc
+041FA2 F1          0018*       pop af
+041FA3 C9          0019*       ret
+041FA4             0020*   
+041FA4             0021*   printHexUHL:
+041FA4 F5          0022*       push af
+041FA5 C5          0023*       push bc
+041FA6 CD 9C 00 04 0024*       call printHex24
+041FAA 3E 20       0025*       ld a,' '
+041FAC 5B D7       0026*       rst.lil 10h
+041FAE C1          0027*       pop bc
+041FAF F1          0028*       pop af
+041FB0 C9          0029*       ret
+041FB1             0030*   
+041FB1             0031*   printHexAUHL:
+041FB1 F5          0032*       push af
+041FB2 C5          0033*       push bc
+041FB3 CD AA 00 04 0034*       call printHex8
+041FB7 3E 2E       0035*       ld a,'.'
+041FB9 5B D7       0036*       rst.lil 10h
+041FBB CD 9C 00 04 0037*       call printHex24
+041FBF 3E 20       0038*       ld a,' '
+041FC1 5B D7       0039*       rst.lil 10h
+041FC3 C1          0040*       pop bc
+041FC4 F1          0041*       pop af
+041FC5 C9          0042*       ret
+041FC6             0043*   
+041FC6             0044*   printHexABHL:
+041FC6             0045*   ; preserve registers
+041FC6 C5          0046*       push bc ; b will be ok c will not
+041FC7 F5          0047*       push af ; will get totally destroyed
+041FC8             0048*   ; print a
+041FC8 CD AA 00 04 0049*       call printHex8
+041FCC             0050*   ; print b
+041FCC 78          0051*       ld a,b
+041FCD CD AA 00 04 0052*       call printHex8
+041FD1             0053*   ; print hl
+041FD1 CD A4 00 04 0054*       call printHex16
+041FD5             0055*   ; restore registers
+041FD5 F1          0056*       pop af
+041FD6 C1          0057*       pop bc
+041FD7 C9          0058*       ret
+041FD8             0059*   
+041FD8             0060*   printHexBHL:
+041FD8             0061*   ; preserve registers
+041FD8 C5          0062*       push bc ; b will be ok c will not
+041FD9 F5          0063*       push af ; will get totally destroyed
+041FDA             0064*   ; print b
+041FDA 78          0065*       ld a,b
+041FDB CD AA 00 04 0066*       call printHex8
+041FDF             0067*   ; print hl
+041FDF CD A4 00 04 0068*       call printHex16
+041FE3             0069*   ; restore registers
+041FE3 F1          0070*       pop af
+041FE4 C1          0071*       pop bc
+041FE5 C9          0072*       ret
+041FE6             0073*   
+041FE6             0074*   printHexCDE:
+041FE6             0075*   ; preserve registers
+041FE6 C5          0076*       push bc ; b will be ok c will not
+041FE7 F5          0077*       push af ; will get totally destroyed
+041FE8             0078*   ; print c
+041FE8 79          0079*       ld a,c
+041FE9 CD AA 00 04 0080*       call printHex8
+041FED             0081*   ; print de
+041FED EB          0082*       ex de,hl
+041FEE CD A4 00 04 0083*       call printHex16
+041FF2 EB          0084*       ex de,hl
+041FF3             0085*   ; restore registers
+041FF3 F1          0086*       pop af
+041FF4 C1          0087*       pop bc
+041FF5 C9          0088*       ret
+041FF6             0089*   
+041FF6             0090*   printHexUIX:
+041FF6             0091*   ; store everything in scratch
+041FF6 22 31 03 04 0092*       ld (uhl),hl
+041FFA ED 43 34 03 0093*       ld (ubc),bc
+       04          
+041FFF ED 53 37 03 0094*       ld (ude),de
+       04          
+042004 DD 22 3A 03 0095*       ld (uix),ix
+       04          
+042009 FD 22 3D 03 0096*       ld (uiy),iy
+       04          
+04200E F5          0097*       push af ; fml
+04200F             0098*   
+04200F 21 C8 02 04 0099*       ld hl,str_ixu
+042013 CD 63 00 04 0100*       call printString
+042017 2A 3A 03 04 0101*       ld hl,(uix)
+04201B CD 9C 00 04 0102*       call printHex24
+04201F CD 78 00 04 0103*       call printNewLine
+042023             0104*   
+042023             0105*   ; restore everything
+042023 2A 31 03 04 0106*       ld hl, (uhl)
+042027 ED 4B 34 03 0107*       ld bc, (ubc)
+       04          
+04202C ED 5B 37 03 0108*       ld de, (ude)
+       04          
+042031 DD 2A 3A 03 0109*       ld ix, (uix)
+       04          
+042036 FD 2A 3D 03 0110*       ld iy, (uiy)
+       04          
+04203B F1          0111*       pop af
+04203C             0112*   ; all done
+04203C C9          0113*       ret
+04203D             0114*   
+04203D             0115*   
+04203D             0116*   ; print registers to screen in hexidecimal format
+04203D             0117*   ; inputs: none
+04203D             0118*   ; outputs: values of every register printed to screen
+04203D             0119*   ;    values of each register in global scratch memory
+04203D             0120*   ; destroys: nothing
+04203D             0121*   stepRegistersHex:
+04203D             0122*   ; store everything in scratch
+04203D 22 31 03 04 0123*       ld (uhl),hl
+042041 ED 43 34 03 0124*       ld (ubc),bc
+       04          
+042046 ED 53 37 03 0125*       ld (ude),de
+       04          
+04204B DD 22 3A 03 0126*       ld (uix),ix
+       04          
+042050 FD 22 3D 03 0127*       ld (uiy),iy
+       04          
+042055 F5          0128*       push af ; fml
+042056 E1          0129*       pop hl ; thanks, zilog
+042057 22 2E 03 04 0130*       ld (uaf),hl
+04205B F5          0131*       push af ; dammit
+04205C             0132*   
+04205C             0133*   ; home the cursor
+04205C             0134*       ; call vdu_home_cursor
+04205C             0135*   
+04205C             0136*   ; print each register
+04205C 21 B4 02 04 0137*       ld hl,str_afu
+042060 CD 63 00 04 0138*       call printString
+042064 2A 2E 03 04 0139*       ld hl,(uaf)
+042068 CD 9C 00 04 0140*       call printHex24
+04206C CD 78 00 04 0141*       call printNewLine
+042070             0142*   
+042070 21 B9 02 04 0143*       ld hl,str_hlu
+042074 CD 63 00 04 0144*       call printString
+042078 2A 31 03 04 0145*       ld hl,(uhl)
+04207C CD 9C 00 04 0146*       call printHex24
+042080 CD 78 00 04 0147*       call printNewLine
+042084             0148*   
+042084 21 BE 02 04 0149*       ld hl,str_bcu
+042088 CD 63 00 04 0150*       call printString
+04208C 2A 34 03 04 0151*       ld hl,(ubc)
+042090 CD 9C 00 04 0152*       call printHex24
+042094 CD 78 00 04 0153*       call printNewLine
+042098             0154*   
+042098 21 C3 02 04 0155*       ld hl,str_deu
+04209C CD 63 00 04 0156*       call printString
+0420A0 2A 37 03 04 0157*       ld hl,(ude)
+0420A4 CD 9C 00 04 0158*       call printHex24
+0420A8 CD 78 00 04 0159*       call printNewLine
+0420AC             0160*   
+0420AC 21 C8 02 04 0161*       ld hl,str_ixu
+0420B0 CD 63 00 04 0162*       call printString
+0420B4 2A 3A 03 04 0163*       ld hl,(uix)
+0420B8 CD 9C 00 04 0164*       call printHex24
+0420BC CD 78 00 04 0165*       call printNewLine
+0420C0             0166*   
+0420C0 21 CD 02 04 0167*       ld hl,str_iyu
+0420C4 CD 63 00 04 0168*       call printString
+0420C8 2A 3D 03 04 0169*       ld hl,(uiy)
+0420CC CD 9C 00 04 0170*       call printHex24
+0420D0 CD 78 00 04 0171*       call printNewLine
+0420D4             0172*   
+0420D4             0173*       ; call vsync
+0420D4             0174*   
+0420D4 CD 78 00 04 0175*       call printNewLine
+0420D8             0176*   
+0420D8             0177*   ; check for right shift key and quit if pressed
+0420D8             0178*       MOSCALL mos_getkbmap
+0420D8 3E 1E       0001*M1 			LD	A, function
+0420DA 5B CF       0002*M1 			RST.LIL	08h
+0420DC             0179*   @stayhere:
+0420DC             0180*   ; 7 RightShift
+0420DC DD CB 00 76 0181*       bit 6,(ix+0)
+0420E0 20 02       0182*       jr nz,@RightShift
+0420E2 18 F8       0183*       jr @stayhere
+0420E4             0184*   @RightShift:
+0420E4 DD CB 0E 86 0185*       res 0,(ix+14) ; debounce the key (hopefully)
+0420E8 3E 80       0186*       ld a,%10000000
+0420EA             0187*       ; call multiPurposeDelay
+0420EA             0188*   
+0420EA             0189*   ; restore everything
+0420EA 2A 31 03 04 0190*       ld hl, (uhl)
+0420EE ED 4B 34 03 0191*       ld bc, (ubc)
+       04          
+0420F3 ED 5B 37 03 0192*       ld de, (ude)
+       04          
+0420F8 DD 2A 3A 03 0193*       ld ix, (uix)
+       04          
+0420FD FD 2A 3D 03 0194*       ld iy, (uiy)
+       04          
+042102 F1          0195*       pop af
+042103             0196*   ; all done
+042103 C9          0197*       ret
+042104             0198*   
+042104             0199*   ; print registers to screen in hexidecimal format
+042104             0200*   ; inputs: none
+042104             0201*   ; outputs: values of every register printed to screen
+042104             0202*   ;    values of each register in global scratch memory
+042104             0203*   ; destroys: nothing
+042104             0204*   dumpRegistersHex:
+042104             0205*   ; store everything in scratch
+042104 22 31 03 04 0206*       ld (uhl),hl
+042108 ED 43 34 03 0207*       ld (ubc),bc
+       04          
+04210D ED 53 37 03 0208*       ld (ude),de
+       04          
+042112 DD 22 3A 03 0209*       ld (uix),ix
+       04          
+042117 FD 22 3D 03 0210*       ld (uiy),iy
+       04          
+04211C F5          0211*       push af ; fml
+04211D E1          0212*       pop hl ; thanks, zilog
+04211E 22 2E 03 04 0213*       ld (uaf),hl
+042122 F5          0214*       push af ; dammit
+042123             0215*   
+042123             0216*   ; home the cursor
+042123             0217*       ; call vdu_home_cursor
+042123             0218*       ; call printNewLine
+042123             0219*   
+042123             0220*   ; print each register
+042123 21 B4 02 04 0221*       ld hl,str_afu
+042127 CD 63 00 04 0222*       call printString
+04212B 2A 2E 03 04 0223*       ld hl,(uaf)
+04212F CD 9C 00 04 0224*       call printHex24
+042133 CD 78 00 04 0225*       call printNewLine
+042137             0226*   
+042137 21 B9 02 04 0227*       ld hl,str_hlu
+04213B CD 63 00 04 0228*       call printString
+04213F 2A 31 03 04 0229*       ld hl,(uhl)
+042143 CD 9C 00 04 0230*       call printHex24
+042147 CD 78 00 04 0231*       call printNewLine
+04214B             0232*   
+04214B 21 BE 02 04 0233*       ld hl,str_bcu
+04214F CD 63 00 04 0234*       call printString
+042153 2A 34 03 04 0235*       ld hl,(ubc)
+042157 CD 9C 00 04 0236*       call printHex24
+04215B CD 78 00 04 0237*       call printNewLine
+04215F             0238*   
+04215F 21 C3 02 04 0239*       ld hl,str_deu
+042163 CD 63 00 04 0240*       call printString
+042167 2A 37 03 04 0241*       ld hl,(ude)
+04216B CD 9C 00 04 0242*       call printHex24
+04216F CD 78 00 04 0243*       call printNewLine
+042173             0244*   
+042173 21 C8 02 04 0245*       ld hl,str_ixu
+042177 CD 63 00 04 0246*       call printString
+04217B 2A 3A 03 04 0247*       ld hl,(uix)
+04217F CD 9C 00 04 0248*       call printHex24
+042183 CD 78 00 04 0249*       call printNewLine
+042187             0250*   
+042187 21 CD 02 04 0251*       ld hl,str_iyu
+04218B CD 63 00 04 0252*       call printString
+04218F 2A 3D 03 04 0253*       ld hl,(uiy)
+042193 CD 9C 00 04 0254*       call printHex24
+042197             0255*   
+042197 CD 78 00 04 0256*       call printNewLine
+04219B CD 78 00 04 0257*       call printNewLine
+04219F             0258*   ; restore everything
+04219F 2A 31 03 04 0259*       ld hl, (uhl)
+0421A3 ED 4B 34 03 0260*       ld bc, (ubc)
+       04          
+0421A8 ED 5B 37 03 0261*       ld de, (ude)
+       04          
+0421AD DD 2A 3A 03 0262*       ld ix, (uix)
+       04          
+0421B2 FD 2A 3D 03 0263*       ld iy, (uiy)
+       04          
+0421B7 F1          0264*       pop af
+0421B8             0265*   ; all done
+0421B8 C9          0266*       ret
+0421B9             0267*   
+0421B9             0268*   dumpRegistersHexPrime:
+0421B9 D9          0269*       exx
+0421BA 08          0270*       ex af,af'
+0421BB CD 04 21 04 0271*       call dumpRegistersHex
+0421BF 08          0272*       ex af,af'
+0421C0 D9          0273*       exx
+0421C1 C9          0274*       ret
+0421C2             0275*   
+0421C2             0276*   ; additionally dump prime registers
+0421C2             0277*   ; inputs: none
+0421C2             0278*   ; outputs: values of every register printed to screen
+0421C2             0279*   ; destroys: nothing
+0421C2             0280*   dumpRegistersHexAll:
+0421C2 CD 04 21 04 0281*       call dumpRegistersHex
+0421C6 08          0282*       ex af,af'
+0421C7 D9          0283*       exx
+0421C8 CD 04 21 04 0284*       call dumpRegistersHex
+0421CC 08          0285*       ex af,af'
+0421CD D9          0286*       exx
+0421CE C9          0287*       ret
+0421CF             0288*   
+0421CF             0289*   ; print hlu to screen in hexidecimal format
+0421CF             0290*   ; inputs: none
+0421CF             0291*   ; destroys: nothing
+0421CF             0292*   print_hex_hl:
+0421CF F5          0293*       push af
+0421D0 E5          0294*       push hl
+0421D1 21 B9 02 04 0295*       ld hl,str_hlu
+0421D5 CD 63 00 04 0296*       call printString
+0421D9 E1          0297*       pop hl
+0421DA E5          0298*       push hl
+0421DB CD 9C 00 04 0299*       call printHex24
+0421DF 3E 20       0300*       ld a,' '
+0421E1 5B D7       0301*       rst.lil 10h
+0421E3 E1          0302*       pop hl
+0421E4 F1          0303*       pop af
+0421E5 C9          0304*       ret
+0421E6             0305*   
+0421E6             0306*   ; print bcu to screen in hexidecimal format
+0421E6             0307*   ; inputs: none
+0421E6             0308*   ; destroys: nothing
+0421E6             0309*   print_hex_bc:
+0421E6 F5          0310*       push af
+0421E7 E5          0311*       push hl
+0421E8 C5          0312*       push bc
+0421E9 21 BE 02 04 0313*       ld hl,str_bcu
+0421ED CD 63 00 04 0314*       call printString
+0421F1 E1          0315*       pop hl
+0421F2 E5          0316*       push hl
+0421F3 CD 9C 00 04 0317*       call printHex24
+0421F7 3E 20       0318*       ld a,' '
+0421F9 5B D7       0319*       rst.lil 10h
+0421FB C1          0320*       pop bc
+0421FC E1          0321*       pop hl
+0421FD F1          0322*       pop af
+0421FE C9          0323*       ret
+0421FF             0324*   
+0421FF             0325*   ; print deu to screen in hexidecimal format
+0421FF             0326*   ; inputs: none
+0421FF             0327*   ; destroys: nothing
+0421FF             0328*   print_hex_de:
+0421FF F5          0329*       push af
+042200 E5          0330*       push hl
+042201 D5          0331*       push de
+042202 21 C3 02 04 0332*       ld hl,str_deu
+042206 CD 63 00 04 0333*       call printString
+04220A E1          0334*       pop hl
+04220B E5          0335*       push hl
+04220C CD 9C 00 04 0336*       call printHex24
+042210 3E 20       0337*       ld a,' '
+042212 5B D7       0338*       rst.lil 10h
+042214 D1          0339*       pop de
+042215 E1          0340*       pop hl
+042216 F1          0341*       pop af
+042217 C9          0342*       ret
+042218             0343*   
+042218             0344*   
+042218             0345*   ; inputs: whatever is in the flags register
+042218             0346*   ; outputs: binary representation of flags
+042218             0347*   ;          with a header so we know which is what
+042218             0348*   ; destroys: nothing
+042218             0349*   ; preserves: everything
+042218             0350*   dumpFlags:
+042218             0351*   ; first we curse zilog for not giving direct access to flags
+042218 F5          0352*       push af ; this is so we can send it back unharmed
+042219 F5          0353*       push af ; this is so we can pop it to hl
+04221A             0354*   ; store everything in scratch
+04221A 22 31 03 04 0355*       ld (uhl),hl
+04221E ED 43 34 03 0356*       ld (ubc),bc
+       04          
+042223 ED 53 37 03 0357*       ld (ude),de
+       04          
+042228 DD 22 3A 03 0358*       ld (uix),ix
+       04          
+04222D FD 22 3D 03 0359*       ld (uiy),iy
+       04          
+042232             0360*   ; next we print the header
+042232 21 5E 22 04 0361*       ld hl,@header
+042236 CD 63 00 04 0362*       call printString
+04223A E1          0363*       pop hl ; flags are now in l
+04223B 7D          0364*       ld a,l ; flags are now in a
+04223C CD 6A 02 04 0365*       call printBin8
+042240 CD 78 00 04 0366*       call printNewLine
+042244             0367*   ; restore everything
+042244 2A 31 03 04 0368*       ld hl, (uhl)
+042248 ED 4B 34 03 0369*       ld bc, (ubc)
+       04          
+04224D ED 5B 37 03 0370*       ld de, (ude)
+       04          
+042252 DD 2A 3A 03 0371*       ld ix, (uix)
+       04          
+042257 FD 2A 3D 03 0372*       ld iy, (uiy)
+       04          
+04225C F1          0373*       pop af ; send her home the way she came
+04225D C9          0374*       ret
+04225E             0375*   ; Bit 7 (S): Sign flag
+04225E             0376*   ; Bit 6 (Z): Zero flag
+04225E             0377*   ; Bit 5 (5): Reserved (copy of bit 5 of the result)
+04225E             0378*   ; Bit 4 (H): Half Carry flag
+04225E             0379*   ; Bit 3 (3): Reserved (copy of bit 3 of the result)
+04225E             0380*   ; Bit 2 (PV): Parity/Overflow flag
+04225E             0381*   ; Bit 1 (N): Subtract flag
+04225E             0382*   ; Bit 0 (C): Carry flag
+04225E 53 5A 78 48 0383*   @header: db "SZxHxPNC\r\n",0 ; cr/lf and 0 terminator
+       78 50 4E 43 
+       0D 0A 00    
+042269             0384*   
+042269             0385*   
+042269             0386*   ; print bytes from an address to the screen in hexidecimal format
+042269             0387*   ; inputs: hl = address of first byte to print, a = number of bytes to print
+042269             0388*   ; outputs: values of each byte printed to screen separated by spaces
+042269             0389*   ; destroys: nothing
+042269             0390*   dumpMemoryHex:
+042269             0391*   ; save registers to the stack
+042269 C5          0392*       push bc
+04226A E5          0393*       push hl
+04226B F5          0394*       push af
+04226C             0395*   
+04226C             0396*   ; print the address and separator
+04226C CD 9C 00 04 0397*       call printHex24
+042270 3E 3A       0398*       ld a,':'
+042272 5B D7       0399*       rst.lil 10h
+042274 3E 20       0400*       ld a,' '
+042276 5B D7       0401*       rst.lil 10h
+042278             0402*   
+042278             0403*   ; set b to be our loop counter
+042278 F1          0404*       pop af
+042279 47          0405*       ld b,a
+04227A E1          0406*       pop hl
+04227B E5          0407*       push hl
+04227C F5          0408*       push af
+04227D             0409*   @loop:
+04227D             0410*   ; print the byte
+04227D 7E          0411*       ld a,(hl)
+04227E CD AA 00 04 0412*       call printHex8
+042282             0413*   ; print a space
+042282 3E 20       0414*       ld a,' '
+042284 5B D7       0415*       rst.lil 10h
+042286 23          0416*       inc hl
+042287 10 F4       0417*       djnz @loop
+042289 CD 78 00 04 0418*       call printNewLine
+04228D             0419*   
+04228D             0420*   ; restore everything
+04228D F1          0421*       pop af
+04228E E1          0422*       pop hl
+04228F C1          0423*       pop bc
+042290             0424*   
+042290             0425*   ; all done
+042290 C9          0426*       ret
+042291             0427*   
+042291             0428*   
+042291             0429*   ; print bytes from an address to the screen in binary format
+042291             0430*   ; inputs: hl = address of first byte to print, a = number of bytes to print
+042291             0431*   ; outputs: values of each byte printed to screen separated by spaces
+042291             0432*   ; destroys: nothing
+042291             0433*   dumpMemoryBin:
+042291             0434*   ; save all registers to the stack
+042291 F5          0435*       push af
+042292 C5          0436*       push bc
+042293 D5          0437*       push de
+042294 E5          0438*       push hl
+042295 DD E5       0439*       push ix
+042297 FD E5       0440*       push iy
+042299             0441*   
+042299             0442*   ; set b to be our loop counter
+042299 47          0443*       ld b,a
+04229A             0444*   @loop:
+04229A             0445*   ; print the byte
+04229A 7E          0446*       ld a,(hl)
+04229B E5          0447*       push hl
+04229C C5          0448*       push bc
+04229D CD 6A 02 04 0449*       call printBin8
+0422A1 C1          0450*       pop bc
+0422A2             0451*   ; print a space
+0422A2 3E 20       0452*       ld a,' '
+0422A4 5B D7       0453*       rst.lil 10h
+0422A6 E1          0454*       pop hl
+0422A7 23          0455*       inc hl
+0422A8 10 F0       0456*       djnz @loop
+0422AA CD 78 00 04 0457*       call printNewLine
+0422AE             0458*   
+0422AE             0459*   ; restore everything
+0422AE FD E1       0460*       pop iy
+0422B0 DD E1       0461*       pop ix
+0422B2 E1          0462*       pop hl
+0422B3 D1          0463*       pop de
+0422B4 C1          0464*       pop bc
+0422B5 F1          0465*       pop af
+0422B6             0466*   ; all done
+0422B6 C9          0467*       ret
+0422B7             0468*   
+0422B7             0469*   ; print bytes from an address to the screen in binary format
+0422B7             0470*   ; with the bits of each byte in reverse order (lsb first)
+0422B7             0471*   ; inputs: hl = address of first byte to print, a = number of bytes to print
+0422B7             0472*   ; outputs: values of each byte printed to screen separated by spaces
+0422B7             0473*   ; destroys: nothing
+0422B7             0474*   dumpMemoryBinRev:
+0422B7             0475*   ; save all registers to the stack
+0422B7 F5          0476*       push af
+0422B8 C5          0477*       push bc
+0422B9 D5          0478*       push de
+0422BA E5          0479*       push hl
+0422BB DD E5       0480*       push ix
+0422BD FD E5       0481*       push iy
+0422BF             0482*   
+0422BF             0483*   ; set b to be our loop counter
+0422BF 47          0484*       ld b,a
+0422C0             0485*   @loop:
+0422C0             0486*   ; print the byte
+0422C0 7E          0487*       ld a,(hl)
+0422C1 E5          0488*       push hl
+0422C2 C5          0489*       push bc
+0422C3 CD 8F 02 04 0490*       call printBin8Rev
+0422C7 C1          0491*       pop bc
+0422C8             0492*   ; print a space
+0422C8 3E 20       0493*       ld a,' '
+0422CA 5B D7       0494*       rst.lil 10h
+0422CC E1          0495*       pop hl
+0422CD 23          0496*       inc hl
+0422CE 10 F0       0497*       djnz @loop
+0422D0 CD 78 00 04 0498*       call printNewLine
+0422D4             0499*   
+0422D4             0500*   ; restore everything
+0422D4 FD E1       0501*       pop iy
+0422D6 DD E1       0502*       pop ix
+0422D8 E1          0503*       pop hl
+0422D9 D1          0504*       pop de
+0422DA C1          0505*       pop bc
+0422DB F1          0506*       pop af
+0422DC             0507*   ; all done
+0422DC C9          0508*       ret
+0422DD             0509*   
+0422DD             0510*   DEBUG_PRINT:
+0422DD             0511*       PUSH_ALL
+0422DD 08          0001*M1     ex af,af'
+0422DE D9          0002*M1     exx
+0422DF F5          0003*M1     push af
+0422E0 E5          0004*M1     push hl
+0422E1 C5          0005*M1     push bc
+0422E2 D5          0006*M1     push de
+0422E3             0007*M1 
+0422E3 08          0008*M1     ex af,af'
+0422E4 D9          0009*M1     exx
+0422E5 F5          0010*M1     push af
+0422E6 E5          0011*M1     push hl
+0422E7 C5          0012*M1     push bc
+0422E8 D5          0013*M1     push de
+0422E9 DD E5       0014*M1     push ix
+0422EB FD E5       0015*M1     push iy
+0422ED 0E 00       0512*       ld c,0 ; X
+0422EF 06 00       0513*       ld b,0 ; Y
+0422F1 CD 4A 11 04 0514*       call vdu_move_cursor
+0422F5             0515*       POP_ALL
+0422F5 FD E1       0001*M1     pop iy
+0422F7 DD E1       0002*M1     pop ix
+0422F9 D1          0003*M1     pop de
+0422FA C1          0004*M1     pop bc
+0422FB E1          0005*M1     pop hl
+0422FC F1          0006*M1     pop af
+0422FD 08          0007*M1     ex af,af'
+0422FE D9          0008*M1     exx
+0422FF             0009*M1 
+0422FF D1          0010*M1     pop de
+042300 C1          0011*M1     pop bc
+042301 E1          0012*M1     pop hl
+042302 F1          0013*M1     pop af
+042303 08          0014*M1     ex af,af'
+042304 D9          0015*M1     exx
+042305             0516*       PUSH_ALL
+042305 08          0001*M1     ex af,af'
+042306 D9          0002*M1     exx
+042307 F5          0003*M1     push af
+042308 E5          0004*M1     push hl
+042309 C5          0005*M1     push bc
+04230A D5          0006*M1     push de
+04230B             0007*M1 
+04230B 08          0008*M1     ex af,af'
+04230C D9          0009*M1     exx
+04230D F5          0010*M1     push af
+04230E E5          0011*M1     push hl
+04230F C5          0012*M1     push bc
+042310 D5          0013*M1     push de
+042311 DD E5       0014*M1     push ix
+042313 FD E5       0015*M1     push iy
+042315 CD 18 22 04 0517*       call dumpFlags
+042319             0518*       POP_ALL
+042319 FD E1       0001*M1     pop iy
+04231B DD E1       0002*M1     pop ix
+04231D D1          0003*M1     pop de
+04231E C1          0004*M1     pop bc
+04231F E1          0005*M1     pop hl
+042320 F1          0006*M1     pop af
+042321 08          0007*M1     ex af,af'
+042322 D9          0008*M1     exx
+042323             0009*M1 
+042323 D1          0010*M1     pop de
+042324 C1          0011*M1     pop bc
+042325 E1          0012*M1     pop hl
+042326 F1          0013*M1     pop af
+042327 08          0014*M1     ex af,af'
+042328 D9          0015*M1     exx
+042329             0519*       PUSH_ALL
+042329 08          0001*M1     ex af,af'
+04232A D9          0002*M1     exx
+04232B F5          0003*M1     push af
+04232C E5          0004*M1     push hl
+04232D C5          0005*M1     push bc
+04232E D5          0006*M1     push de
+04232F             0007*M1 
+04232F 08          0008*M1     ex af,af'
+042330 D9          0009*M1     exx
+042331 F5          0010*M1     push af
+042332 E5          0011*M1     push hl
+042333 C5          0012*M1     push bc
+042334 D5          0013*M1     push de
+042335 DD E5       0014*M1     push ix
+042337 FD E5       0015*M1     push iy
+042339 CD 04 21 04 0520*       call dumpRegistersHex
+04233D             0521*       ; call waitKeypress
+04233D             0522*       POP_ALL
+04233D FD E1       0001*M1     pop iy
+04233F DD E1       0002*M1     pop ix
+042341 D1          0003*M1     pop de
+042342 C1          0004*M1     pop bc
+042343 E1          0005*M1     pop hl
+042344 F1          0006*M1     pop af
+042345 08          0007*M1     ex af,af'
+042346 D9          0008*M1     exx
+042347             0009*M1 
+042347 D1          0010*M1     pop de
+042348 C1          0011*M1     pop bc
+042349 E1          0012*M1     pop hl
+04234A F1          0013*M1     pop af
+04234B 08          0014*M1     ex af,af'
+04234C D9          0015*M1     exx
+04234D C9          0523*       ret
+04234E             0524*   DEBUG_WAITKEYPRESS:
+04234E             0525*       PUSH_ALL
+04234E 08          0001*M1     ex af,af'
+04234F D9          0002*M1     exx
+042350 F5          0003*M1     push af
+042351 E5          0004*M1     push hl
+042352 C5          0005*M1     push bc
+042353 D5          0006*M1     push de
+042354             0007*M1 
+042354 08          0008*M1     ex af,af'
+042355 D9          0009*M1     exx
+042356 F5          0010*M1     push af
+042357 E5          0011*M1     push hl
+042358 C5          0012*M1     push bc
+042359 D5          0013*M1     push de
+04235A DD E5       0014*M1     push ix
+04235C FD E5       0015*M1     push iy
+04235E CD 56 03 04 0526*       call waitKeypress
+042362             0527*       POP_ALL
+042362 FD E1       0001*M1     pop iy
+042364 DD E1       0002*M1     pop ix
+042366 D1          0003*M1     pop de
+042367 C1          0004*M1     pop bc
+042368 E1          0005*M1     pop hl
+042369 F1          0006*M1     pop af
+04236A 08          0007*M1     ex af,af'
+04236B D9          0008*M1     exx
+04236C             0009*M1 
+04236C D1          0010*M1     pop de
+04236D C1          0011*M1     pop bc
+04236E E1          0012*M1     pop hl
+04236F F1          0013*M1     pop af
+042370 08          0014*M1     ex af,af'
+042371 D9          0015*M1     exx
+042372 C9          0528*       RET
+042373             0529*   
+042373             0530*   dumpVduCmdStr:
+042373             0531*       PUSH_ALL
+042373 08          0001*M1     ex af,af'
+042374 D9          0002*M1     exx
+042375 F5          0003*M1     push af
+042376 E5          0004*M1     push hl
+042377 C5          0005*M1     push bc
+042378 D5          0006*M1     push de
+042379             0007*M1 
+042379 08          0008*M1     ex af,af'
+04237A D9          0009*M1     exx
+04237B F5          0010*M1     push af
+04237C E5          0011*M1     push hl
+04237D C5          0012*M1     push bc
+04237E D5          0013*M1     push de
+04237F DD E5       0014*M1     push ix
+042381 FD E5       0015*M1     push iy
+042383 79          0532*       ld a,c
+042384 CD 69 22 04 0533*       call dumpMemoryHex
+042388 CD 56 03 04 0534*       call waitKeypress
+04238C             0535*       POP_ALL
+04238C FD E1       0001*M1     pop iy
+04238E DD E1       0002*M1     pop ix
+042390 D1          0003*M1     pop de
+042391 C1          0004*M1     pop bc
+042392 E1          0005*M1     pop hl
+042393 F1          0006*M1     pop af
+042394 08          0007*M1     ex af,af'
+042395 D9          0008*M1     exx
+042396             0009*M1 
+042396 D1          0010*M1     pop de
+042397 C1          0011*M1     pop bc
+042398 E1          0012*M1     pop hl
+042399 F1          0013*M1     pop af
+04239A 08          0014*M1     ex af,af'
+04239B D9          0015*M1     exx
+04239C C9          0536*       ret
+04239D             0537*   ; end dumpVduCmdStr
+04239D             0046    
+04239D             0047    ; --- MAIN PROGRAM FILE ---
+04239D             0048    main:
+04239D CD 2E 15 04 0049        call vdu_clear_all_buffers
+0423A1             0050    
+0423A1 CD 5C 00 04 0051        call printInline
+0423A5 4C 6F 61 64 0052        asciz "Loading SFX...\r\n"
        69 6E 67 20 
        53 46 58 2E 
        2E 2E 0D 0A 
        00          
-041F9F             0050    	; call load_sfx_AFRICA
-041F9F             0051    	; call load_sfx_ANYTIME
-041F9F             0052    	; call load_sfx_BARRACUDA
-041F9F             0053    	; call load_sfx_COME_UNDONE
-041F9F             0054    	; call load_sfx_EVERY_BREATH_YOU_TAKE
-041F9F CD CD 1D 04 0055    	call load_sfx_RHIANNON
-041FA3             0056    	; call load_sfx_TAKE_A_RIDE
-041FA3             0057    	; call load_sfx_AMBIENT_BEAT70
-041FA3             0058    	; call load_sfx_SPACE_ADVENTURE
-041FA3 CD 5C 00 04 0059        call printInline
-041FA7 53 46 58 20 0060        asciz "SFX loaded.\r\n"
+0423B6 CD 11 1E 04 0053    	call load_sfx_AMBIENT_BEAT70
+0423BA CD 5C 00 04 0054        call printInline
+0423BE 53 46 58 20 0055        asciz "SFX loaded.\r\n"
        6C 6F 61 64 
        65 64 2E 0D 
        0A 00       
-041FB5             0061    
-041FB5             0062    @loop:
-041FB5 CD 56 03 04 0063        call waitKeypress
-041FB9 FE 1B       0064        cp '\e'
-041FBB C8          0065        ret z
-041FBC FE 31       0066        cp '1'
-041FBE CC 1E 1F 04 0067        call z,sfx_play_AFRICA
-041FC2 FE 32       0068        cp '2'
-041FC4 CC 2A 1F 04 0069        call z,sfx_play_ANYTIME
-041FC8 FE 33       0070        cp '3'
-041FCA CC 36 1F 04 0071        call z,sfx_play_BARRACUDA
-041FCE FE 34       0072        cp '4'
-041FD0 CC 42 1F 04 0073        call z,sfx_play_COME_UNDONE
-041FD4 FE 35       0074        cp '5'
-041FD6 CC 4E 1F 04 0075        call z,sfx_play_EVERY_BREATH_YOU_TAKE
-041FDA FE 36       0076        cp '6'
-041FDC CC 5A 1F 04 0077        call z,sfx_play_RHIANNON
-041FE0 FE 37       0078        cp '7'
-041FE2 CC 66 1F 04 0079        call z,sfx_play_TAKE_A_RIDE
-041FE6 FE 38       0080        cp '8'
-041FE8 CC 72 1F 04 0081        call z,sfx_play_AMBIENT_BEAT70
-041FEC FE 39       0082        cp '9'
-041FEE CC 7E 1F 04 0083        call z,sfx_play_SPACE_ADVENTURE
-041FF2 C3 B5 1F 04 0084        jp @loop
-041FF6             0085    ; end main
-041FF6             0086    
+0423CC             0056    
+0423CC CD 00 24 04 0057        call load_command_buffer
+0423D0             0058    
+0423D0             0059    @loop:
+0423D0 CD 56 03 04 0060        call waitKeypress
+0423D4 FE 1B       0061        cp '\e'
+0423D6 C8          0062        ret z
+0423D7 FE 31       0063        cp '1'
+0423D9 CC E1 23 04 0064        call z,play_song_temp
+0423DD C3 D0 23 04 0065        jp @loop
+0423E1             0066    ; end main
+0423E1             0067    
+0423E1             0068    
+0423E1             0069    play_song_temp:
+0423E1 CD 5C 00 04 0070        call printInline
+0423E5 50 6C 61 79 0071        asciz "Playing song...\r\n"
+       69 6E 67 20 
+       73 6F 6E 67 
+       2E 2E 2E 0D 
+       0A 00       
+0423F7 21 00 30 00 0072        ld hl,ch0_buffer
+0423FB CD F8 14 04 0073        call vdu_call_buffer
+0423FF             0074    
+0423FF             0075        ; ld hl,BUF_AMBIENT_BEAT70
+0423FF             0076        ; ld c,0 ; channel 0
+0423FF             0077        ; ld b,8 ; waveform = sample
+0423FF             0078        ; call vdu_channel_waveform
+0423FF             0079    
+0423FF             0080        ; ld b,127 ; volume
+0423FF             0081        ; ld c,0 ; channel 0
+0423FF             0082        ; ld hl,0 ; frequency (doesn't matter for samples)
+0423FF             0083        ; ld de,0 ; duration 0 means play whole sample once
+0423FF             0084        ; call vdu_play_note
+0423FF             0085    
+0423FF C9          0086        ret
+042400             0087    
+042400             0088    
+042400             0089    load_command_buffer:
+042400 21 00 30 00 0090        ld hl,ch0_buffer
+042404 CD 13 15 04 0091        call vdu_clear_buffer
+042408             0092    
+042408 21 00 30 00 0093        ld hl,ch0_buffer
+04240C 01 12 00 00 0094        ld bc,@sample_end-@sample
+042410 11 19 24 04 0095        ld de,@sample
+042414 CD D0 14 04 0096        call vdu_write_block_to_buffer
+042418 C9          0097        ret
+042419             0098    @sample:
+042419             0099    ; Command 4: Set waveform
+042419             0100    ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
+042419 17 00 85    0101        .db 23,0,$85                        ; do sound
+04241C             0102    @channel0:
+04241C 00 04 08    0103        .db 0,4,8 ; channel, command, waveform
+04241F             0104    @bufferId:
+04241F 07 30       0105        .dw BUF_AMBIENT_BEAT70
+042421             0106    ; Command 0: Play note
+042421             0107    ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
+042421 17 00 85    0108        .db 23,0,$85                        ; do sound
+042424             0109    @channel1:
+042424 00 00 7F    0110        .db 0,0,127                ; channel, volume
+042427 00 00       0111        .dw 0
+042429             0112    @duration:                              ; freq (tuneable samples only)
+042429 00 00       0113        .dw 0x0000                        ; duration
+04242B             0114    @sample_end:
