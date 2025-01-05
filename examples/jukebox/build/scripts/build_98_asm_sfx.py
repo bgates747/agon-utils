@@ -1,4 +1,6 @@
 import sqlite3
+import os
+import subprocess
 
 def make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate):
     # Connect to the database
@@ -99,6 +101,28 @@ def make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate
 
     # Close the connection
     conn.close()
+
+def assemble_jukebox():
+    """
+    Executes the equivalent of the shell command:
+    (cd src/asm && ez80asm -l jukebox_old.asm ../../tgt/jukebox.bin)
+    Ensures the working directory is restored to its original state.
+    """
+    original_cwd = os.getcwd()  # Save the current working directory
+    try:
+        os.chdir('src/asm')  # Change to the target directory
+        # Run the subprocess command
+        subprocess.run(
+            ['ez80asm', '-l', 'jukebox_old.asm', '../../tgt/jukebox.bin'],
+            check=True
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Error: Assembly process failed with return code {e.returncode}")
+    except FileNotFoundError:
+        print("Error: Command 'ez80asm' or the specified files not found.")
+    finally:
+        os.chdir(original_cwd)  # Restore the original working directory
+
             
 
 if __name__ == "__main__":
@@ -106,6 +130,9 @@ if __name__ == "__main__":
     asm_tgt_dir = 'music'
     sfx_inc_path = f"src/asm/music.inc"
     next_buffer_id = 0x3000
+    # sample_rate = 44100 # standard high quality audio
     # sample_rate = 16384 # default rate for Agon
+    # sample_rate = 16000 # A standard Audacity option
     sample_rate = 15360 # for 8-bit PCM this is 256 bytes per 1/60th of a second
     make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate)
+    assemble_jukebox()

@@ -28,8 +28,8 @@ PC     Output      Line
 040048 DD E5       0013        push ix
 04004A FD E5       0014        push iy
 04004C             0015    
-04004C CD 59 1E 04 0016        call init
-040050 CD 5A 1E 04 0017        call main
+04004C CD 8A 1F 04 0016        call init
+040050 CD 8B 1F 04 0017        call main
 040054             0018    
 040054             0019    exit:
 040054 FD E1       0020        pop iy
@@ -5145,118 +5145,196 @@ PC     Output      Line
 041CD2             0045        include "music.inc"
 041CD2             0001*   ; This file is created by build_98_asm_sfx.py, do not edit it!
 041CD2             0002*   
-041CD2             0003*   SFX_num_buffers: equ 5
+041CD2             0003*   SFX_num_buffers: equ 9
 041CD2             0004*   ; SFX buffer ids:
 041CD2             0005*   BUF_AFRICA: equ 0x3000
-041CD2             0006*   BUF_COME_UNDONE: equ 0x3001
-041CD2             0007*   BUF_EVERY_BREATH_YOU_TAKE: equ 0x3002
-041CD2             0008*   BUF_RHIANNON: equ 0x3003
-041CD2             0009*   BUF_SPACE_ADVENTURE: equ 0x3004
-041CD2             0010*   
-041CD2             0011*   ; SFX buffer id reverse lookup:
-041CD2             0012*   SFX_buffer_id_lut:
-041CD2 00 30 00    0013*   	dl BUF_AFRICA
-041CD5 01 30 00    0014*   	dl BUF_COME_UNDONE
-041CD8 02 30 00    0015*   	dl BUF_EVERY_BREATH_YOU_TAKE
-041CDB 03 30 00    0016*   	dl BUF_RHIANNON
-041CDE 04 30 00    0017*   	dl BUF_SPACE_ADVENTURE
-041CE1             0018*   
-041CE1             0019*   ; SFX duration lookup:
-041CE1             0020*   SFX_duration_lut:
-041CE1 54 72 00    0021*   	dl 29268 ; AFRICA
-041CE4 54 72 00    0022*   	dl 29268 ; COME_UNDONE
-041CE7 54 72 00    0023*   	dl 29268 ; EVERY_BREATH_YOU_TAKE
-041CEA 54 72 00    0024*   	dl 29268 ; RHIANNON
-041CED 5C 72 00    0025*   	dl 29276 ; SPACE_ADVENTURE
-041CF0             0026*   
-041CF0             0027*   ; SFX load routines jump table:
-041CF0             0028*   SFX_load_routines_table:
-041CF0 FF 1C 04    0029*   	dl load_sfx_AFRICA
-041CF3 21 1D 04    0030*   	dl load_sfx_COME_UNDONE
-041CF6 43 1D 04    0031*   	dl load_sfx_EVERY_BREATH_YOU_TAKE
-041CF9 65 1D 04    0032*   	dl load_sfx_RHIANNON
-041CFC 87 1D 04    0033*   	dl load_sfx_SPACE_ADVENTURE
-041CFF             0034*   
-041CFF             0035*   ; Import sfx .raw files and load them into VDP buffers
-041CFF             0036*   
-041CFF             0037*   load_sfx_AFRICA:
-041CFF 21 A9 1D 04 0038*   	ld hl,FAFRICA
-041D03 11 00 E0 B7 0039*   	ld de,filedata
-041D07 01 00 00 01 0040*   	ld bc,65536
-041D0B 3E 01       0041*   	ld a,mos_load
-041D0D 5B CF       0042*   	RST.LIL 08h
-041D0F 21 00 30 00 0043*   	ld hl,BUF_AFRICA
-041D13 11 00 3C 00 0044*   	ld de,15360
-041D17 FD 21 A9 1D 0045*   	ld iy,FAFRICA
+041CD2             0006*   BUF_ANYTIME: equ 0x3001
+041CD2             0007*   BUF_BARRACUDA: equ 0x3002
+041CD2             0008*   BUF_COME_UNDONE: equ 0x3003
+041CD2             0009*   BUF_EVERY_BREATH_YOU_TAKE: equ 0x3004
+041CD2             0010*   BUF_RHIANNON: equ 0x3005
+041CD2             0011*   BUF_TAKE_A_RIDE: equ 0x3006
+041CD2             0012*   BUF_AMBIENT_BEAT70: equ 0x3007
+041CD2             0013*   BUF_SPACE_ADVENTURE: equ 0x3008
+041CD2             0014*   
+041CD2             0015*   ; SFX buffer id reverse lookup:
+041CD2             0016*   SFX_buffer_id_lut:
+041CD2 00 30 00    0017*   	dl BUF_AFRICA
+041CD5 01 30 00    0018*   	dl BUF_ANYTIME
+041CD8 02 30 00    0019*   	dl BUF_BARRACUDA
+041CDB 03 30 00    0020*   	dl BUF_COME_UNDONE
+041CDE 04 30 00    0021*   	dl BUF_EVERY_BREATH_YOU_TAKE
+041CE1 05 30 00    0022*   	dl BUF_RHIANNON
+041CE4 06 30 00    0023*   	dl BUF_TAKE_A_RIDE
+041CE7 07 30 00    0024*   	dl BUF_AMBIENT_BEAT70
+041CEA 08 30 00    0025*   	dl BUF_SPACE_ADVENTURE
+041CED             0026*   
+041CED             0027*   ; SFX duration lookup:
+041CED             0028*   SFX_duration_lut:
+041CED 55 72 00    0029*   	dl 29269 ; AFRICA
+041CF0 55 72 00    0030*   	dl 29269 ; ANYTIME
+041CF3 55 72 00    0031*   	dl 29269 ; BARRACUDA
+041CF6 55 72 00    0032*   	dl 29269 ; COME_UNDONE
+041CF9 55 72 00    0033*   	dl 29269 ; EVERY_BREATH_YOU_TAKE
+041CFC 55 72 00    0034*   	dl 29269 ; RHIANNON
+041CFF 55 72 00    0035*   	dl 29269 ; TAKE_A_RIDE
+041D02 54 72 00    0036*   	dl 29268 ; AMBIENT_BEAT70
+041D05 78 72 00    0037*   	dl 29304 ; SPACE_ADVENTURE
+041D08             0038*   
+041D08             0039*   ; SFX load routines jump table:
+041D08             0040*   SFX_load_routines_table:
+041D08 23 1D 04    0041*   	dl load_sfx_AFRICA
+041D0B 45 1D 04    0042*   	dl load_sfx_ANYTIME
+041D0E 67 1D 04    0043*   	dl load_sfx_BARRACUDA
+041D11 89 1D 04    0044*   	dl load_sfx_COME_UNDONE
+041D14 AB 1D 04    0045*   	dl load_sfx_EVERY_BREATH_YOU_TAKE
+041D17 CD 1D 04    0046*   	dl load_sfx_RHIANNON
+041D1A EF 1D 04    0047*   	dl load_sfx_TAKE_A_RIDE
+041D1D 11 1E 04    0048*   	dl load_sfx_AMBIENT_BEAT70
+041D20 33 1E 04    0049*   	dl load_sfx_SPACE_ADVENTURE
+041D23             0050*   
+041D23             0051*   ; Import sfx .raw files and load them into VDP buffers
+041D23             0052*   
+041D23             0053*   load_sfx_AFRICA:
+041D23 21 55 1E 04 0054*   	ld hl,FAFRICA
+041D27 11 00 E0 B7 0055*   	ld de,filedata
+041D2B 01 00 00 01 0056*   	ld bc,65536
+041D2F 3E 01       0057*   	ld a,mos_load
+041D31 5B CF       0058*   	RST.LIL 08h
+041D33 21 00 30 00 0059*   	ld hl,BUF_AFRICA
+041D37 11 80 3E 00 0060*   	ld de,16000
+041D3B FD 21 55 1E 0061*   	ld iy,FAFRICA
        04          
-041D1C CD DB 16 04 0046*   	call vdu_load_sfx
-041D20 C9          0047*   	ret
-041D21             0048*   
-041D21             0049*   load_sfx_COME_UNDONE:
-041D21 21 BA 1D 04 0050*   	ld hl,FCOME_UNDONE
-041D25 11 00 E0 B7 0051*   	ld de,filedata
-041D29 01 00 00 01 0052*   	ld bc,65536
-041D2D 3E 01       0053*   	ld a,mos_load
-041D2F 5B CF       0054*   	RST.LIL 08h
-041D31 21 01 30 00 0055*   	ld hl,BUF_COME_UNDONE
-041D35 11 00 3C 00 0056*   	ld de,15360
-041D39 FD 21 BA 1D 0057*   	ld iy,FCOME_UNDONE
+041D40 CD DB 16 04 0062*   	call vdu_load_sfx
+041D44 C9          0063*   	ret
+041D45             0064*   
+041D45             0065*   load_sfx_ANYTIME:
+041D45 21 66 1E 04 0066*   	ld hl,FANYTIME
+041D49 11 00 E0 B7 0067*   	ld de,filedata
+041D4D 01 00 00 01 0068*   	ld bc,65536
+041D51 3E 01       0069*   	ld a,mos_load
+041D53 5B CF       0070*   	RST.LIL 08h
+041D55 21 01 30 00 0071*   	ld hl,BUF_ANYTIME
+041D59 11 80 3E 00 0072*   	ld de,16000
+041D5D FD 21 66 1E 0073*   	ld iy,FANYTIME
        04          
-041D3E CD DB 16 04 0058*   	call vdu_load_sfx
-041D42 C9          0059*   	ret
-041D43             0060*   
-041D43             0061*   load_sfx_EVERY_BREATH_YOU_TAKE:
-041D43 21 D0 1D 04 0062*   	ld hl,FEVERY_BREATH_YOU_TAKE
-041D47 11 00 E0 B7 0063*   	ld de,filedata
-041D4B 01 00 00 01 0064*   	ld bc,65536
-041D4F 3E 01       0065*   	ld a,mos_load
-041D51 5B CF       0066*   	RST.LIL 08h
-041D53 21 02 30 00 0067*   	ld hl,BUF_EVERY_BREATH_YOU_TAKE
-041D57 11 00 3C 00 0068*   	ld de,15360
-041D5B FD 21 D0 1D 0069*   	ld iy,FEVERY_BREATH_YOU_TAKE
+041D62 CD DB 16 04 0074*   	call vdu_load_sfx
+041D66 C9          0075*   	ret
+041D67             0076*   
+041D67             0077*   load_sfx_BARRACUDA:
+041D67 21 78 1E 04 0078*   	ld hl,FBARRACUDA
+041D6B 11 00 E0 B7 0079*   	ld de,filedata
+041D6F 01 00 00 01 0080*   	ld bc,65536
+041D73 3E 01       0081*   	ld a,mos_load
+041D75 5B CF       0082*   	RST.LIL 08h
+041D77 21 02 30 00 0083*   	ld hl,BUF_BARRACUDA
+041D7B 11 80 3E 00 0084*   	ld de,16000
+041D7F FD 21 78 1E 0085*   	ld iy,FBARRACUDA
        04          
-041D60 CD DB 16 04 0070*   	call vdu_load_sfx
-041D64 C9          0071*   	ret
-041D65             0072*   
-041D65             0073*   load_sfx_RHIANNON:
-041D65 21 F0 1D 04 0074*   	ld hl,FRHIANNON
-041D69 11 00 E0 B7 0075*   	ld de,filedata
-041D6D 01 00 00 01 0076*   	ld bc,65536
-041D71 3E 01       0077*   	ld a,mos_load
-041D73 5B CF       0078*   	RST.LIL 08h
-041D75 21 03 30 00 0079*   	ld hl,BUF_RHIANNON
-041D79 11 00 3C 00 0080*   	ld de,15360
-041D7D FD 21 F0 1D 0081*   	ld iy,FRHIANNON
+041D84 CD DB 16 04 0086*   	call vdu_load_sfx
+041D88 C9          0087*   	ret
+041D89             0088*   
+041D89             0089*   load_sfx_COME_UNDONE:
+041D89 21 8C 1E 04 0090*   	ld hl,FCOME_UNDONE
+041D8D 11 00 E0 B7 0091*   	ld de,filedata
+041D91 01 00 00 01 0092*   	ld bc,65536
+041D95 3E 01       0093*   	ld a,mos_load
+041D97 5B CF       0094*   	RST.LIL 08h
+041D99 21 03 30 00 0095*   	ld hl,BUF_COME_UNDONE
+041D9D 11 80 3E 00 0096*   	ld de,16000
+041DA1 FD 21 8C 1E 0097*   	ld iy,FCOME_UNDONE
        04          
-041D82 CD DB 16 04 0082*   	call vdu_load_sfx
-041D86 C9          0083*   	ret
-041D87             0084*   
-041D87             0085*   load_sfx_SPACE_ADVENTURE:
-041D87 21 03 1E 04 0086*   	ld hl,FSPACE_ADVENTURE
-041D8B 11 00 E0 B7 0087*   	ld de,filedata
-041D8F 01 00 00 01 0088*   	ld bc,65536
-041D93 3E 01       0089*   	ld a,mos_load
-041D95 5B CF       0090*   	RST.LIL 08h
-041D97 21 04 30 00 0091*   	ld hl,BUF_SPACE_ADVENTURE
-041D9B 11 00 3C 00 0092*   	ld de,15360
-041D9F FD 21 03 1E 0093*   	ld iy,FSPACE_ADVENTURE
+041DA6 CD DB 16 04 0098*   	call vdu_load_sfx
+041DAA C9          0099*   	ret
+041DAB             0100*   
+041DAB             0101*   load_sfx_EVERY_BREATH_YOU_TAKE:
+041DAB 21 A2 1E 04 0102*   	ld hl,FEVERY_BREATH_YOU_TAKE
+041DAF 11 00 E0 B7 0103*   	ld de,filedata
+041DB3 01 00 00 01 0104*   	ld bc,65536
+041DB7 3E 01       0105*   	ld a,mos_load
+041DB9 5B CF       0106*   	RST.LIL 08h
+041DBB 21 04 30 00 0107*   	ld hl,BUF_EVERY_BREATH_YOU_TAKE
+041DBF 11 80 3E 00 0108*   	ld de,16000
+041DC3 FD 21 A2 1E 0109*   	ld iy,FEVERY_BREATH_YOU_TAKE
        04          
-041DA4 CD DB 16 04 0094*   	call vdu_load_sfx
-041DA8 C9          0095*   	ret
-041DA9             0096*   
-041DA9             0097*   ; File name lookups:
-041DA9 6D 75 73 69 0098*   FAFRICA: db "music/AFRICA.raw",0
+041DC8 CD DB 16 04 0110*   	call vdu_load_sfx
+041DCC C9          0111*   	ret
+041DCD             0112*   
+041DCD             0113*   load_sfx_RHIANNON:
+041DCD 21 C2 1E 04 0114*   	ld hl,FRHIANNON
+041DD1 11 00 E0 B7 0115*   	ld de,filedata
+041DD5 01 00 00 01 0116*   	ld bc,65536
+041DD9 3E 01       0117*   	ld a,mos_load
+041DDB 5B CF       0118*   	RST.LIL 08h
+041DDD 21 05 30 00 0119*   	ld hl,BUF_RHIANNON
+041DE1 11 80 3E 00 0120*   	ld de,16000
+041DE5 FD 21 C2 1E 0121*   	ld iy,FRHIANNON
+       04          
+041DEA CD DB 16 04 0122*   	call vdu_load_sfx
+041DEE C9          0123*   	ret
+041DEF             0124*   
+041DEF             0125*   load_sfx_TAKE_A_RIDE:
+041DEF 21 D5 1E 04 0126*   	ld hl,FTAKE_A_RIDE
+041DF3 11 00 E0 B7 0127*   	ld de,filedata
+041DF7 01 00 00 01 0128*   	ld bc,65536
+041DFB 3E 01       0129*   	ld a,mos_load
+041DFD 5B CF       0130*   	RST.LIL 08h
+041DFF 21 06 30 00 0131*   	ld hl,BUF_TAKE_A_RIDE
+041E03 11 80 3E 00 0132*   	ld de,16000
+041E07 FD 21 D5 1E 0133*   	ld iy,FTAKE_A_RIDE
+       04          
+041E0C CD DB 16 04 0134*   	call vdu_load_sfx
+041E10 C9          0135*   	ret
+041E11             0136*   
+041E11             0137*   load_sfx_AMBIENT_BEAT70:
+041E11 21 EB 1E 04 0138*   	ld hl,FAMBIENT_BEAT70
+041E15 11 00 E0 B7 0139*   	ld de,filedata
+041E19 01 00 00 01 0140*   	ld bc,65536
+041E1D 3E 01       0141*   	ld a,mos_load
+041E1F 5B CF       0142*   	RST.LIL 08h
+041E21 21 07 30 00 0143*   	ld hl,BUF_AMBIENT_BEAT70
+041E25 11 80 3E 00 0144*   	ld de,16000
+041E29 FD 21 EB 1E 0145*   	ld iy,FAMBIENT_BEAT70
+       04          
+041E2E CD DB 16 04 0146*   	call vdu_load_sfx
+041E32 C9          0147*   	ret
+041E33             0148*   
+041E33             0149*   load_sfx_SPACE_ADVENTURE:
+041E33 21 04 1F 04 0150*   	ld hl,FSPACE_ADVENTURE
+041E37 11 00 E0 B7 0151*   	ld de,filedata
+041E3B 01 00 00 01 0152*   	ld bc,65536
+041E3F 3E 01       0153*   	ld a,mos_load
+041E41 5B CF       0154*   	RST.LIL 08h
+041E43 21 08 30 00 0155*   	ld hl,BUF_SPACE_ADVENTURE
+041E47 11 80 3E 00 0156*   	ld de,16000
+041E4B FD 21 04 1F 0157*   	ld iy,FSPACE_ADVENTURE
+       04          
+041E50 CD DB 16 04 0158*   	call vdu_load_sfx
+041E54 C9          0159*   	ret
+041E55             0160*   
+041E55             0161*   ; File name lookups:
+041E55 6D 75 73 69 0162*   FAFRICA: db "music/AFRICA.raw",0
        63 2F 41 46 
        52 49 43 41 
        2E 72 61 77 
        00          
-041DBA 6D 75 73 69 0099*   FCOME_UNDONE: db "music/COME_UNDONE.raw",0
+041E66 6D 75 73 69 0163*   FANYTIME: db "music/ANYTIME.raw",0
+       63 2F 41 4E 
+       59 54 49 4D 
+       45 2E 72 61 
+       77 00       
+041E78 6D 75 73 69 0164*   FBARRACUDA: db "music/BARRACUDA.raw",0
+       63 2F 42 41 
+       52 52 41 43 
+       55 44 41 2E 
+       72 61 77 00 
+041E8C 6D 75 73 69 0165*   FCOME_UNDONE: db "music/COME_UNDONE.raw",0
        63 2F 43 4F 
        4D 45 5F 55 
        4E 44 4F 4E 
        45 2E 72 61 
        77 00       
-041DD0 6D 75 73 69 0100*   FEVERY_BREATH_YOU_TAKE: db "music/EVERY_BREATH_YOU_TAKE.raw",0
+041EA2 6D 75 73 69 0166*   FEVERY_BREATH_YOU_TAKE: db "music/EVERY_BREATH_YOU_TAKE.raw",0
        63 2F 45 56 
        45 52 59 5F 
        42 52 45 41 
@@ -5264,70 +5342,103 @@ PC     Output      Line
        4F 55 5F 54 
        41 4B 45 2E 
        72 61 77 00 
-041DF0 6D 75 73 69 0101*   FRHIANNON: db "music/RHIANNON.raw",0
+041EC2 6D 75 73 69 0167*   FRHIANNON: db "music/RHIANNON.raw",0
        63 2F 52 48 
        49 41 4E 4E 
        4F 4E 2E 72 
        61 77 00    
-041E03 6D 75 73 69 0102*   FSPACE_ADVENTURE: db "music/SPACE_ADVENTURE.raw",0
+041ED5 6D 75 73 69 0168*   FTAKE_A_RIDE: db "music/TAKE_A_RIDE.raw",0
+       63 2F 54 41 
+       4B 45 5F 41 
+       5F 52 49 44 
+       45 2E 72 61 
+       77 00       
+041EEB 6D 75 73 69 0169*   FAMBIENT_BEAT70: db "music/AMBIENT_BEAT70.raw",0
+       63 2F 41 4D 
+       42 49 45 4E 
+       54 5F 42 45 
+       41 54 37 30 
+       2E 72 61 77 
+       00          
+041F04 6D 75 73 69 0170*   FSPACE_ADVENTURE: db "music/SPACE_ADVENTURE.raw",0
        63 2F 53 50 
        41 43 45 5F 
        41 44 56 45 
        4E 54 55 52 
        45 2E 72 61 
        77 00       
-041E1D             0103*   
-041E1D             0104*   ; Play sfx routines
-041E1D             0105*   
-041E1D             0106*   sfx_play_AFRICA:
-041E1D 21 00 30 00 0107*   	ld hl,BUF_AFRICA
-041E21 01 00 00 00 0108*   	ld bc,0
-041E25 C3 EA 16 04 0109*   	jp vdu_play_sfx
-041E29             0110*   
-041E29             0111*   sfx_play_COME_UNDONE:
-041E29 21 01 30 00 0112*   	ld hl,BUF_COME_UNDONE
-041E2D 01 00 00 00 0113*   	ld bc,0
-041E31 C3 EA 16 04 0114*   	jp vdu_play_sfx
-041E35             0115*   
-041E35             0116*   sfx_play_EVERY_BREATH_YOU_TAKE:
-041E35 21 02 30 00 0117*   	ld hl,BUF_EVERY_BREATH_YOU_TAKE
-041E39 01 00 00 00 0118*   	ld bc,0
-041E3D C3 EA 16 04 0119*   	jp vdu_play_sfx
-041E41             0120*   
-041E41             0121*   sfx_play_RHIANNON:
-041E41 21 03 30 00 0122*   	ld hl,BUF_RHIANNON
-041E45 01 00 00 00 0123*   	ld bc,0
-041E49 C3 EA 16 04 0124*   	jp vdu_play_sfx
-041E4D             0125*   
-041E4D             0126*   sfx_play_SPACE_ADVENTURE:
-041E4D 21 04 30 00 0127*   	ld hl,BUF_SPACE_ADVENTURE
-041E51 01 00 00 00 0128*   	ld bc,0
-041E55 C3 EA 16 04 0129*   	jp vdu_play_sfx
-041E59             0046    
-041E59             0047    ; --- MAIN PROGRAM FILE ---
-041E59             0048    init:
-041E59             0049    ; ; load sound effects files
-041E59             0050    ;     call printInline
-041E59             0051    ;     asciz "Loading SFX...\r\n"
-041E59             0052    ;     call load_sfx_AFRICA
-041E59             0053    ;     call load_sfx_COME_UNDONE
-041E59             0054    ;     call load_sfx_EVERY_BREATH_YOU_TAKE
-041E59             0055    ;     call load_sfx_RHIANNON
-041E59             0056    ;     call load_sfx_SPACE_ADVENTURE
-041E59             0057    ;     call printInline
-041E59             0058    ;     asciz "SFX loaded.\r\n"
-041E59 C9          0059        ret
-041E5A             0060    ; end init
-041E5A             0061    
-041E5A             0062    main:
-041E5A             0063    
-041E5A             0064    
-041E5A             0065    @loop:
-041E5A CD 5A 03 04 0066        call waitKeypress
-041E5E FE 1B       0067        cp '\e'
-041E60 C8          0068        ret z
-041E61 21 F0 1D 04 0069        ld hl,FRHIANNON
-041E65 CD 00 1B 04 0070        call vdu_play_song
-041E69 C3 5A 1E 04 0071        jp @loop
-041E6D             0072    ; end main
-041E6D             0073    
+041F1E             0171*   
+041F1E             0172*   ; Play sfx routines
+041F1E             0173*   
+041F1E             0174*   sfx_play_AFRICA:
+041F1E 21 00 30 00 0175*   	ld hl,BUF_AFRICA
+041F22 01 00 00 00 0176*   	ld bc,0
+041F26 C3 EA 16 04 0177*   	jp vdu_play_sfx
+041F2A             0178*   
+041F2A             0179*   sfx_play_ANYTIME:
+041F2A 21 01 30 00 0180*   	ld hl,BUF_ANYTIME
+041F2E 01 00 00 00 0181*   	ld bc,0
+041F32 C3 EA 16 04 0182*   	jp vdu_play_sfx
+041F36             0183*   
+041F36             0184*   sfx_play_BARRACUDA:
+041F36 21 02 30 00 0185*   	ld hl,BUF_BARRACUDA
+041F3A 01 00 00 00 0186*   	ld bc,0
+041F3E C3 EA 16 04 0187*   	jp vdu_play_sfx
+041F42             0188*   
+041F42             0189*   sfx_play_COME_UNDONE:
+041F42 21 03 30 00 0190*   	ld hl,BUF_COME_UNDONE
+041F46 01 00 00 00 0191*   	ld bc,0
+041F4A C3 EA 16 04 0192*   	jp vdu_play_sfx
+041F4E             0193*   
+041F4E             0194*   sfx_play_EVERY_BREATH_YOU_TAKE:
+041F4E 21 04 30 00 0195*   	ld hl,BUF_EVERY_BREATH_YOU_TAKE
+041F52 01 00 00 00 0196*   	ld bc,0
+041F56 C3 EA 16 04 0197*   	jp vdu_play_sfx
+041F5A             0198*   
+041F5A             0199*   sfx_play_RHIANNON:
+041F5A 21 05 30 00 0200*   	ld hl,BUF_RHIANNON
+041F5E 01 00 00 00 0201*   	ld bc,0
+041F62 C3 EA 16 04 0202*   	jp vdu_play_sfx
+041F66             0203*   
+041F66             0204*   sfx_play_TAKE_A_RIDE:
+041F66 21 06 30 00 0205*   	ld hl,BUF_TAKE_A_RIDE
+041F6A 01 00 00 00 0206*   	ld bc,0
+041F6E C3 EA 16 04 0207*   	jp vdu_play_sfx
+041F72             0208*   
+041F72             0209*   sfx_play_AMBIENT_BEAT70:
+041F72 21 07 30 00 0210*   	ld hl,BUF_AMBIENT_BEAT70
+041F76 01 00 00 00 0211*   	ld bc,0
+041F7A C3 EA 16 04 0212*   	jp vdu_play_sfx
+041F7E             0213*   
+041F7E             0214*   sfx_play_SPACE_ADVENTURE:
+041F7E 21 08 30 00 0215*   	ld hl,BUF_SPACE_ADVENTURE
+041F82 01 00 00 00 0216*   	ld bc,0
+041F86 C3 EA 16 04 0217*   	jp vdu_play_sfx
+041F8A             0046    
+041F8A             0047    ; --- MAIN PROGRAM FILE ---
+041F8A             0048    init:
+041F8A             0049    ; ; load sound effects files
+041F8A             0050    ;     call printInline
+041F8A             0051    ;     asciz "Loading SFX...\r\n"
+041F8A             0052    ;     call load_sfx_AFRICA
+041F8A             0053    ;     call load_sfx_COME_UNDONE
+041F8A             0054    ;     call load_sfx_EVERY_BREATH_YOU_TAKE
+041F8A             0055    ;     call load_sfx_RHIANNON
+041F8A             0056    ;     call load_sfx_SPACE_ADVENTURE
+041F8A             0057    ;     call printInline
+041F8A             0058    ;     asciz "SFX loaded.\r\n"
+041F8A C9          0059        ret
+041F8B             0060    ; end init
+041F8B             0061    
+041F8B             0062    main:
+041F8B             0063    
+041F8B             0064    
+041F8B             0065    @loop:
+041F8B CD 5A 03 04 0066        call waitKeypress
+041F8F FE 1B       0067        cp '\e'
+041F91 C8          0068        ret z
+041F92 21 C2 1E 04 0069        ld hl,FRHIANNON
+041F96 CD 00 1B 04 0070        call vdu_play_song
+041F9A C3 8B 1F 04 0071        jp @loop
+041F9E             0072    ; end main
+041F9E             0073    

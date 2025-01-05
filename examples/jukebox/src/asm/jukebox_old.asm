@@ -47,15 +47,15 @@ exit:
 main:
     call printInline
     asciz "Loading SFX...\r\n"
-    call load_sfx_AFRICA
-    call load_sfx_COME_UNDONE
-    call load_sfx_EVERY_BREATH_YOU_TAKE
-    call load_sfx_RHIANNON
-    call load_sfx_TAKE_A_RIDE
-    call load_sfx_AMBIENT_BEAT70
-    call load_sfx_SPACE_ADVENTURE
-    call load_sfx_BARRACUDA
-    call load_sfx_ANYTIME
+	call load_sfx_AFRICA
+	call load_sfx_ANYTIME
+	call load_sfx_BARRACUDA
+	call load_sfx_COME_UNDONE
+	call load_sfx_EVERY_BREATH_YOU_TAKE
+	call load_sfx_RHIANNON
+	call load_sfx_TAKE_A_RIDE
+	call load_sfx_AMBIENT_BEAT70
+	call load_sfx_SPACE_ADVENTURE
     call printInline
     asciz "SFX loaded.\r\n"
 
@@ -66,21 +66,21 @@ main:
     cp '1'
     call z,sfx_play_AFRICA
     cp '2'
-    call z,sfx_play_COME_UNDONE
-    cp '3'
-    call z,sfx_play_EVERY_BREATH_YOU_TAKE
-    cp '4'
-    call z,sfx_play_RHIANNON
-    cp '5'
-    call z,sfx_play_TAKE_A_RIDE
-    cp '6'
-    call z,sfx_play_AMBIENT_BEAT70
-    cp '7'
-    call z,sfx_play_SPACE_ADVENTURE
-    cp '8'
-    call z,sfx_play_BARRACUDA
-    cp '9'
     call z,sfx_play_ANYTIME
+    cp '3'
+    call z,sfx_play_BARRACUDA
+    cp '4'
+    call z,sfx_play_COME_UNDONE
+    cp '5'
+    call z,sfx_play_EVERY_BREATH_YOU_TAKE
+    cp '6'
+    call z,sfx_play_RHIANNON
+    cp '7'
+    call z,sfx_play_TAKE_A_RIDE
+    cp '8'
+    call z,sfx_play_AMBIENT_BEAT70
+    cp '9'
+    call z,sfx_play_SPACE_ADVENTURE
     jp @loop
 ; end main
 

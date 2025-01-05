@@ -5171,15 +5171,15 @@ PC     Output      Line
 041CED             0026*   
 041CED             0027*   ; SFX duration lookup:
 041CED             0028*   SFX_duration_lut:
-041CED 54 72 00    0029*   	dl 29268 ; AFRICA
-041CF0 54 72 00    0030*   	dl 29268 ; ANYTIME
-041CF3 54 72 00    0031*   	dl 29268 ; BARRACUDA
-041CF6 54 72 00    0032*   	dl 29268 ; COME_UNDONE
-041CF9 54 72 00    0033*   	dl 29268 ; EVERY_BREATH_YOU_TAKE
-041CFC 54 72 00    0034*   	dl 29268 ; RHIANNON
-041CFF 54 72 00    0035*   	dl 29268 ; TAKE_A_RIDE
-041D02 54 72 00    0036*   	dl 29268 ; AMBIENT_BEAT70
-041D05 78 72 00    0037*   	dl 29304 ; SPACE_ADVENTURE
+041CED 47 4C 00    0029*   	dl 19527 ; AFRICA
+041CF0 47 4C 00    0030*   	dl 19527 ; ANYTIME
+041CF3 47 4C 00    0031*   	dl 19527 ; BARRACUDA
+041CF6 47 4C 00    0032*   	dl 19527 ; COME_UNDONE
+041CF9 47 4C 00    0033*   	dl 19527 ; EVERY_BREATH_YOU_TAKE
+041CFC 47 4C 00    0034*   	dl 19527 ; RHIANNON
+041CFF 47 4C 00    0035*   	dl 19527 ; TAKE_A_RIDE
+041D02 3C 4C 00    0036*   	dl 19516 ; AMBIENT_BEAT70
+041D05 3D 4C 00    0037*   	dl 19517 ; SPACE_ADVENTURE
 041D08             0038*   
 041D08             0039*   ; SFX load routines jump table:
 041D08             0040*   SFX_load_routines_table:
@@ -5423,15 +5423,15 @@ PC     Output      Line
        53 46 58 2E 
        2E 2E 0D 0A 
        00          
-041F9F CD 23 1D 04 0050        call load_sfx_AFRICA
-041FA3 CD 89 1D 04 0051        call load_sfx_COME_UNDONE
-041FA7 CD AB 1D 04 0052        call load_sfx_EVERY_BREATH_YOU_TAKE
-041FAB CD CD 1D 04 0053        call load_sfx_RHIANNON
-041FAF CD EF 1D 04 0054        call load_sfx_TAKE_A_RIDE
-041FB3 CD 11 1E 04 0055        call load_sfx_AMBIENT_BEAT70
-041FB7 CD 33 1E 04 0056        call load_sfx_SPACE_ADVENTURE
-041FBB CD 67 1D 04 0057        call load_sfx_BARRACUDA
-041FBF CD 45 1D 04 0058        call load_sfx_ANYTIME
+041F9F CD 23 1D 04 0050    	call load_sfx_AFRICA
+041FA3 CD 45 1D 04 0051    	call load_sfx_ANYTIME
+041FA7 CD 67 1D 04 0052    	call load_sfx_BARRACUDA
+041FAB CD 89 1D 04 0053    	call load_sfx_COME_UNDONE
+041FAF CD AB 1D 04 0054    	call load_sfx_EVERY_BREATH_YOU_TAKE
+041FB3 CD CD 1D 04 0055    	call load_sfx_RHIANNON
+041FB7 CD EF 1D 04 0056    	call load_sfx_TAKE_A_RIDE
+041FBB CD 11 1E 04 0057    	call load_sfx_AMBIENT_BEAT70
+041FBF CD 33 1E 04 0058    	call load_sfx_SPACE_ADVENTURE
 041FC3 CD 5C 00 04 0059        call printInline
 041FC7 53 46 58 20 0060        asciz "SFX loaded.\r\n"
        6C 6F 61 64 
@@ -5445,21 +5445,21 @@ PC     Output      Line
 041FDC FE 31       0066        cp '1'
 041FDE CC 1E 1F 04 0067        call z,sfx_play_AFRICA
 041FE2 FE 32       0068        cp '2'
-041FE4 CC 42 1F 04 0069        call z,sfx_play_COME_UNDONE
+041FE4 CC 2A 1F 04 0069        call z,sfx_play_ANYTIME
 041FE8 FE 33       0070        cp '3'
-041FEA CC 4E 1F 04 0071        call z,sfx_play_EVERY_BREATH_YOU_TAKE
+041FEA CC 36 1F 04 0071        call z,sfx_play_BARRACUDA
 041FEE FE 34       0072        cp '4'
-041FF0 CC 5A 1F 04 0073        call z,sfx_play_RHIANNON
+041FF0 CC 42 1F 04 0073        call z,sfx_play_COME_UNDONE
 041FF4 FE 35       0074        cp '5'
-041FF6 CC 66 1F 04 0075        call z,sfx_play_TAKE_A_RIDE
+041FF6 CC 4E 1F 04 0075        call z,sfx_play_EVERY_BREATH_YOU_TAKE
 041FFA FE 36       0076        cp '6'
-041FFC CC 72 1F 04 0077        call z,sfx_play_AMBIENT_BEAT70
+041FFC CC 5A 1F 04 0077        call z,sfx_play_RHIANNON
 042000 FE 37       0078        cp '7'
-042002 CC 7E 1F 04 0079        call z,sfx_play_SPACE_ADVENTURE
+042002 CC 66 1F 04 0079        call z,sfx_play_TAKE_A_RIDE
 042006 FE 38       0080        cp '8'
-042008 CC 36 1F 04 0081        call z,sfx_play_BARRACUDA
+042008 CC 72 1F 04 0081        call z,sfx_play_AMBIENT_BEAT70
 04200C FE 39       0082        cp '9'
-04200E CC 2A 1F 04 0083        call z,sfx_play_ANYTIME
+04200E CC 7E 1F 04 0083        call z,sfx_play_SPACE_ADVENTURE
 042012 C3 D5 1F 04 0084        jp @loop
 042016             0085    ; end main
 042016             0086    
