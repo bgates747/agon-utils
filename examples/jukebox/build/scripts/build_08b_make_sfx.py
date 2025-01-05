@@ -1,14 +1,11 @@
+from build_98_asm_sfx import make_asm_sfx, assemble_jukebox
+
 import os
 import sqlite3
 import shutil
 import subprocess
 from tempfile import NamedTemporaryFile
-from build_98_asm_sfx import make_asm_sfx, assemble_jukebox
-import numpy as np
-from scipy.io import wavfile
 import math
-from scipy.signal import savgol_filter
-import wave
 
 def make_tbl_08_sfx(conn, cursor):
     """Create the database table for sound effects."""
@@ -31,6 +28,32 @@ def copy_to_temp(file_path):
     shutil.copy(file_path, temp_file.name)
     return temp_file.name
 
+def extract_audio_metadata(file_path):
+    """
+    Extract metadata from the audio file using FFmpeg.
+    Determines the actual format, channels, sample rate, and duration.
+    """
+    import json
+    result = subprocess.run(
+        [
+            'ffprobe', '-v', 'error', '-show_entries',
+            'format=format_name,format_long_name',  # Include format info
+            '-show_entries', 'stream=channels,sample_rate,duration',
+            '-of', 'json', file_path
+        ],
+        capture_output=True,
+        text=True
+    )
+    metadata = json.loads(result.stdout)
+    format_data = metadata.get('format', {})
+    stream = metadata.get('streams', [{}])[0]
+    return {
+        'format_name': format_data.get('format_name', 'unknown'),  # Short format name (e.g., "wav", "mp3")
+        'format_long_name': format_data.get('format_long_name', 'Unknown format'),  # Detailed format name
+        'channels': int(stream.get('channels', 0)),
+        'sample_rate': int(stream.get('sample_rate', 0)),
+        'duration': float(stream.get('duration', 0))
+    }
 
 def convert_to_wav(src_path, tgt_path):
     """
@@ -50,71 +73,26 @@ def resample_wav(src_path, tgt_path, sample_rate):
     subprocess.run([
         'ffmpeg', '-y',                # Overwrite output file
         '-i', src_path,                # Input file
+        '-ac', '1',                    # Ensure mono output
         '-ar', str(sample_rate),       # Set new frame rate
         tgt_path                       # Output file
     ], check=True)
-
-def convert_to_unsigned_pcm(src_path, tgt_path):
-    """
-    Converts a `.wav` file to 8-bit unsigned PCM.
-    """
-    subprocess.run([
-        'ffmpeg', '-y',                # Overwrite output file
-        '-i', src_path,                # Input file
-        '-acodec', 'pcm_u8',           # Convert to unsigned 8-bit PCM
-        tgt_path                       # Output file
-    ], check=True)
-
-def convert_to_unsigned_pcm_with_smoothing(input_path, output_path):
-    window_length = 31  # Window length for Savitzky-Golay filter
-    polyorder = 2       # Polynomial order for Savitzky-Golay filter
-    
-    # Read input WAV file
-    sample_rate, data = wavfile.read(input_path)
-    
-    # Normalize the data to -1.0 to 1.0 range
-    data = data / np.max(np.abs(data))
-    
-    # Apply Savitzky-Golay filter for smoothing
-    smoothed_data = savgol_filter(data, window_length, polyorder)
-    
-    # Scale to 8-bit unsigned PCM range (0-255)
-    data_8bit = np.round((smoothed_data + 1.0) * 127.5).astype(np.uint8)
-    
-    # Write as a valid WAV file
-    with wave.open(output_path, 'wb') as wf:
-        wf.setnchannels(1)                # Mono
-        wf.setsampwidth(1)                # 8-bit unsigned PCM
-        wf.setframerate(sample_rate)      # Original sample rate
-        wf.writeframes(data_8bit.tobytes())
-
 
 def lowpass_filter(input_path, output_path, sample_rate):
     # compute cutoff frequency as a fraction of the Nyquist frequency
     cutoff = 0.5 * sample_rate / 2
     subprocess.run([
         'ffmpeg', '-y', '-i', input_path,
+        '-ac', '1',                    # Ensure mono output
         '-af', f"lowpass=f={cutoff}", output_path
     ], check=True)
-
-def convert_to_signed_raw(input_path, output_path):
-    """
-    Converts an unsigned 8-bit PCM `.wav` file to signed 8-bit PCM `.raw`.
-    """
-    _, data = wavfile.read(input_path)
-
-    # Convert unsigned 8-bit (0-255) to signed 8-bit (-128 to 127)
-    data_signed = (data - 128).astype(np.int8)
-
-    # Save as raw binary
-    with open(output_path, 'wb') as f:
-        f.write(data_signed.tobytes())
 
 def compress_dynamic_range(input_path, output_path):
         subprocess.run([
             'ffmpeg',
             '-y',                                  # Overwrite output file
             '-i', input_path,                      # Input file
+            '-ac', '1',                    # Ensure mono output
             '-af', 'acompressor=threshold=-20dB:ratio=3:attack=5:release=50:makeup=2.5',  # Compression settings
             output_path                              # Output file
         ], check=True)
@@ -124,6 +102,7 @@ def normalize_audio(input_path, output_path):
             'ffmpeg',
             '-y',                                  # Overwrite output file
             '-i', input_path,                      # Input file
+            '-ac', '1',                    # Ensure mono output
             # '-af', 'loudnorm=I=-24:TP=-2:LRA=11', # Normalize loudness (default)
             # '-af', 'loudnorm=I=-18:TP=-1:LRA=11',  # Adjusted normalization (louder)
             '-af', 'loudnorm=I=-20:TP=-2:LRA=11', # Normalize loudness (splitting the middle)
@@ -148,6 +127,7 @@ def noise_gate(input_path, output_path):
         'ffmpeg',
         '-y',                                  # Overwrite output file
         '-i', input_path,                      # Input file
+        '-ac', '1',                    # Ensure mono output
         '-af', (
             f'agate=threshold={threshold_norm}:'
             f'range={range_norm}:'
@@ -156,6 +136,67 @@ def noise_gate(input_path, output_path):
         ),
         output_path                            # Output file
     ], check=True)
+
+def convert_to_unsigned_pcm_with_dither(src_path, tgt_path, sample_rate):
+    """
+    Converts an audio file to 8-bit unsigned PCM using FFmpeg with dithering enabled.
+    """
+    subprocess.run([
+        'ffmpeg', '-y',                # Overwrite output file
+        '-i', src_path,                # Input file
+        '-ac', '1',                    # Ensure mono output
+        '-ar', str(sample_rate),       # Set the sample rate
+        '-acodec', 'pcm_u8',           # Convert to unsigned 8-bit PCM
+        '-dither_scale', '1',          # Enable dithering
+        tgt_path                       # Output file
+    ], check=True)
+
+def convert_to_unsigned_pcm(src_path, tgt_path, sample_rate):
+    """
+    Converts a `.wav` file to 8-bit unsigned PCM with the specified sample rate.
+    """
+    subprocess.run([
+        'ffmpeg', '-y',                # Overwrite output file
+        '-i', src_path,                # Input file
+        '-ac', '1',                    # Ensure mono output
+        '-ar', str(sample_rate),       # Set the sample rate
+        '-acodec', 'pcm_u8',           # Convert to unsigned 8-bit PCM
+        tgt_path                       # Output file
+    ], check=True)
+
+def convert_to_unsigned_raw(src_path, tgt_path, sample_rate):
+    """
+    Converts an audio file directly to unsigned 8-bit PCM `.raw` format.
+    Ensures the sample rate and mono output are explicitly set.
+    """
+    subprocess.run([
+        'ffmpeg',
+        '-y',                       # Overwrite output file if it exists
+        '-i', src_path,             # Input file
+        '-ac', '1',                 # Ensure mono output
+        '-ar', str(sample_rate),    # Explicitly set the sample rate
+        '-f', 'u8',                 # Output format: unsigned 8-bit PCM
+        '-acodec', 'pcm_u8',        # Audio codec: unsigned 8-bit PCM
+        tgt_path                    # Output file (raw binary)
+    ], check=True)
+
+
+def convert_to_signed_raw(src_path, tgt_path, sample_rate):
+    """
+    Converts an unsigned 8-bit PCM `.wav` file to signed 8-bit PCM `.raw` using FFmpeg.
+    Ensures the sample rate remains unchanged.
+    """
+    subprocess.run([
+        'ffmpeg',
+        '-y',                       # Overwrite output file if it exists
+        '-i', src_path,           # Input file (unsigned 8-bit PCM `.wav`)
+        '-ac', '1',                 # Ensure mono output
+        '-ar', str(sample_rate),    # Explicitly set the sample rate
+        '-f', 's8',                 # Output format: signed 8-bit PCM
+        '-acodec', 'pcm_s8',        # Audio codec: signed 8-bit PCM
+        tgt_path                 # Output file (raw binary)
+    ], check=True)
+
 
 
 def make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate):
@@ -189,6 +230,9 @@ def make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate):
         proc_path = os.path.join(proc_dir, wav_filename)
         tgt_path = os.path.join(tgt_dir, raw_filename)
 
+        # Extract metadata (optional debugging/logging)
+        metadata = extract_audio_metadata(src_path)
+
         # Convert source file to .wav without modifying frame rate or codec
         convert_to_wav(src_path, proc_path)
 
@@ -212,11 +256,11 @@ def make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate):
         resample_wav(temp_path, proc_path, sample_rate)
         os.remove(temp_path)
 
-        # Convert .wav file to unsigned 8-bit PCM
-        temp_path = copy_to_temp(proc_path)
-        # convert_to_unsigned_pcm(temp_path, proc_path)
-        convert_to_unsigned_pcm_with_dither(temp_path, proc_path)
-        os.remove(temp_path)
+        # # Convert .wav file to unsigned 8-bit PCM
+        # temp_path = copy_to_temp(proc_path)
+        # convert_to_unsigned_pcm(temp_path, proc_path, sample_rate)
+        # # convert_to_unsigned_pcm_with_dither(temp_path, proc_path)
+        # os.remove(temp_path)
 
         # # Apply noise gate
         # temp_path = copy_to_temp(proc_path)
@@ -224,11 +268,12 @@ def make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate):
         # os.remove(temp_path)
 
         # FINAL STEP: Convert .wav file to signed 8-bit PCM .raw
-        convert_to_signed_raw(proc_path, tgt_path)
+        # convert_to_signed_raw(proc_path, tgt_path, sample_rate)
+        convert_to_unsigned_raw(proc_path, tgt_path, sample_rate)
 
         # Calculate size and duration
         size = os.path.getsize(tgt_path)
-        duration = size // (sample_rate / 1000)  # In ms for 8-bit mono PCM
+        duration = int(metadata['duration'] * 1000)  # Convert to ms and ensure it's an integer
         cursor.execute("""
             INSERT INTO tbl_08_sfx (sfx_id, size, duration, filename)
             VALUES (?, ?, ?, ?);
@@ -237,25 +282,11 @@ def make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate):
     conn.commit()
     conn.close()
 
-def convert_to_unsigned_pcm_with_dither(input_path, output_path):
-    """
-    Converts an audio file to 8-bit unsigned PCM using FFmpeg with dithering enabled.
-    """
-    subprocess.run([
-        'ffmpeg',
-        '-y',                                  # Overwrite output file
-        '-i', input_path,                      # Input file
-        '-acodec', 'pcm_u8',                   # Convert to 8-bit unsigned PCM
-        '-dither_scale', '2',                  # Enable dithering
-        output_path                            # Output file
-    ], check=True)
-
-
 if __name__ == '__main__':
     # sample_rate = 44100 # standard high quality audio
     # sample_rate = 16384 # default rate for Agon
     # sample_rate = 16000 # A standard Audacity option
-    sample_rate = 15360 # for 8-bit PCM this is 256 bytes per 1/60th of a second
+    # sample_rate = 15360 # for 8-bit PCM this is 256 bytes per 1/60th of a second
     db_path = 'build/data/build.db'
     src_dir = 'assets/sound/music/trimmed'
     proc_dir = 'assets/sound/music/processed'

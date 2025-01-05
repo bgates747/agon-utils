@@ -316,7 +316,7 @@ vdu_set_sample_rate:
 @sampleRate: dw 0x0000
 @end:       db 0x00 ; padding
 
-; inputs: c = channel, b = volume, de = sample rate; hl = bufferId
+; inputs: c = channel, b = volume, de = sample rate; hl = bufferId; ix = duration (ms)
 vdu_play_sample:
     ; populate input parameters
     ld a,c
@@ -327,6 +327,7 @@ vdu_play_sample:
     ld (@volume),a
     ld (@sampleRate),de
     ld (@bufferId),hl
+    ld (@duration),ix
     ; clean up bytes that got stomped on by 24-bit loads
     ld a,23 
     ld (@cmd1),a 

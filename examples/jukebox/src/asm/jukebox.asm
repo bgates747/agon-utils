@@ -13,8 +13,9 @@ start:
     push ix
     push iy
 
-    call init
-    call main
+    ; call init
+    ; call main
+    call temp
 
 exit:
     pop iy
@@ -45,17 +46,57 @@ exit:
     include "music.inc"
     include "debug.inc"
 
+sample_rate: equ 15360
+temp:
+; ; TEMPORARY - WORKS
+;     call load_sfx_AMBIENT_BEAT70
+;     call sfx_play_AMBIENT_BEAT70
+; ; END TEMPORARY
+
+; TEMPORARY - WORKS
+    ld hl,ch0_buffer
+    ld iy,FAMBIENT_BEAT70
+    call vdu_load_buffer_from_file
+
+    ld de,sample_rate ; sample rate
+    ld hl,ch0_buffer
+    xor a ; 8-bit signed PCM mono
+    call vdu_buffer_to_sound 
+
+    ld c,0 ; channel 0
+    ld b,127 ; volume
+    ld de,sample_rate ; sample rate
+    ld hl,ch0_buffer
+    ld ix,30121 ; duration
+    call vdu_play_sample
+    ld bc,30121 ; duration
+    ; call vdu_play_sfx
+; END TEMPORARY
+
+    ; ld hl,cmd0_buffer
+    ; ld de,ch0_buffer
+    ; ld c,0 ; channel 0
+    ; call load_command_buffer
+
+    ; ld hl,cmd0_buffer
+    ; call vdu_call_buffer
+
+
+
+    ret
+; end temp
+
 ; --- MAIN PROGRAM FILE ---
 init:
 ; initialize channel command buffers
     ld hl,cmd0_buffer
     ld de,ch0_buffer
-    ld c,0
+    ld c,0 ; channel 0
     call load_command_buffer
 
     ld hl,cmd1_buffer
     ld de,ch1_buffer
-    ld c,1
+    ld c,1 ; channel 1
     call load_command_buffer
 
     ret
@@ -76,10 +117,10 @@ main:
 ; requirements: the file must be 8-bit signed PCM mono sampled at 15360 Hz
 ; uses: sound channels 0 and 1, buffers 0x3000 and 0x3001
     align 256 ; align to 256-byte boundary (may be helpful ... or not)
-song_data: blkw 256,0 ; buffer for sound data
+song_data: blkw 8192,0 ; buffer for sound data
 ch0_buffer: equ 0x3000
-ch1_buffer: equ 0x3001
-cmd0_buffer: equ 0x3002
+cmd0_buffer: equ 0x3001
+ch1_buffer: equ 0x3002
 cmd1_buffer: equ 0x3003
 play_song:
     call printInline
@@ -94,8 +135,6 @@ play_song:
 ;   C: Mode
 ; Returns:
 ;   A: Filehandle, or 0 if couldn't open
-	push iy ; pointer to filename
-	pop hl
 	ld c,fa_read
     MOSCALL mos_fopen
     ld (@filehandle),a
@@ -131,7 +170,7 @@ play_song:
     inc a
     and 1
     ld l,a
-    push af
+    push af ; save flip-flop
     push hl ; sample bufferId
     push de ; chunksize
     pop bc
@@ -140,6 +179,12 @@ play_song:
     call vdu_vblank ; wait for vblank
     pop hl
     inc l ; play commmand bufferId
+
+; DEBUG
+    call DEBUG_PRINT
+    CALL DEBUG_WAITKEYPRESS
+; END DEBUG
+
     call vdu_call_buffer
 
 ; read the next block

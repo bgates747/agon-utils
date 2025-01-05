@@ -23,7 +23,7 @@ def trim_wav_files(src_dir, tgt_dir):
             command = [
                 'ffmpeg',
                 '-i', src_path,              # Input file
-                '-t', '20',                  # Duration (first 10 seconds)
+                '-t', '10',                  # Duration (first 10 seconds)
                 '-c', 'copy',                # Copy codec to avoid re-encoding
                 tgt_path                     # Output file
             ]
