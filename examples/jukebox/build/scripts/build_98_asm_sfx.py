@@ -80,6 +80,14 @@ def make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate
             f.write(f"\tcall vdu_load_sfx\n")
             f.write(f"\tret\n")
 
+        # Write the file name lookup index
+        f.write("\n; File name lookup index:\n")
+        f.write("SFX_filename_index:\n")
+        for row in rows:
+            sfx_id = row['sfx_id']
+            base_filename = row['filename'].split('.')[0].upper()
+            f.write(f"\tdl F{base_filename}\n")
+
         # Write the file name lookups
         f.write("\n; File name lookups:\n")
         for row in rows:
@@ -132,8 +140,8 @@ if __name__ == "__main__":
     sfx_inc_path = f"src/asm/music.inc"
     next_buffer_id = 0x3000
     # sample_rate = 44100 # standard high quality audio
-    # sample_rate = 16384 # default rate for Agon
+    sample_rate = 16384 # default rate for Agon
     # sample_rate = 16000 # A standard Audacity option
-    sample_rate = 15360 # for 8-bit PCM this is 256 bytes per 1/60th of a second
+    # sample_rate = 15360 # for 8-bit PCM this is 256 bytes per 1/60th of a second
     make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate)
     assemble_jukebox()

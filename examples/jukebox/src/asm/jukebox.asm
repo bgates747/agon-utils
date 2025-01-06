@@ -47,7 +47,12 @@ exit:
 
 ; --- MAIN PROGRAM FILE ---
 init:
+; load play sample command buffers
     call load_command_buffer
+; initialize input timer
+    ld iy,tmr_input
+    ld hl,100 ; 1 second
+    call tmr_set
     ret
 ; end init
 
@@ -57,15 +62,20 @@ cmd0_buffer: equ 0x3002
 cmd1_buffer: equ 0x3003
 
 get_input:
-    ld iy,tmr_input
-    ld hl,110 ; 1 second
+    ld iy,tmr_play
+    ld hl,100 ; 1 second
     call tmr_set
 @loop:
-; check timer expired
-    ld iy,tmr_input
+; check play timer expired
+    ld iy,tmr_play
     call tmr_get
     ret z ; yes, so return
     ret m ; way expired, so return
+
+; check input timer expired
+    ld iy,tmr_input
+    call tmr_get
+    jp p,@loop ; no, so loop until time to read keyboard
 
 ; check for keyboard input
     MOSCALL mos_getkbmap ; IX points to keyboard map
@@ -73,62 +83,69 @@ get_input:
 ; 49 Num1
     bit 0,(ix+6)
     jp z,@F
-    ld hl,FAFRICA
+    ld hl,SFX_filename_index+[3*0]
 @@:
 ; 50 Num2
     bit 1,(ix+6)
     jp z,@F
-    ld hl,FANYTIME
+    ld hl,SFX_filename_index+[3*1]
 @@:
 ; 18 Num3
     bit 1,(ix+2)
     jp z,@F
-    ld hl,FBARRACUDA
+    ld hl,SFX_filename_index+[3*2]
 @@:
 ; 19 Num4
     bit 2,(ix+2)
     jp z,@F
-    ld hl,FCOME_UNDONE
+    ld hl,SFX_filename_index+[3*3]
 @@:
 ; 20 Num5
     bit 3,(ix+2)
     jp z,@F
-    ld hl,FEVERY_BREATH_YOU_TAKE
+    ld hl,SFX_filename_index+[3*4]
 @@:
 ; 53 Num6
     bit 4,(ix+6)
     jp z,@F
-    ld hl,FRHIANNON
+    ld hl,SFX_filename_index+[3*5]
 @@:
 ; 37 Num7
     bit 4,(ix+4)
     jp z,@F
-    ld hl,FTAKE_A_RIDE
+    ld hl,SFX_filename_index+[3*6]
 @@:
 ; 22 Num8
     bit 5,(ix+2)
     jp z,@F
-    ld hl,FAMBIENT_BEAT70
+    ld hl,SFX_filename_index+[3*7]
 @@:
 ; 39 Num9
     bit 6,(ix+4)
     jp z,@F
-    ld hl,FSPACE_ADVENTURE
+    ld hl,SFX_filename_index+[3*8]
 @@:
 ; 40 Num0
     bit 7,(ix+4)
     jp z,@F
+    ld hl,SFX_filename_index+[3*9]
 @@:
 
 ; if hl is non-zero we have a song request
     SIGN_HLU
     jp z,@loop ; no request so loop
     pop bc ; dummy pop to balance stack
-    jp play_song ; play the requested song
+    ld hl,(hl) ; hl is pointer to song filename
+    call play_song
+
+; reset input timer
+    ld iy,tmr_input
+    ld hl,100 ; 1 second
+    jp tmr_set
 ; end get_input
 
+tmr_play: ds 6 ; play timer buffer
 tmr_input: ds 6 ; input timer buffer
-
 
 main:
     call printNewLine
@@ -148,12 +165,6 @@ play_song:
     push hl
     call printString ; print the song filename
     call printNewLine
-
-; debounce keypress
-    ld a,%10000000 ; 1 second
-    call multiPurposeDelay
-
-; finally play the song 
     pop hl
 
 ; open the file in read mode
@@ -177,7 +188,7 @@ play_song:
     ld a,(@filehandle)
     ld c,a
     ld hl,song_data
-    ld de,256*60
+    ld de,sample_rate
     MOSCALL mos_fread
 
 ; test de for zero bytes read
@@ -202,14 +213,11 @@ play_song:
     pop bc
     ld de,song_data
     call vdu_load_buffer
-
-    call get_input
-
     pop hl
     inc l
     inc l ; play commmand bufferId
     call vdu_call_buffer
-
+    call get_input
 ; read the next block
     jp @read_file
 

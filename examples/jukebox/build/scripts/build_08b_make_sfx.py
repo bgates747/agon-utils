@@ -236,20 +236,20 @@ def make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate):
         # Convert source file to .wav without modifying frame rate or codec
         convert_to_wav(src_path, proc_path)
 
-        # # Compress dynamic range
-        # temp_path = copy_to_temp(proc_path)
-        # compress_dynamic_range(temp_path, proc_path)
-        # os.remove(temp_path)
+        # Compress dynamic range
+        temp_path = copy_to_temp(proc_path)
+        compress_dynamic_range(temp_path, proc_path)
+        os.remove(temp_path)
 
-        # # Normalize audio
-        # temp_path = copy_to_temp(proc_path)
-        # normalize_audio(temp_path, proc_path)
-        # os.remove(temp_path)
+        # Normalize audio
+        temp_path = copy_to_temp(proc_path)
+        normalize_audio(temp_path, proc_path)
+        os.remove(temp_path)
 
-        # # Apply lowpass filter
-        # temp_path = copy_to_temp(proc_path)
-        # lowpass_filter(temp_path, proc_path, sample_rate)
-        # os.remove(temp_path)
+        # Apply lowpass filter
+        temp_path = copy_to_temp(proc_path)
+        lowpass_filter(temp_path, proc_path, sample_rate)
+        os.remove(temp_path)
 
         # Resample .wav file to the specified frame rate
         temp_path = copy_to_temp(proc_path)
@@ -277,9 +277,9 @@ def make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate):
 
 if __name__ == '__main__':
     # sample_rate = 44100 # standard high quality audio
-    # sample_rate = 16384 # default rate for Agon
+    sample_rate = 16384 # default rate for Agon
     # sample_rate = 16000 # A standard Audacity option
-    sample_rate = 15360 # for 8-bit PCM this is 256 bytes per 1/60th of a second
+    # sample_rate = 15360 # for 8-bit PCM this is 256 bytes per 1/60th of a second
     db_path = 'build/data/build.db'
     src_dir = 'assets/sound/music/trimmed'
     proc_dir = 'assets/sound/music/processed'
