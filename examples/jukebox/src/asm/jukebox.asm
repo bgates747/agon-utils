@@ -56,18 +56,105 @@ ch1_buffer: equ 0x3001
 cmd0_buffer: equ 0x3002
 cmd1_buffer: equ 0x3003
 
+get_input:
+    ld iy,tmr_input
+    ld hl,110 ; 1 second
+    call tmr_set
+@loop:
+; check timer expired
+    ld iy,tmr_input
+    call tmr_get
+    ret z ; yes, so return
+    ret m ; way expired, so return
+
+; check for keyboard input
+    MOSCALL mos_getkbmap ; IX points to keyboard map
+    ld hl,0 ; clear hl
+; 49 Num1
+    bit 0,(ix+6)
+    jp z,@F
+    ld hl,FAFRICA
+@@:
+; 50 Num2
+    bit 1,(ix+6)
+    jp z,@F
+    ld hl,FANYTIME
+@@:
+; 18 Num3
+    bit 1,(ix+2)
+    jp z,@F
+    ld hl,FBARRACUDA
+@@:
+; 19 Num4
+    bit 2,(ix+2)
+    jp z,@F
+    ld hl,FCOME_UNDONE
+@@:
+; 20 Num5
+    bit 3,(ix+2)
+    jp z,@F
+    ld hl,FEVERY_BREATH_YOU_TAKE
+@@:
+; 53 Num6
+    bit 4,(ix+6)
+    jp z,@F
+    ld hl,FRHIANNON
+@@:
+; 37 Num7
+    bit 4,(ix+4)
+    jp z,@F
+    ld hl,FTAKE_A_RIDE
+@@:
+; 22 Num8
+    bit 5,(ix+2)
+    jp z,@F
+    ld hl,FAMBIENT_BEAT70
+@@:
+; 39 Num9
+    bit 6,(ix+4)
+    jp z,@F
+    ld hl,FSPACE_ADVENTURE
+@@:
+; 40 Num0
+    bit 7,(ix+4)
+    jp z,@F
+@@:
+
+; if hl is non-zero we have a song request
+    SIGN_HLU
+    jp z,@loop ; no request so loop
+    pop bc ; dummy pop to balance stack
+    jp play_song ; play the requested song
+; end get_input
+
+tmr_input: ds 6 ; input timer buffer
+
+
 main:
+    call printNewLine
+; default song
+    ld hl,FRHIANNON
 
 ; stream a song from the SD card
 ; inputs: hl = pointer to filename
 ; requirements: the file must be 8-bit signed PCM mono sampled at 15360 Hz
 ; uses: sound channels 0 and 1, buffers 0x3000 and 0x3001
 play_song:
+; tell the user what they've won
+    push hl
     call printInline
-    asciz "Playing song...\r\n"
-; TEMPORARY
-    ld hl,FRHIANNON
-; END TEMPORARY
+    asciz "Playing song: "
+    pop hl
+    push hl
+    call printString ; print the song filename
+    call printNewLine
+
+; debounce keypress
+    ld a,%10000000 ; 1 second
+    call multiPurposeDelay
+
+; finally play the song 
+    pop hl
 
 ; open the file in read mode
 ; Open a file
@@ -116,9 +203,7 @@ play_song:
     ld de,song_data
     call vdu_load_buffer
 
-    ; call vdu_vblank ; wait for vblank
-    ld a,%10000000
-    call multiPurposeDelay
+    call get_input
 
     pop hl
     inc l

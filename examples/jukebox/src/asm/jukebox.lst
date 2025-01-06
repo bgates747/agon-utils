@@ -2,8 +2,7 @@ PC     Output      Line
 040000             0001        assume adl=1
 040000             0002        org 0x040000
 040000 C3 45 00 04 0003        jp start
-040004             0004        align 64
-       FF FF FF FF 
+040004 FF FF FF FF 0004        align 64
        FF FF FF FF 
        FF FF FF FF 
        FF FF FF FF 
@@ -30,7 +29,7 @@ PC     Output      Line
 04004A FD E5       0014        push iy
 04004C             0015    
 04004C CD 04 1F 04 0016        call init
-040050 CD 09 1F 04 0017        call main
+040050 CD B0 1F 04 0017        call main
 040054             0018    
 040054             0019    exit:
 040054 FD E1       0020        pop iy
@@ -506,7 +505,6 @@ PC     Output      Line
 0400A0             0067*   ; HLU: Number to print
 0400A0             0068*   printHex24:
 0400A0             0069*       HLU_TO_A
-                       M1 Args: none
 0400A0 3B          0001*M1     dec sp ; 1 cycle
 0400A1 E5          0002*M1     push hl ; 4 cycles
 0400A2 33          0003*M1     inc sp ; 1 cycle
@@ -683,7 +681,6 @@ PC     Output      Line
 040167 E5          0235*       push hl ; Save HL (we’ll need the fractional part later)
 040168             0236*       ; call hlu_udiv256 ; Shift to get integer portion in HL
 040168             0237*       SRL_UHL ; Shift to get integer portion in HL
-                       M1 Args: none
 040168 3B          0001*M1     dec sp ; 1 cycle
 040169 E5          0002*M1     push hl ; 4 cycles
 04016A 33          0003*M1     inc sp ; 1 cycle
@@ -1016,7 +1013,6 @@ PC     Output      Line
 04035A             0540*   ; destroys: af,ix
 04035A             0541*   waitKeypress:
 04035A             0542*       MOSCALL mos_getkey
-                       M1 Args: function=mos_getkey 
 04035A 3E 00       0001*M1 			LD	A, function
 04035C 5B CF       0002*M1 			RST.LIL	08h
 04035E C9          0543*       ret
@@ -1389,7 +1385,6 @@ PC     Output      Line
 0404BC AF          0078*       xor a ; assume hl is positive
 0404BD 22 D3 04 04 0079*       ld (@buffer),hl
 0404C1             0080*       SIGN_HLU
-                       M1 Args: none
 0404C1 19          0001*M1     add hl,de ; 1 cycle
 0404C2 B7          0002*M1     or a ; clear flags ; 1 cycle
 0404C3 ED 52       0003*M1     sbc hl,de ; 2 cycles
@@ -1706,7 +1701,6 @@ PC     Output      Line
 040646             0165*   @div256:
 040646             0166*   ; multiply remainder by 256
 040646             0167*       hlu_mul256
-                       M1 Args: none
 040646 29          0001*M1     add hl,hl ; * 2
 040647 29          0002*M1     add hl,hl ; * 4
 040648 29          0003*M1     add hl,hl ; * 8
@@ -1717,7 +1711,6 @@ PC     Output      Line
 04064D 29          0008*M1     add hl,hl ; * 256
 04064E             0168*   ; skip fractional computation if remainder is zero
 04064E             0169*       SIGN_HLU
-                       M1 Args: none
 04064E 19          0001*M1     add hl,de ; 1 cycle
 04064F B7          0002*M1     or a ; clear flags ; 1 cycle
 040650 ED 52       0003*M1     sbc hl,de ; 2 cycles
@@ -1978,7 +1971,6 @@ PC     Output      Line
 040792 CD 70 04 04 0402*       call hlu_abs
 040796             0403*       ; call hlu_udiv256 ; make integer to avoid overflow
 040796             0404*       SRL_UHL ; make integer to avoid overflow
-                       M1 Args: none
 040796 3B          0001*M1     dec sp ; 1 cycle
 040797 E5          0002*M1     push hl ; 4 cycles
 040798 33          0003*M1     inc sp ; 1 cycle
@@ -1995,7 +1987,6 @@ PC     Output      Line
 0407A8 CD 70 04 04 0411*       call hlu_abs
 0407AC             0412*       ; call hlu_udiv256 ; make integer to avoid overflow
 0407AC             0413*       SRL_UHL ; make integer to avoid overflow
-                       M1 Args: none
 0407AC 3B          0001*M1     dec sp ; 1 cycle
 0407AD E5          0002*M1     push hl ; 4 cycles
 0407AE 33          0003*M1     inc sp ; 1 cycle
@@ -2013,7 +2004,6 @@ PC     Output      Line
 0407BB CD B9 08 04 0421*       call sqrt24 ; de = sqrt(dx^2 + dy^2)
 0407BF EB          0422*       ex de,hl ; hl = distance
 0407C0             0423*       hlu_mul256 ; convert back to 16.8 fixed
-                       M1 Args: none
 0407C0 29          0001*M1     add hl,hl ; * 2
 0407C1 29          0002*M1     add hl,hl ; * 4
 0407C2 29          0003*M1     add hl,hl ; * 8
@@ -3165,7 +3155,6 @@ PC     Output      Line
 04106D             0216*   tmr_set:
 04106D FD 2F 03    0217*       ld (iy+3),hl            ; set time remaining
 041070             0218*       MOSCALL mos_sysvars     ; ix points to syvars table
-                       M1 Args: function=mos_sysvars 
 041070 3E 08       0001*M1 			LD	A, function
 041072 5B CF       0002*M1 			RST.LIL	08h
 041074 DD 27 00    0219*       ld hl,(ix+sysvar_time)  ; get current time
@@ -3178,7 +3167,6 @@ PC     Output      Line
 04107B             0226*   ;          sign flags: pos = time not expired,zero or neg = time expired
 04107B             0227*   tmr_get:
 04107B             0228*       MOSCALL mos_sysvars     ; ix points to syvars table
-                       M1 Args: function=mos_sysvars 
 04107B 3E 08       0001*M1 			LD	A, function
 04107D 5B CF       0002*M1 			RST.LIL	08h
 04107F DD 17 00    0229*       ld de,(ix+sysvar_time)  ; get current time
@@ -3210,7 +3198,6 @@ PC     Output      Line
 0410A3 ED 53 98 10 0252*       ld (timestamp_old),de   ; save previous time
        04          
 0410A8             0253*       MOSCALL mos_sysvars     ; ix points to syvars table
-                       M1 Args: function=mos_sysvars 
 0410A8 3E 08       0001*M1 			LD	A, function
 0410AA 5B CF       0002*M1 			RST.LIL	08h
 0410AC DD 27 00    0254*       ld hl,(ix+sysvar_time)  ; get current time
@@ -3254,7 +3241,6 @@ PC     Output      Line
 0410D8             0291*   ; destroys: hl,ix
 0410D8             0292*   stopwatch_set:
 0410D8             0293*       MOSCALL mos_sysvars     ; ix points to syvars table
-                       M1 Args: function=mos_sysvars 
 0410D8 3E 08       0001*M1 			LD	A, function
 0410DA 5B CF       0002*M1 			RST.LIL	08h
 0410DC DD 27 00    0294*       ld hl,(ix+sysvar_time)  ; get current time
@@ -3266,7 +3252,6 @@ PC     Output      Line
 0410E4             0300*   ; destroys: af,hl,de,ix
 0410E4             0301*   stopwatch_get:
 0410E4             0302*       MOSCALL mos_sysvars     ; ix points to syvars table
-                       M1 Args: function=mos_sysvars 
 0410E4 3E 08       0001*M1 			LD	A, function
 0410E6 5B CF       0002*M1 			RST.LIL	08h
 0410E8 DD 27 00    0303*       ld hl,(ix+sysvar_time)  ; get current time
@@ -3480,7 +3465,6 @@ PC     Output      Line
 0411D6             0151*   vdu_vblank:
 0411D6 DD E5       0152*       PUSH 	IX
 0411D8             0153*   	MOSCALL	mos_sysvars
-                       M1 Args: function=mos_sysvars 
 0411D8 3E 08       0001*M1 			LD	A, function
 0411DA 5B CF       0002*M1 			RST.LIL	08h
 0411DC DD 7E 00    0154*   	LD	A, (IX + sysvar_time + 0)
@@ -3595,7 +3579,6 @@ PC     Output      Line
 04123C             0257*   ; destroys: af, ix
 04123C             0258*   vdu_get_screen_mode:
 04123C             0259*       MOSCALL mos_sysvars
-                       M1 Args: function=mos_sysvars 
 04123C 3E 08       0001*M1 			LD	A, function
 04123E 5B CF       0002*M1 			RST.LIL	08h
 041240 DD 7E 27    0260*       ld a,(IX+sysvar_scrMode)
@@ -3821,7 +3804,6 @@ PC     Output      Line
 041375 E1          0474*   	pop hl
 041376 0E 01       0475*   	ld c,fa_read
 041378             0476*       MOSCALL mos_fopen
-                       M1 Args: function=mos_fopen 
 041378 3E 0A       0001*M1 			LD	A, function
 04137A 5B CF       0002*M1 			RST.LIL	08h
 04137C 32 B7 13 04 0477*       ld (@filehandle),a
@@ -3838,7 +3820,6 @@ PC     Output      Line
 041385 21 00 E0 B7 0488*       ld hl,filedata
 041389 11 00 20 00 0489*       ld de,8192 ; max we can read into onboard sram at one time
 04138D             0490*       MOSCALL mos_fread
-                       M1 Args: function=mos_fread 
 04138D 3E 1A       0001*M1 			LD	A, function
 04138F 5B CF       0002*M1 			RST.LIL	08h
 041391             0491*   
@@ -3863,7 +3844,6 @@ PC     Output      Line
 0413AE             0510*   @close_file:
 0413AE 3A B7 13 04 0511*       ld a,(@filehandle)
 0413B2             0512*       MOSCALL mos_fclose
-                       M1 Args: function=mos_fclose 
 0413B2 3E 0B       0001*M1 			LD	A, function
 0413B4 5B CF       0002*M1 			RST.LIL	08h
 0413B6 C9          0513*       ret ; vdu_load_buffer_from_file
@@ -5239,7 +5219,6 @@ PC     Output      Line
 041C3F             0176*   
 041C3F             0177*   ; check for right shift key and quit if pressed
 041C3F             0178*       MOSCALL mos_getkbmap
-                       M1 Args: function=mos_getkbmap 
 041C3F 3E 1E       0001*M1 			LD	A, function
 041C41 5B CF       0002*M1 			RST.LIL	08h
 041C43             0179*   @stayhere:
@@ -5597,7 +5576,6 @@ PC     Output      Line
 041E44             0509*   
 041E44             0510*   DEBUG_PRINT:
 041E44             0511*       PUSH_ALL
-                       M1 Args: none
 041E44 08          0001*M1     ex af,af'
 041E45 D9          0002*M1     exx
 041E46 F5          0003*M1     push af
@@ -5618,7 +5596,6 @@ PC     Output      Line
 041E54             0514*       ; call vdu_move_cursor
 041E54 CD 7C 00 04 0515*       call printNewLine
 041E58             0516*       POP_ALL
-                       M1 Args: none
 041E58 FD E1       0001*M1     pop iy
 041E5A DD E1       0002*M1     pop ix
 041E5C D1          0003*M1     pop de
@@ -5635,7 +5612,6 @@ PC     Output      Line
 041E66 08          0014*M1     ex af,af'
 041E67 D9          0015*M1     exx
 041E68             0517*       PUSH_ALL
-                       M1 Args: none
 041E68 08          0001*M1     ex af,af'
 041E69 D9          0002*M1     exx
 041E6A F5          0003*M1     push af
@@ -5653,7 +5629,6 @@ PC     Output      Line
 041E76 FD E5       0015*M1     push iy
 041E78 CD 7F 1D 04 0518*       call dumpFlags
 041E7C             0519*       POP_ALL
-                       M1 Args: none
 041E7C FD E1       0001*M1     pop iy
 041E7E DD E1       0002*M1     pop ix
 041E80 D1          0003*M1     pop de
@@ -5670,7 +5645,6 @@ PC     Output      Line
 041E8A 08          0014*M1     ex af,af'
 041E8B D9          0015*M1     exx
 041E8C             0520*       PUSH_ALL
-                       M1 Args: none
 041E8C 08          0001*M1     ex af,af'
 041E8D D9          0002*M1     exx
 041E8E F5          0003*M1     push af
@@ -5690,7 +5664,6 @@ PC     Output      Line
 041EA0             0522*       ; call waitKeypress
 041EA0 CD 7C 00 04 0523*       call printNewLine
 041EA4             0524*       POP_ALL
-                       M1 Args: none
 041EA4 FD E1       0001*M1     pop iy
 041EA6 DD E1       0002*M1     pop ix
 041EA8 D1          0003*M1     pop de
@@ -5709,7 +5682,6 @@ PC     Output      Line
 041EB4 C9          0525*       ret
 041EB5             0526*   DEBUG_WAITKEYPRESS:
 041EB5             0527*       PUSH_ALL
-                       M1 Args: none
 041EB5 08          0001*M1     ex af,af'
 041EB6 D9          0002*M1     exx
 041EB7 F5          0003*M1     push af
@@ -5727,7 +5699,6 @@ PC     Output      Line
 041EC3 FD E5       0015*M1     push iy
 041EC5 CD 5A 03 04 0528*       call waitKeypress
 041EC9             0529*       POP_ALL
-                       M1 Args: none
 041EC9 FD E1       0001*M1     pop iy
 041ECB DD E1       0002*M1     pop ix
 041ECD D1          0003*M1     pop de
@@ -5747,7 +5718,6 @@ PC     Output      Line
 041EDA             0531*   
 041EDA             0532*   dumpVduCmdStr:
 041EDA             0533*       PUSH_ALL
-                       M1 Args: none
 041EDA 08          0001*M1     ex af,af'
 041EDB D9          0002*M1     exx
 041EDC F5          0003*M1     push af
@@ -5767,7 +5737,6 @@ PC     Output      Line
 041EEB CD D0 1D 04 0535*       call dumpMemoryHex
 041EEF CD 5A 03 04 0536*       call waitKeypress
 041EF3             0537*       POP_ALL
-                       M1 Args: none
 041EF3 FD E1       0001*M1     pop iy
 041EF5 DD E1       0002*M1     pop ix
 041EF7 D1          0003*M1     pop de
@@ -5788,7 +5757,7 @@ PC     Output      Line
 041F04             0047    
 041F04             0048    ; --- MAIN PROGRAM FILE ---
 041F04             0049    init:
-041F04 CD A3 20 04 0050        call load_command_buffer
+041F04 CD 5B 21 04 0050        call load_command_buffer
 041F08 C9          0051        ret
 041F09             0052    ; end init
 041F09             0053    
@@ -5797,116 +5766,207 @@ PC     Output      Line
 041F09             0056    cmd0_buffer: equ 0x3002
 041F09             0057    cmd1_buffer: equ 0x3003
 041F09             0058    
-041F09             0059    main:
-041F09             0060    
-041F09             0061    ; stream a song from the SD card
-041F09             0062    ; inputs: hl = pointer to filename
-041F09             0063    ; requirements: the file must be 8-bit signed PCM mono sampled at 15360 Hz
-041F09             0064    ; uses: sound channels 0 and 1, buffers 0x3000 and 0x3001
-041F09             0065    play_song:
-041F09 CD 60 00 04 0066        call printInline
-041F0D 50 6C 61 79 0067        asciz "Playing song...\r\n"
+041F09             0059    get_input:
+041F09 FD 21 AA 1F 0060        ld iy,tmr_input
+       04          
+041F0E 21 6E 00 00 0061        ld hl,110 ; 1 second
+041F12 CD 6D 10 04 0062        call tmr_set
+041F16             0063    @loop:
+041F16             0064    ; check timer expired
+041F16 FD 21 AA 1F 0065        ld iy,tmr_input
+       04          
+041F1B CD 7B 10 04 0066        call tmr_get
+041F1F C8          0067        ret z ; yes, so return
+041F20 F8          0068        ret m ; way expired, so return
+041F21             0069    
+041F21             0070    ; check for keyboard input
+041F21             0071        MOSCALL mos_getkbmap ; IX points to keyboard map
+041F21 3E 1E       0001M1  			LD	A, function
+041F23 5B CF       0002M1  			RST.LIL	08h
+041F25 21 00 00 00 0072        ld hl,0 ; clear hl
+041F29             0073    ; 49 Num1
+041F29 DD CB 06 46 0074        bit 0,(ix+6)
+041F2D CA 35 1F 04 0075        jp z,@F
+041F31 21 BC 19 04 0076        ld hl,FAFRICA
+041F35             0077    @@:
+041F35             0078    ; 50 Num2
+041F35 DD CB 06 4E 0079        bit 1,(ix+6)
+041F39 CA 41 1F 04 0080        jp z,@F
+041F3D 21 CD 19 04 0081        ld hl,FANYTIME
+041F41             0082    @@:
+041F41             0083    ; 18 Num3
+041F41 DD CB 02 4E 0084        bit 1,(ix+2)
+041F45 CA 4D 1F 04 0085        jp z,@F
+041F49 21 DF 19 04 0086        ld hl,FBARRACUDA
+041F4D             0087    @@:
+041F4D             0088    ; 19 Num4
+041F4D DD CB 02 56 0089        bit 2,(ix+2)
+041F51 CA 59 1F 04 0090        jp z,@F
+041F55 21 F3 19 04 0091        ld hl,FCOME_UNDONE
+041F59             0092    @@:
+041F59             0093    ; 20 Num5
+041F59 DD CB 02 5E 0094        bit 3,(ix+2)
+041F5D CA 65 1F 04 0095        jp z,@F
+041F61 21 09 1A 04 0096        ld hl,FEVERY_BREATH_YOU_TAKE
+041F65             0097    @@:
+041F65             0098    ; 53 Num6
+041F65 DD CB 06 66 0099        bit 4,(ix+6)
+041F69 CA 71 1F 04 0100        jp z,@F
+041F6D 21 29 1A 04 0101        ld hl,FRHIANNON
+041F71             0102    @@:
+041F71             0103    ; 37 Num7
+041F71 DD CB 04 66 0104        bit 4,(ix+4)
+041F75 CA 7D 1F 04 0105        jp z,@F
+041F79 21 3C 1A 04 0106        ld hl,FTAKE_A_RIDE
+041F7D             0107    @@:
+041F7D             0108    ; 22 Num8
+041F7D DD CB 02 6E 0109        bit 5,(ix+2)
+041F81 CA 89 1F 04 0110        jp z,@F
+041F85 21 52 1A 04 0111        ld hl,FAMBIENT_BEAT70
+041F89             0112    @@:
+041F89             0113    ; 39 Num9
+041F89 DD CB 04 76 0114        bit 6,(ix+4)
+041F8D CA 95 1F 04 0115        jp z,@F
+041F91 21 6B 1A 04 0116        ld hl,FSPACE_ADVENTURE
+041F95             0117    @@:
+041F95             0118    ; 40 Num0
+041F95 DD CB 04 7E 0119        bit 7,(ix+4)
+041F99 CA 9D 1F 04 0120        jp z,@F
+041F9D             0121    @@:
+041F9D             0122    
+041F9D             0123    ; if hl is non-zero we have a song request
+041F9D             0124        SIGN_HLU
+041F9D 19          0001M1      add hl,de ; 1 cycle
+041F9E B7          0002M1      or a ; clear flags ; 1 cycle
+041F9F ED 52       0003M1      sbc hl,de ; 2 cycles
+041FA1             0004M1      ; 4 cycles total
+041FA1 CA 16 1F 04 0125        jp z,@loop ; no request so loop
+041FA5 C1          0126        pop bc ; dummy pop to balance stack
+041FA6 C3 B8 1F 04 0127        jp play_song ; play the requested song
+041FAA             0128    ; end get_input
+041FAA             0129    
+041FAA             0130    tmr_input: ds 6 ; input timer buffer
+041FB0             0131    
+041FB0             0132    
+041FB0             0133    main:
+       FF FF FF FF 
+       FF FF 
+041FB0 CD 7C 00 04 0134        call printNewLine
+041FB4             0135    ; default song
+041FB4 21 29 1A 04 0136        ld hl,FRHIANNON
+041FB8             0137    
+041FB8             0138    ; stream a song from the SD card
+041FB8             0139    ; inputs: hl = pointer to filename
+041FB8             0140    ; requirements: the file must be 8-bit signed PCM mono sampled at 15360 Hz
+041FB8             0141    ; uses: sound channels 0 and 1, buffers 0x3000 and 0x3001
+041FB8             0142    play_song:
+041FB8             0143    ; tell the user what they've won
+041FB8 E5          0144        push hl
+041FB9 CD 60 00 04 0145        call printInline
+041FBD 50 6C 61 79 0146        asciz "Playing song: "
        69 6E 67 20 
        73 6F 6E 67 
-       2E 2E 2E 0D 
-       0A 00       
-041F1F             0068    ; TEMPORARY
-041F1F 21 29 1A 04 0069        ld hl,FRHIANNON
-041F23             0070    ; END TEMPORARY
-041F23             0071    
-041F23             0072    ; open the file in read mode
-041F23             0073    ; Open a file
-041F23             0074    ; HLU: Filename
-041F23             0075    ;   C: Mode
-041F23             0076    ; Returns:
-041F23             0077    ;   A: Filehandle, or 0 if couldn't open
-041F23 0E 01       0078    	ld c,fa_read
-041F25             0079        MOSCALL mos_fopen
-                       M1 Args: function=mos_fopen 
-041F25 3E 0A       0001M1  			LD	A, function
-041F27 5B CF       0002M1  			RST.LIL	08h
-041F29 32 86 1F 04 0080        ld (@filehandle),a
-041F2D             0081    
-041F2D             0082    @read_file:
-041F2D             0083    
-041F2D             0084    ; Read a block of data from a file
-041F2D             0085    ;   C: Filehandle
-041F2D             0086    ; HLU: Pointer to where to write the data to
-041F2D             0087    ; DEU: Number of bytes to read
-041F2D             0088    ; Returns:
-041F2D             0089    ; DEU: Number of bytes read
-041F2D 3A 86 1F 04 0090        ld a,(@filehandle)
-041F31 4F          0091        ld c,a
-041F32 21 00 22 04 0092        ld hl,song_data
-041F36 11 00 3C 00 0093        ld de,256*60
-041F3A             0094        MOSCALL mos_fread
-                       M1 Args: function=mos_fread 
-041F3A 3E 1A       0001M1  			LD	A, function
-041F3C 5B CF       0002M1  			RST.LIL	08h
-041F3E             0095    
-041F3E             0096    ; test de for zero bytes read
-041F3E 21 00 00 00 0097        ld hl,0
-041F42 AF          0098        xor a ; clear carry
-041F43 ED 52       0099        sbc hl,de
-041F45 CA 7B 1F 04 0100        jp z,@close_file
-041F49             0101    
-041F49             0102    ; load a vdu buffer from local memory
-041F49             0103    ; inputs: hl = bufferId ; bc = length ; de = pointer to data
-041F49 3A 85 1F 04 0104        ld a,(@channel)
-041F4D 3C          0105        inc a
-041F4E E6 01       0106        and 1
-041F50 32 85 1F 04 0107        ld (@channel),a
-041F54 21 00 30 00 0108        ld hl,ch0_buffer
-041F58 6F          0109        ld l,a
-041F59 E5          0110        push hl ; sample bufferId
-041F5A CD 17 15 04 0111        call vdu_clear_buffer
-041F5E E1          0112        pop hl
-041F5F E5          0113        push hl
-041F60 D5          0114        push de ; chunksize
-041F61 C1          0115        pop bc
-041F62 11 00 22 04 0116        ld de,song_data
-041F66 CD 02 13 04 0117        call vdu_load_buffer
-041F6A             0118    
-041F6A             0119        ; call vdu_vblank ; wait for vblank
-041F6A 3E 80       0120        ld a,%10000000
-041F6C CD F7 10 04 0121        call multiPurposeDelay
-041F70             0122    
-041F70 E1          0123        pop hl
-041F71 2C          0124        inc l
-041F72 2C          0125        inc l ; play commmand bufferId
-041F73 CD FC 14 04 0126        call vdu_call_buffer
-041F77             0127    
-041F77             0128    ; read the next block
-041F77 C3 2D 1F 04 0129        jp @read_file
-041F7B             0130    
-041F7B             0131    ; close the file
-041F7B             0132    @close_file:
-041F7B F1          0133        pop af ; dummy pop to balance stack
-041F7C 3A 86 1F 04 0134        ld a,(@filehandle)
-041F80             0135        MOSCALL mos_fclose
-                       M1 Args: function=mos_fclose 
-041F80 3E 0B       0001M1  			LD	A, function
-041F82 5B CF       0002M1  			RST.LIL	08h
-041F84 C9          0136        ret
-041F85             0137    
-041F85 00          0138    @channel: db 0 ; channel number
-041F86             0139    
-041F86 00          0140    @filehandle: db 0 ; file handle
-041F87 00 00 00    0141    @fil: dl 0 ; pointer to FIL struct
-041F8A             0142    
-041F8A 00 00 00    0143    @chunkpointer: dl 0 ; pointer to current chunk
-041F8D             0144    
-041F8D             0145    ; File information structure (FILINFO)
-041F8D             0146    @filinfo:
-041F8D 00 00 00 00 0147    @filinfo_fsize:    blkb 4, 0   ; File size (4 bytes)
-041F91 00 00       0148    @filinfo_fdate:    blkb 2, 0   ; Modified date (2 bytes)
-041F93 00 00       0149    @filinfo_ftime:    blkb 2, 0   ; Modified time (2 bytes)
-041F95 00          0150    @filinfo_fattrib:  blkb 1, 0   ; File attribute (1 byte)
-041F96 00 00 00 00 0151    @filinfo_altname:  blkb 13, 0  ; Alternative file name (13 bytes)
+       3A 20 00    
+041FCC E1          0147        pop hl
+041FCD E5          0148        push hl
+041FCE CD 67 00 04 0149        call printString ; print the song filename
+041FD2 CD 7C 00 04 0150        call printNewLine
+041FD6             0151    
+041FD6             0152    ; debounce keypress
+041FD6 3E 80       0153        ld a,%10000000 ; 1 second
+041FD8 CD F7 10 04 0154        call multiPurposeDelay
+041FDC             0155    
+041FDC             0156    ; finally play the song
+041FDC E1          0157        pop hl
+041FDD             0158    
+041FDD             0159    ; open the file in read mode
+041FDD             0160    ; Open a file
+041FDD             0161    ; HLU: Filename
+041FDD             0162    ;   C: Mode
+041FDD             0163    ; Returns:
+041FDD             0164    ;   A: Filehandle, or 0 if couldn't open
+041FDD 0E 01       0165    	ld c,fa_read
+041FDF             0166        MOSCALL mos_fopen
+041FDF 3E 0A       0001M1  			LD	A, function
+041FE1 5B CF       0002M1  			RST.LIL	08h
+041FE3 32 3E 20 04 0167        ld (@filehandle),a
+041FE7             0168    
+041FE7             0169    @read_file:
+041FE7             0170    
+041FE7             0171    ; Read a block of data from a file
+041FE7             0172    ;   C: Filehandle
+041FE7             0173    ; HLU: Pointer to where to write the data to
+041FE7             0174    ; DEU: Number of bytes to read
+041FE7             0175    ; Returns:
+041FE7             0176    ; DEU: Number of bytes read
+041FE7 3A 3E 20 04 0177        ld a,(@filehandle)
+041FEB 4F          0178        ld c,a
+041FEC 21 00 22 04 0179        ld hl,song_data
+041FF0 11 00 3C 00 0180        ld de,256*60
+041FF4             0181        MOSCALL mos_fread
+041FF4 3E 1A       0001M1  			LD	A, function
+041FF6 5B CF       0002M1  			RST.LIL	08h
+041FF8             0182    
+041FF8             0183    ; test de for zero bytes read
+041FF8 21 00 00 00 0184        ld hl,0
+041FFC AF          0185        xor a ; clear carry
+041FFD ED 52       0186        sbc hl,de
+041FFF CA 33 20 04 0187        jp z,@close_file
+042003             0188    
+042003             0189    ; load a vdu buffer from local memory
+042003             0190    ; inputs: hl = bufferId ; bc = length ; de = pointer to data
+042003 3A 3D 20 04 0191        ld a,(@channel)
+042007 3C          0192        inc a
+042008 E6 01       0193        and 1
+04200A 32 3D 20 04 0194        ld (@channel),a
+04200E 21 00 30 00 0195        ld hl,ch0_buffer
+042012 6F          0196        ld l,a
+042013 E5          0197        push hl ; sample bufferId
+042014 CD 17 15 04 0198        call vdu_clear_buffer
+042018 E1          0199        pop hl
+042019 E5          0200        push hl
+04201A D5          0201        push de ; chunksize
+04201B C1          0202        pop bc
+04201C 11 00 22 04 0203        ld de,song_data
+042020 CD 02 13 04 0204        call vdu_load_buffer
+042024             0205    
+042024 CD 09 1F 04 0206        call get_input
+042028             0207    
+042028 E1          0208        pop hl
+042029 2C          0209        inc l
+04202A 2C          0210        inc l ; play commmand bufferId
+04202B CD FC 14 04 0211        call vdu_call_buffer
+04202F             0212    
+04202F             0213    ; read the next block
+04202F C3 E7 1F 04 0214        jp @read_file
+042033             0215    
+042033             0216    ; close the file
+042033             0217    @close_file:
+042033 F1          0218        pop af ; dummy pop to balance stack
+042034 3A 3E 20 04 0219        ld a,(@filehandle)
+042038             0220        MOSCALL mos_fclose
+042038 3E 0B       0001M1  			LD	A, function
+04203A 5B CF       0002M1  			RST.LIL	08h
+04203C C9          0221        ret
+04203D             0222    
+04203D 00          0223    @channel: db 0 ; channel number
+04203E             0224    
+04203E 00          0225    @filehandle: db 0 ; file handle
+04203F 00 00 00    0226    @fil: dl 0 ; pointer to FIL struct
+042042             0227    
+042042 00 00 00    0228    @chunkpointer: dl 0 ; pointer to current chunk
+042045             0229    
+042045             0230    ; File information structure (FILINFO)
+042045             0231    @filinfo:
+042045 00 00 00 00 0232    @filinfo_fsize:    blkb 4, 0   ; File size (4 bytes)
+042049 00 00       0233    @filinfo_fdate:    blkb 2, 0   ; Modified date (2 bytes)
+04204B 00 00       0234    @filinfo_ftime:    blkb 2, 0   ; Modified time (2 bytes)
+04204D 00          0235    @filinfo_fattrib:  blkb 1, 0   ; File attribute (1 byte)
+04204E 00 00 00 00 0236    @filinfo_altname:  blkb 13, 0  ; Alternative file name (13 bytes)
        00 00 00 00 
        00 00 00 00 
        00          
-041FA3 00 00 00 00 0152    @filinfo_fname:    blkb 256, 0 ; Primary file name (256 bytes)
+04205B 00 00 00 00 0237    @filinfo_fname:    blkb 256, 0 ; Primary file name (256 bytes)
        00 00 00 00 
        00 00 00 00 
        00 00 00 00 
@@ -5970,80 +6030,94 @@ PC     Output      Line
        00 00 00 00 
        00 00 00 00 
        00 00 00 00 
-0420A3             0153    
-0420A3             0154    
-0420A3             0155    load_command_buffer:
-0420A3 21 02 30 00 0156        ld hl,cmd0_buffer
-0420A7 CD 17 15 04 0157        call vdu_clear_buffer
-0420AB 21 02 30 00 0158        ld hl,cmd0_buffer
-0420AF 01 1D 00 00 0159        ld bc,@cmd0_end-@cmd0
-0420B3 11 D4 20 04 0160        ld de,@cmd0
-0420B7 CD D4 14 04 0161        call vdu_write_block_to_buffer
-0420BB             0162    
-0420BB 21 03 30 00 0163        ld hl,cmd1_buffer
-0420BF CD 17 15 04 0164        call vdu_clear_buffer
-0420C3 21 03 30 00 0165        ld hl,cmd1_buffer
-0420C7 01 1D 00 00 0166        ld bc,@cmd1_end-@cmd1
-0420CB 11 F1 20 04 0167        ld de,@cmd1
-0420CF CD D4 14 04 0168        call vdu_write_block_to_buffer
-0420D3 C9          0169        ret
-0420D4             0170    
-0420D4             0171    @cmd0:
-0420D4             0172    ; vdu_buffer_to_sound command string
-0420D4             0173    ; Command 5: Buffer to sound
-0420D4 17 00 85    0174        db 23,0,0x85 ; vdu sound command header
-0420D7 00          0175        db 0x00 ; channel (ignored)
-0420D8 05          0176        db 0x05 ; buffer to sound command
-0420D9 02          0177        db 0x02 ; command 2 create sample
-0420DA 00 30       0178        dw ch0_buffer
-0420DC 08          0179        db 0+8 ; 0 = 8-bit signed PCM mono, 8 = sample rate argument follows
-0420DD 00 3C       0180        dw sample_rate
-0420DF             0181    ; vdu_play_sfx command string
-0420DF             0182    ; Command 4: Set waveform
-0420DF             0183    ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
-0420DF 17 00 85    0184        db 23,0,$85 ; vdu sound command header
-0420E2 00          0185        db 0 ; channel
-0420E3 04          0186        db 4 ; set waveform command
-0420E4 08          0187        db 8 ; waveform 8 = sample
-0420E5 00 30       0188        dw ch0_buffer ; sample bufferId
-0420E7             0189    ; Command 0: Play note
-0420E7             0190    ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
-0420E7 17 00 85    0191        db 23,0,$85 ; vdu sound command header
-0420EA 00          0192        db 0 ; channel
-0420EB 00          0193        db 0 ; play note command
-0420EC 7F          0194        db 127  ; volume 127 = max
-0420ED 00 00       0195        dw 0 ; frequency (relevant only for tuneable samples)
-0420EF 00 00       0196        dw 0 ; duration (ms), zero means play one time in full
-0420F1             0197    @cmd0_end:
-0420F1             0198    
-0420F1             0199    @cmd1:
-0420F1             0200    ; vdu_buffer_to_sound command string
-0420F1             0201    ; Command 5: Buffer to sound
-0420F1 17 00 85    0202        db 23,0,0x85 ; vdu sound command header
-0420F4 00          0203        db 0x00 ; channel (ignored)
-0420F5 05          0204        db 0x05 ; buffer to sound command
-0420F6 02          0205        db 0x02 ; command 2 create sample
-0420F7 01 30       0206        dw ch1_buffer
-0420F9 08          0207        db 0+8 ; 0 = 8-bit signed PCM mono, 8 = sample rate argument follows
-0420FA 00 3C       0208        dw sample_rate
-0420FC             0209    ; vdu_play_sfx command string
-0420FC             0210    ; Command 4: Set waveform
-0420FC             0211    ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
-0420FC 17 00 85    0212        db 23,0,$85 ; vdu sound command header
-0420FF 01          0213        db 1 ; channel
-042100 04          0214        db 4 ; set waveform command
-042101 08          0215        db 8 ; waveform 8 = sample
-042102 01 30       0216        dw ch1_buffer ; sample bufferId
-042104             0217    ; Command 0: Play note
-042104             0218    ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
-042104 17 00 85    0219        db 23,0,$85 ; vdu sound command header
-042107 01          0220        db 1 ; channel
-042108 00          0221        db 0 ; play note command
-042109 7F          0222        db 127  ; volume 127 = max
-04210A 00 00       0223        dw 0 ; frequency (relevant only for tuneable samples)
-04210C 00 00       0224        dw 0 ; duration (ms), zero means play one time in full
-04210E             0225    @cmd1_end:
-04210E             0226    ; end load_command_buffers
-04210E             0227    
-04210E             0228        align 256 ; align to 256-byte boundary (may be helpful ... or not)
-042200             0229    song_data: ; blkw 6556,0 ; buffer for sound data
+04215B             0238    
+04215B             0239    
+04215B             0240    load_command_buffer:
+04215B 21 02 30 00 0241        ld hl,cmd0_buffer
+04215F CD 17 15 04 0242        call vdu_clear_buffer
+042163 21 02 30 00 0243        ld hl,cmd0_buffer
+042167 01 1D 00 00 0244        ld bc,@cmd0_end-@cmd0
+04216B 11 8C 21 04 0245        ld de,@cmd0
+04216F CD D4 14 04 0246        call vdu_write_block_to_buffer
+042173             0247    
+042173 21 03 30 00 0248        ld hl,cmd1_buffer
+042177 CD 17 15 04 0249        call vdu_clear_buffer
+04217B 21 03 30 00 0250        ld hl,cmd1_buffer
+04217F 01 1D 00 00 0251        ld bc,@cmd1_end-@cmd1
+042183 11 A9 21 04 0252        ld de,@cmd1
+042187 CD D4 14 04 0253        call vdu_write_block_to_buffer
+04218B C9          0254        ret
+04218C             0255    
+04218C             0256    @cmd0:
+04218C             0257    ; vdu_buffer_to_sound command string
+04218C             0258    ; Command 5: Buffer to sound
+04218C 17 00 85    0259        db 23,0,0x85 ; vdu sound command header
+04218F 00          0260        db 0x00 ; channel (ignored)
+042190 05          0261        db 0x05 ; buffer to sound command
+042191 02          0262        db 0x02 ; command 2 create sample
+042192 00 30       0263        dw ch0_buffer
+042194 08          0264        db 0+8 ; 0 = 8-bit signed PCM mono, 8 = sample rate argument follows
+042195 00 3C       0265        dw sample_rate
+042197             0266    ; vdu_play_sfx command string
+042197             0267    ; Command 4: Set waveform
+042197             0268    ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
+042197 17 00 85    0269        db 23,0,$85 ; vdu sound command header
+04219A 00          0270        db 0 ; channel
+04219B 04          0271        db 4 ; set waveform command
+04219C 08          0272        db 8 ; waveform 8 = sample
+04219D 00 30       0273        dw ch0_buffer ; sample bufferId
+04219F             0274    ; Command 0: Play note
+04219F             0275    ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
+04219F 17 00 85    0276        db 23,0,$85 ; vdu sound command header
+0421A2 00          0277        db 0 ; channel
+0421A3 00          0278        db 0 ; play note command
+0421A4 7F          0279        db 127  ; volume 127 = max
+0421A5 00 00       0280        dw 0 ; frequency (relevant only for tuneable samples)
+0421A7 00 00       0281        dw 0 ; duration (ms), zero means play one time in full
+0421A9             0282    @cmd0_end:
+0421A9             0283    
+0421A9             0284    @cmd1:
+0421A9             0285    ; vdu_buffer_to_sound command string
+0421A9             0286    ; Command 5: Buffer to sound
+0421A9 17 00 85    0287        db 23,0,0x85 ; vdu sound command header
+0421AC 00          0288        db 0x00 ; channel (ignored)
+0421AD 05          0289        db 0x05 ; buffer to sound command
+0421AE 02          0290        db 0x02 ; command 2 create sample
+0421AF 01 30       0291        dw ch1_buffer
+0421B1 08          0292        db 0+8 ; 0 = 8-bit signed PCM mono, 8 = sample rate argument follows
+0421B2 00 3C       0293        dw sample_rate
+0421B4             0294    ; vdu_play_sfx command string
+0421B4             0295    ; Command 4: Set waveform
+0421B4             0296    ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
+0421B4 17 00 85    0297        db 23,0,$85 ; vdu sound command header
+0421B7 01          0298        db 1 ; channel
+0421B8 04          0299        db 4 ; set waveform command
+0421B9 08          0300        db 8 ; waveform 8 = sample
+0421BA 01 30       0301        dw ch1_buffer ; sample bufferId
+0421BC             0302    ; Command 0: Play note
+0421BC             0303    ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
+0421BC 17 00 85    0304        db 23,0,$85 ; vdu sound command header
+0421BF 01          0305        db 1 ; channel
+0421C0 00          0306        db 0 ; play note command
+0421C1 7F          0307        db 127  ; volume 127 = max
+0421C2 00 00       0308        dw 0 ; frequency (relevant only for tuneable samples)
+0421C4 00 00       0309        dw 0 ; duration (ms), zero means play one time in full
+0421C6             0310    @cmd1_end:
+0421C6             0311    ; end load_command_buffers
+0421C6             0312    
+0421C6 FF FF FF FF 0313        align 256 ; align to 256-byte boundary (may be helpful ... or not)
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF       
+042200             0314    song_data: ; blkw 6556,0 ; buffer for sound data
