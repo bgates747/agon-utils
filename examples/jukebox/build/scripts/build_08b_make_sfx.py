@@ -236,20 +236,20 @@ def make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate):
         # Convert source file to .wav without modifying frame rate or codec
         convert_to_wav(src_path, proc_path)
 
-        # Compress dynamic range
-        temp_path = copy_to_temp(proc_path)
-        compress_dynamic_range(temp_path, proc_path)
-        os.remove(temp_path)
+        # # Compress dynamic range
+        # temp_path = copy_to_temp(proc_path)
+        # compress_dynamic_range(temp_path, proc_path)
+        # os.remove(temp_path)
 
-        # Normalize audio
-        temp_path = copy_to_temp(proc_path)
-        normalize_audio(temp_path, proc_path)
-        os.remove(temp_path)
+        # # Normalize audio
+        # temp_path = copy_to_temp(proc_path)
+        # normalize_audio(temp_path, proc_path)
+        # os.remove(temp_path)
 
-        # Apply lowpass filter
-        temp_path = copy_to_temp(proc_path)
-        lowpass_filter(temp_path, proc_path, sample_rate)
-        os.remove(temp_path)
+        # # Apply lowpass filter
+        # temp_path = copy_to_temp(proc_path)
+        # lowpass_filter(temp_path, proc_path, sample_rate)
+        # os.remove(temp_path)
 
         # Resample .wav file to the specified frame rate
         temp_path = copy_to_temp(proc_path)

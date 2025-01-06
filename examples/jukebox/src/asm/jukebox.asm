@@ -46,44 +46,69 @@ exit:
     include "music.inc"
     include "debug.inc"
 
-sample_rate: equ 15360
 temp:
 ; ; TEMPORARY - WORKS
-;     call load_sfx_AMBIENT_BEAT70
+; 	call load_sfx_AMBIENT_BEAT70
 ;     call sfx_play_AMBIENT_BEAT70
+;     ret
 ; ; END TEMPORARY
 
 ; TEMPORARY - WORKS
-    ld hl,ch0_buffer
-    ld iy,FAMBIENT_BEAT70
+	ld hl,BUF_AMBIENT_BEAT70
+	ld iy,FAMBIENT_BEAT70
     call vdu_load_buffer_from_file
 
-    ld de,sample_rate ; sample rate
-    ld hl,ch0_buffer
-    xor a ; 8-bit signed PCM mono
-    call vdu_buffer_to_sound 
+; ; vdu_buffer_to_sound:
+;     ld hl,@buf2sound         
+;     ld bc,@buf2sound_end-@buf2sound
+;     rst.lil $18    
+; ; end vdu_buffer_to_sound 
 
-    ld c,0 ; channel 0
-    ld b,127 ; volume
-    ld de,sample_rate ; sample rate
-    ld hl,ch0_buffer
-    ld ix,30121 ; duration
-    call vdu_play_sample
-    ld bc,30121 ; duration
-    ; call vdu_play_sfx
-; END TEMPORARY
+; ; vdu_play_sfx:
+; 	ld hl,@play_sample
+;     ld bc,@play_sample_end-@play_sample
+;     rst.lil $18
+; ; end vdu_play_sfx
 
-    ; ld hl,cmd0_buffer
-    ; ld de,ch0_buffer
-    ; ld c,0 ; channel 0
-    ; call load_command_buffer
+    ld hl,cmd0_buffer
+    ld bc,@play_sample_end-@buf2sound
+    ld de,@buf2sound
+    call vdu_write_block_to_buffer
 
-    ; ld hl,cmd0_buffer
-    ; call vdu_call_buffer
-
-
-
+    ld hl,cmd0_buffer
+    call vdu_call_buffer
     ret
+
+; vdu_buffer_to_sound command string
+@buf2sound: 
+    db 23,0,0x85 ; vdu sound command header
+    db 0x00 ; channel (ignored)
+    db 0x05 ; buffer to sound command
+    db 0x02 ; command 2 create sample
+    dw BUF_AMBIENT_BEAT70
+    db 0+8 ; 0 = 8-bit signed PCM mono, 8 = sample rate argument follows
+    dw sample_rate
+@buf2sound_end:
+
+; vdu_play_sfx command string
+@play_sample: 
+; Command 4: Set waveform
+; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
+    db 23,0,$85 ; vdu sound command header  
+    db 0 ; channel
+    db 4 ; set waveform command
+    db 8 ; waveform 8 = sample
+    dw BUF_AMBIENT_BEAT70 ; sample bufferId
+; Command 0: Play note
+; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
+    db 23,0,$85 ; vdu sound command header
+    db 0 ; channel
+    db 0 ; play note command
+    db 127  ; volume 127 = max
+    dw 0 ; frequency (relevant only for tuneable samples)
+    dw 0 ; duration (ms), zero means play one time in full
+@play_sample_end:
+; END TEMPORARY
 ; end temp
 
 ; --- MAIN PROGRAM FILE ---

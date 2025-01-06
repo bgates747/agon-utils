@@ -1,6 +1,8 @@
 ; This file is created by build_98_asm_sfx.py, do not edit it!
 
 SFX_num_buffers: equ 1
+
+sample_rate: equ 15360
 ; SFX buffer ids:
 BUF_AMBIENT_BEAT70: equ 0x3000
 
@@ -10,7 +12,7 @@ SFX_buffer_id_lut:
 
 ; SFX duration lookup:
 SFX_duration_lut:
-	dl 9762 ; AMBIENT_BEAT70
+	dl 30121 ; AMBIENT_BEAT70
 
 ; SFX load routines jump table:
 SFX_load_routines_table:
@@ -19,11 +21,6 @@ SFX_load_routines_table:
 ; Import sfx .raw files and load them into VDP buffers
 
 load_sfx_AMBIENT_BEAT70:
-	ld hl,FAMBIENT_BEAT70
-	ld de,filedata
-	ld bc,65536
-	ld a,mos_load
-	RST.LIL 08h
 	ld hl,BUF_AMBIENT_BEAT70
 	ld de,15360
 	ld iy,FAMBIENT_BEAT70

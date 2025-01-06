@@ -22,6 +22,7 @@ def make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate
         # Write the header
         f.write("; This file is created by build_98_asm_sfx.py, do not edit it!\n\n")
         f.write(f"SFX_num_buffers: equ {len(rows)}\n")
+        f.write(f"\nsample_rate: equ {sample_rate}\n")
 
         # Write the buffer ids
         f.write("; SFX buffer ids:\n")
@@ -66,12 +67,12 @@ def make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate
             buf_label = f"BUF_{base_filename}"
         # write the load routine
             f.write(f"\nload_sfx_{base_filename}:\n")
-            f.write(f"\tld hl,F{base_filename}\n")
+            # f.write(f"\tld hl,F{base_filename}\n")
             # f.write(f"\tld (cur_filename),hl\n")
-            f.write(f"\tld de,filedata\n")
-            f.write(f"\tld bc,65536\n")
-            f.write(f"\tld a,mos_load\n")
-            f.write(f"\tRST.LIL 08h\n")
+            # f.write(f"\tld de,filedata\n")
+            # f.write(f"\tld bc,65536\n")
+            # f.write(f"\tld a,mos_load\n")
+            # f.write(f"\tRST.LIL 08h\n")
             f.write(f"\tld hl,{buf_label}\n")
             # f.write(f"\tld ix,{size}\n") # no longer required with progressive file load
             f.write(f"\tld de,{sample_rate}\n")
