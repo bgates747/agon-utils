@@ -89,14 +89,22 @@ ps_close_file:
     MOSCALL mos_fclose
 
 ; queue a random song to play next
+ps_play_random:
     call rand_8 ; a = 0-255
     and 7 ; mod 8
     ld d,a
-    ld e,3
-    mlt de
+    ld e,3 ; three bytes per filename index
+    mlt de ; index into the filename table
     ld hl,SFX_filename_index
-    add hl,de
-    jp play_song
+    add hl,de ; hl points to the filename index
+    ld hl,(hl) ; hl points to the filename
+    ex de,hl ; setting up cp hl,de
+    ld hl,(current_song) ; don't play the same song twice in a row
+    or a ; clear carry
+    sbc hl,de
+    jp z,ps_play_random ; same song, try again
+    ex de,hl ; pointer back to hl
+    jp play_song ; hit it
 
 ; current active channel and bufferId's
 ps_channel: db 0 ; channel number
