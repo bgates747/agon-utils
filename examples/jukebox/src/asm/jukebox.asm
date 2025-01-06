@@ -13,9 +13,8 @@ start:
     push ix
     push iy
 
-    ; call init
-    ; call main
-    call temp
+    call init
+    call main
 
 exit:
     pop iy
@@ -46,53 +45,28 @@ exit:
     include "music.inc"
     include "debug.inc"
 
-temp:
-    call load_command_buffer
-
-	ld hl,ch0_buffer
-	ld iy,FAMBIENT_BEAT70
-    call vdu_load_buffer_from_file
-
-    ld hl,cmd0_buffer
-    call vdu_call_buffer
-    ret
-
-
-; END TEMPORARY
-; end temp
-
 ; --- MAIN PROGRAM FILE ---
 init:
     call load_command_buffer
     ret
 ; end init
 
+ch0_buffer: equ 0x3000
+ch1_buffer: equ 0x3001
+cmd0_buffer: equ 0x3002
+cmd1_buffer: equ 0x3003
+
 main:
-@loop:
-    call waitKeypress
-    cp '\e'
-    ret z
-    cp '1'
-    call z,play_song
-    jp @loop
-; end main
 
 ; stream a song from the SD card
 ; inputs: hl = pointer to filename
 ; requirements: the file must be 8-bit signed PCM mono sampled at 15360 Hz
 ; uses: sound channels 0 and 1, buffers 0x3000 and 0x3001
-    align 256 ; align to 256-byte boundary (may be helpful ... or not)
-song_data: blkw 8192,0 ; buffer for sound data
-; ch0_buffer: equ 0x3000
-ch0_buffer: equ BUF_AMBIENT_BEAT70 ; TEMPORARY
-cmd0_buffer: equ 0x3001
-ch1_buffer: equ 0x3002
-cmd1_buffer: equ 0x3003
 play_song:
     call printInline
     asciz "Playing song...\r\n"
 ; TEMPORARY
-    ld hl,FAMBIENT_BEAT70
+    ld hl,FRHIANNON
 ; END TEMPORARY
 
 ; open the file in read mode
@@ -105,10 +79,6 @@ play_song:
     MOSCALL mos_fopen
     ld (@filehandle),a
 
-; initialize channel flip-flop
-    ld a,1
-    push af
-
 @read_file:
 
 ; Read a block of data from a file
@@ -120,7 +90,7 @@ play_song:
     ld a,(@filehandle)
     ld c,a
     ld hl,song_data
-    ld de,256
+    ld de,256*60
     MOSCALL mos_fread
 
 ; test de for zero bytes read
@@ -131,26 +101,28 @@ play_song:
 
 ; load a vdu buffer from local memory
 ; inputs: hl = bufferId ; bc = length ; de = pointer to data
-    ld hl,ch0_buffer
-    pop af ; flip-flop
+    ld a,(@channel)
     inc a
     and 1
+    ld (@channel),a
+    ld hl,ch0_buffer
     ld l,a
-    push af ; save flip-flop
     push hl ; sample bufferId
+    call vdu_clear_buffer
+    pop hl
+    push hl
     push de ; chunksize
     pop bc
     ld de,song_data
     call vdu_load_buffer
-    call vdu_vblank ; wait for vblank
+
+    ; call vdu_vblank ; wait for vblank
+    ld a,%10000000
+    call multiPurposeDelay
+
     pop hl
+    inc l
     inc l ; play commmand bufferId
-
-; DEBUG
-    call DEBUG_PRINT
-    CALL DEBUG_WAITKEYPRESS
-; END DEBUG
-
     call vdu_call_buffer
 
 ; read the next block
@@ -162,6 +134,8 @@ play_song:
     ld a,(@filehandle)
     MOSCALL mos_fclose
     ret
+
+@channel: db 0 ; channel number
 
 @filehandle: db 0 ; file handle
 @fil: dl 0 ; pointer to FIL struct
@@ -250,3 +224,6 @@ load_command_buffer:
     dw 0 ; duration (ms), zero means play one time in full
 @cmd1_end:
 ; end load_command_buffers
+
+    align 256 ; align to 256-byte boundary (may be helpful ... or not)
+song_data: ; blkw 6556,0 ; buffer for sound data
