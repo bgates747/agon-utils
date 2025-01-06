@@ -63,7 +63,7 @@ cmd1_buffer: equ 0x3003
 
 get_input:
     ld iy,tmr_play
-    ld hl,100 ; 1 second
+    ld hl,90 ; 1 second
     call tmr_set
 @loop:
 ; check play timer expired

@@ -5811,7 +5811,7 @@ PC     Output      Line
 041F76             0064    get_input:
 041F76 FD 21 37 20 0065        ld iy,tmr_play
        04          
-041F7B 21 64 00 00 0066        ld hl,100 ; 1 second
+041F7B 21 5A 00 00 0066        ld hl,90 ; 1 second
 041F7F CD 6D 10 04 0067        call tmr_set
 041F83             0068    @loop:
 041F83             0069    ; check play timer expired
