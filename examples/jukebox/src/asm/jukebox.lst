@@ -5605,102 +5605,42 @@ PC     Output      Line
 041D18             0539*   ; end dumpVduCmdStr
 041D18             0048    
 041D18             0049    temp:
-041D18             0050    ; ; TEMPORARY - WORKS
-041D18             0051    ; 	call load_sfx_AMBIENT_BEAT70
-041D18             0052    ;     call sfx_play_AMBIENT_BEAT70
-041D18             0053    ;     ret
-041D18             0054    ; ; END TEMPORARY
-041D18             0055    
-041D18             0056    ; TEMPORARY - WORKS
-041D18 21 00 30 00 0057    	ld hl,BUF_AMBIENT_BEAT70
-041D1C FD 21 E0 18 0058    	ld iy,FAMBIENT_BEAT70
+041D18 CD 95 5F 04 0050        call load_command_buffer
+041D1C             0051    
+041D1C 21 00 30 00 0052    	ld hl,ch0_buffer
+041D20 FD 21 E0 18 0053    	ld iy,FAMBIENT_BEAT70
        04          
-041D21 CD 67 13 04 0059        call vdu_load_buffer_from_file
-041D25             0060    
-041D25             0061    ; ; vdu_buffer_to_sound:
-041D25             0062    ;     ld hl,@buf2sound
-041D25             0063    ;     ld bc,@buf2sound_end-@buf2sound
-041D25             0064    ;     rst.lil $18
-041D25             0065    ; ; end vdu_buffer_to_sound
-041D25             0066    
-041D25             0067    ; ; vdu_play_sfx:
-041D25             0068    ; 	ld hl,@play_sample
-041D25             0069    ;     ld bc,@play_sample_end-@play_sample
-041D25             0070    ;     rst.lil $18
-041D25             0071    ; ; end vdu_play_sfx
-041D25             0072    
-041D25 21 01 30 00 0073        ld hl,cmd0_buffer
-041D29 01 1D 00 00 0074        ld bc,@play_sample_end-@buf2sound
-041D2D 11 3E 1D 04 0075        ld de,@buf2sound
-041D31 CD D0 14 04 0076        call vdu_write_block_to_buffer
-041D35             0077    
-041D35 21 01 30 00 0078        ld hl,cmd0_buffer
-041D39 CD F8 14 04 0079        call vdu_call_buffer
-041D3D C9          0080        ret
-041D3E             0081    
-041D3E             0082    ; vdu_buffer_to_sound command string
-041D3E             0083    @buf2sound:
-041D3E 17 00 85    0084        db 23,0,0x85 ; vdu sound command header
-041D41 00          0085        db 0x00 ; channel (ignored)
-041D42 05          0086        db 0x05 ; buffer to sound command
-041D43 02          0087        db 0x02 ; command 2 create sample
-041D44 00 30       0088        dw BUF_AMBIENT_BEAT70
-041D46 08          0089        db 0+8 ; 0 = 8-bit signed PCM mono, 8 = sample rate argument follows
-041D47 00 3C       0090        dw sample_rate
-041D49             0091    @buf2sound_end:
-041D49             0092    
-041D49             0093    ; vdu_play_sfx command string
-041D49             0094    @play_sample:
-041D49             0095    ; Command 4: Set waveform
-041D49             0096    ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
-041D49 17 00 85    0097        db 23,0,$85 ; vdu sound command header
-041D4C 00          0098        db 0 ; channel
-041D4D 04          0099        db 4 ; set waveform command
-041D4E 08          0100        db 8 ; waveform 8 = sample
-041D4F 00 30       0101        dw BUF_AMBIENT_BEAT70 ; sample bufferId
-041D51             0102    ; Command 0: Play note
-041D51             0103    ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
-041D51 17 00 85    0104        db 23,0,$85 ; vdu sound command header
-041D54 00          0105        db 0 ; channel
-041D55 00          0106        db 0 ; play note command
-041D56 7F          0107        db 127  ; volume 127 = max
-041D57 00 00       0108        dw 0 ; frequency (relevant only for tuneable samples)
-041D59 00 00       0109        dw 0 ; duration (ms), zero means play one time in full
-041D5B             0110    @play_sample_end:
-041D5B             0111    ; END TEMPORARY
-041D5B             0112    ; end temp
-041D5B             0113    
-041D5B             0114    ; --- MAIN PROGRAM FILE ---
-041D5B             0115    init:
-041D5B             0116    ; initialize channel command buffers
-041D5B 21 01 30 00 0117        ld hl,cmd0_buffer
-041D5F 11 00 30 00 0118        ld de,ch0_buffer
-041D63 0E 00       0119        ld c,0 ; channel 0
-041D65 CD A9 5F 04 0120        call load_command_buffer
-041D69             0121    
-041D69 21 03 30 00 0122        ld hl,cmd1_buffer
-041D6D 11 02 30 00 0123        ld de,ch1_buffer
-041D71 0E 01       0124        ld c,1 ; channel 1
-041D73 CD A9 5F 04 0125        call load_command_buffer
-041D77             0126    
-041D77 C9          0127        ret
-041D78             0128    ; end init
-041D78             0129    
-041D78             0130    main:
-041D78             0131    @loop:
-041D78 CD 56 03 04 0132        call waitKeypress
-041D7C FE 1B       0133        cp '\e'
-041D7E C8          0134        ret z
-041D7F FE 31       0135        cp '1'
-041D81 CC 00 5E 04 0136        call z,play_song
-041D85 C3 78 1D 04 0137        jp @loop
-041D89             0138    ; end main
-041D89             0139    
-041D89             0140    ; stream a song from the SD card
-041D89             0141    ; inputs: hl = pointer to filename
-041D89             0142    ; requirements: the file must be 8-bit signed PCM mono sampled at 15360 Hz
-041D89             0143    ; uses: sound channels 0 and 1, buffers 0x3000 and 0x3001
-041D89             0144        align 256 ; align to 256-byte boundary (may be helpful ... or not)
+041D25 CD 67 13 04 0054        call vdu_load_buffer_from_file
+041D29             0055    
+041D29 21 01 30 00 0056        ld hl,cmd0_buffer
+041D2D CD F8 14 04 0057        call vdu_call_buffer
+041D31 C9          0058        ret
+041D32             0059    
+041D32             0060    
+041D32             0061    ; END TEMPORARY
+041D32             0062    ; end temp
+041D32             0063    
+041D32             0064    ; --- MAIN PROGRAM FILE ---
+041D32             0065    init:
+041D32 CD 95 5F 04 0066        call load_command_buffer
+041D36 C9          0067        ret
+041D37             0068    ; end init
+041D37             0069    
+041D37             0070    main:
+041D37             0071    @loop:
+041D37 CD 56 03 04 0072        call waitKeypress
+041D3B FE 1B       0073        cp '\e'
+041D3D C8          0074        ret z
+041D3E FE 31       0075        cp '1'
+041D40 CC 00 5E 04 0076        call z,play_song
+041D44 C3 37 1D 04 0077        jp @loop
+041D48             0078    ; end main
+041D48             0079    
+041D48             0080    ; stream a song from the SD card
+041D48             0081    ; inputs: hl = pointer to filename
+041D48             0082    ; requirements: the file must be 8-bit signed PCM mono sampled at 15360 Hz
+041D48             0083    ; uses: sound channels 0 and 1, buffers 0x3000 and 0x3001
+041D48             0084        align 256 ; align to 256-byte boundary (may be helpful ... or not)
        FF FF FF FF 
        FF FF FF FF 
        FF FF FF FF 
@@ -5730,8 +5670,24 @@ PC     Output      Line
        FF FF FF FF 
        FF FF FF FF 
        FF FF FF FF 
-       FF FF FF 
-041E00 00 00 00 00 0145    song_data: blkw 8192,0 ; buffer for sound data
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+041E00 00 00 00 00 0085    song_data: blkw 8192,0 ; buffer for sound data
        00 00 00 00 
        00 00 00 00 
        00 00 00 00 
@@ -9827,133 +9783,115 @@ PC     Output      Line
        00 00 00 00 
        00 00 00 00 
        00 00 00 00 
-045E00             0146    ch0_buffer: equ 0x3000
-045E00             0147    cmd0_buffer: equ 0x3001
-045E00             0148    ch1_buffer: equ 0x3002
-045E00             0149    cmd1_buffer: equ 0x3003
-045E00             0150    play_song:
-045E00 CD 5C 00 04 0151        call printInline
-045E04 50 6C 61 79 0152        asciz "Playing song...\r\n"
+045E00             0086    ; ch0_buffer: equ 0x3000
+045E00             0087    ch0_buffer: equ BUF_AMBIENT_BEAT70 ; TEMPORARY
+045E00             0088    cmd0_buffer: equ 0x3001
+045E00             0089    ch1_buffer: equ 0x3002
+045E00             0090    cmd1_buffer: equ 0x3003
+045E00             0091    play_song:
+045E00 CD 5C 00 04 0092        call printInline
+045E04 50 6C 61 79 0093        asciz "Playing song...\r\n"
        69 6E 67 20 
        73 6F 6E 67 
        2E 2E 2E 0D 
        0A 00       
-045E16             0153    ; TEMPORARY
-045E16 21 E0 18 04 0154        ld hl,FAMBIENT_BEAT70
-045E1A             0155    ; END TEMPORARY
-045E1A             0156    
-045E1A             0157    ; open the file in read mode
-045E1A             0158    ; Open a file
-045E1A             0159    ; HLU: Filename
-045E1A             0160    ;   C: Mode
-045E1A             0161    ; Returns:
-045E1A             0162    ;   A: Filehandle, or 0 if couldn't open
-045E1A 0E 01       0163    	ld c,fa_read
-045E1C             0164        MOSCALL mos_fopen
+045E16             0094    ; TEMPORARY
+045E16 21 E0 18 04 0095        ld hl,FAMBIENT_BEAT70
+045E1A             0096    ; END TEMPORARY
+045E1A             0097    
+045E1A             0098    ; open the file in read mode
+045E1A             0099    ; Open a file
+045E1A             0100    ; HLU: Filename
+045E1A             0101    ;   C: Mode
+045E1A             0102    ; Returns:
+045E1A             0103    ;   A: Filehandle, or 0 if couldn't open
+045E1A 0E 01       0104    	ld c,fa_read
+045E1C             0105        MOSCALL mos_fopen
                        M1 Args: function=mos_fopen 
 045E1C 3E 0A       0001M1  			LD	A, function
 045E1E 5B CF       0002M1  			RST.LIL	08h
-045E20 32 8C 5E 04 0165        ld (@filehandle),a
-045E24             0166    
-045E24             0167    ; initialize channel flip-flop
-045E24 3E 01       0168        ld a,1
-045E26 F5          0169        push af
-045E27             0170    
-045E27             0171    @read_file:
-045E27             0172    
-045E27             0173    ; Read a block of data from a file
-045E27             0174    ;   C: Filehandle
-045E27             0175    ; HLU: Pointer to where to write the data to
-045E27             0176    ; DEU: Number of bytes to read
-045E27             0177    ; Returns:
-045E27             0178    ; DEU: Number of bytes read
-045E27 3A 8C 5E 04 0179        ld a,(@filehandle)
-045E2B 4F          0180        ld c,a
-045E2C 21 00 1E 04 0181        ld hl,song_data
-045E30 11 00 01 00 0182        ld de,256
-045E34             0183        MOSCALL mos_fread
+045E20 32 78 5E 04 0106        ld (@filehandle),a
+045E24             0107    
+045E24             0108    ; initialize channel flip-flop
+045E24 3E 01       0109        ld a,1
+045E26 F5          0110        push af
+045E27             0111    
+045E27             0112    @read_file:
+045E27             0113    
+045E27             0114    ; Read a block of data from a file
+045E27             0115    ;   C: Filehandle
+045E27             0116    ; HLU: Pointer to where to write the data to
+045E27             0117    ; DEU: Number of bytes to read
+045E27             0118    ; Returns:
+045E27             0119    ; DEU: Number of bytes read
+045E27 3A 78 5E 04 0120        ld a,(@filehandle)
+045E2B 4F          0121        ld c,a
+045E2C 21 00 1E 04 0122        ld hl,song_data
+045E30 11 00 01 00 0123        ld de,256
+045E34             0124        MOSCALL mos_fread
                        M1 Args: function=mos_fread 
 045E34 3E 1A       0001M1  			LD	A, function
 045E36 5B CF       0002M1  			RST.LIL	08h
-045E38             0184    
-045E38             0185    ; test de for zero bytes read
-045E38 21 00 00 00 0186        ld hl,0
-045E3C AF          0187        xor a ; clear carry
-045E3D ED 52       0188        sbc hl,de
-045E3F CA 6E 5E 04 0189        jp z,@close_file
-045E43             0190    
-045E43             0191    ; load a vdu buffer from local memory
-045E43             0192    ; inputs: hl = bufferId ; bc = length ; de = pointer to data
-045E43 21 00 30 00 0193        ld hl,ch0_buffer
-045E47 F1          0194        pop af ; flip-flop
-045E48 3C          0195        inc a
-045E49 E6 01       0196        and 1
-045E4B 6F          0197        ld l,a
-045E4C F5          0198        push af ; save flip-flop
-045E4D E5          0199        push hl ; sample bufferId
-045E4E D5          0200        push de ; chunksize
-045E4F C1          0201        pop bc
-045E50 11 00 1E 04 0202        ld de,song_data
-045E54 CD FE 12 04 0203        call vdu_load_buffer
-045E58 CD D2 11 04 0204        call vdu_vblank ; wait for vblank
-045E5C E1          0205        pop hl
-045E5D 2C          0206        inc l ; play commmand bufferId
-045E5E             0207    
-045E5E             0208    ; DEBUG
-045E5E CD 58 1C 04 0209        call DEBUG_PRINT
-045E62 CD C9 1C 04 0210        CALL DEBUG_WAITKEYPRESS
-045E66             0211    ; END DEBUG
-045E66             0212    
-045E66 CD F8 14 04 0213        call vdu_call_buffer
-045E6A             0214    
-045E6A             0215    ; read the next block
-045E6A C3 27 5E 04 0216        jp @read_file
-045E6E             0217    
-045E6E             0218    ; close the file
-045E6E             0219    @close_file:
-045E6E F1          0220        pop af ; dummy pop to balance stack
-045E6F 3A 8C 5E 04 0221        ld a,(@filehandle)
-045E73             0222        MOSCALL mos_fclose
+045E38             0125    
+045E38             0126    ; test de for zero bytes read
+045E38 21 00 00 00 0127        ld hl,0
+045E3C AF          0128        xor a ; clear carry
+045E3D ED 52       0129        sbc hl,de
+045E3F CA 6E 5E 04 0130        jp z,@close_file
+045E43             0131    
+045E43             0132    ; load a vdu buffer from local memory
+045E43             0133    ; inputs: hl = bufferId ; bc = length ; de = pointer to data
+045E43 21 00 30 00 0134        ld hl,ch0_buffer
+045E47 F1          0135        pop af ; flip-flop
+045E48 3C          0136        inc a
+045E49 E6 01       0137        and 1
+045E4B 6F          0138        ld l,a
+045E4C F5          0139        push af ; save flip-flop
+045E4D E5          0140        push hl ; sample bufferId
+045E4E D5          0141        push de ; chunksize
+045E4F C1          0142        pop bc
+045E50 11 00 1E 04 0143        ld de,song_data
+045E54 CD FE 12 04 0144        call vdu_load_buffer
+045E58 CD D2 11 04 0145        call vdu_vblank ; wait for vblank
+045E5C E1          0146        pop hl
+045E5D 2C          0147        inc l ; play commmand bufferId
+045E5E             0148    
+045E5E             0149    ; DEBUG
+045E5E CD 58 1C 04 0150        call DEBUG_PRINT
+045E62 CD C9 1C 04 0151        CALL DEBUG_WAITKEYPRESS
+045E66             0152    ; END DEBUG
+045E66             0153    
+045E66 CD F8 14 04 0154        call vdu_call_buffer
+045E6A             0155    
+045E6A             0156    ; read the next block
+045E6A C3 27 5E 04 0157        jp @read_file
+045E6E             0158    
+045E6E             0159    ; close the file
+045E6E             0160    @close_file:
+045E6E F1          0161        pop af ; dummy pop to balance stack
+045E6F 3A 78 5E 04 0162        ld a,(@filehandle)
+045E73             0163        MOSCALL mos_fclose
                        M1 Args: function=mos_fclose 
 045E73 3E 0B       0001M1  			LD	A, function
 045E75 5B CF       0002M1  			RST.LIL	08h
-045E77 C9          0223        ret
-045E78             0224    
-045E78             0225    @ch0_play:
-045E78 17 00 85    0226        db 23,0,0x85
-045E7B 00          0227        db 0   ; channel 0
-045E7C 00          0228        db 0   ; play note command
-045E7D 7F          0229        db 127 ; volume
-045E7E 00 00       0230        dw 0   ; frequency (relevant only for tuneable samples)
-045E80 00 00       0231        dw 0   ; duration - 0 means play full duration one time
-045E82             0232    @ch0_play_end:
-045E82             0233    
-045E82             0234    @ch1_play:
-045E82 17 00 85    0235        db 23,0,0x85
-045E85 01          0236        db 1   ; channel 1
-045E86 00          0237        db 0   ; play note command
-045E87 7F          0238        db 127 ; volume
-045E88 00 00       0239        dw 0   ; frequency (relevant only for tuneable samples)
-045E8A 00 00       0240        dw 0   ; duration - 0 means play full duration one time
-045E8C             0241    @ch1_play_end:
-045E8C             0242    
-045E8C             0243    
-045E8C 00          0244    @filehandle: db 0 ; file handle
-045E8D 00 00 00    0245    @fil: dl 0 ; pointer to FIL struct
-045E90             0246    
-045E90 00 00 00    0247    @chunkpointer: dl 0 ; pointer to current chunk
-045E93             0248    
-045E93             0249    ; File information structure (FILINFO)
-045E93             0250    @filinfo:
-045E93 00 00 00 00 0251    @filinfo_fsize:    blkb 4, 0   ; File size (4 bytes)
-045E97 00 00       0252    @filinfo_fdate:    blkb 2, 0   ; Modified date (2 bytes)
-045E99 00 00       0253    @filinfo_ftime:    blkb 2, 0   ; Modified time (2 bytes)
-045E9B 00          0254    @filinfo_fattrib:  blkb 1, 0   ; File attribute (1 byte)
-045E9C 00 00 00 00 0255    @filinfo_altname:  blkb 13, 0  ; Alternative file name (13 bytes)
+045E77 C9          0164        ret
+045E78             0165    
+045E78 00          0166    @filehandle: db 0 ; file handle
+045E79 00 00 00    0167    @fil: dl 0 ; pointer to FIL struct
+045E7C             0168    
+045E7C 00 00 00    0169    @chunkpointer: dl 0 ; pointer to current chunk
+045E7F             0170    
+045E7F             0171    ; File information structure (FILINFO)
+045E7F             0172    @filinfo:
+045E7F 00 00 00 00 0173    @filinfo_fsize:    blkb 4, 0   ; File size (4 bytes)
+045E83 00 00       0174    @filinfo_fdate:    blkb 2, 0   ; Modified date (2 bytes)
+045E85 00 00       0175    @filinfo_ftime:    blkb 2, 0   ; Modified time (2 bytes)
+045E87 00          0176    @filinfo_fattrib:  blkb 1, 0   ; File attribute (1 byte)
+045E88 00 00 00 00 0177    @filinfo_altname:  blkb 13, 0  ; Alternative file name (13 bytes)
        00 00 00 00 
        00 00 00 00 
        00          
-045EA9 00 00 00 00 0256    @filinfo_fname:    blkb 256, 0 ; Primary file name (256 bytes)
+045E95 00 00 00 00 0178    @filinfo_fname:    blkb 256, 0 ; Primary file name (256 bytes)
        00 00 00 00 
        00 00 00 00 
        00 00 00 00 
@@ -10017,42 +9955,77 @@ PC     Output      Line
        00 00 00 00 
        00 00 00 00 
        00 00 00 00 
-045FA9             0257    
-045FA9             0258    
-045FA9             0259    ; load a sound effect command buffer
-045FA9             0260    ; inputs: hl = command bufferId, de = sound sample bufferId, c = audio channel
-045FA9             0261    load_command_buffer:
-045FA9 79          0262        ld a,c
-045FAA 32 D3 5F 04 0263        ld (@channel0),a
-045FAE 32 DB 5F 04 0264        ld (@channel1),a
-045FB2 ED 53 D6 5F 0265        ld (@bufferId),de
-       04          
-045FB7 3E 17       0266        ld a,23
-045FB9 32 D8 5F 04 0267        ld (@bufferId+2),a
-045FBD             0268    
-045FBD E5          0269        push hl
-045FBE CD 13 15 04 0270        call vdu_clear_buffer
-045FC2             0271    
-045FC2 E1          0272        pop hl
-045FC3 01 12 00 00 0273        ld bc,@sample_end-@sample
-045FC7 11 D0 5F 04 0274        ld de,@sample
-045FCB CD D0 14 04 0275        call vdu_write_block_to_buffer
-045FCF             0276    
-045FCF C9          0277        ret
-045FD0             0278    @sample:
-045FD0             0279    ; Command 4: Set waveform
-045FD0             0280    ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
-045FD0 17 00 85    0281        .db 23,0,$85                        ; do sound
-045FD3             0282    @channel0:
-045FD3 00 04 08    0283        .db 0,4,8 ; channel, command, waveform
-045FD6             0284    @bufferId:
-045FD6 00 00       0285        .dw 0x0000 ; bufferId of containing the sound sample
-045FD8             0286    ; Command 0: Play note
-045FD8             0287    ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
-045FD8 17 00 85    0288        .db 23,0,$85                        ; do sound
-045FDB             0289    @channel1:
-045FDB 00 00 7F    0290        .db 0,0,127                ; channel, volume
-045FDE 00 00       0291        .dw 0
-045FE0             0292    @duration:                              ; freq (tuneable samples only)
-045FE0 00 00       0293        .dw 0x0000                        ; duration
-045FE2             0294    @sample_end:
+045F95             0179    
+045F95             0180    
+045F95             0181    load_command_buffer:
+045F95 21 01 30 00 0182        ld hl,cmd0_buffer
+045F99 CD 13 15 04 0183        call vdu_clear_buffer
+045F9D 21 01 30 00 0184        ld hl,cmd0_buffer
+045FA1 01 1D 00 00 0185        ld bc,@cmd0_end-@cmd0
+045FA5 11 C6 5F 04 0186        ld de,@cmd0
+045FA9 CD D0 14 04 0187        call vdu_write_block_to_buffer
+045FAD             0188    
+045FAD 21 03 30 00 0189        ld hl,cmd1_buffer
+045FB1 CD 13 15 04 0190        call vdu_clear_buffer
+045FB5 21 03 30 00 0191        ld hl,cmd1_buffer
+045FB9 01 1D 00 00 0192        ld bc,@cmd1_end-@cmd1
+045FBD 11 E3 5F 04 0193        ld de,@cmd1
+045FC1 CD D0 14 04 0194        call vdu_write_block_to_buffer
+045FC5 C9          0195        ret
+045FC6             0196    
+045FC6             0197    @cmd0:
+045FC6             0198    ; vdu_buffer_to_sound command string
+045FC6             0199    ; Command 5: Buffer to sound
+045FC6 17 00 85    0200        db 23,0,0x85 ; vdu sound command header
+045FC9 00          0201        db 0x00 ; channel (ignored)
+045FCA 05          0202        db 0x05 ; buffer to sound command
+045FCB 02          0203        db 0x02 ; command 2 create sample
+045FCC 00 30       0204        dw ch0_buffer
+045FCE 08          0205        db 0+8 ; 0 = 8-bit signed PCM mono, 8 = sample rate argument follows
+045FCF 00 3C       0206        dw sample_rate
+045FD1             0207    ; vdu_play_sfx command string
+045FD1             0208    ; Command 4: Set waveform
+045FD1             0209    ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
+045FD1 17 00 85    0210        db 23,0,$85 ; vdu sound command header
+045FD4 00          0211        db 0 ; channel
+045FD5 04          0212        db 4 ; set waveform command
+045FD6 08          0213        db 8 ; waveform 8 = sample
+045FD7 00 30       0214        dw ch0_buffer ; sample bufferId
+045FD9             0215    ; Command 0: Play note
+045FD9             0216    ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
+045FD9 17 00 85    0217        db 23,0,$85 ; vdu sound command header
+045FDC 00          0218        db 0 ; channel
+045FDD 00          0219        db 0 ; play note command
+045FDE 7F          0220        db 127  ; volume 127 = max
+045FDF 00 00       0221        dw 0 ; frequency (relevant only for tuneable samples)
+045FE1 00 00       0222        dw 0 ; duration (ms), zero means play one time in full
+045FE3             0223    @cmd0_end:
+045FE3             0224    
+045FE3             0225    @cmd1:
+045FE3             0226    ; vdu_buffer_to_sound command string
+045FE3             0227    ; Command 5: Buffer to sound
+045FE3 17 00 85    0228        db 23,0,0x85 ; vdu sound command header
+045FE6 00          0229        db 0x00 ; channel (ignored)
+045FE7 05          0230        db 0x05 ; buffer to sound command
+045FE8 02          0231        db 0x02 ; command 2 create sample
+045FE9 02 30       0232        dw ch1_buffer
+045FEB 08          0233        db 0+8 ; 0 = 8-bit signed PCM mono, 8 = sample rate argument follows
+045FEC 00 3C       0234        dw sample_rate
+045FEE             0235    ; vdu_play_sfx command string
+045FEE             0236    ; Command 4: Set waveform
+045FEE             0237    ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
+045FEE 17 00 85    0238        db 23,0,$85 ; vdu sound command header
+045FF1 01          0239        db 1 ; channel
+045FF2 04          0240        db 4 ; set waveform command
+045FF3 08          0241        db 8 ; waveform 8 = sample
+045FF4 02 30       0242        dw ch1_buffer ; sample bufferId
+045FF6             0243    ; Command 0: Play note
+045FF6             0244    ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
+045FF6 17 00 85    0245        db 23,0,$85 ; vdu sound command header
+045FF9 01          0246        db 1 ; channel
+045FFA 00          0247        db 0 ; play note command
+045FFB 7F          0248        db 127  ; volume 127 = max
+045FFC 00 00       0249        dw 0 ; frequency (relevant only for tuneable samples)
+045FFE 00 00       0250        dw 0 ; duration (ms), zero means play one time in full
+046000             0251    @cmd1_end:
+046000             0252    ; end load_command_buffers

@@ -47,83 +47,23 @@ exit:
     include "debug.inc"
 
 temp:
-; ; TEMPORARY - WORKS
-; 	call load_sfx_AMBIENT_BEAT70
-;     call sfx_play_AMBIENT_BEAT70
-;     ret
-; ; END TEMPORARY
+    call load_command_buffer
 
-; TEMPORARY - WORKS
-	ld hl,BUF_AMBIENT_BEAT70
+	ld hl,ch0_buffer
 	ld iy,FAMBIENT_BEAT70
     call vdu_load_buffer_from_file
-
-; ; vdu_buffer_to_sound:
-;     ld hl,@buf2sound         
-;     ld bc,@buf2sound_end-@buf2sound
-;     rst.lil $18    
-; ; end vdu_buffer_to_sound 
-
-; ; vdu_play_sfx:
-; 	ld hl,@play_sample
-;     ld bc,@play_sample_end-@play_sample
-;     rst.lil $18
-; ; end vdu_play_sfx
-
-    ld hl,cmd0_buffer
-    ld bc,@play_sample_end-@buf2sound
-    ld de,@buf2sound
-    call vdu_write_block_to_buffer
 
     ld hl,cmd0_buffer
     call vdu_call_buffer
     ret
 
-; vdu_buffer_to_sound command string
-@buf2sound: 
-    db 23,0,0x85 ; vdu sound command header
-    db 0x00 ; channel (ignored)
-    db 0x05 ; buffer to sound command
-    db 0x02 ; command 2 create sample
-    dw BUF_AMBIENT_BEAT70
-    db 0+8 ; 0 = 8-bit signed PCM mono, 8 = sample rate argument follows
-    dw sample_rate
-@buf2sound_end:
 
-; vdu_play_sfx command string
-@play_sample: 
-; Command 4: Set waveform
-; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
-    db 23,0,$85 ; vdu sound command header  
-    db 0 ; channel
-    db 4 ; set waveform command
-    db 8 ; waveform 8 = sample
-    dw BUF_AMBIENT_BEAT70 ; sample bufferId
-; Command 0: Play note
-; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
-    db 23,0,$85 ; vdu sound command header
-    db 0 ; channel
-    db 0 ; play note command
-    db 127  ; volume 127 = max
-    dw 0 ; frequency (relevant only for tuneable samples)
-    dw 0 ; duration (ms), zero means play one time in full
-@play_sample_end:
 ; END TEMPORARY
 ; end temp
 
 ; --- MAIN PROGRAM FILE ---
 init:
-; initialize channel command buffers
-    ld hl,cmd0_buffer
-    ld de,ch0_buffer
-    ld c,0 ; channel 0
     call load_command_buffer
-
-    ld hl,cmd1_buffer
-    ld de,ch1_buffer
-    ld c,1 ; channel 1
-    call load_command_buffer
-
     ret
 ; end init
 
@@ -143,7 +83,8 @@ main:
 ; uses: sound channels 0 and 1, buffers 0x3000 and 0x3001
     align 256 ; align to 256-byte boundary (may be helpful ... or not)
 song_data: blkw 8192,0 ; buffer for sound data
-ch0_buffer: equ 0x3000
+; ch0_buffer: equ 0x3000
+ch0_buffer: equ BUF_AMBIENT_BEAT70 ; TEMPORARY
 cmd0_buffer: equ 0x3001
 ch1_buffer: equ 0x3002
 cmd1_buffer: equ 0x3003
@@ -222,25 +163,6 @@ play_song:
     MOSCALL mos_fclose
     ret
 
-@ch0_play:
-    db 23,0,0x85
-    db 0   ; channel 0
-    db 0   ; play note command
-    db 127 ; volume
-    dw 0   ; frequency (relevant only for tuneable samples)
-    dw 0   ; duration - 0 means play full duration one time
-@ch0_play_end:
-
-@ch1_play:
-    db 23,0,0x85
-    db 1   ; channel 1
-    db 0   ; play note command
-    db 127 ; volume
-    dw 0   ; frequency (relevant only for tuneable samples)
-    dw 0   ; duration - 0 means play full duration one time
-@ch1_play_end:
-
-
 @filehandle: db 0 ; file handle
 @fil: dl 0 ; pointer to FIL struct
 
@@ -256,39 +178,75 @@ play_song:
 @filinfo_fname:    blkb 256, 0 ; Primary file name (256 bytes)
 
 
-; load a sound effect command buffer
-; inputs: hl = command bufferId, de = sound sample bufferId, c = audio channel
 load_command_buffer:
-    ld a,c
-    ld (@channel0),a
-    ld (@channel1),a
-    ld (@bufferId),de
-    ld a,23
-    ld (@bufferId+2),a
-
-    push hl
+    ld hl,cmd0_buffer
     call vdu_clear_buffer
-
-    pop hl
-    ld bc,@sample_end-@sample
-    ld de,@sample
+    ld hl,cmd0_buffer
+    ld bc,@cmd0_end-@cmd0
+    ld de,@cmd0
     call vdu_write_block_to_buffer
 
+    ld hl,cmd1_buffer
+    call vdu_clear_buffer
+    ld hl,cmd1_buffer
+    ld bc,@cmd1_end-@cmd1
+    ld de,@cmd1
+    call vdu_write_block_to_buffer
     ret
-@sample: 
+
+@cmd0:
+; vdu_buffer_to_sound command string
+; Command 5: Buffer to sound
+    db 23,0,0x85 ; vdu sound command header
+    db 0x00 ; channel (ignored)
+    db 0x05 ; buffer to sound command
+    db 0x02 ; command 2 create sample
+    dw ch0_buffer
+    db 0+8 ; 0 = 8-bit signed PCM mono, 8 = sample rate argument follows
+    dw sample_rate
+; vdu_play_sfx command string
 ; Command 4: Set waveform
 ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
-    .db 23,0,$85                        ; do sound
-@channel0:   
-    .db 0,4,8 ; channel, command, waveform
-@bufferId:    
-    .dw 0x0000 ; bufferId of containing the sound sample
+    db 23,0,$85 ; vdu sound command header  
+    db 0 ; channel
+    db 4 ; set waveform command
+    db 8 ; waveform 8 = sample
+    dw ch0_buffer ; sample bufferId
 ; Command 0: Play note
 ; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
-    .db 23,0,$85                        ; do sound
-@channel1:    
-    .db 0,0,127                ; channel, volume
-    .dw 0 
-@duration:                              ; freq (tuneable samples only)
-    .dw 0x0000                        ; duration
-@sample_end:
+    db 23,0,$85 ; vdu sound command header
+    db 0 ; channel
+    db 0 ; play note command
+    db 127  ; volume 127 = max
+    dw 0 ; frequency (relevant only for tuneable samples)
+    dw 0 ; duration (ms), zero means play one time in full
+@cmd0_end:
+
+@cmd1:
+; vdu_buffer_to_sound command string
+; Command 5: Buffer to sound
+    db 23,0,0x85 ; vdu sound command header
+    db 0x00 ; channel (ignored)
+    db 0x05 ; buffer to sound command
+    db 0x02 ; command 2 create sample
+    dw ch1_buffer
+    db 0+8 ; 0 = 8-bit signed PCM mono, 8 = sample rate argument follows
+    dw sample_rate
+; vdu_play_sfx command string
+; Command 4: Set waveform
+; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
+    db 23,0,$85 ; vdu sound command header  
+    db 1 ; channel
+    db 4 ; set waveform command
+    db 8 ; waveform 8 = sample
+    dw ch1_buffer ; sample bufferId
+; Command 0: Play note
+; VDU 23, 0, &85, channel, 0, volume, frequency; duration;
+    db 23,0,$85 ; vdu sound command header
+    db 1 ; channel
+    db 0 ; play note command
+    db 127  ; volume 127 = max
+    dw 0 ; frequency (relevant only for tuneable samples)
+    dw 0 ; duration (ms), zero means play one time in full
+@cmd1_end:
+; end load_command_buffers
