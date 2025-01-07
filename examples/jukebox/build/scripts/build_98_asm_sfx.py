@@ -22,91 +22,79 @@ def make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate
         # Write the header
         f.write("; This file is created by build_98_asm_sfx.py, do not edit it!\n\n")
         f.write(f"SFX_num_buffers: equ {len(rows)}\n")
-        f.write(f"\nsample_rate: equ {sample_rate}\n")
+        f.write(f"sample_rate: equ {sample_rate}\n\n")
 
-        # Write the buffer ids
-        f.write("; SFX buffer ids:\n")
-        for row in rows:
-            sfx_id = row['sfx_id']
-            base_filename = row['filename'].split('.')[0].upper()
-            buf_id = next_buffer_id + sfx_id
-            buf_label = f"BUF_{base_filename}"
-            f.write(f"{buf_label}: equ 0x{buf_id:04X}\n")
+        # # Write the buffer ids
+        # f.write("; SFX buffer ids:\n")
+        # for row in rows:
+        #     sfx_id = row['sfx_id']
+        #     base_filename = row['filename'].split('.')[0].upper()
+        #     buf_id = next_buffer_id + sfx_id
+        #     buf_label = f"BUF_{base_filename}"
+        #     f.write(f"{buf_label}: equ 0x{buf_id:04X}\n")
 
-        # Write the buffer id reverse lookup
-        f.write("\n; SFX buffer id reverse lookup:\n")
-        f.write("SFX_buffer_id_lut:\n")
-        for row in rows:
-            sfx_id = row['sfx_id']
-            base_filename = row['filename'].split('.')[0].upper()
-            buf_label = f"BUF_{base_filename}"
-            f.write(f"\tdl {buf_label}\n")
+        # # Write the buffer id reverse lookup
+        # f.write("\n; SFX buffer id reverse lookup:\n")
+        # f.write("SFX_buffer_id_lut:\n")
+        # for row in rows:
+        #     sfx_id = row['sfx_id']
+        #     base_filename = row['filename'].split('.')[0].upper()
+        #     buf_label = f"BUF_{base_filename}"
+        #     f.write(f"\tdl {buf_label}\n")
 
-        # Write the sfx duration lookup
-        f.write("\n; SFX duration lookup:\n")
-        f.write("SFX_duration_lut:\n")
-        for row in rows:
-            duration = row['duration']
-            base_filename = row['filename'].split('.')[0].upper()
-            f.write(f"\tdl {duration} ; {base_filename}\n")
+        # # Write the sfx duration lookup
+        # f.write("\n; SFX duration lookup:\n")
+        # f.write("SFX_duration_lut:\n")
+        # for row in rows:
+        #     duration = row['duration']
+        #     base_filename = row['filename'].split('.')[0].upper()
+        #     f.write(f"\tdl {duration} ; {base_filename}\n")
 
-        # Write the load routines jump table
-        f.write("\n; SFX load routines jump table:\n")
-        f.write("SFX_load_routines_table:\n")
-        for row in rows:
-            sfx_id = row['sfx_id']
-            base_filename = row['filename'].split('.')[0].upper()
-            f.write(f"\tdl load_sfx_{base_filename}\n")
+        # # Write the load routines jump table
+        # f.write("\n; SFX load routines jump table:\n")
+        # f.write("SFX_load_routines_table:\n")
+        # for row in rows:
+        #     sfx_id = row['sfx_id']
+        #     base_filename = row['filename'].split('.')[0].upper()
+        #     f.write(f"\tdl load_sfx_{base_filename}\n")
 
-        # Write the load routines
-        f.write("\n; Import sfx .raw files and load them into VDP buffers\n")
-        for row in rows:
-            sfx_id = row['sfx_id']
-            base_filename = row['filename'].split('.')[0].upper()
-            size = row['size']
-            buf_label = f"BUF_{base_filename}"
-        # write the load routine
-            f.write(f"\nload_sfx_{base_filename}:\n")
-            # f.write(f"\tld hl,F{base_filename}\n")
-            # f.write(f"\tld (cur_filename),hl\n")
-            # f.write(f"\tld de,filedata\n")
-            # f.write(f"\tld bc,65536\n")
-            # f.write(f"\tld a,mos_load\n")
-            # f.write(f"\tRST.LIL 08h\n")
-            f.write(f"\tld hl,{buf_label}\n")
-            # f.write(f"\tld ix,{size}\n") # no longer required with progressive file load
-            f.write(f"\tld de,{sample_rate}\n")
-            f.write(f"\tld iy,F{base_filename}\n")
-            f.write(f"\tcall vdu_load_sfx\n")
-            f.write(f"\tret\n")
+        # # Write the load routines
+        # f.write("\n; Import sfx .raw files and load them into VDP buffers\n")
+        # for row in rows:
+        #     sfx_id = row['sfx_id']
+        #     base_filename = row['filename'].split('.')[0].upper()
+        #     buf_label = f"BUF_{base_filename}"
+        # # write the load routine
+        #     f.write(f"\nload_sfx_{base_filename}:\n")
+        #     f.write(f"\tld hl,{buf_label}\n")
+        #     f.write(f"\tld de,{sample_rate}\n")
+        #     f.write(f"\tld iy,F{base_filename}\n")
+        #     f.write(f"\tcall vdu_load_sfx\n")
+        #     f.write(f"\tret\n")
 
         # Write the file name lookup index
         f.write("\n; File name lookup index:\n")
         f.write("SFX_filename_index:\n")
         for row in rows:
-            sfx_id = row['sfx_id']
-            base_filename = row['filename'].split('.')[0].upper()
-            f.write(f"\tdl F{base_filename}\n")
+            base_filename = row['filename'].split('.')[0]
+            f.write(f"\tdl FN_{base_filename}\n")
 
         # Write the file name lookups
         f.write("\n; File name lookups:\n")
         for row in rows:
-            sfx_id = row['sfx_id']
-            base_filename = row['filename'].split('.')[0].upper()
-            f.write(f"F{base_filename}: db \"{asm_tgt_dir}/{base_filename}.raw\",0\n")
+            base_filename = row['filename'].split('.')[0]
+            f.write(f"FN_{base_filename}: db \"{asm_tgt_dir}/{base_filename}.raw\",0\n")
 
-        # Make the play sfx routines
-        f.write("\n; Play sfx routines\n")
-        for row in rows:
-            sfx_id, size, duration, filename = row['sfx_id'], row['size'], row['duration'], row['filename']
-            buf_label = f"BUF_{row['filename'].split('.')[0].upper()}"
-            base_filename = filename.split('.')[0].upper() #.lower()
-            volume = 127
-            f.write(f"\nsfx_play_{base_filename}:\n")
-            f.write(f"\tld hl,{buf_label}\n")
-            # f.write(f"\tld bc,{duration}\n")
-            f.write(f"\tld bc,0\n") # 0 means play entire sample once
-            f.write(f"\tjp vdu_play_sfx\n")
+        # # Make the play sfx routines
+        # f.write("\n; Play sfx routines\n")
+        # for row in rows:
+        #     sfx_id, size, duration, filename = row['sfx_id'], row['size'], row['duration'], row['filename']
+        #     buf_label = f"BUF_{row['filename'].split('.')[0].upper()}"
+        #     base_filename = filename.split('.')[0].upper() #.lower()
+        #     f.write(f"\nsfx_play_{base_filename}:\n")
+        #     f.write(f"\tld hl,{buf_label}\n")
+        #     f.write(f"\tld bc,0\n") # 0 means play entire sample once
+        #     f.write(f"\tjp vdu_play_sfx\n")
 
     # Close the connection
     conn.close()

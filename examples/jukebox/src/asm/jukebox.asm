@@ -60,8 +60,9 @@ init:
 
 main:
     call printNewLine
-; default song
-    ld hl,FRHIANNON
+; point to first song in the index
+    ld hl,SFX_filename_index
+    ld hl,(hl) ; pointer to first song filename
     call play_song
     ret
 ; end main

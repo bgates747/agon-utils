@@ -7,6 +7,7 @@ import subprocess
 from tempfile import NamedTemporaryFile
 import math
 import tarfile
+import re
 
 def make_tbl_08_sfx(conn, cursor):
     """Create the database table for sound effects."""
@@ -221,8 +222,12 @@ def make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate):
     sfxs = []
     for filename in sorted(os.listdir(src_dir)):
         if filename.endswith(('.wav', '.mp3')):
-            filename_wav = os.path.splitext(filename)[0] + '.wav'
-            filename_raw = os.path.splitext(filename)[0] + '.raw'
+            # Process filenames
+            filename_base = os.path.splitext(filename)[0]
+            filename_base = re.sub(r'[^a-zA-Z0-9\s]', '', filename_base)  # Remove non-alphanumeric characters
+            filename_base = filename_base.title().replace(' ', '_')       # Proper Case and replace spaces with underscores
+            filename_wav = filename_base + '.wav'
+            filename_raw = filename_base + '.raw'
             sfxs.append((len(sfxs), filename, filename_wav, filename_raw))
 
     for sfx in sfxs:
@@ -276,6 +281,9 @@ def make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate):
     conn.commit()
     conn.close()
 
+    # Delete the processing directory
+    shutil.rmtree(proc_dir)
+
 def create_tar_gz(src_dir, output_dir, sample_rate):
     # Create the archive name with the sample rate
     archive_name = os.path.join(output_dir, f"jukebox{sample_rate}.tar.gz")
@@ -299,16 +307,16 @@ if __name__ == '__main__':
     # sample_rate = 15360 # for 8-bit PCM this is 256 bytes per 1/60th of a second
     # sample_rate = 15360*2 # for 8-bit PCM this is 512 bytes per 1/60th of a second
     db_path = 'build/data/build.db'
-    src_dir = 'assets/sound/music/trimmed'
+    src_dir = 'assets/sound/music/staging'
     proc_dir = 'assets/sound/music/processed'
     tgt_dir = 'tgt/music'
-    # make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate)
+    make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate)
 
     asm_tgt_dir = 'music'
     sfx_inc_path = f"src/asm/music.inc"
     next_buffer_id = 0x3000
-    # make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate)
-    # assemble_jukebox()
+    make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate)
+    assemble_jukebox()
 
     tar_src_dir = "tgt"  # Source directory to compress
     tar_output_dir = "."  # Directory to save the archive

@@ -123,6 +123,9 @@ prt_calibrate:
     ld (prt_reload),bc
     ld hl,on_emulator
     ret
+is_emulator: db 0
+on_hardware: defb "Running on hardware\r\n",0
+on_emulator: defb "Running on emulator\r\n",0
 
 calibrating_timer: defb "Calibrating timer\r\n",0
 
