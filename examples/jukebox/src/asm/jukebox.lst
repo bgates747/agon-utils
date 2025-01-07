@@ -4906,7 +4906,7 @@ PC     Output      Line
 04199F             0002*   
 04199F             0003*   SFX_num_buffers: equ 10
 04199F             0004*   
-04199F             0005*   sample_rate: equ 16384
+04199F             0005*   sample_rate: equ 32768
 04199F             0006*   ; SFX buffer ids:
 04199F             0007*   BUF_AFRICA: equ 0x3000
 04199F             0008*   BUF_ANYTIME: equ 0x3001
@@ -4965,7 +4965,7 @@ PC     Output      Line
 0419F9             0058*   
 0419F9             0059*   load_sfx_AFRICA:
 0419F9 21 00 30 00 0060*   	ld hl,BUF_AFRICA
-0419FD 11 00 40 00 0061*   	ld de,16384
+0419FD 11 00 80 00 0061*   	ld de,32768
 041A01 FD 21 CB 1A 0062*   	ld iy,FAFRICA
        04          
 041A06 CD 2B 18 04 0063*   	call vdu_load_sfx
@@ -4973,7 +4973,7 @@ PC     Output      Line
 041A0B             0065*   
 041A0B             0066*   load_sfx_ANYTIME:
 041A0B 21 01 30 00 0067*   	ld hl,BUF_ANYTIME
-041A0F 11 00 40 00 0068*   	ld de,16384
+041A0F 11 00 80 00 0068*   	ld de,32768
 041A13 FD 21 DC 1A 0069*   	ld iy,FANYTIME
        04          
 041A18 CD 2B 18 04 0070*   	call vdu_load_sfx
@@ -4981,7 +4981,7 @@ PC     Output      Line
 041A1D             0072*   
 041A1D             0073*   load_sfx_BARRACUDA:
 041A1D 21 02 30 00 0074*   	ld hl,BUF_BARRACUDA
-041A21 11 00 40 00 0075*   	ld de,16384
+041A21 11 00 80 00 0075*   	ld de,32768
 041A25 FD 21 EE 1A 0076*   	ld iy,FBARRACUDA
        04          
 041A2A CD 2B 18 04 0077*   	call vdu_load_sfx
@@ -4989,7 +4989,7 @@ PC     Output      Line
 041A2F             0079*   
 041A2F             0080*   load_sfx_COME_UNDONE:
 041A2F 21 03 30 00 0081*   	ld hl,BUF_COME_UNDONE
-041A33 11 00 40 00 0082*   	ld de,16384
+041A33 11 00 80 00 0082*   	ld de,32768
 041A37 FD 21 02 1B 0083*   	ld iy,FCOME_UNDONE
        04          
 041A3C CD 2B 18 04 0084*   	call vdu_load_sfx
@@ -4997,7 +4997,7 @@ PC     Output      Line
 041A41             0086*   
 041A41             0087*   load_sfx_EVERY_BREATH_YOU_TAKE:
 041A41 21 04 30 00 0088*   	ld hl,BUF_EVERY_BREATH_YOU_TAKE
-041A45 11 00 40 00 0089*   	ld de,16384
+041A45 11 00 80 00 0089*   	ld de,32768
 041A49 FD 21 18 1B 0090*   	ld iy,FEVERY_BREATH_YOU_TAKE
        04          
 041A4E CD 2B 18 04 0091*   	call vdu_load_sfx
@@ -5005,7 +5005,7 @@ PC     Output      Line
 041A53             0093*   
 041A53             0094*   load_sfx_JUKE_BOX_HERO:
 041A53 21 05 30 00 0095*   	ld hl,BUF_JUKE_BOX_HERO
-041A57 11 00 40 00 0096*   	ld de,16384
+041A57 11 00 80 00 0096*   	ld de,32768
 041A5B FD 21 38 1B 0097*   	ld iy,FJUKE_BOX_HERO
        04          
 041A60 CD 2B 18 04 0098*   	call vdu_load_sfx
@@ -5013,7 +5013,7 @@ PC     Output      Line
 041A65             0100*   
 041A65             0101*   load_sfx_RHIANNON:
 041A65 21 06 30 00 0102*   	ld hl,BUF_RHIANNON
-041A69 11 00 40 00 0103*   	ld de,16384
+041A69 11 00 80 00 0103*   	ld de,32768
 041A6D FD 21 50 1B 0104*   	ld iy,FRHIANNON
        04          
 041A72 CD 2B 18 04 0105*   	call vdu_load_sfx
@@ -5021,7 +5021,7 @@ PC     Output      Line
 041A77             0107*   
 041A77             0108*   load_sfx_TAKE_A_RIDE:
 041A77 21 07 30 00 0109*   	ld hl,BUF_TAKE_A_RIDE
-041A7B 11 00 40 00 0110*   	ld de,16384
+041A7B 11 00 80 00 0110*   	ld de,32768
 041A7F FD 21 63 1B 0111*   	ld iy,FTAKE_A_RIDE
        04          
 041A84 CD 2B 18 04 0112*   	call vdu_load_sfx
@@ -5029,7 +5029,7 @@ PC     Output      Line
 041A89             0114*   
 041A89             0115*   load_sfx_WILD_FLOWER:
 041A89 21 08 30 00 0116*   	ld hl,BUF_WILD_FLOWER
-041A8D 11 00 40 00 0117*   	ld de,16384
+041A8D 11 00 80 00 0117*   	ld de,32768
 041A91 FD 21 79 1B 0118*   	ld iy,FWILD_FLOWER
        04          
 041A96 CD 2B 18 04 0119*   	call vdu_load_sfx
@@ -5037,7 +5037,7 @@ PC     Output      Line
 041A9B             0121*   
 041A9B             0122*   load_sfx_WONT_GET_FOOLED_AGAIN:
 041A9B 21 09 30 00 0123*   	ld hl,BUF_WONT_GET_FOOLED_AGAIN
-041A9F 11 00 40 00 0124*   	ld de,16384
+041A9F 11 00 80 00 0124*   	ld de,32768
 041AA3 FD 21 8F 1B 0125*   	ld iy,FWONT_GET_FOOLED_AGAIN
        04          
 041AA8 CD 2B 18 04 0126*   	call vdu_load_sfx
@@ -5221,7 +5221,7 @@ PC     Output      Line
 041C68 3A F2 1C 04 0043*       ld a,(ps_filehandle)
 041C6C 4F          0044*       ld c,a
 041C6D 21 AC 22 04 0045*       ld hl,song_data
-041C71 11 00 40 00 0046*       ld de,sample_rate
+041C71 11 00 80 00 0046*       ld de,sample_rate
 041C75             0047*       MOSCALL mos_fread
 041C75 3E 1A       0001*M1 			LD	A, function
 041C77 5B CF       0002*M1 			RST.LIL	08h
@@ -5398,7 +5398,7 @@ PC     Output      Line
 041E45 02          0150*       db 0x02 ; command 2 create sample
 041E46 00 30       0151*       dw ch0_buffer
 041E48 08          0152*       db 0+8 ; 0 = 8-bit signed PCM mono, 8 = sample rate argument follows
-041E49 00 40       0153*       dw sample_rate ; Hz
+041E49 00 80       0153*       dw sample_rate ; Hz
 041E4B             0154*   ; vdu_play_sfx command string
 041E4B             0155*   ; Command 4: Set waveform
 041E4B             0156*   ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]
@@ -5427,7 +5427,7 @@ PC     Output      Line
 041E62 02          0179*       db 0x02 ; command 2 create sample
 041E63 01 30       0180*       dw ch1_buffer
 041E65 08          0181*       db 0+8 ; 0 = 8-bit signed PCM mono, 8 = sample rate argument follows
-041E66 00 40       0182*       dw sample_rate ; Hz
+041E66 00 80       0182*       dw sample_rate ; Hz
 041E68             0183*   ; vdu_play_sfx command string
 041E68             0184*   ; Command 4: Set waveform
 041E68             0185*   ; VDU 23, 0, &85, channel, 4, waveformOrSample, [bufferId;]

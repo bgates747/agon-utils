@@ -2,7 +2,7 @@
 
 SFX_num_buffers: equ 10
 
-sample_rate: equ 16384
+sample_rate: equ 32768
 ; SFX buffer ids:
 BUF_AFRICA: equ 0x3000
 BUF_ANYTIME: equ 0x3001
@@ -58,70 +58,70 @@ SFX_load_routines_table:
 
 load_sfx_AFRICA:
 	ld hl,BUF_AFRICA
-	ld de,16384
+	ld de,32768
 	ld iy,FAFRICA
 	call vdu_load_sfx
 	ret
 
 load_sfx_ANYTIME:
 	ld hl,BUF_ANYTIME
-	ld de,16384
+	ld de,32768
 	ld iy,FANYTIME
 	call vdu_load_sfx
 	ret
 
 load_sfx_BARRACUDA:
 	ld hl,BUF_BARRACUDA
-	ld de,16384
+	ld de,32768
 	ld iy,FBARRACUDA
 	call vdu_load_sfx
 	ret
 
 load_sfx_COME_UNDONE:
 	ld hl,BUF_COME_UNDONE
-	ld de,16384
+	ld de,32768
 	ld iy,FCOME_UNDONE
 	call vdu_load_sfx
 	ret
 
 load_sfx_EVERY_BREATH_YOU_TAKE:
 	ld hl,BUF_EVERY_BREATH_YOU_TAKE
-	ld de,16384
+	ld de,32768
 	ld iy,FEVERY_BREATH_YOU_TAKE
 	call vdu_load_sfx
 	ret
 
 load_sfx_JUKE_BOX_HERO:
 	ld hl,BUF_JUKE_BOX_HERO
-	ld de,16384
+	ld de,32768
 	ld iy,FJUKE_BOX_HERO
 	call vdu_load_sfx
 	ret
 
 load_sfx_RHIANNON:
 	ld hl,BUF_RHIANNON
-	ld de,16384
+	ld de,32768
 	ld iy,FRHIANNON
 	call vdu_load_sfx
 	ret
 
 load_sfx_TAKE_A_RIDE:
 	ld hl,BUF_TAKE_A_RIDE
-	ld de,16384
+	ld de,32768
 	ld iy,FTAKE_A_RIDE
 	call vdu_load_sfx
 	ret
 
 load_sfx_WILD_FLOWER:
 	ld hl,BUF_WILD_FLOWER
-	ld de,16384
+	ld de,32768
 	ld iy,FWILD_FLOWER
 	call vdu_load_sfx
 	ret
 
 load_sfx_WONT_GET_FOOLED_AGAIN:
 	ld hl,BUF_WONT_GET_FOOLED_AGAIN
-	ld de,16384
+	ld de,32768
 	ld iy,FWONT_GET_FOOLED_AGAIN
 	call vdu_load_sfx
 	ret

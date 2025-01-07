@@ -6,6 +6,7 @@ import shutil
 import subprocess
 from tempfile import NamedTemporaryFile
 import math
+import tarfile
 
 def make_tbl_08_sfx(conn, cursor):
     """Create the database table for sound effects."""
@@ -246,10 +247,10 @@ def make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate):
         normalize_audio(temp_path, proc_path)
         os.remove(temp_path)
 
-        # Apply lowpass filter
-        temp_path = copy_to_temp(proc_path)
-        lowpass_filter(temp_path, proc_path, sample_rate)
-        os.remove(temp_path)
+        # # Apply lowpass filter
+        # temp_path = copy_to_temp(proc_path)
+        # lowpass_filter(temp_path, proc_path, sample_rate)
+        # os.remove(temp_path)
 
         # Resample .wav file to the specified frame rate
         temp_path = copy_to_temp(proc_path)
@@ -275,19 +276,41 @@ def make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate):
     conn.commit()
     conn.close()
 
+def create_tar_gz(src_dir, output_dir, sample_rate):
+    # Create the archive name with the sample rate
+    archive_name = os.path.join(output_dir, f"jukebox{sample_rate}.tar.gz")
+
+    # Remove existing archive if it exists
+    if os.path.exists(archive_name):
+        os.remove(archive_name)
+
+    # Create the tar.gz archive
+    with tarfile.open(archive_name, "w:gz") as tar:
+        tar.add(src_dir, arcname=os.path.basename(src_dir))
+
+    print(f"Archive created: {archive_name}")
+
 if __name__ == '__main__':
     # sample_rate = 44100 # standard high quality audio
-    sample_rate = 16384 # default rate for Agon
+    # sample_rate = 44100 // 2 # powers of two are good
+    # sample_rate = 16384 # default rate for Agon
+    sample_rate = 32768 # a nice power of two of bytes/sec if she'll take it
     # sample_rate = 16000 # A standard Audacity option
     # sample_rate = 15360 # for 8-bit PCM this is 256 bytes per 1/60th of a second
+    # sample_rate = 15360*2 # for 8-bit PCM this is 512 bytes per 1/60th of a second
     db_path = 'build/data/build.db'
     src_dir = 'assets/sound/music/trimmed'
     proc_dir = 'assets/sound/music/processed'
     tgt_dir = 'tgt/music'
-    make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate)
+    # make_sfx(db_path, src_dir, proc_dir, tgt_dir, sample_rate)
 
     asm_tgt_dir = 'music'
     sfx_inc_path = f"src/asm/music.inc"
     next_buffer_id = 0x3000
-    make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate)
-    assemble_jukebox()
+    # make_asm_sfx(db_path, sfx_inc_path, asm_tgt_dir, next_buffer_id, sample_rate)
+    # assemble_jukebox()
+
+    tar_src_dir = "tgt"  # Source directory to compress
+    tar_output_dir = "."  # Directory to save the archive
+
+    create_tar_gz(tar_src_dir, tar_output_dir, sample_rate)
