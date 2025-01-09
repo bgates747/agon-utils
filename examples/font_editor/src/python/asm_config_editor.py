@@ -107,7 +107,7 @@ def build_fonts_asm(src_dir, font_dir, tgt_bin_dir, recursive=False):
         asm_file.write("; Index list:\n")
         for idx, (font_name, variant, width, height, base_filename) in enumerate(parsed_fonts):
             label = sanitize_label(os.path.splitext(base_filename)[0])  # Sanitize without extension
-            asm_file.write(f"{label}: equ {idx}\n")
+            asm_file.write(f"{label}: equ {idx+64000}\n") # 64000 is where the 8-bit buffer IDs for bitmaps begin, which we never use
         asm_file.write("\n")
 
         # Write font_list section
@@ -309,7 +309,8 @@ def build_and_deploy_fonts(
         make_cfg(font_filename, screen_mode, asm_dir)
         build_fonts_asm(asm_dir, tgt_font_dir, tgt_bin_dir)
     if assemble:
-        run_ez80asm()
+        print("Assembling disabled.")
+        # run_ez80asm()
     if copy_emulator:
         print("Copying emulator files disabled.")
         # copy_to_directory(tgt_bin_dir, emulator_tgt_dir)
