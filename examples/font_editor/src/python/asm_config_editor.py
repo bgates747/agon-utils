@@ -63,22 +63,35 @@ def build_fonts_asm(src_dir, font_dir, tgt_bin_dir, recursive=False):
         if not recursive and root != font_dir:
             continue
 
-        for file in files:
-            if file.endswith(".font"):
-                full_path = os.path.join(root, file)
-                font_files.append(full_path)
+    # First pass: Collect and sort .font files
+    font_files = []
+    for file in files:
+        if file.endswith(".font"):
+            full_path = os.path.join(root, file)
+            font_files.append(full_path)
 
-    # Sort font files
-    font_files.sort(key=lambda x: x.lower())
+    font_files.sort(key=str.lower)
+
+    # Second pass: Validate and retain only those with a corresponding .xml file
+    validated_font_files = []
+    for font_file in font_files:
+        xml_path = font_file + ".xml"
+        if os.path.exists(xml_path):
+            validated_font_files.append(font_file)
+        else:
+            print(f"Skipping {font_file}: corresponding XML file {xml_path} not found.")
+
+    # Replace font_files with validated list
+    font_files = validated_font_files
 
     # Parse font files into structured data
     parsed_fonts = [parse_font_file(font_file) for font_file in font_files]
 
     # Write assembly file
-    # font_rel_dir = os.path.relpath(font_dir, tgt_bin_dir)
+    font_rel_dir = os.path.relpath(font_dir, tgt_bin_dir)
     # if font_rel_dir and not font_rel_dir.endswith(os.path.sep):
     #     font_rel_dir += os.path.sep
-    font_rel_dir = "/mos/fonts/" # for moslets we want this as an absolute path
+    # font_rel_dir = "/mos/fonts/" # for moslets we want this as an absolute path
 
     output_file = os.path.join(src_dir, "fonts_list.inc")
     with open(output_file, "w") as asm_file:

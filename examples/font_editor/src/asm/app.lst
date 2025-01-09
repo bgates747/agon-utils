@@ -30,7 +30,7 @@ PC     Output      Line
 040048 DD E5       0015        push ix
 04004A FD E5       0016        push iy
 04004C             0017    
-04004C CD E0 0E 04 0018    	call main
+04004C CD 35 11 04 0018    	call main
 040050             0019    
 040050             0020    exit:
 040050 FD E1       0021        pop iy
@@ -1604,7 +1604,7 @@ PC     Output      Line
 040500             0003*   fonts_load:
 040500 DD 21 93 0C 0004*       ld ix,font_list ; pointer to font list lookup
        04          
-040505 06 0D       0005*       ld b,num_fonts ; loop counter
+040505 06 1D       0005*       ld b,num_fonts ; loop counter
 040507             0006*   
 040507             0007*   @load_loop:
 040507 C5          0008*       push bc ; save loop counter
@@ -2846,316 +2846,488 @@ PC     Output      Line
 040C93             0005*   font_list_bufferId: equ 6
 040C93             0006*   font_list_filename: equ 9
 040C93             0007*   
-040C93             0008*   num_fonts: equ 13
+040C93             0008*   num_fonts: equ 29
 040C93             0009*   
 040C93             0010*   ; Index list:
-040C93             0011*   amiga_forever_8x8: equ 0
-040C93             0012*   computer_pixel_7_8x12: equ 1
-040C93             0013*   computer_pixel_7_8x16: equ 2
-040C93             0014*   dopecre_8x8: equ 3
-040C93             0015*   gamer_2_8x8: equ 4
-040C93             0016*   Lat15_VGA8_8x8: equ 5
-040C93             0017*   Lat2_VGA8_8x8: equ 6
-040C93             0018*   Lat38_VGA8_8x8: equ 7
-040C93             0019*   Lat7_VGA8_8x8: equ 8
-040C93             0020*   planetary_contact_8x8: equ 9
-040C93             0021*   Squarewave_Bold_8x12: equ 10
-040C93             0022*   super_mario_bros_2_8x8: equ 11
-040C93             0023*   wendy_neue_6x6: equ 12
-040C93             0024*   
-040C93             0025*   font_list: ; width; height; bufferId; filename;:
-040C93 08 00 00 08 0026*   	dl 8, 8, 64000, fn_amiga_forever_8x8
+040C93             0011*   amiga_forever_16x16: equ 0
+040C93             0012*   amiga_forever_16x24: equ 1
+040C93             0013*   amiga_forever_8x16: equ 2
+040C93             0014*   amiga_forever_8x8: equ 3
+040C93             0015*   computer_pixel_7_10x15: equ 4
+040C93             0016*   computer_pixel_7_10x24: equ 5
+040C93             0017*   computer_pixel_7_8x12: equ 6
+040C93             0018*   computer_pixel_7_8x14: equ 7
+040C93             0019*   computer_pixel_7_8x16: equ 8
+040C93             0020*   dopecre_8x8: equ 9
+040C93             0021*   gamer_2_8x8: equ 10
+040C93             0022*   Lat15_VGA8_8x8: equ 11
+040C93             0023*   Lat2_Terminus12x6_6x12: equ 12
+040C93             0024*   Lat2_TerminusBold14_8x14: equ 13
+040C93             0025*   Lat2_VGA14_8x14: equ 14
+040C93             0026*   Lat2_VGA16_8x16: equ 15
+040C93             0027*   Lat2_VGA8_8x8: equ 16
+040C93             0028*   Lat38_VGA8_8x8: equ 17
+040C93             0029*   Lat7_Fixed13_8x13: equ 18
+040C93             0030*   Lat7_Terminus12x6_6x12: equ 19
+040C93             0031*   Lat7_TerminusBold16_8x16: equ 20
+040C93             0032*   Lat7_VGA14_8x14: equ 21
+040C93             0033*   Lat7_VGA16_8x16: equ 22
+040C93             0034*   Lat7_VGA8_8x8: equ 23
+040C93             0035*   planetary_contact_8x8: equ 24
+040C93             0036*   scriptorium_12x14: equ 25
+040C93             0037*   Squarewave_Bold_8x12: equ 26
+040C93             0038*   super_mario_bros_2_8x8: equ 27
+040C93             0039*   wendy_neue_6x6: equ 28
+040C93             0040*   
+040C93             0041*   font_list: ; width; height; bufferId; filename;:
+040C93 10 00 00 10 0042*   	dl 16, 16, 64000, fn_amiga_forever_16x16
        00 00 00 FA 
-       00 2F 0D 04 
-040C9F 08 00 00 0C 0027*   	dl 8, 12, 64001, fn_computer_pixel_7_8x12
+       00 EF 0D 04 
+040C9F 10 00 00 18 0043*   	dl 16, 24, 64001, fn_amiga_forever_16x24
        00 00 01 FA 
-       00 51 0D 04 
-040CAB 08 00 00 10 0028*   	dl 8, 16, 64002, fn_computer_pixel_7_8x16
+       00 0D 0E 04 
+040CAB 08 00 00 10 0044*   	dl 8, 16, 64002, fn_amiga_forever_8x16
        00 00 02 FA 
-       00 77 0D 04 
-040CB7 08 00 00 08 0029*   	dl 8, 8, 64003, fn_dopecre_8x8
+       00 2B 0E 04 
+040CB7 08 00 00 08 0045*   	dl 8, 8, 64003, fn_amiga_forever_8x8
        00 00 03 FA 
-       00 9D 0D 04 
-040CC3 08 00 00 08 0030*   	dl 8, 8, 64004, fn_gamer_2_8x8
+       00 48 0E 04 
+040CC3 0A 00 00 0F 0046*   	dl 10, 15, 64004, fn_computer_pixel_7_10x15
        00 00 04 FA 
-       00 B9 0D 04 
-040CCF 08 00 00 08 0031*   	dl 8, 8, 64005, fn_Lat15_VGA8_8x8
+       00 64 0E 04 
+040CCF 0A 00 00 18 0047*   	dl 10, 24, 64005, fn_computer_pixel_7_10x24
        00 00 05 FA 
-       00 D5 0D 04 
-040CDB 08 00 00 08 0032*   	dl 8, 8, 64006, fn_Lat2_VGA8_8x8
+       00 85 0E 04 
+040CDB 08 00 00 0C 0048*   	dl 8, 12, 64006, fn_computer_pixel_7_8x12
        00 00 06 FA 
-       00 F4 0D 04 
-040CE7 08 00 00 08 0033*   	dl 8, 8, 64007, fn_Lat38_VGA8_8x8
+       00 A6 0E 04 
+040CE7 08 00 00 0E 0049*   	dl 8, 14, 64007, fn_computer_pixel_7_8x14
        00 00 07 FA 
-       00 12 0E 04 
-040CF3 08 00 00 08 0034*   	dl 8, 8, 64008, fn_Lat7_VGA8_8x8
+       00 C6 0E 04 
+040CF3 08 00 00 10 0050*   	dl 8, 16, 64008, fn_computer_pixel_7_8x16
        00 00 08 FA 
-       00 31 0E 04 
-040CFF 08 00 00 08 0035*   	dl 8, 8, 64009, fn_planetary_contact_8x8
+       00 E6 0E 04 
+040CFF 08 00 00 08 0051*   	dl 8, 8, 64009, fn_dopecre_8x8
        00 00 09 FA 
-       00 4F 0E 04 
-040D0B 08 00 00 0C 0036*   	dl 8, 12, 64010, fn_Squarewave_Bold_8x12
+       00 06 0F 04 
+040D0B 08 00 00 08 0052*   	dl 8, 8, 64010, fn_gamer_2_8x8
        00 00 0A FA 
-       00 75 0E 04 
-040D17 08 00 00 08 0037*   	dl 8, 8, 64011, fn_super_mario_bros_2_8x8
+       00 1C 0F 04 
+040D17 08 00 00 08 0053*   	dl 8, 8, 64011, fn_Lat15_VGA8_8x8
        00 00 0B FA 
-       00 9A 0E 04 
-040D23 06 00 00 06 0038*   	dl 6, 6, 64012, fn_wendy_neue_6x6
+       00 32 0F 04 
+040D23 06 00 00 0C 0054*   	dl 6, 12, 64012, fn_Lat2_Terminus12x6_6x12
        00 00 0C FA 
-       00 C1 0E 04 
-040D2F             0039*   
-040D2F             0040*   ; files_list: ; filename:
-040D2F 2F 6D 6F 73 0041*   fn_amiga_forever_8x8: db "/mos/fonts/amiga_forever_8x8.font",0
-       2F 66 6F 6E 
-       74 73 2F 61 
-       6D 69 67 61 
-       5F 66 6F 72 
-       65 76 65 72 
-       5F 38 78 38 
+       00 4B 0F 04 
+040D2F 08 00 00 0E 0055*   	dl 8, 14, 64013, fn_Lat2_TerminusBold14_8x14
+       00 00 0D FA 
+       00 6C 0F 04 
+040D3B 08 00 00 0E 0056*   	dl 8, 14, 64014, fn_Lat2_VGA14_8x14
+       00 00 0E FA 
+       00 8F 0F 04 
+040D47 08 00 00 10 0057*   	dl 8, 16, 64015, fn_Lat2_VGA16_8x16
+       00 00 0F FA 
+       00 A9 0F 04 
+040D53 08 00 00 08 0058*   	dl 8, 8, 64016, fn_Lat2_VGA8_8x8
+       00 00 10 FA 
+       00 C3 0F 04 
+040D5F 08 00 00 08 0059*   	dl 8, 8, 64017, fn_Lat38_VGA8_8x8
+       00 00 11 FA 
+       00 DB 0F 04 
+040D6B 08 00 00 0D 0060*   	dl 8, 13, 64018, fn_Lat7_Fixed13_8x13
+       00 00 12 FA 
+       00 F4 0F 04 
+040D77 06 00 00 0C 0061*   	dl 6, 12, 64019, fn_Lat7_Terminus12x6_6x12
+       00 00 13 FA 
+       00 10 10 04 
+040D83 08 00 00 10 0062*   	dl 8, 16, 64020, fn_Lat7_TerminusBold16_8x16
+       00 00 14 FA 
+       00 31 10 04 
+040D8F 08 00 00 0E 0063*   	dl 8, 14, 64021, fn_Lat7_VGA14_8x14
+       00 00 15 FA 
+       00 54 10 04 
+040D9B 08 00 00 10 0064*   	dl 8, 16, 64022, fn_Lat7_VGA16_8x16
+       00 00 16 FA 
+       00 6E 10 04 
+040DA7 08 00 00 08 0065*   	dl 8, 8, 64023, fn_Lat7_VGA8_8x8
+       00 00 17 FA 
+       00 88 10 04 
+040DB3 08 00 00 08 0066*   	dl 8, 8, 64024, fn_planetary_contact_8x8
+       00 00 18 FA 
+       00 A0 10 04 
+040DBF 0C 00 00 0E 0067*   	dl 12, 14, 64025, fn_scriptorium_12x14
+       00 00 19 FA 
+       00 C0 10 04 
+040DCB 08 00 00 0C 0068*   	dl 8, 12, 64026, fn_Squarewave_Bold_8x12
+       00 00 1A FA 
+       00 DC 10 04 
+040DD7 08 00 00 08 0069*   	dl 8, 8, 64027, fn_super_mario_bros_2_8x8
+       00 00 1B FA 
+       00 FB 10 04 
+040DE3 06 00 00 06 0070*   	dl 6, 6, 64028, fn_wendy_neue_6x6
+       00 00 1C FA 
+       00 1C 11 04 
+040DEF             0071*   
+040DEF             0072*   ; files_list: ; filename:
+040DEF 66 6F 6E 74 0073*   fn_amiga_forever_16x16: db "fontsamiga_forever_16x16.font",0
+       73 61 6D 69 
+       67 61 5F 66 
+       6F 72 65 76 
+       65 72 5F 31 
+       36 78 31 36 
        2E 66 6F 6E 
        74 00       
-040D51 2F 6D 6F 73 0042*   fn_computer_pixel_7_8x12: db "/mos/fonts/computer_pixel_7_8x12.font",0
-       2F 66 6F 6E 
-       74 73 2F 63 
-       6F 6D 70 75 
-       74 65 72 5F 
-       70 69 78 65 
-       6C 5F 37 5F 
-       38 78 31 32 
+040E0D 66 6F 6E 74 0074*   fn_amiga_forever_16x24: db "fontsamiga_forever_16x24.font",0
+       73 61 6D 69 
+       67 61 5F 66 
+       6F 72 65 76 
+       65 72 5F 31 
+       36 78 32 34 
        2E 66 6F 6E 
        74 00       
-040D77 2F 6D 6F 73 0043*   fn_computer_pixel_7_8x16: db "/mos/fonts/computer_pixel_7_8x16.font",0
-       2F 66 6F 6E 
-       74 73 2F 63 
-       6F 6D 70 75 
-       74 65 72 5F 
-       70 69 78 65 
-       6C 5F 37 5F 
-       38 78 31 36 
-       2E 66 6F 6E 
-       74 00       
-040D9D 2F 6D 6F 73 0044*   fn_dopecre_8x8: db "/mos/fonts/dopecre_8x8.font",0
-       2F 66 6F 6E 
-       74 73 2F 64 
-       6F 70 65 63 
-       72 65 5F 38 
+040E2B 66 6F 6E 74 0075*   fn_amiga_forever_8x16: db "fontsamiga_forever_8x16.font",0
+       73 61 6D 69 
+       67 61 5F 66 
+       6F 72 65 76 
+       65 72 5F 38 
+       78 31 36 2E 
+       66 6F 6E 74 
+       00          
+040E48 66 6F 6E 74 0076*   fn_amiga_forever_8x8: db "fontsamiga_forever_8x8.font",0
+       73 61 6D 69 
+       67 61 5F 66 
+       6F 72 65 76 
+       65 72 5F 38 
        78 38 2E 66 
        6F 6E 74 00 
-040DB9 2F 6D 6F 73 0045*   fn_gamer_2_8x8: db "/mos/fonts/gamer_2_8x8.font",0
-       2F 66 6F 6E 
-       74 73 2F 67 
-       61 6D 65 72 
-       5F 32 5F 38 
-       78 38 2E 66 
+040E64 66 6F 6E 74 0077*   fn_computer_pixel_7_10x15: db "fontscomputer_pixel_7_10x15.font",0
+       73 63 6F 6D 
+       70 75 74 65 
+       72 5F 70 69 
+       78 65 6C 5F 
+       37 5F 31 30 
+       78 31 35 2E 
+       66 6F 6E 74 
+       00          
+040E85 66 6F 6E 74 0078*   fn_computer_pixel_7_10x24: db "fontscomputer_pixel_7_10x24.font",0
+       73 63 6F 6D 
+       70 75 74 65 
+       72 5F 70 69 
+       78 65 6C 5F 
+       37 5F 31 30 
+       78 32 34 2E 
+       66 6F 6E 74 
+       00          
+040EA6 66 6F 6E 74 0079*   fn_computer_pixel_7_8x12: db "fontscomputer_pixel_7_8x12.font",0
+       73 63 6F 6D 
+       70 75 74 65 
+       72 5F 70 69 
+       78 65 6C 5F 
+       37 5F 38 78 
+       31 32 2E 66 
        6F 6E 74 00 
-040DD5 2F 6D 6F 73 0046*   fn_Lat15_VGA8_8x8: db "/mos/fonts/Lat15-VGA8_8x8.font",0
-       2F 66 6F 6E 
-       74 73 2F 4C 
-       61 74 31 35 
-       2D 56 47 41 
-       38 5F 38 78 
-       38 2E 66 6F 
-       6E 74 00    
-040DF4 2F 6D 6F 73 0047*   fn_Lat2_VGA8_8x8: db "/mos/fonts/Lat2-VGA8_8x8.font",0
-       2F 66 6F 6E 
-       74 73 2F 4C 
-       61 74 32 2D 
-       56 47 41 38 
+040EC6 66 6F 6E 74 0080*   fn_computer_pixel_7_8x14: db "fontscomputer_pixel_7_8x14.font",0
+       73 63 6F 6D 
+       70 75 74 65 
+       72 5F 70 69 
+       78 65 6C 5F 
+       37 5F 38 78 
+       31 34 2E 66 
+       6F 6E 74 00 
+040EE6 66 6F 6E 74 0081*   fn_computer_pixel_7_8x16: db "fontscomputer_pixel_7_8x16.font",0
+       73 63 6F 6D 
+       70 75 74 65 
+       72 5F 70 69 
+       78 65 6C 5F 
+       37 5F 38 78 
+       31 36 2E 66 
+       6F 6E 74 00 
+040F06 66 6F 6E 74 0082*   fn_dopecre_8x8: db "fontsdopecre_8x8.font",0
+       73 64 6F 70 
+       65 63 72 65 
        5F 38 78 38 
        2E 66 6F 6E 
        74 00       
-040E12 2F 6D 6F 73 0048*   fn_Lat38_VGA8_8x8: db "/mos/fonts/Lat38-VGA8_8x8.font",0
-       2F 66 6F 6E 
-       74 73 2F 4C 
-       61 74 33 38 
-       2D 56 47 41 
-       38 5F 38 78 
-       38 2E 66 6F 
-       6E 74 00    
-040E31 2F 6D 6F 73 0049*   fn_Lat7_VGA8_8x8: db "/mos/fonts/Lat7-VGA8_8x8.font",0
-       2F 66 6F 6E 
-       74 73 2F 4C 
-       61 74 37 2D 
-       56 47 41 38 
+040F1C 66 6F 6E 74 0083*   fn_gamer_2_8x8: db "fontsgamer_2_8x8.font",0
+       73 67 61 6D 
+       65 72 5F 32 
        5F 38 78 38 
        2E 66 6F 6E 
        74 00       
-040E4F 2F 6D 6F 73 0050*   fn_planetary_contact_8x8: db "/mos/fonts/planetary_contact_8x8.font",0
-       2F 66 6F 6E 
-       74 73 2F 70 
-       6C 61 6E 65 
-       74 61 72 79 
-       5F 63 6F 6E 
-       74 61 63 74 
-       5F 38 78 38 
-       2E 66 6F 6E 
-       74 00       
-040E75 2F 6D 6F 73 0051*   fn_Squarewave_Bold_8x12: db "/mos/fonts/Squarewave_Bold_8x12.font",0
-       2F 66 6F 6E 
-       74 73 2F 53 
-       71 75 61 72 
-       65 77 61 76 
-       65 5F 42 6F 
-       6C 64 5F 38 
+040F32 66 6F 6E 74 0084*   fn_Lat15_VGA8_8x8: db "fontsLat15-VGA8_8x8.font",0
+       73 4C 61 74 
+       31 35 2D 56 
+       47 41 38 5F 
+       38 78 38 2E 
+       66 6F 6E 74 
+       00          
+040F4B 66 6F 6E 74 0085*   fn_Lat2_Terminus12x6_6x12: db "fontsLat2-Terminus12x6_6x12.font",0
+       73 4C 61 74 
+       32 2D 54 65 
+       72 6D 69 6E 
+       75 73 31 32 
+       78 36 5F 36 
        78 31 32 2E 
        66 6F 6E 74 
        00          
-040E9A 2F 6D 6F 73 0052*   fn_super_mario_bros_2_8x8: db "/mos/fonts/super_mario_bros_2_8x8.font",0
-       2F 66 6F 6E 
-       74 73 2F 73 
-       75 70 65 72 
-       5F 6D 61 72 
-       69 6F 5F 62 
-       72 6F 73 5F 
-       32 5F 38 78 
-       38 2E 66 6F 
+040F6C 66 6F 6E 74 0086*   fn_Lat2_TerminusBold14_8x14: db "fontsLat2-TerminusBold14_8x14.font",0
+       73 4C 61 74 
+       32 2D 54 65 
+       72 6D 69 6E 
+       75 73 42 6F 
+       6C 64 31 34 
+       5F 38 78 31 
+       34 2E 66 6F 
        6E 74 00    
-040EC1 2F 6D 6F 73 0053*   fn_wendy_neue_6x6: db "/mos/fonts/wendy_neue_6x6.font",0
-       2F 66 6F 6E 
-       74 73 2F 77 
-       65 6E 64 79 
-       5F 6E 65 75 
-       65 5F 36 78 
+040F8F 66 6F 6E 74 0087*   fn_Lat2_VGA14_8x14: db "fontsLat2-VGA14_8x14.font",0
+       73 4C 61 74 
+       32 2D 56 47 
+       41 31 34 5F 
+       38 78 31 34 
+       2E 66 6F 6E 
+       74 00       
+040FA9 66 6F 6E 74 0088*   fn_Lat2_VGA16_8x16: db "fontsLat2-VGA16_8x16.font",0
+       73 4C 61 74 
+       32 2D 56 47 
+       41 31 36 5F 
+       38 78 31 36 
+       2E 66 6F 6E 
+       74 00       
+040FC3 66 6F 6E 74 0089*   fn_Lat2_VGA8_8x8: db "fontsLat2-VGA8_8x8.font",0
+       73 4C 61 74 
+       32 2D 56 47 
+       41 38 5F 38 
+       78 38 2E 66 
+       6F 6E 74 00 
+040FDB 66 6F 6E 74 0090*   fn_Lat38_VGA8_8x8: db "fontsLat38-VGA8_8x8.font",0
+       73 4C 61 74 
+       33 38 2D 56 
+       47 41 38 5F 
+       38 78 38 2E 
+       66 6F 6E 74 
+       00          
+040FF4 66 6F 6E 74 0091*   fn_Lat7_Fixed13_8x13: db "fontsLat7-Fixed13_8x13.font",0
+       73 4C 61 74 
+       37 2D 46 69 
+       78 65 64 31 
+       33 5F 38 78 
+       31 33 2E 66 
+       6F 6E 74 00 
+041010 66 6F 6E 74 0092*   fn_Lat7_Terminus12x6_6x12: db "fontsLat7-Terminus12x6_6x12.font",0
+       73 4C 61 74 
+       37 2D 54 65 
+       72 6D 69 6E 
+       75 73 31 32 
+       78 36 5F 36 
+       78 31 32 2E 
+       66 6F 6E 74 
+       00          
+041031 66 6F 6E 74 0093*   fn_Lat7_TerminusBold16_8x16: db "fontsLat7-TerminusBold16_8x16.font",0
+       73 4C 61 74 
+       37 2D 54 65 
+       72 6D 69 6E 
+       75 73 42 6F 
+       6C 64 31 36 
+       5F 38 78 31 
        36 2E 66 6F 
        6E 74 00    
-040EE0             0043        include "cfg.inc"
-040EE0             0001*   screen_mode: equ 20
-040EE0             0002*   font_name: equ Lat7_VGA8_8x8
-040EE0             0044    
-040EE0             0045    main:
-040EE0 3E 14       0046        ld a,screen_mode
-040EE2 CD 14 09 04 0047        call vdu_set_screen_mode
-040EE6             0048    
-040EE6             0049    ; ; print test string
-040EE6             0050    ;     call printNewLine
-040EE6             0051    ;     ld hl,uxor_balnea
-040EE6             0052    ;     call printString
-040EE6             0053    ;     call printNewLine
-040EE6             0054    
-040EE6             0055    ; inputs: hl = bufferId; iy = pointer to filename
-040EE6 1E 08       0056        ld e,font_name
-040EE8 16 0C       0057        ld d,12 ; bytes per font list record
-040EEA ED 5C       0058        mlt de
-040EEC FD 21 93 0C 0059        ld iy,font_list
+041054 66 6F 6E 74 0094*   fn_Lat7_VGA14_8x14: db "fontsLat7-VGA14_8x14.font",0
+       73 4C 61 74 
+       37 2D 56 47 
+       41 31 34 5F 
+       38 78 31 34 
+       2E 66 6F 6E 
+       74 00       
+04106E 66 6F 6E 74 0095*   fn_Lat7_VGA16_8x16: db "fontsLat7-VGA16_8x16.font",0
+       73 4C 61 74 
+       37 2D 56 47 
+       41 31 36 5F 
+       38 78 31 36 
+       2E 66 6F 6E 
+       74 00       
+041088 66 6F 6E 74 0096*   fn_Lat7_VGA8_8x8: db "fontsLat7-VGA8_8x8.font",0
+       73 4C 61 74 
+       37 2D 56 47 
+       41 38 5F 38 
+       78 38 2E 66 
+       6F 6E 74 00 
+0410A0 66 6F 6E 74 0097*   fn_planetary_contact_8x8: db "fontsplanetary_contact_8x8.font",0
+       73 70 6C 61 
+       6E 65 74 61 
+       72 79 5F 63 
+       6F 6E 74 61 
+       63 74 5F 38 
+       78 38 2E 66 
+       6F 6E 74 00 
+0410C0 66 6F 6E 74 0098*   fn_scriptorium_12x14: db "fontsscriptorium_12x14.font",0
+       73 73 63 72 
+       69 70 74 6F 
+       72 69 75 6D 
+       5F 31 32 78 
+       31 34 2E 66 
+       6F 6E 74 00 
+0410DC 66 6F 6E 74 0099*   fn_Squarewave_Bold_8x12: db "fontsSquarewave_Bold_8x12.font",0
+       73 53 71 75 
+       61 72 65 77 
+       61 76 65 5F 
+       42 6F 6C 64 
+       5F 38 78 31 
+       32 2E 66 6F 
+       6E 74 00    
+0410FB 66 6F 6E 74 0100*   fn_super_mario_bros_2_8x8: db "fontssuper_mario_bros_2_8x8.font",0
+       73 73 75 70 
+       65 72 5F 6D 
+       61 72 69 6F 
+       5F 62 72 6F 
+       73 5F 32 5F 
+       38 78 38 2E 
+       66 6F 6E 74 
+       00          
+04111C 66 6F 6E 74 0101*   fn_wendy_neue_6x6: db "fontswendy_neue_6x6.font",0
+       73 77 65 6E 
+       64 79 5F 6E 
+       65 75 65 5F 
+       36 78 36 2E 
+       66 6F 6E 74 
+       00          
+041135             0043        include "cfg.inc"
+041135             0001*   screen_mode: equ 20
+041135             0002*   font_name: equ scriptorium_12x14
+041135             0044    
+041135             0045    main:
+041135 3E 14       0046        ld a,screen_mode
+041137 CD 14 09 04 0047        call vdu_set_screen_mode
+04113B             0048    
+04113B             0049    ; ; print test string
+04113B             0050    ;     call printNewLine
+04113B             0051    ;     ld hl,uxor_balnea
+04113B             0052    ;     call printString
+04113B             0053    ;     call printNewLine
+04113B             0054    
+04113B             0055    ; inputs: hl = bufferId; iy = pointer to filename
+04113B 1E 19       0056        ld e,font_name
+04113D 16 0C       0057        ld d,12 ; bytes per font list record
+04113F ED 5C       0058        mlt de
+041141 FD 21 93 0C 0059        ld iy,font_list
        04          
-040EF1 FD 19       0060        add iy,de
-040EF3 FD E5       0061        push iy
-040EF5             0062    
-040EF5 FD 37 09    0063        ld iy,(iy+9)
-040EF8             0064    
-040EF8             0065    ; debug print filename at iy
-040EF8 CD 1C 01 04 0066        call printNewLine
-040EFC FD E5       0067        push iy
-040EFE E1          0068        pop hl
-040EFF CD 07 01 04 0069        call printString
-040F03 CD 1C 01 04 0070        call printNewLine
-040F07             0071    
-040F07 21 00 40 00 0072        ld hl,0x4000 ; bufferId
-040F0B E5          0073        push hl
-040F0C CD 78 0A 04 0074        call vdu_load_buffer_from_file
-040F10             0075    
-040F10             0076    ; create font from buffer
-040F10             0077    ; inputs: hl = bufferId, e = width, d = height, d = ascent, a = flags
-040F10             0078    ; VDU 23, 0, &95, 1, bufferId; width, height, ascent, flags: Create font from buffer
-040F10 E1          0079        pop hl ; bufferId
-040F11 FD E1       0080        pop iy ; pointer to font list record
-040F13 E5          0081        push hl
-040F14 FD 7E 00    0082        ld a,(iy+0)
-040F17 5F          0083        ld e,a  ; width
-040F18 FD 7E 03    0084        ld a,(iy+3)
-040F1B 57          0085        ld d,a  ; height / ascent
-040F1C 3E 00       0086        ld a,0 ; flags
-040F1E CD 1A 0C 04 0087        call vdu_font_create
-040F22             0088    
-040F22             0089    ; select font
-040F22             0090    ; inputs: hl = bufferId, a = font flags
-040F22             0091    ; Flags:
-040F22             0092    ; Bit	Description
-040F22             0093    ; 0	Adjust cursor position to ensure text baseline is aligned
-040F22             0094    ;   0: Do not adjust cursor position (best for changing font on a new line)
-040F22             0095    ;   1: Adjust cursor position (best for changing font in the middle of a line)
-040F22             0096    ; 1-7	Reserved for future use
-040F22             0097    ; VDU 23, 0, &95, 0, bufferId; flags: Select font
-040F22 E1          0098        pop hl
-040F23 3E 00       0099        ld a,0
-040F25 CD 00 0C 04 0100        call vdu_font_select
-040F29             0101    
-040F29             0102    ; print test string
-040F29 CD 1C 01 04 0103        call printNewLine
-040F2D 21 29 10 04 0104        ld hl,lorem_ipsum
-040F31 CD 07 01 04 0105        call printString
-040F35 CD 1C 01 04 0106        call printNewLine
-040F39             0107    
-040F39             0108    ; print test string
-040F39 21 46 0F 04 0109        ld hl,test_string
-040F3D CD 07 01 04 0110        call printString
-040F41 CD 1C 01 04 0111        call printNewLine
-040F45             0112    
-040F45             0113    ; all done
-040F45 C9          0114        ret
-040F46             0115    
-040F46             0116    test_string:
-040F46 20 21 22 23 0117        db 0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,0x29,0x2A,0x2B,0x2C,0x2D,0x2E,0x2F
+041146 FD 19       0060        add iy,de
+041148 FD E5       0061        push iy
+04114A             0062    
+04114A FD 37 09    0063        ld iy,(iy+9)
+04114D             0064    
+04114D             0065    ; debug print filename at iy
+04114D CD 1C 01 04 0066        call printNewLine
+041151 FD E5       0067        push iy
+041153 E1          0068        pop hl
+041154 CD 07 01 04 0069        call printString
+041158 CD 1C 01 04 0070        call printNewLine
+04115C             0071    
+04115C 21 00 40 00 0072        ld hl,0x4000 ; bufferId
+041160 E5          0073        push hl
+041161 CD 78 0A 04 0074        call vdu_load_buffer_from_file
+041165             0075    
+041165             0076    ; create font from buffer
+041165             0077    ; inputs: hl = bufferId, e = width, d = height, d = ascent, a = flags
+041165             0078    ; VDU 23, 0, &95, 1, bufferId; width, height, ascent, flags: Create font from buffer
+041165 E1          0079        pop hl ; bufferId
+041166 FD E1       0080        pop iy ; pointer to font list record
+041168 E5          0081        push hl
+041169 FD 7E 00    0082        ld a,(iy+0)
+04116C 5F          0083        ld e,a  ; width
+04116D FD 7E 03    0084        ld a,(iy+3)
+041170 57          0085        ld d,a  ; height / ascent
+041171 3E 00       0086        ld a,0 ; flags
+041173 CD 1A 0C 04 0087        call vdu_font_create
+041177             0088    
+041177             0089    ; select font
+041177             0090    ; inputs: hl = bufferId, a = font flags
+041177             0091    ; Flags:
+041177             0092    ; Bit	Description
+041177             0093    ; 0	Adjust cursor position to ensure text baseline is aligned
+041177             0094    ;   0: Do not adjust cursor position (best for changing font on a new line)
+041177             0095    ;   1: Adjust cursor position (best for changing font in the middle of a line)
+041177             0096    ; 1-7	Reserved for future use
+041177             0097    ; VDU 23, 0, &95, 0, bufferId; flags: Select font
+041177 E1          0098        pop hl
+041178 3E 00       0099        ld a,0
+04117A CD 00 0C 04 0100        call vdu_font_select
+04117E             0101    
+04117E             0102    ; print test string
+04117E CD 1C 01 04 0103        call printNewLine
+041182 21 7E 12 04 0104        ld hl,lorem_ipsum
+041186 CD 07 01 04 0105        call printString
+04118A CD 1C 01 04 0106        call printNewLine
+04118E             0107    
+04118E             0108    ; print test string
+04118E 21 9B 11 04 0109        ld hl,test_string
+041192 CD 07 01 04 0110        call printString
+041196 CD 1C 01 04 0111        call printNewLine
+04119A             0112    
+04119A             0113    ; all done
+04119A C9          0114        ret
+04119B             0115    
+04119B             0116    test_string:
+04119B 20 21 22 23 0117        db 0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,0x29,0x2A,0x2B,0x2C,0x2D,0x2E,0x2F
        24 25 26 27 
        28 29 2A 2B 
        2C 2D 2E 2F 
-040F56 30 31 32 33 0118        db 0x30,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x3A,0x3B,0x3C,0x3D,0x3E,0x3F
+0411AB 30 31 32 33 0118        db 0x30,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x3A,0x3B,0x3C,0x3D,0x3E,0x3F
        34 35 36 37 
        38 39 3A 3B 
        3C 3D 3E 3F 
-040F66 40 41 42 43 0119        db 0x40,0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4A,0x4B,0x4C,0x4D,0x4E,0x4F
+0411BB 40 41 42 43 0119        db 0x40,0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4A,0x4B,0x4C,0x4D,0x4E,0x4F
        44 45 46 47 
        48 49 4A 4B 
        4C 4D 4E 4F 
-040F76 50 51 52 53 0120        db 0x50,0x51,0x52,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5A,0x5B,0x5C,0x5D,0x5E,0x5F
+0411CB 50 51 52 53 0120        db 0x50,0x51,0x52,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5A,0x5B,0x5C,0x5D,0x5E,0x5F
        54 55 56 57 
        58 59 5A 5B 
        5C 5D 5E 5F 
-040F86 60 61 62 63 0121        db 0x60,0x61,0x62,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6A,0x6B,0x6C,0x6D,0x6E,0x6F
+0411DB 60 61 62 63 0121        db 0x60,0x61,0x62,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6A,0x6B,0x6C,0x6D,0x6E,0x6F
        64 65 66 67 
        68 69 6A 6B 
        6C 6D 6E 6F 
-040F96 70 71 72 73 0122        db 0x70,0x71,0x72,0x73,0x74,0x75,0x76,0x77,0x78,0x79,0x7A,0x7B,0x7C,0x7D,0x7E,0x7F
+0411EB 70 71 72 73 0122        db 0x70,0x71,0x72,0x73,0x74,0x75,0x76,0x77,0x78,0x79,0x7A,0x7B,0x7C,0x7D,0x7E,0x7F
        74 75 76 77 
        78 79 7A 7B 
        7C 7D 7E 7F 
-040FA6 80 81 82 83 0123        db 0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F
+0411FB 80 81 82 83 0123        db 0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F
        84 85 86 87 
        88 89 8A 8B 
        8C 8D 8E 8F 
-040FB6 90 91 92 93 0124        db 0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0x9C,0x9D,0x9E,0x9F
+04120B 90 91 92 93 0124        db 0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0x9C,0x9D,0x9E,0x9F
        94 95 96 97 
        98 99 9A 9B 
        9C 9D 9E 9F 
-040FC6 A0 A1 A2 A3 0125        db 0xA0,0xA1,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF
+04121B A0 A1 A2 A3 0125        db 0xA0,0xA1,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF
        A4 A5 A6 A7 
        A8 A9 AA AB 
        AC AD AE AF 
-040FD6 B0 B1 B2 B3 0126        db 0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF
+04122B B0 B1 B2 B3 0126        db 0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF
        B4 B5 B6 B7 
        B8 B9 BA BB 
        BC BD BE BF 
-040FE6 C0 C1 C2 C3 0127        db 0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF
+04123B C0 C1 C2 C3 0127        db 0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF
        C4 C5 C6 C7 
        C8 C9 CA CB 
        CC CD CE CF 
-040FF6 D0 D1 D2 D3 0128        db 0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF
+04124B D0 D1 D2 D3 0128        db 0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF
        D4 D5 D6 D7 
        D8 D9 DA DB 
        DC DD DE DF 
-041006 E0 E1 E2 E3 0129        db 0xE0,0xE1,0xE2,0xE3,0xE4,0xE5,0xE6,0xE7,0xE8,0xE9,0xEA,0xEB,0xEC,0xED,0xEE,0xEF
+04125B E0 E1 E2 E3 0129        db 0xE0,0xE1,0xE2,0xE3,0xE4,0xE5,0xE6,0xE7,0xE8,0xE9,0xEA,0xEB,0xEC,0xED,0xEE,0xEF
        E4 E5 E6 E7 
        E8 E9 EA EB 
        EC ED EE EF 
-041016 F0 F1 F2 F3 0130        db 0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF,13,10
+04126B F0 F1 F2 F3 0130        db 0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF,13,10
        F4 F5 F6 F7 
        F8 F9 FA FB 
        FC FD FE FF 
        0D 0A       
-041028 00          0131        db 0x00
-041029             0132    
-041029             0133    lorem_ipsum:
-041029 4C 6F 72 65 0134        db "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
+04127D 00          0131        db 0x00
+04127E             0132    
+04127E             0133    lorem_ipsum:
+04127E 4C 6F 72 65 0134        db "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
        6D 20 69 70 
        73 75 6D 20 
        64 6F 6C 6F 
@@ -3170,7 +3342,7 @@ PC     Output      Line
        6E 67 20 65 
        6C 69 74 2E 
        20          
-041062 4E 75 6C 6C 0135        db "Nulla autem virtuosa tristitia, sed gloria virtutis in ipso est. "
+0412B7 4E 75 6C 6C 0135        db "Nulla autem virtuosa tristitia, sed gloria virtutis in ipso est. "
        61 20 61 75 
        74 65 6D 20 
        76 69 72 74 
@@ -3187,7 +3359,7 @@ PC     Output      Line
        70 73 6F 20 
        65 73 74 2E 
        20          
-0410A3 4E 61 6D 20 0136        db "Nam sapientis animum fluctibus movet; in vita, res novae, "
+0412F8 4E 61 6D 20 0136        db "Nam sapientis animum fluctibus movet; in vita, res novae, "
        73 61 70 69 
        65 6E 74 69 
        73 20 61 6E 
@@ -3202,7 +3374,7 @@ PC     Output      Line
        65 73 20 6E 
        6F 76 61 65 
        2C 20       
-0410DD 6E 6F 76 61 0137        db "novas tempestates ferunt. Fortis enim est, qui dolorem, cum "
+041332 6E 6F 76 61 0137        db "novas tempestates ferunt. Fortis enim est, qui dolorem, cum "
        73 20 74 65 
        6D 70 65 73 
        74 61 74 65 
@@ -3217,7 +3389,7 @@ PC     Output      Line
        6F 6C 6F 72 
        65 6D 2C 20 
        63 75 6D 20 
-041119 70 6F 74 65 0138        db "potest, arcet. Nemo tam divitiis abundat, qui, si desit libertas, "
+04136E 70 6F 74 65 0138        db "potest, arcet. Nemo tam divitiis abundat, qui, si desit libertas, "
        73 74 2C 20 
        61 72 63 65 
        74 2E 20 4E 
@@ -3234,7 +3406,7 @@ PC     Output      Line
        6C 69 62 65 
        72 74 61 73 
        2C 20       
-04115B 62 65 61 74 0139        db "beatus. Hic igitur ratio victum etiam sine voluptas quaerit. "
+0413B0 62 65 61 74 0139        db "beatus. Hic igitur ratio victum etiam sine voluptas quaerit. "
        75 73 2E 20 
        48 69 63 20 
        69 67 69 74 
@@ -3250,7 +3422,7 @@ PC     Output      Line
        71 75 61 65 
        72 69 74 2E 
        20          
-041198 4E 61 6D 20 0140        db "Nam in medio stat virtus: tam paupertas quam divitiae vitandae. "
+0413ED 4E 61 6D 20 0140        db "Nam in medio stat virtus: tam paupertas quam divitiae vitandae. "
        69 6E 20 6D 
        65 64 69 6F 
        20 73 74 61 
@@ -3266,7 +3438,7 @@ PC     Output      Line
        65 20 76 69 
        74 61 6E 64 
        61 65 2E 20 
-0411D8 4D 65 6E 73 0141        db "Mens sibi conscia recti, semper aditum ad libertatem invocat. "
+04142D 4D 65 6E 73 0141        db "Mens sibi conscia recti, semper aditum ad libertatem invocat. "
        20 73 69 62 
        69 20 63 6F 
        6E 73 63 69 
@@ -3282,7 +3454,7 @@ PC     Output      Line
        20 69 6E 76 
        6F 63 61 74 
        2E 20       
-041216 51 75 69 64 0142        db "Quid est enim aliud esse versutum? Quod si ita se habeat, "
+04146B 51 75 69 64 0142        db "Quid est enim aliud esse versutum? Quod si ita se habeat, "
        20 65 73 74 
        20 65 6E 69 
        6D 20 61 6C 
@@ -3297,7 +3469,7 @@ PC     Output      Line
        65 20 68 61 
        62 65 61 74 
        2C 20       
-041250 6E 6F 6E 20 0143        db "non possit beatam praestare vitam sapientia. Quamquam tu hanc "
+0414A5 6E 6F 6E 20 0143        db "non possit beatam praestare vitam sapientia. Quamquam tu hanc "
        70 6F 73 73 
        69 74 20 62 
        65 61 74 61 
@@ -3313,7 +3485,7 @@ PC     Output      Line
        6D 20 74 75 
        20 68 61 6E 
        63 20       
-04128E 63 6F 67 6E 0144        db "cognitionem, Quirine, si tibi probatur, repudiandam non esse "
+0414E3 63 6F 67 6E 0144        db "cognitionem, Quirine, si tibi probatur, repudiandam non esse "
        69 74 69 6F 
        6E 65 6D 2C 
        20 51 75 69 
@@ -3329,7 +3501,7 @@ PC     Output      Line
        6E 6F 6E 20 
        65 73 73 65 
        20          
-0412CB 64 69 63 65 0145        db "dices. Quae cum dixisset paulumque institisset, Quid est?"
+041520 64 69 63 65 0145        db "dices. Quae cum dixisset paulumque institisset, Quid est?"
        73 2E 20 51 
        75 61 65 20 
        63 75 6D 20 
@@ -3344,10 +3516,10 @@ PC     Output      Line
        51 75 69 64 
        20 65 73 74 
        3F          
-041304 0D 0A 0D 0A 0146        db "\r\n\r\n"
-041308             0147    
-041308             0148    pullo_vorenus:
-041308 45 72 61 6E 0149        db "Erant in ea legione fortissimi viri, centuriones, qui primis "
+041559 0D 0A 0D 0A 0146        db "\r\n\r\n"
+04155D             0147    
+04155D             0148    pullo_vorenus:
+04155D 45 72 61 6E 0149        db "Erant in ea legione fortissimi viri, centuriones, qui primis "
        74 20 69 6E 
        20 65 61 20 
        6C 65 67 69 
@@ -3363,7 +3535,7 @@ PC     Output      Line
        69 20 70 72 
        69 6D 69 73 
        20          
-041345 6F 72 64 69 0150        db "ordinibus appropinquarent, Titus Pullo et Lucius Vorenus. "
+04159A 6F 72 64 69 0150        db "ordinibus appropinquarent, Titus Pullo et Lucius Vorenus. "
        6E 69 62 75 
        73 20 61 70 
        70 72 6F 70 
@@ -3378,7 +3550,7 @@ PC     Output      Line
        20 56 6F 72 
        65 6E 75 73 
        2E 20       
-04137F 48 69 20 70 0151        db "Hi perpetuas inter se controversias habebant, quinam "
+0415D4 48 69 20 70 0151        db "Hi perpetuas inter se controversias habebant, quinam "
        65 72 70 65 
        74 75 61 73 
        20 69 6E 74 
@@ -3392,7 +3564,7 @@ PC     Output      Line
        2C 20 71 75 
        69 6E 61 6D 
        20          
-0413B4 61 6E 74 65 0152        db "anteferretur, omnibusque annis de locis summis "
+041609 61 6E 74 65 0152        db "anteferretur, omnibusque annis de locis summis "
        66 65 72 72 
        65 74 75 72 
        2C 20 6F 6D 
@@ -3404,15 +3576,15 @@ PC     Output      Line
        63 69 73 20 
        73 75 6D 6D 
        69 73 20    
-0413E3 73 69 6D 75 0153        db "simultatibus contendebant."
+041638 73 69 6D 75 0153        db "simultatibus contendebant."
        6C 74 61 74 
        69 62 75 73 
        20 63 6F 6E 
        74 65 6E 64 
        65 62 61 6E 
        74 2E       
-0413FD 0D 0A 0D 0A 0154        db "\r\n\r\n"
-041401 43 75 6D 20 0155        db "Cum acerrime ad munitiones pugnaretur, Pullo exclamat: "
+041652 0D 0A 0D 0A 0154        db "\r\n\r\n"
+041656 43 75 6D 20 0155        db "Cum acerrime ad munitiones pugnaretur, Pullo exclamat: "
        61 63 65 72 
        72 69 6D 65 
        20 61 64 20 
@@ -3426,7 +3598,7 @@ PC     Output      Line
        20 65 78 63 
        6C 61 6D 61 
        74 3A 20    
-041438 27 51 75 69 0156        db "'Quid dubitas, Vorene? Aut quem locum tuae virtutis "
+04168D 27 51 75 69 0156        db "'Quid dubitas, Vorene? Aut quem locum tuae virtutis "
        64 20 64 75 
        62 69 74 61 
        73 2C 20 56 
@@ -3439,7 +3611,7 @@ PC     Output      Line
        61 65 20 76 
        69 72 74 75 
        74 69 73 20 
-04146C 65 78 73 70 0157        db "exspectas?' Statim extra munitiones procedit, et ubi "
+0416C1 65 78 73 70 0157        db "exspectas?' Statim extra munitiones procedit, et ubi "
        65 63 74 61 
        73 3F 27 20 
        53 74 61 74 
@@ -3453,7 +3625,7 @@ PC     Output      Line
        2C 20 65 74 
        20 75 62 69 
        20          
-0414A1 68 6F 73 74 0158        db "hostes confertissimi sunt, irrumpit. Vorenus, "
+0416F6 68 6F 73 74 0158        db "hostes confertissimi sunt, irrumpit. Vorenus, "
        65 73 20 63 
        6F 6E 66 65 
        72 74 69 73 
@@ -3465,7 +3637,7 @@ PC     Output      Line
        20 56 6F 72 
        65 6E 75 73 
        2C 20       
-0414CF 65 78 69 73 0159        db "existimationem veritus, eum sequitur et tela conicit."
+041724 65 78 69 73 0159        db "existimationem veritus, eum sequitur et tela conicit."
        74 69 6D 61 
        74 69 6F 6E 
        65 6D 20 76 
@@ -3479,8 +3651,8 @@ PC     Output      Line
        20 63 6F 6E 
        69 63 69 74 
        2E          
-041504 0D 0A 0D 0A 0160        db "\r\n\r\n"
-041508 50 75 6C 6C 0161        db "Pullo gladio impeditus circumvenitur; Vorenus auxilium "
+041759 0D 0A 0D 0A 0160        db "\r\n\r\n"
+04175D 50 75 6C 6C 0161        db "Pullo gladio impeditus circumvenitur; Vorenus auxilium "
        6F 20 67 6C 
        61 64 69 6F 
        20 69 6D 70 
@@ -3494,7 +3666,7 @@ PC     Output      Line
        73 20 61 75 
        78 69 6C 69 
        75 6D 20    
-04153F 66 65 72 74 0162        db "fert et hostes propellit. Ambo, compluribus interfectis, "
+041794 66 65 72 74 0162        db "fert et hostes propellit. Ambo, compluribus interfectis, "
        20 65 74 20 
        68 6F 73 74 
        65 73 20 70 
@@ -3509,7 +3681,7 @@ PC     Output      Line
        72 66 65 63 
        74 69 73 2C 
        20          
-041578 63 75 6D 20 0163        db "cum summa laude intra munitiones redeunt. Sic fortuna "
+0417CD 63 75 6D 20 0163        db "cum summa laude intra munitiones redeunt. Sic fortuna "
        73 75 6D 6D 
        61 20 6C 61 
        75 64 65 20 
@@ -3523,7 +3695,7 @@ PC     Output      Line
        63 20 66 6F 
        72 74 75 6E 
        61 20       
-0415AE 69 6E 20 63 0164        db "in contentione utrumque versavit, ut uter utri auxilio "
+041803 69 6E 20 63 0164        db "in contentione utrumque versavit, ut uter utri auxilio "
        6F 6E 74 65 
        6E 74 69 6F 
        6E 65 20 75 
@@ -3537,7 +3709,7 @@ PC     Output      Line
        72 69 20 61 
        75 78 69 6C 
        69 6F 20    
-0415E5 66 75 65 72 0165        db "fuerit nec diiudicari posset, uter virtute anteferendus "
+04183A 66 75 65 72 0165        db "fuerit nec diiudicari posset, uter virtute anteferendus "
        69 74 20 6E 
        65 63 20 64 
        69 69 75 64 
@@ -3551,14 +3723,14 @@ PC     Output      Line
        6E 74 65 66 
        65 72 65 6E 
        64 75 73 20 
-04161D 76 69 64 65 0166        db "videretur."
+041872 76 69 64 65 0166        db "videretur."
        72 65 74 75 
        72 2E       
-041627 0D 0A 0D 0A 0167        db "\r\n\r\n", 0
+04187C 0D 0A 0D 0A 0167        db "\r\n\r\n", 0
        00          
-04162C             0168    
-04162C             0169    uxor_balnea:
-04162C 45 72 61 74 0170        db "Erat mulier, uxor Balnea, quae quinque viros tenuit sub vinculo "
+041881             0168    
+041881             0169    uxor_balnea:
+041881 45 72 61 74 0170        db "Erat mulier, uxor Balnea, quae quinque viros tenuit sub vinculo "
        20 6D 75 6C 
        69 65 72 2C 
        20 75 78 6F 
@@ -3574,7 +3746,7 @@ PC     Output      Line
        73 75 62 20 
        76 69 6E 63 
        75 6C 6F 20 
-04166C 6D 61 74 72 0171        db "matrimonii, una post alterum, et omnis vitam per amorem egit. "
+0418C1 6D 61 74 72 0171        db "matrimonii, una post alterum, et omnis vitam per amorem egit. "
        69 6D 6F 6E 
        69 69 2C 20 
        75 6E 61 20 
@@ -3590,7 +3762,7 @@ PC     Output      Line
        72 65 6D 20 
        65 67 69 74 
        2E 20       
-0416AA 4E 75 6C 6C 0172        db "Nulla mors amoris ipsam superavit. Cui rogatus est, vir novus, "
+0418FF 4E 75 6C 6C 0172        db "Nulla mors amoris ipsam superavit. Cui rogatus est, vir novus, "
        61 20 6D 6F 
        72 73 20 61 
        6D 6F 72 69 
@@ -3606,7 +3778,7 @@ PC     Output      Line
        76 69 72 20 
        6E 6F 76 75 
        73 2C 20    
-0416E9 64 65 20 6D 0173        db "de matrimonio. At narravit fabulam miram, magna et risum."
+04193E 64 65 20 6D 0173        db "de matrimonio. At narravit fabulam miram, magna et risum."
        61 74 72 69 
        6D 6F 6E 69 
        6F 2E 20 41 
@@ -3621,8 +3793,8 @@ PC     Output      Line
        65 74 20 72 
        69 73 75 6D 
        2E          
-041722 0D 0A 0D 0A 0174        db "\r\n\r\n"
-041726 41 64 65 6F 0175        db "Adeo fabula incepit: Vir nobilis, eques, in diebus Arthuri, errans "
+041977 0D 0A 0D 0A 0174        db "\r\n\r\n"
+04197B 41 64 65 6F 0175        db "Adeo fabula incepit: Vir nobilis, eques, in diebus Arthuri, errans "
        20 66 61 62 
        75 6C 61 20 
        69 6E 63 65 
@@ -3639,7 +3811,7 @@ PC     Output      Line
        72 69 2C 20 
        65 72 72 61 
        6E 73 20    
-041769 70 65 72 20 0176        db "per silvas obscuras, invenit puellam pulcherrimam. Sed, ah, homo "
+0419BE 70 65 72 20 0176        db "per silvas obscuras, invenit puellam pulcherrimam. Sed, ah, homo "
        73 69 6C 76 
        61 73 20 6F 
        62 73 63 75 
@@ -3656,7 +3828,7 @@ PC     Output      Line
        61 68 2C 20 
        68 6F 6D 6F 
        20          
-0417AA 6C 75 78 75 0177        db "luxuriae succubuit; deliquit eam contra voluntatem. Rex dedit "
+0419FF 6C 75 78 75 0177        db "luxuriae succubuit; deliquit eam contra voluntatem. Rex dedit "
        72 69 61 65 
        20 73 75 63 
        63 75 62 75 
@@ -3672,7 +3844,7 @@ PC     Output      Line
        52 65 78 20 
        64 65 64 69 
        74 20       
-0417E8 65 75 6D 20 0178        db "eum damnum multum, et iussit mortem. Regina tamen eius vitam "
+041A3D 65 75 6D 20 0178        db "eum damnum multum, et iussit mortem. Regina tamen eius vitam "
        64 61 6D 6E 
        75 6D 20 6D 
        75 6C 74 75 
@@ -3688,7 +3860,7 @@ PC     Output      Line
        75 73 20 76 
        69 74 61 6D 
        20          
-041825 73 65 72 76 0179        db "servavit, sed tantum si responsum verum ad quaestionem sciret: "
+041A7A 73 65 72 76 0179        db "servavit, sed tantum si responsum verum ad quaestionem sciret: "
        61 76 69 74 
        2C 20 73 65 
        64 20 74 61 
@@ -3704,7 +3876,7 @@ PC     Output      Line
        65 6D 20 73 
        63 69 72 65 
        74 3A 20    
-041864 27 51 75 69 0180        db "'Quid volunt mulieres vere?'. Ita iter periculosum cepit."
+041AB9 27 51 75 69 0180        db "'Quid volunt mulieres vere?'. Ita iter periculosum cepit."
        64 20 76 6F 
        6C 75 6E 74 
        20 6D 75 6C 
@@ -3719,9 +3891,9 @@ PC     Output      Line
        75 6D 20 63 
        65 70 69 74 
        2E          
-04189D 0D 0A 0D 0A 0181        db "\r\n\r\n"
-0418A1 00          0182        db 0
-0418A2 45 71 75 65 0183        db "Eques per terras erravit, quaerens responsum ab omnibus: damas "
+041AF2 0D 0A 0D 0A 0181        db "\r\n\r\n"
+041AF6 00          0182        db 0
+041AF7 45 71 75 65 0183        db "Eques per terras erravit, quaerens responsum ab omnibus: damas "
        73 20 70 65 
        72 20 74 65 
        72 72 61 73 
@@ -3737,7 +3909,7 @@ PC     Output      Line
        62 75 73 3A 
        20 64 61 6D 
        61 73 20    
-0418E1 64 69 76 61 0184        db "divas, ancillas, et vetulas. Quis rogavit, varia respondit; nescivit "
+041B36 64 69 76 61 0184        db "divas, ancillas, et vetulas. Quis rogavit, varia respondit; nescivit "
        73 2C 20 61 
        6E 63 69 6C 
        6C 61 73 2C 
@@ -3755,7 +3927,7 @@ PC     Output      Line
        6E 65 73 63 
        69 76 69 74 
        20          
-041926 76 65 72 65 0185        db "vere, quid volunt mulieres, donec foemina vetus decrepita, sed "
+041B7B 76 65 72 65 0185        db "vere, quid volunt mulieres, donec foemina vetus decrepita, sed "
        2C 20 71 75 
        69 64 20 76 
        6F 6C 75 6E 
@@ -3771,7 +3943,7 @@ PC     Output      Line
        65 70 69 74 
        61 2C 20 73 
        65 64 20    
-041965 73 61 70 69 0186        db "sapientia abundans, obtulit ei responsum rectum. Pretium erat "
+041BBA 73 61 70 69 0186        db "sapientia abundans, obtulit ei responsum rectum. Pretium erat "
        65 6E 74 69 
        61 20 61 62 
        75 6E 64 61 
@@ -3787,7 +3959,7 @@ PC     Output      Line
        74 69 75 6D 
        20 65 72 61 
        74 20       
-0419A3 70 61 72 76 0187        db "parvulum, vel, sic putavit ille. Nam vetula rogavit quod ipse "
+041BF8 70 61 72 76 0187        db "parvulum, vel, sic putavit ille. Nam vetula rogavit quod ipse "
        75 6C 75 6D 
        2C 20 76 65 
        6C 2C 20 73 
@@ -3803,7 +3975,7 @@ PC     Output      Line
        71 75 6F 64 
        20 69 70 73 
        65 20       
-0419E1 65 61 6D 20 0188        db "eam uxoraret. Illum hoc taeduit, sed voto facto, promissum tenuit."
+041C36 65 61 6D 20 0188        db "eam uxoraret. Illum hoc taeduit, sed voto facto, promissum tenuit."
        75 78 6F 72 
        61 72 65 74 
        2E 20 49 6C 
@@ -3820,8 +3992,8 @@ PC     Output      Line
        75 6D 20 74 
        65 6E 75 69 
        74 2E       
-041A23 0D 0A 0D 0A 0189        db "\r\n\r\n"
-041A27 49 6E 20 6E 0190        db "In nuptiali die, vetula dixit: 'Mulieres volunt dominari in vita; "
+041C78 0D 0A 0D 0A 0189        db "\r\n\r\n"
+041C7C 49 6E 20 6E 0190        db "In nuptiali die, vetula dixit: 'Mulieres volunt dominari in vita; "
        75 70 74 69 
        61 6C 69 20 
        64 69 65 2C 
@@ -3838,7 +4010,7 @@ PC     Output      Line
        20 69 6E 20 
        76 69 74 61 
        3B 20       
-041A69 76 65 6C 69 0191        db "velint regnum suum tenere, dominam esse in domo et anima "
+041CBE 76 65 6C 69 0191        db "velint regnum suum tenere, dominam esse in domo et anima "
        6E 74 20 72 
        65 67 6E 75 
        6D 20 73 75 
@@ -3853,7 +4025,7 @@ PC     Output      Line
        65 74 20 61 
        6E 69 6D 61 
        20          
-041AA2 73 75 61 20 0192        db "sua libere vivere.' Hoc scivit verum esse, et licentiam in vitam "
+041CF7 73 75 61 20 0192        db "sua libere vivere.' Hoc scivit verum esse, et licentiam in vitam "
        6C 69 62 65 
        72 65 20 76 
        69 76 65 72 
@@ -3870,7 +4042,7 @@ PC     Output      Line
        69 6E 20 76 
        69 74 61 6D 
        20          
-041AE3 69 70 73 61 0193        db "ipsam dedit ut ipsa dominaretur. Tunc mutatio mirabilis facta!"
+041D38 69 70 73 61 0193        db "ipsam dedit ut ipsa dominaretur. Tunc mutatio mirabilis facta!"
        6D 20 64 65 
        64 69 74 20 
        75 74 20 69 
@@ -3886,8 +4058,8 @@ PC     Output      Line
        6C 69 73 20 
        66 61 63 74 
        61 21       
-041B21 0D 0A 0D 0A 0194        db "\r\n\r\n"
-041B25 56 65 74 75 0195        db "Vetula ipsa repente pulcherrima facta est, iuvenis mulier dulcis "
+041D76 0D 0A 0D 0A 0194        db "\r\n\r\n"
+041D7A 56 65 74 75 0195        db "Vetula ipsa repente pulcherrima facta est, iuvenis mulier dulcis "
        6C 61 20 69 
        70 73 61 20 
        72 65 70 65 
@@ -3904,7 +4076,7 @@ PC     Output      Line
        72 20 64 75 
        6C 63 69 73 
        20          
-041B66 61 74 71 75 0196        db "atque praeclara. Et eques tandem laetus fuit; ex illo die beatus, "
+041DBB 61 74 71 75 0196        db "atque praeclara. Et eques tandem laetus fuit; ex illo die beatus, "
        65 20 70 72 
        61 65 63 6C 
        61 72 61 2E 
@@ -3921,7 +4093,7 @@ PC     Output      Line
        65 20 62 65 
        61 74 75 73 
        2C 20       
-041BA8 71 75 6F 64 0197        db "quod sibi consortem novam benigneque passus est dominam. "
+041DFD 71 75 6F 64 0197        db "quod sibi consortem novam benigneque passus est dominam. "
        20 73 69 62 
        69 20 63 6F 
        6E 73 6F 72 
@@ -3936,7 +4108,7 @@ PC     Output      Line
        64 6F 6D 69 
        6E 61 6D 2E 
        20          
-041BE1 41 6D 6F 72 0198        db "Amorem suum vera vidit: non tantum pulchritudinem quaesivit "
+041E36 41 6D 6F 72 0198        db "Amorem suum vera vidit: non tantum pulchritudinem quaesivit "
        65 6D 20 73 
        75 75 6D 20 
        76 65 72 61 
@@ -3951,7 +4123,7 @@ PC     Output      Line
        6D 20 71 75 
        61 65 73 69 
        76 69 74 20 
-041C1D 73 65 64 20 0199        db "sed libertatem suam ac respectum quae amica vere debet."
+041E72 73 65 64 20 0199        db "sed libertatem suam ac respectum quae amica vere debet."
        6C 69 62 65 
        72 74 61 74 
        65 6D 20 73 
@@ -3965,8 +4137,8 @@ PC     Output      Line
        76 65 72 65 
        20 64 65 62 
        65 74 2E    
-041C54 0D 0A 0D 0A 0200        db "\r\n\r\n"
-041C58 53 69 63 20 0201        db "Sic uxor Balnea, fabulam finiens, risit amice, exemplo vitae suae. "
+041EA9 0D 0A 0D 0A 0200        db "\r\n\r\n"
+041EAD 53 69 63 20 0201        db "Sic uxor Balnea, fabulam finiens, risit amice, exemplo vitae suae. "
        75 78 6F 72 
        20 42 61 6C 
        6E 65 61 2C 
@@ -3983,7 +4155,7 @@ PC     Output      Line
        69 74 61 65 
        20 73 75 61 
        65 2E 20    
-041C9B 49 70 73 61 0202        db "Ipsa, quinque viris domitam, vel audaciam habuit de vita docere. "
+041EF0 49 70 73 61 0202        db "Ipsa, quinque viris domitam, vel audaciam habuit de vita docere. "
        2C 20 71 75 
        69 6E 71 75 
        65 20 76 69 
@@ -4000,7 +4172,7 @@ PC     Output      Line
        20 64 6F 63 
        65 72 65 2E 
        20          
-041CDC 4C 69 63 65 0203        db "Licet risum multum ferre, fabula ipsa veritatem sapientem tenet: "
+041F31 4C 69 63 65 0203        db "Licet risum multum ferre, fabula ipsa veritatem sapientem tenet: "
        74 20 72 69 
        73 75 6D 20 
        6D 75 6C 74 
@@ -4017,7 +4189,7 @@ PC     Output      Line
        6D 20 74 65 
        6E 65 74 3A 
        20          
-041D1D 69 70 73 61 0204        db "ipsa vita est dulcis, et in amore pari dominatio verum gaudium."
+041F72 69 70 73 61 0204        db "ipsa vita est dulcis, et in amore pari dominatio verum gaudium."
        20 76 69 74 
        61 20 65 73 
        74 20 64 75 
@@ -4033,11 +4205,11 @@ PC     Output      Line
        75 6D 20 67 
        61 75 64 69 
        75 6D 2E    
-041D5C 0D 0A 0D 0A 0205        db "\r\n\r\n"
-041D60 00          0206        db 0
-041D61             0207    
-041D61             0208    wife_of_bath:
-041D61 53 68 65 20 0209        db "She was a woman, wife of Bath, who held five husbands in her "
+041FB1 0D 0A 0D 0A 0205        db "\r\n\r\n"
+041FB5 00          0206        db 0
+041FB6             0207    
+041FB6             0208    wife_of_bath:
+041FB6 53 68 65 20 0209        db "She was a woman, wife of Bath, who held five husbands in her "
        77 61 73 20 
        61 20 77 6F 
        6D 61 6E 2C 
@@ -4053,7 +4225,7 @@ PC     Output      Line
        73 20 69 6E 
        20 68 65 72 
        20          
-041D9E 6D 61 74 72 0210        db "matrimonial chains, one after another, and lived all through love. "
+041FF3 6D 61 74 72 0210        db "matrimonial chains, one after another, and lived all through love. "
        69 6D 6F 6E 
        69 61 6C 20 
        63 68 61 69 
@@ -4070,7 +4242,7 @@ PC     Output      Line
        6F 75 67 68 
        20 6C 6F 76 
        65 2E 20    
-041DE1 4E 6F 20 66 0211        db "No fear of loss could conquer her. When a new man asked her "
+042036 4E 6F 20 66 0211        db "No fear of loss could conquer her. When a new man asked her "
        65 61 72 20 
        6F 66 20 6C 
        6F 73 73 20 
@@ -4085,7 +4257,7 @@ PC     Output      Line
        6E 20 61 73 
        6B 65 64 20 
        68 65 72 20 
-041E1D 66 6F 72 20 0212        db "for marriage, she told him a marvelous tale, great and merry."
+042072 66 6F 72 20 0212        db "for marriage, she told him a marvelous tale, great and merry."
        6D 61 72 72 
        69 61 67 65 
        2C 20 73 68 
@@ -4101,8 +4273,8 @@ PC     Output      Line
        6E 64 20 6D 
        65 72 72 79 
        2E          
-041E5A 0D 0A 0D 0A 0213        db "\r\n\r\n"
-041E5E 53 6F 20 74 0214        db "So the tale begins: A noble knight, in Arthur's days, wandered "
+0420AF 0D 0A 0D 0A 0213        db "\r\n\r\n"
+0420B3 53 6F 20 74 0214        db "So the tale begins: A noble knight, in Arthur's days, wandered "
        68 65 20 74 
        61 6C 65 20 
        62 65 67 69 
@@ -4118,7 +4290,7 @@ PC     Output      Line
        2C 20 77 61 
        6E 64 65 72 
        65 64 20    
-041E9D 74 68 72 6F 0215        db "through shadowed woods and found a lovely young maiden. Alas, "
+0420F2 74 68 72 6F 0215        db "through shadowed woods and found a lovely young maiden. Alas, "
        75 67 68 20 
        73 68 61 64 
        6F 77 65 64 
@@ -4134,7 +4306,7 @@ PC     Output      Line
        65 6E 2E 20 
        41 6C 61 73 
        2C 20       
-041EDB 74 68 65 20 0216        db "the man fell to his lust and wronged her against her will. The king "
+042130 74 68 65 20 0216        db "the man fell to his lust and wronged her against her will. The king "
        6D 61 6E 20 
        66 65 6C 6C 
        20 74 6F 20 
@@ -4151,7 +4323,7 @@ PC     Output      Line
        6C 2E 20 54 
        68 65 20 6B 
        69 6E 67 20 
-041F1F 73 65 6E 74 0217        db "sentenced him to death, but the queen spared his life, if only he "
+042174 73 65 6E 74 0217        db "sentenced him to death, but the queen spared his life, if only he "
        65 6E 63 65 
        64 20 68 69 
        6D 20 74 6F 
@@ -4168,7 +4340,7 @@ PC     Output      Line
        66 20 6F 6E 
        6C 79 20 68 
        65 20       
-041F61 63 6F 75 6C 0218        db "could answer one true question: 'What do women truly want?' So, "
+0421B6 63 6F 75 6C 0218        db "could answer one true question: 'What do women truly want?' So, "
        64 20 61 6E 
        73 77 65 72 
        20 6F 6E 65 
@@ -4184,15 +4356,15 @@ PC     Output      Line
        20 77 61 6E 
        74 3F 27 20 
        53 6F 2C 20 
-041FA1 68 65 20 62 0219        db "he began a perilous quest."
+0421F6 68 65 20 62 0219        db "he began a perilous quest."
        65 67 61 6E 
        20 61 20 70 
        65 72 69 6C 
        6F 75 73 20 
        71 75 65 73 
        74 2E       
-041FBB 0D 0A 0D 0A 0220        db "\r\n\r\n"
-041FBF 54 68 65 20 0221        db "The knight roamed far, seeking answers from all: fine ladies, "
+042210 0D 0A 0D 0A 0220        db "\r\n\r\n"
+042214 54 68 65 20 0221        db "The knight roamed far, seeking answers from all: fine ladies, "
        6B 6E 69 67 
        68 74 20 72 
        6F 61 6D 65 
@@ -4208,7 +4380,7 @@ PC     Output      Line
        65 20 6C 61 
        64 69 65 73 
        2C 20       
-041FFD 6D 61 69 64 0222        db "maids, even old women. Each gave him something different; he "
+042252 6D 61 69 64 0222        db "maids, even old women. Each gave him something different; he "
        73 2C 20 65 
        76 65 6E 20 
        6F 6C 64 20 
@@ -4224,7 +4396,7 @@ PC     Output      Line
        72 65 6E 74 
        3B 20 68 65 
        20          
-04203A 68 61 64 20 0223        db "had no true answer, until a shriveled crone, wise in knowledge, "
+04228F 68 61 64 20 0223        db "had no true answer, until a shriveled crone, wise in knowledge, "
        6E 6F 20 74 
        72 75 65 20 
        61 6E 73 77 
@@ -4240,7 +4412,7 @@ PC     Output      Line
        20 6B 6E 6F 
        77 6C 65 64 
        67 65 2C 20 
-04207A 6F 66 66 65 0224        db "offered him the right response. But her price was small, or so he "
+0422CF 6F 66 66 65 0224        db "offered him the right response. But her price was small, or so he "
        72 65 64 20 
        68 69 6D 20 
        74 68 65 20 
@@ -4257,7 +4429,7 @@ PC     Output      Line
        20 6F 72 20 
        73 6F 20 68 
        65 20       
-0420BC 74 68 6F 75 0225        db "thought--for the old woman demanded he wed her. Loath, but "
+042311 74 68 6F 75 0225        db "thought--for the old woman demanded he wed her. Loath, but "
        67 68 74 2D 
        2D 66 6F 72 
        20 74 68 65 
@@ -4272,7 +4444,7 @@ PC     Output      Line
        4C 6F 61 74 
        68 2C 20 62 
        75 74 20    
-0420F7 62 6F 75 6E 0226        db "bound by his vow, he kept his word."
+04234C 62 6F 75 6E 0226        db "bound by his vow, he kept his word."
        64 20 62 79 
        20 68 69 73 
        20 76 6F 77 
@@ -4281,8 +4453,8 @@ PC     Output      Line
        74 20 68 69 
        73 20 77 6F 
        72 64 2E    
-04211A 0D 0A 0D 0A 0227        db "\r\n\r\n"
-04211E 4F 6E 20 74 0228        db "On their wedding day, the crone said: 'Women wish for mastery, "
+04236F 0D 0A 0D 0A 0227        db "\r\n\r\n"
+042373 4F 6E 20 74 0228        db "On their wedding day, the crone said: 'Women wish for mastery, "
        68 65 69 72 
        20 77 65 64 
        64 69 6E 67 
@@ -4298,7 +4470,7 @@ PC     Output      Line
        72 20 6D 61 
        73 74 65 72 
        79 2C 20    
-04215D 74 6F 20 68 0229        db "to hold their realm, to be the lady at home and in heart, and "
+0423B2 74 6F 20 68 0229        db "to hold their realm, to be the lady at home and in heart, and "
        6F 6C 64 20 
        74 68 65 69 
        72 20 72 65 
@@ -4314,7 +4486,7 @@ PC     Output      Line
        65 61 72 74 
        2C 20 61 6E 
        64 20       
-04219B 74 6F 20 6C 0230        db "to live free in spirit.' He knew this to be true, so he gave her "
+0423F0 74 6F 20 6C 0230        db "to live free in spirit.' He knew this to be true, so he gave her "
        69 76 65 20 
        66 72 65 65 
        20 69 6E 20 
@@ -4331,7 +4503,7 @@ PC     Output      Line
        67 61 76 65 
        20 68 65 72 
        20          
-0421DC 66 72 65 65 0231        db "freedom in their life together. Then, a wondrous change took place!"
+042431 66 72 65 65 0231        db "freedom in their life together. Then, a wondrous change took place!"
        64 6F 6D 20 
        69 6E 20 74 
        68 65 69 72 
@@ -4348,8 +4520,8 @@ PC     Output      Line
        74 6F 6F 6B 
        20 70 6C 61 
        63 65 21    
-04221F 0D 0A 0D 0A 0232        db "\r\n\r\n"
-042223 54 68 65 20 0233        db "The old crone transformed, becoming young, sweet, and fair. "
+042474 0D 0A 0D 0A 0232        db "\r\n\r\n"
+042478 54 68 65 20 0233        db "The old crone transformed, becoming young, sweet, and fair. "
        6F 6C 64 20 
        63 72 6F 6E 
        65 20 74 72 
@@ -4364,7 +4536,7 @@ PC     Output      Line
        2C 20 61 6E 
        64 20 66 61 
        69 72 2E 20 
-04225F 54 68 65 20 0234        db "The knight was overjoyed; from that day forth he was blessed, "
+0424B4 54 68 65 20 0234        db "The knight was overjoyed; from that day forth he was blessed, "
        6B 6E 69 67 
        68 74 20 77 
        61 73 20 6F 
@@ -4380,7 +4552,7 @@ PC     Output      Line
        20 62 6C 65 
        73 73 65 64 
        2C 20       
-04229D 66 6F 72 20 0235        db "for his new bride was both noble and gentle. In her, he saw real "
+0424F2 66 6F 72 20 0235        db "for his new bride was both noble and gentle. In her, he saw real "
        68 69 73 20 
        6E 65 77 20 
        62 72 69 64 
@@ -4397,7 +4569,7 @@ PC     Output      Line
        73 61 77 20 
        72 65 61 6C 
        20          
-0422DE 6C 6F 76 65 0236        db "love: not just beauty, but the freedom and respect a true partner "
+042533 6C 6F 76 65 0236        db "love: not just beauty, but the freedom and respect a true partner "
        3A 20 6E 6F 
        74 20 6A 75 
        73 74 20 62 
@@ -4414,11 +4586,11 @@ PC     Output      Line
        65 20 70 61 
        72 74 6E 65 
        72 20       
-042320 64 65 73 65 0237        db "deserves."
+042575 64 65 73 65 0237        db "deserves."
        72 76 65 73 
        2E          
-042329 0D 0A 0D 0A 0238        db "\r\n\r\n"
-04232D 54 68 75 73 0239        db "Thus, the wife of Bath, ending her tale, laughed fondly, with "
+04257E 0D 0A 0D 0A 0238        db "\r\n\r\n"
+042582 54 68 75 73 0239        db "Thus, the wife of Bath, ending her tale, laughed fondly, with "
        2C 20 74 68 
        65 20 77 69 
        66 65 20 6F 
@@ -4434,7 +4606,7 @@ PC     Output      Line
        64 6C 79 2C 
        20 77 69 74 
        68 20       
-04236B 61 20 6C 65 0240        db "a lesson from her own life. With five husbands tamed, she had "
+0425C0 61 20 6C 65 0240        db "a lesson from her own life. With five husbands tamed, she had "
        73 73 6F 6E 
        20 66 72 6F 
        6D 20 68 65 
@@ -4450,7 +4622,7 @@ PC     Output      Line
        2C 20 73 68 
        65 20 68 61 
        64 20       
-0423A9 64 61 72 65 0241        db "dared to teach on life and love. Though jesting, her tale held "
+0425FE 64 61 72 65 0241        db "dared to teach on life and love. Though jesting, her tale held "
        64 20 74 6F 
        20 74 65 61 
        63 68 20 6F 
@@ -4466,7 +4638,7 @@ PC     Output      Line
        20 74 61 6C 
        65 20 68 65 
        6C 64 20    
-0423E8 77 69 73 64 0242        db "wisdom: life is sweet, and in equal love, true joy is shared."
+04263D 77 69 73 64 0242        db "wisdom: life is sweet, and in equal love, true joy is shared."
        6F 6D 3A 20 
        6C 69 66 65 
        20 69 73 20 
@@ -4482,5 +4654,5 @@ PC     Output      Line
        73 20 73 68 
        61 72 65 64 
        2E          
-042425 0D 0A 0D 0A 0243        db "\r\n\r\n"
-042429 00          0244        db 0
+04267A 0D 0A 0D 0A 0243        db "\r\n\r\n"
+04267E 00          0244        db 0
