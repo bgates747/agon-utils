@@ -1055,20 +1055,9 @@ PyObject* convert_to_palette(PyObject *self, PyObject *args, PyObject *kwargs) {
     uint8_t transparent_rgb[3] = {255, 255, 255};  // Default to white
     bool has_transparent_color = false;
 
-    // If a transparent color is provided, handle the 4-tuple format (R, G, B, A)
-    if (transparent_color) {
-        if (!PyTuple_Check(transparent_color) || PyTuple_Size(transparent_color) != 4) {
-            PyErr_SetString(PyExc_TypeError, "transparent_color must be a tuple of 4 integers (R, G, B, A)");
-            free(image_data);
-            free_palette(&palette);
-            return NULL;
-        }
+    if (transparent_color && PyTuple_Check(transparent_color) && PyTuple_Size(transparent_color) == 4) {
         int alpha = (int)PyLong_AsLong(PyTuple_GetItem(transparent_color, 3));
-        if (alpha == 0) {
-            // If alpha is 0, we skip transparency handling
-            has_transparent_color = false;
-        } else {
-            // Otherwise we use the RGB values for transparency
+        if (alpha > 0) {
             for (int i = 0; i < 3; ++i) {
                 transparent_rgb[i] = (uint8_t)PyLong_AsLong(PyTuple_GetItem(transparent_color, i));
             }
@@ -1108,6 +1097,93 @@ PyObject* convert_to_palette(PyObject *self, PyObject *args, PyObject *kwargs) {
     free(image_data);
     free_palette(&palette);
     Py_RETURN_NONE;
+}
+
+PyObject* convert_to_palette_bytes(PyObject *self, PyObject *args, PyObject *kwargs) {
+    Py_buffer image_data;
+    int width, height;
+    const char *palette_file;
+    const char *method;
+    PyObject *transparent_color = NULL;
+
+    static char *kwlist[] = {"image_data", "width", "height", "palette_file", "method", "transparent_color", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "y*iiss|O", kwlist, 
+            &image_data, &width, &height, &palette_file, &method, &transparent_color)) {
+        return NULL;
+    }
+    
+    // Ensure width and height are valid
+    if (width <= 0 || height <= 0) {
+        PyErr_SetString(PyExc_ValueError, "Invalid image dimensions");
+        PyBuffer_Release(&image_data);
+        return NULL;
+    }
+
+    // Load the palette
+    Palette palette;
+    if (load_gimp_palette(palette_file, &palette) != 0) {
+        PyErr_SetString(PyExc_IOError, "Failed to load palette file");
+        PyBuffer_Release(&image_data);
+        return NULL;
+    }
+
+    // Handle optional transparent color
+    uint8_t transparent_rgb[3] = {255, 255, 255};  // Default to white
+    bool has_transparent_color = false;
+
+    if (transparent_color && PyTuple_Check(transparent_color) && PyTuple_Size(transparent_color) == 4) {
+        int alpha = (int)PyLong_AsLong(PyTuple_GetItem(transparent_color, 3));
+        if (alpha > 0) {
+            for (int i = 0; i < 3; ++i) {
+                transparent_rgb[i] = (uint8_t)PyLong_AsLong(PyTuple_GetItem(transparent_color, i));
+            }
+            has_transparent_color = true;
+        }
+    }
+
+    // Allocate buffer for output
+    size_t img_size = width * height * 4;  // RGBA format
+    uint8_t *output_data = (uint8_t *)malloc(img_size);
+    if (!output_data) {
+        PyErr_SetString(PyExc_MemoryError, "Failed to allocate output buffer");
+        PyBuffer_Release(&image_data);
+        free_palette(&palette);
+        return NULL;
+    }
+
+    // Copy input data to avoid modifying the original buffer
+    memcpy(output_data, image_data.buf, img_size);
+
+    // Apply color conversion or dithering method
+    if (strcasecmp(method, "RGB") == 0) {
+        convert_image_rgb(output_data, width, height, &palette, has_transparent_color, transparent_rgb);
+    } else if (strcasecmp(method, "HSV") == 0) {
+        convert_image_hsv(output_data, width, height, &palette, has_transparent_color, transparent_rgb);
+    } else if (strcasecmp(method, "CMYK") == 0) {
+        convert_image_cmyk(output_data, width, height, &palette, has_transparent_color, transparent_rgb);
+    } else if (strcasecmp(method, "atkinson") == 0) {
+        dither_atkinson(output_data, width, height, &palette);
+    } else if (strcasecmp(method, "bayer") == 0) {
+        dither_bayer(output_data, width, height, &palette);
+    } else if (strcasecmp(method, "floyd") == 0) {
+        dither_floyd_steinberg(output_data, width, height, &palette);
+    } else {
+        PyErr_SetString(PyExc_ValueError, "Invalid method. Must be 'RGB', 'HSV', 'CMYK', 'bayer', or 'floyd'");
+        free(output_data);
+        PyBuffer_Release(&image_data);
+        free_palette(&palette);
+        return NULL;
+    }
+
+    // Wrap the output data in a Python bytes object
+    PyObject *result = PyBytes_FromStringAndSize((char *)output_data, img_size);
+
+    // Clean up
+    free(output_data);
+    PyBuffer_Release(&image_data);
+    free_palette(&palette);
+
+    return result;
 }
 
 void quantize_to_rgb565(uint8_t *image_data, int width, int height) {

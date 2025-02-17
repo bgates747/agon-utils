@@ -1,0 +1,260 @@
+GIMP Palette
+Name: VRGB2222
+Columns: 16
+#
+  0   0   0 Black
+  0   0  21 Natural Black
+  0   0  43 Black Rock
+  0   0  64 Black Rock
+  0  21   0 Power Black
+  0  21  21 Tech Black
+  0  21  43 Black Rock
+  0  21  64 Oxford Blue
+  0  43   0 Dark Green
+  0  43  21 Dark Green
+  0  43  43 Peacock
+  0  43  64 Peacock
+  0  64   0 Up Forest Green
+  0  64  21 Up Forest Green
+  0  64  43 British Racing Green
+  0  64  64 Rich Black
+ 21   0   0 Vampire Black
+ 21   0  21 Black Magic
+ 21   0  43 Gothic Grape
+ 21   0  64 Denim
+ 21  21   0 Soot
+ 21  21  21 Dull Black
+ 21  21  43 Black Denim
+ 21  21  64 Denim
+ 21  43   0 Brown Oil
+ 21  43  21 Dark Jungle Green
+ 21  43  43 Alien Black
+ 21  43  64 Denim
+ 21  64   0 Lincoln Green
+ 21  64  21 Myrtle
+ 21  64  43 Medium Jungle Green
+ 21  64  64 Msu Green
+ 43   0   0 Dark Chocolate
+ 43   0  21 Deep Wine
+ 43   0  43 Deep Wine
+ 43   0  64 Eggplant
+ 43  21   0 Dark Chocolate
+ 43  21  21 Seal Brown
+ 43  21  43 Eggplant
+ 43  21  64 Dark Purple
+ 43  43   0 Carob
+ 43  43  21 Charcoal
+ 43  43  43 Charleston Green
+ 43  43  64 Gunmetal
+ 43  64   0 Juniper
+ 43  64  21 Myrtle
+ 43  64  43 Myrtle
+ 43  64  64 Spruce
+ 64   0   0 Bulgarian Rose
+ 64   0  21 Dark Mulberry
+ 64   0  43 Dark Mulberry
+ 64   0  64 Eggplant
+ 64  21   0 Syrup
+ 64  21  21 Dark Sienna
+ 64  21  43 Sangria Purple
+ 64  21  64 Dark Purple
+ 64  43   0 Mocha
+ 64  43  21 Walnut
+ 64  43  43 Bistre
+ 64  43  64 Shadow
+ 64  64   0 Juniper
+ 64  64  21 Roasted Coffee
+ 64  64  43 Taupe
+ 64  64  64 Anchor
+  8   8   8 Grease
+  8   8  51 Black Rock
+  8   8  93 Navy
+  8   8 136 Phthalo Blue
+  8  51   8 Dark Green
+  8  51  51 Peacock
+  8  51  93 Astros Navy
+  8  51 136 Dark Powder Blue
+  8  93   8 Pakistan Green
+  8  93  51 Castleton Green
+  8  93  93 Ocean
+  8  93 136 Imperial Blue
+  8 136   8 Emerald
+  8 136  51 North Texas Green
+  8 136  93 Tropical Rainforest
+  8 136 136 Dark Cyan
+ 51   8   8 Dark Chocolate
+ 51   8  51 Eggplant
+ 51   8  93 Indigo
+ 51   8 136 Persian Indigo
+ 51  51   8 Mocha
+ 51  51  51 Pebble
+ 51  51  93 Dark Slate
+ 51  51 136 Dark Slate Blue
+ 51  93   8 Juniper
+ 51  93  51 Basil
+ 51  93  93 Dark Slate Gray
+ 51  93 136 B’Dazzled
+ 51 136   8 Napier Green
+ 51 136  51 Forest Green
+ 51 136  93 Sea Green
+ 51 136 136 Teal Blue
+ 93   8   8 Garnet
+ 93   8  51 Boysenberry
+ 93   8  93 Pompadour
+ 93   8 136 Indigo
+ 93  51   8 Gingerbread
+ 93  51  51 Grape
+ 93  51  93 Dark Byzantium
+ 93  51 136 Ksu Purple
+ 93  93   8 Field Drab
+ 93  93  51 Dark Olive Green
+ 93  93  93 Scorpion
+ 93  93 136 Ultra Violet
+ 93 136   8 Avocado
+ 93 136  51 Pickle
+ 93 136  93 Reseda Green
+ 93 136 136 Stone
+136   8   8 Scarlet
+136   8  51 Burgundy
+136   8  93 Pompadour
+136   8 136 Mardi Gras
+136  51   8 Amber
+136  51  51 Burnt Umber
+136  51  93 Boysenberry
+136  51 136 Lipstick Stain
+136  93   8 Golden Brown
+136  93  51 Peanut Brown
+136  93  93 Rose Taupe
+136  93 136 Pomp And Power
+136 136   8 Heart Gold
+136 136  51 Dark Tan
+136 136  93 Shadow
+136 136 136 Taupe Gray
+ 16  16  16 Onyx
+ 16  16  80 Braves Navy
+ 16  16 144 Ultramarine
+ 16  16 208 Medium Blue
+ 16  80  16 Lincoln Green
+ 16  80  80 Midnight Green
+ 16  80 144 Yale Blue
+ 16  80 208 Sapphire
+ 16 144  16 India Green
+ 16 144  80 Shamrock Green
+ 16 144 144 Dark Cyan
+ 16 144 208 Rich Electric Blue
+ 16 208  16 Shamrock
+ 16 208  80 Malachite
+ 16 208 144 Caribbean Green
+ 16 208 208 Robin'S Egg Blue
+ 80  16  16 Wine
+ 80  16  80 Tyrian Purple
+ 80  16 144 Indigo
+ 80  16 208 Han Purple
+ 80  80  16 Army Green
+ 80  80  80 Liver
+ 80  80 144 Ultra Violet
+ 80  80 208 Iris
+ 80 144  16 Avocado
+ 80 144  80 Fern Green
+ 80 144 144 Turkish Blue
+ 80 144 208 Celestial Blue
+ 80 208  16 Kelly Green
+ 80 208  80 Fern
+ 80 208 144 Shamrock
+ 80 208 208 Medium Turquoise
+144  16  16 Scarlet
+144  16  80 Strong Magenta
+144  16 144 Dark Magenta
+144  16 208 Dark Violet
+144  80  16 Saddle Brown
+144  80  80 Rose Taupe
+144  80 144 Lipstick Stain
+144  80 208 Deep Lilac
+144 144  16 Heart Gold
+144 144  80 Dark Tan
+144 144 144 Vintage Gray
+144 144 208 Blue Bell
+144 208  16 Apple Green
+144 208  80 Olive
+144 208 144 Dark Sea Green
+144 208 208 Pale Robin Egg Blue
+208  16  16 Venetian Red
+208  16  80 Debian Red
+208  16 144 Medium Violet Red
+208  16 208 Deep Magenta
+208  80  16 Squash
+208  80  80 Dark Terra Cotta
+208  80 144 Mulberry
+208  80 208 Deep Fuchsia
+208 144  16 Dijon
+208 144  80 Persian Orange
+208 144 144 Puce
+208 144 208 Pastel Violet
+208 208  16 Citrine
+208 208  80 June Bud
+208 208 144 Medium Spring Bud
+208 208 208 Light Gray
+ 24  24  24 Metropolis
+ 24  24 109 Midnight Blue
+ 24  24 195 Azure
+ 24  24 255 Blue
+ 24 109  24 Forest Green
+ 24 109 109 Blue Sapphire
+ 24 109 195 Denim
+ 24 109 255 Brandeis Blue
+ 24 195  24 Shamrock
+ 24 195 109 Jade Green
+ 24 195 195 Robin'S Egg Blue
+ 24 195 255 Spiro Disco Ball
+ 24 255  24 Neon Green
+ 24 255 109 Guppie Green
+ 24 255 195 Bright Turquoise
+ 24 255 255 Aqua
+109  24  24 Persian Plum
+109  24 109 Palatinate
+109  24 195 Grape Color
+109  24 255 Electric Indigo
+109 109  24 Field Drab
+109 109 109 Smokey Gray
+109 109 195 Toolbox
+109 109 255 Medium Slate Blue
+109 195  24 Pear
+109 195 109 Mantis
+109 195 195 Sky
+109 195 255 Maya Blue
+109 255  24 Bright Green
+109 255 109 Screamin Green
+109 255 195 Aquamarine
+109 255 255 Electric Blue
+195  24  24 Lava
+195  24 109 Dogwood Rose
+195  24 195 Deep Magenta
+195  24 255 Electric Purple
+195 109  24 Chocolate
+195 109 109 Fuzzy Wuzzy
+195 109 195 Rich Lilac
+195 109 255 Medium Orchid
+195 195  24 Lemon Curry
+195 195 109 Dark Khaki
+195 195 195 Silver
+195 195 255 Lavender Blue
+195 255  24 Lemon Lime
+195 255 109 Inchworm
+195 255 195 Tea Green
+195 255 255 Celeste
+255  24  24 Scarlet
+255  24 109 Awesome
+255  24 195 Shocking Pink
+255  24 255 Magenta
+255 109  24 Pumpkin
+255 109 109 Pastel Red
+255 109 195 Neon Pink
+255 109 255 Ultra Pink
+255 195  24 Mikado Yellow
+255 195 109 Topaz
+255 195 195 Pink
+255 195 255 Brilliant Lavender
+255 255  24 Laser Lemon
+255 255 109 Pastel Yellow
+255 255 195 Lemon Chiffon
+255 255 255 White

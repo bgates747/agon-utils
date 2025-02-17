@@ -1,0 +1,260 @@
+GIMP Palette
+Name: CMYK2222
+Columns: 16
+#
+255 255 255 White
+255 255 169 Canary
+255 255  84 Lemon Yellow
+255 255   0 Electric Yellow
+255 169 255 Brilliant Lavender
+255 169 169 Light Salmon
+255 169  84 Pastel Orange
+255 169   0 Chrome Yellow
+255  84 255 Ultra Pink
+255  84 169 Brilliant Rose
+255  84  84 Sunset Orange
+255  84   0 International Orange
+255   0 255 Magenta
+255   0 169 Hollywood Cerise
+255   0  84 Folly
+255   0   0 Red
+169 255 255 Celeste
+169 255 169 Mint Green
+169 255  84 Lime
+169 255   0 Spring Bud
+169 169 255 Baby Blue Eyes
+169 169 169 Dark Gray
+169 169  84 Brass
+169 169   0 Apple Green
+169  84 255 Medium Orchid
+169  84 169 Purpureus
+169  84  84 Rose Vale
+169  84   0 Windsor Tan
+169   0 255 Vivid Violet
+169   0 169 Dark Magenta
+169   0  84 Strong Magenta
+169   0   0 49Ers Red
+ 84 255 255 Electric Blue
+ 84 255 169 Seafoam
+ 84 255  84 Screamin Green
+ 84 255   0 Bright Green
+ 84 169 255 Cornflower Blue
+ 84 169 169 Teal
+ 84 169  84 Chateau
+ 84 169   0 Kelly Green
+ 84  84 255 Ultramarine Blue
+ 84  84 169 Ultra Violet
+ 84  84  84 Davy’S Gray
+ 84  84   0 Juniper
+ 84   0 255 Electric Ultramarine
+ 84   0 169 Dark Violet
+ 84   0  84 Tyrian Purple
+ 84   0   0 Wine
+  0 255 255 Aqua
+  0 255 169 Spring
+  0 255  84 Malachite
+  0 255   0 Electric Green
+  0 169 255 Capri
+  0 169 169 Persian Green
+  0 169  84 Shamrock Green
+  0 169   0 Shamrock
+  0  84 255 Brandeis Blue
+  0  84 169 Medium Teal Blue
+  0  84  84 Midnight Green
+  0  84   0 Pakistan Green
+  0   0 255 Blue
+  0   0 169 Duke Blue
+  0   0  84 Oxford Blue
+  0   0   0 Black
+233 233 233 Shadow White
+233 233 155 Beige
+233 233  77 Greenish Yellow
+233 233   0 Titanium Yellow
+233 155 233 Electric Lavender
+233 155 155 Ruddy Pink
+233 155  77 Indian Yellow
+233 155   0 Honey
+233  77 233 Purple Pizzazz
+233  77 155 Raspberry Pink
+233  77  77 Carmine Pink
+233  77   0 Persimmon
+233   0 233 Phlox
+233   0 155 Hollywood Cerise
+233   0  77 Ua Red
+233   0   0 Ku Crimson
+155 233 233 Non-Photo Blue
+155 233 155 Granny Smith Apple
+155 233  77 Lime
+155 233   0 Spring Bud
+155 155 233 Blue Bell
+155 155 155 Spanish Gray
+155 155  77 Dark Tan
+155 155   0 Apple Green
+155  77 233 Lavender Indigo
+155  77 155 Purpureus
+155  77  77 Rosewood
+155  77   0 Windsor Tan
+155   0 233 Vivid Violet
+155   0 155 Dark Magenta
+155   0  77 Strong Magenta
+155   0   0 Crimson Red
+ 77 233 233 Turquoise
+ 77 233 155 Seafoam
+ 77 233  77 Ufo Green
+ 77 233   0 Harlequin
+ 77 155 233 United Nations Blue
+ 77 155 155 Turkish Blue
+ 77 155  77 Chateau
+ 77 155   0 Avocado
+ 77  77 233 Majorelle Blue
+ 77  77 155 Dark Slate Blue
+ 77  77  77 Gray Wolf
+ 77  77   0 Juniper
+ 77   0 233 Electric Ultramarine
+ 77   0 155 Indigo
+ 77   0  77 Tyrian Purple
+ 77   0   0 Wine
+  0 233 233 Bright Turquoise
+  0 233 155 Spring
+  0 233  77 Malachite
+  0 233   0 Electric Green
+  0 155 233 Rich Electric Blue
+  0 155 155 Persian Green
+  0 155  77 Shamrock Green
+  0 155   0 Islamic Green
+  0  77 233 Brandeis Blue
+  0  77 155 Us Air Force Academy Blue
+  0  77  77 Deep Jungle Green
+  0  77   0 Pakistan Green
+  0   0 233 Blue
+  0   0 155 Duke Blue
+  0   0  77 Oxford Blue
+  0   0   0 Black
+212 212 212 Light Gray
+212 212 141 Medium Spring Bud
+212 212  70 Sandstorm
+212 212   0 Citrine
+212 141 212 Pastel Violet
+212 141 141 Puce
+212 141  70 Peru
+212 141   0 Harvest Gold
+212  70 212 Medium Orchid
+212  70 141 Mulberry
+212  70  70 Jasper
+212  70   0 Sinopia
+212   0 212 Deep Magenta
+212   0 141 Mexican Pink
+212   0  70 Rich Carmine
+212   0   0 Rosso Corsa
+141 212 212 Tiffany Blue
+141 212 141 Dark Sea Green
+141 212  70 Yellow Green
+141 212   0 Apple Green
+141 141 212 Ube
+141 141 141 Taupe Gray
+141 141  70 Dark Tan
+141 141   0 Heart Gold
+141  70 212 Dark Orchid
+141  70 141 Lipstick Stain
+141  70  70 Cordovan
+141  70   0 Rust
+141   0 212 Dark Violet
+141   0 141 Dark Magenta
+141   0  70 Strong Magenta
+141   0   0 Dark Red
+ 70 212 212 Medium Turquoise
+ 70 212 141 Shamrock
+ 70 212  70 Lime Green
+ 70 212   0 Kelly Green
+ 70 141 212 Celestial Blue
+ 70 141 141 Turkish Blue
+ 70 141  70 Fern Green
+ 70 141   0 Avocado
+ 70  70 212 Iris
+ 70  70 141 Dark Slate Blue
+ 70  70  70 Anchor
+ 70  70   0 Juniper
+ 70   0 212 Electric Ultramarine
+ 70   0 141 Indigo
+ 70   0  70 Boysenberry
+ 70   0   0 Bulgarian Rose
+  0 212 212 Dark Turquoise
+  0 212 141 Caribbean Green
+  0 212  70 Malachite
+  0 212   0 Electric Green
+  0 141 212 Rich Electric Blue
+  0 141 141 Dark Cyan
+  0 141  70 North Texas Green
+  0 141   0 Islamic Green
+  0  70 212 Cobalt
+  0  70 141 Medium Electric Blue
+  0  70  70 Warm Black
+  0  70   0 Lincoln Green
+  0   0 212 Medium Blue
+  0   0 141 Dark Blue
+  0   0  70 Black Rock
+  0   0   0 Black
+191 191 191 Medium Gray
+191 191 127 Ecru
+191 191  63 Old Gold
+191 191   0 Citrine
+191 127 191 Opera Mauve
+191 127 127 Old Rose
+191 127  63 Peru
+191 127   0 Dark Goldenrod
+191  63 191 Deep Fuchsia
+191  63 127 Medium Red Violet
+191  63  63 Deep Chestnut
+191  63   0 Mahogany
+191   0 191 Deep Magenta
+191   0 127 Medium Violet Red
+191   0  63 Crimson Glory
+191   0   0 Bu Scarlet
+127 191 191 Moonstone Blue
+127 191 127 Fern
+127 191  63 Pear
+127 191   0 Apple Green
+127 127 191 Ube
+127 127 127 Gray
+127 127  63 Dark Tan
+127 127   0 Heart Gold
+127  63 191 Studio
+127  63 127 Mauve
+127  63  63 Bole
+127  63   0 Spice
+127   0 191 Dark Violet
+127   0 127 Patriarch
+127   0  63 Tyrian Purple
+127   0   0 Maroon
+ 63 191 191 Verdigris
+ 63 191 127 Mint
+ 63 191  63 Green
+ 63 191   0 Kelly Green
+ 63 127 191 Tufts Blue
+ 63 127 127 Teal Blue
+ 63 127  63 Fern Green
+ 63 127   0 Verdun
+ 63  63 191 Blue
+ 63  63 127 Dark Slate Blue
+ 63  63  63 Anchor
+ 63  63   0 Mocha
+ 63   0 191 Lapis
+ 63   0 127 Indigo
+ 63   0  63 Eggplant
+ 63   0   0 Bulgarian Rose
+  0 191 191 Tiffany Blue
+  0 191 127 Caribbean Green
+  0 191  63 Dark Pastel Green
+  0 191   0 Shamrock
+  0 127 191 Ocean Boat Blue
+  0 127 127 Stormcloud
+  0 127  63 Fun
+  0 127   0 Ao
+  0  63 191 Cobalt
+  0  63 127 Dark Cerulean
+  0  63  63 Rich Black
+  0  63   0 Up Forest Green
+  0   0 191 Medium Blue
+  0   0 127 Navy Blue
+  0   0  63 Black Rock
+  0   0   0 Black

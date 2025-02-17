@@ -64,6 +64,20 @@ static PyMethodDef MyMethods[] = {
     // void convert_to_palette(const char *src_file, const char *tgt_file, const char *palette_file, const char *method, uint8_t *transparent_rgb);
     {"convert_to_palette", (PyCFunction)convert_to_palette, METH_VARARGS | METH_KEYWORDS, "Convert image to palette"},
 
+    // PyObject* convert_to_palette_bytes(PyObject *self, PyObject *args, PyObject *kwargs);
+    {"convert_to_palette_bytes", (PyCFunction)convert_to_palette_bytes, METH_VARARGS | METH_KEYWORDS, 
+        "Convert an RGBA image (raw bytes) to a palette and return the processed bytes.\n\n"
+        "Arguments:\n"
+        "    image_data (bytes)  - Raw 32-bit RGBA image data.\n"
+        "    width (int)         - Image width in pixels.\n"
+        "    height (int)        - Image height in pixels.\n"
+        "    palette_file (str)  - Path to the palette file (GIMP format).\n"
+        "    method (str)        - Color conversion method ('RGB', 'HSV', 'CMYK', 'bayer', 'floyd', 'atkinson').\n"
+        "    transparent_color (tuple, optional) - RGBA tuple defining a transparent color.\n\n"
+        "Returns:\n"
+        "    bytes - Processed 32-bit RGBA image data."
+    },
+    
     // void convert_to_rgb565(const char *src_file, const char *tgt_file);
     {"convert_to_rgb565", (PyCFunction)convert_to_rgb565, METH_VARARGS | METH_KEYWORDS, "Convert image to RGB565"},
 

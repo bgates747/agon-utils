@@ -1,0 +1,260 @@
+GIMP Palette
+Name: rainbow
+Columns: 16
+#
+  0   0   0 Black
+ 17  17  17 Onyx
+ 34  34  34 Charcoal Gray
+ 51  51  51 Pebble
+ 68  68  68 Anchor
+ 85  85  85 Davy’S Gray
+102 102 102 Dim Gray
+119 119 119 Sonic Gray
+136 136 136 Taupe Gray
+153 153 153 Spanish Gray
+170 170 170 Dark Gray
+187 187 187 X11 Gray
+204 204 204 Pastel Gray
+221 221 221 Gainsboro
+238 238 238 Shadow White
+255 255 255 White
+ 31   0   0 Vampire Black
+ 63   0   0 Bulgarian Rose
+ 95   0   0 Rosewood
+127   0   0 Maroon
+159   0   0 Dark Candy Apple Red
+191   0   0 Bu Scarlet
+223   0   0 Arsenal Red
+255   0   0 Red
+255  31  31 Lust
+255  59  59 Coral Red
+255  86  86 Sunset Orange
+255 113 113 Coral Pink
+255 141 141 Tulip Pink
+255 168 168 Light Salmon
+255 195 195 Pink
+255 223 223 Misty Rose
+ 31  13   0 Soot
+ 63  27   0 Brunette
+ 95  40   0 Gingerbread
+127  54   0 Spice
+159  68   0 Rust
+191  81   0 Ginger
+223  95   0 Marmalade
+255 109   0 Tiger
+255 127  31 Tangerine
+255 143  59 Mango Tango
+255 158  86 Sandy Brown
+255 174 113 Cantaloupe
+255 189 141 Macaroni And Cheese
+255 205 168 Deep Peach
+255 221 195 Bisque
+255 236 223 Misty Rose
+ 31  27   0 Brown Oil
+ 63  54   0 Mocha
+ 95  81   0 Sepia
+127 109   0 Heart Gold
+159 136   0 Dark Goldenrod
+191 163   0 Dijon
+223 191   0 Citrine
+255 218   0 School Bus Yellow
+255 223  31 Tuscany
+255 227  59 Banana
+255 230  86 Mustard
+255 234 113 Yellow Tan
+255 238 141 Parmesan
+255 242 168 Buttermilk
+255 246 195 Blond
+255 250 223 Cornsilk
+ 22  31   0 Brown Oil
+ 45  63   0 Juniper
+ 68  95   0 Juniper
+ 91 127   0 Avocado
+113 159   0 Heart Gold
+136 191   0 Apple Green
+159 223   0 Spring Bud
+182 255   0 Lemon Lime
+191 255  31 Green Yellow
+199 255  59 Chartreuse
+206 255  86 Lime
+214 255 113 Greenish Yellow
+222 255 141 Light Khaki
+230 255 168 Pale Goldenrod
+238 255 195 Blond
+245 255 223 Beige
+  9  31   0 Power Black
+ 18  63   0 Lincoln Green
+ 27  95   0 Lincoln Green
+ 36 127   0 Napier Green
+ 45 159   0 Napier Green
+ 54 191   0 Kelly Green
+ 63 223   0 Harlequin
+ 72 255   0 Harlequin
+ 95 255  31 Bright Green
+115 255  59 Green Yellow
+134 255  86 Screamin Green
+154 255 113 Lime
+173 255 141 Mint Green
+193 255 168 Tea Green
+212 255 195 Tea Green
+232 255 223 Beige
+  0  31   4 Tech Black
+  0  63   9 Up Forest Green
+  0  95  13 Pakistan Green
+  0 127  18 Emerald
+  0 159  22 Shamrock
+  0 191  27 Shamrock
+  0 223  31 Dark Pastel Green
+  0 255  36 Electric Green
+ 31 255  63 Malachite
+ 59 255  87 Ufo Green
+ 86 255 110 Screamin Green
+113 255 134 Screamin Green
+141 255 157 Mint Green
+168 255 180 Mint
+195 255 204 Tea Green
+223 255 227 Harp
+  0  31  18 Tech Black
+  0  63  36 British Racing Green
+  0  95  54 Castleton Green
+  0 127  72 Fun
+  0 159  91 Shamrock Green
+  0 191 109 Jade Green
+  0 223 127 Guppie Green
+  0 255 145 Medium Spring Green
+ 31 255 159 Medium Spring Green
+ 59 255 171 Seafoam
+ 86 255 182 Medium Aquamarine
+113 255 194 Aquamarine
+141 255 206 Aquamarine
+168 255 217 Magic Mint
+195 255 229 Pale Blue
+223 255 241 Light Cyan
+  0  31  31 Dark Green
+  0  63  63 Rich Black
+  0  95  95 Ocean
+  0 127 127 Stormcloud
+  0 159 159 Persian Green
+  0 191 191 Tiffany Blue
+  0 223 223 Bright Turquoise
+  0 255 255 Aqua
+ 31 255 255 Aqua
+ 59 255 255 Turquoise
+ 86 255 255 Electric Blue
+113 255 255 Electric Blue
+141 255 255 Electric Blue
+168 255 255 Celeste
+195 255 255 Celeste
+223 255 255 Light Cyan
+  0  18  31 Black Rock
+  0  36  63 Oxford Blue
+  0  54  95 Dark Midnight Blue
+  0  72 127 Dark Cerulean
+  0  91 159 Imperial Blue
+  0 109 191 French Blue
+  0 127 223 True Blue
+  0 145 255 Azure
+ 31 159 255 Dodger Blue
+ 59 171 255 Dodger Blue
+ 86 182 255 Argentina Blue
+113 194 255 Maya Blue
+141 206 255 Light Sky Blue
+168 217 255 Columbia Blue
+195 229 255 Lavender Blue
+223 241 255 Glitter
+  0   4  31 Black Rock
+  0   9  63 Oxford Blue
+  0  13  95 Navy
+  0  18 127 Phthalo Blue
+  0  22 159 Zaffre
+  0  27 191 Zaffre
+  0  31 223 Medium Blue
+  0  36 255 Blue
+ 31  63 255 Palatinate Blue
+ 59  87 255 Ultramarine Blue
+ 86 110 255 Ultramarine Blue
+113 134 255 Cornflower Blue
+141 157 255 Ruddy Blue
+168 180 255 Baby Blue Eyes
+195 204 255 Lavender Blue
+223 227 255 Lavender
+  9   0  31 Gothic Grape
+ 18   0  63 Black Rock
+ 27   0  95 Blueberry
+ 36   0 127 Persian Indigo
+ 45   0 159 Ultramarine
+ 54   0 191 Lapis
+ 63   0 223 Electric Ultramarine
+ 72   0 255 Electric Ultramarine
+ 95  31 255 Han Purple
+115  59 255 Blue Purple
+134  86 255 Lavender Indigo
+154 113 255 Medium Orchid
+173 141 255 Bright Lavender
+193 168 255 Bright Ube
+212 195 255 Lavender Blue
+232 223 255 Lavender
+ 22   0  31 Gothic Grape
+ 45   0  63 Eggplant
+ 68   0  95 Indigo
+ 91   0 127 Indigo
+113   0 159 Dark Violet
+136   0 191 Dark Violet
+159   0 223 Dark Violet
+182   0 255 Electric Purple
+191  31 255 Electric Purple
+199  59 255 Veronica
+206  86 255 Heliotrope
+214 113 255 Heliotrope
+222 141 255 Electric Lavender
+230 168 255 Mauve
+238 195 255 Brilliant Lavender
+245 223 255 Lavender
+ 31   0  27 Deep Wine
+ 63   0  54 Dark Mulberry
+ 95   0  81 Pompadour
+127   0 109 Patriarch
+159   0 136 Dark Magenta
+191   0 163 Medium Violet Red
+223   0 191 Deep Magenta
+255   0 218 Shocking Pink
+255  31 223 Hot Magenta
+255  59 227 Purple Pizzazz
+255  86 230 Purple Pizzazz
+255 113 234 Pink Flamingo
+255 141 238 Light Fuchsia Pink
+255 168 242 Lavender Rose
+255 195 246 Brilliant Lavender
+255 223 250 Lavender Blush
+ 31   0  13 Dark Raisin
+ 63   0  27 Dark Mulberry
+ 95   0  40 Jazzberry Jam
+127   0  54 Burgundy
+159   0  68 Strong Magenta
+191   0  81 Rubine Red
+223   0  95 Raspberry
+255   0 109 Bright Pink
+255  31 127 Deep Pink
+255  59 143 Rose Bonbon
+255  86 158 Brilliant Rose
+255 113 174 Hot Pink
+255 141 189 Taffy
+255 168 205 Carnation
+255 195 221 Cotton Candy
+255 223 236 Piggy Pink
+ 31   0   0 Vampire Black
+ 63   0   0 Bulgarian Rose
+ 95   0   0 Rosewood
+127   0   0 Maroon
+159   0   0 Dark Candy Apple Red
+191   0   0 Bu Scarlet
+223   0   0 Arsenal Red
+255   0   0 Red
+255  31  31 Lust
+255  59  59 Coral Red
+255  86  86 Sunset Orange
+255 113 113 Coral Pink
+255 141 141 Tulip Pink
+255 168 168 Light Salmon
+255 195 195 Pink
+255 223 223 Misty Rose

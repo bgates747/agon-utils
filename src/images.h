@@ -91,12 +91,13 @@ inline uint8_t clamp(int value) {
     if (value < 0) return 0;
     if (value > 255) return 255;
     return (uint8_t)value;
-}
+};
 
 // ===================================================
 // Prototypes for the Python C-extension entry points:
 // ---------------------------------------------------
 PyObject* convert_to_palette(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* convert_to_palette_bytes(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* convert_to_rgb565(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* img_to_rgba2(PyObject *self, PyObject *args);
 PyObject* img_to_rgba8(PyObject *self, PyObject *args);
