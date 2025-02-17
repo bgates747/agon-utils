@@ -1,0 +1,9 @@
+# Python and build artifacts
+*.pyc
+__pycache__/
+build/
+dist/
+*.egg-info/
+*.so
+.vscode/
+.venv/
