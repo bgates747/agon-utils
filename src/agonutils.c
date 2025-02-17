@@ -18,7 +18,7 @@ static PyObject* hello(PyObject* self, PyObject* args) {
     gethostname(hostname, sizeof(hostname));
     
     printf("Hello, World!\n");
-    printf("Package Name: agz\n");
+    printf("Package Name: agonutils\n");
     printf("Build Time: %s", asctime(t));
     printf("Host: %s\n", hostname);
     printf("Running on: %s\n", Py_GetPlatform());
@@ -137,13 +137,13 @@ static PyMethodDef MyMethods[] = {
 // Module definition
 static struct PyModuleDef agzmodule = {
     PyModuleDef_HEAD_INIT,
-    "agz",  // Module name
+    "agonutils",  // Module name
     NULL,
     -1,
     MyMethods
 };
 
 // Module initialization function
-PyMODINIT_FUNC PyInit_agz(void) {
+PyMODINIT_FUNC PyInit_agonutils(void) {
     return PyModule_Create(&agzmodule);
 }

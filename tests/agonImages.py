@@ -414,7 +414,7 @@ if __name__ == "__main__":
     pil_img2.save(f"{base_file}_converted.png")
 
 
-    # rgba2_file = "/home/smith/Agon/mystuff/assets/video/diffs_RGB_bayer/frame_00001_diff.rgba2.agz.rgba2"
+    # rgba2_file = "/home/smith/Agon/mystuff/assets/video/diffs_RGB_bayer/frame_00001_diff.rgba2.agonutils.rgba2"
     # width = 320
     # height = 136
     # pil_img2 = rgba2_to_img(rgba2_file, width, height)

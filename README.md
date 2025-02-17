@@ -1,4 +1,4 @@
-# agz
+# agonutils
 
 A Python library written in C.
 
@@ -13,6 +13,6 @@ python setup.py install
 ## Usage
 
 ```python
-import agz
-agz.hello()
+import agonutils
+agonutils.hello()
 ```

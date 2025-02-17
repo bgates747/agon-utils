@@ -1,8 +1,8 @@
-import agz
+import agonutils as au
 
 def test_hello():
-    agz.hello()
+    au.hello()
     print("Hello function works!")
 
 if __name__ == '__main__':
-    agz.hello()
+    au.hello()

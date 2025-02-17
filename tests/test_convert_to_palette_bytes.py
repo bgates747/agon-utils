@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import agz
+import agonutils as au
 import agonImages as ai
 from PIL import Image
 
@@ -16,9 +16,9 @@ if __name__ == '__main__':
     height = pil_img.height
     width = pil_img.width
 
-    converted_bytes = agz.convert_to_palette_bytes(input_data, width, height, palette_file, method, transparent_color)
+    converted_bytes = agonutils.convert_to_palette_bytes(input_data, width, height, palette_file, method, transparent_color)
 
     pil_img2 = Image.frombytes('RGBA', (width, height), converted_bytes)
     pil_img2.save(f"{base_file}_{method}_bytes.png")
 
-    agz.convert_to_palette(png_file, f"{base_file}_{method}_file.png", palette_file, method, transparent_color)
+    agonutils.convert_to_palette(png_file, f"{base_file}_{method}_file.png", palette_file, method, transparent_color)

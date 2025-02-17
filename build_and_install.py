@@ -47,7 +47,7 @@ def set_pythonpath():
 def test_install():
     """Test the installed package by importing it and calling a function."""
     print("Testing the installed package...")
-    result = subprocess.run([sys.executable, '-c', 'import agz; agz.hello()'], check=True)
+    result = subprocess.run([sys.executable, '-c', 'import agonutils; agonutils.hello()'], check=True)
     if result.returncode == 0:
         print("Package works!")
     else:
