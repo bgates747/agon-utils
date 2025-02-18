@@ -251,9 +251,34 @@ static PyMethodDef MyMethods[] = {
         "Returns:\n"
         "  int: 0 on success, negative on failure."},
 
+    // ============================================================================
+    // Compression functions
+    // ----------------------------------------------------------------------------
+    // RLE encoding
+    // ----------------------------------------------------------------------------
     {"rle_encode", rle_encode, METH_VARARGS, "Compress raw RGBA2 data using RLE."},
     {"rle_decode", rle_decode, METH_VARARGS, "Decompress RLE-encoded data."},
-       
+
+    // ----------------------------------------------------------------------------
+    // SimZ functions
+    /**
+     * Compress a file using the simz encoder.
+     * Python call signature: `simz_encode(input_file: str, output_file: str) -> None`
+     * 
+     * Arguments:
+     *   - input_file: Path to the input file (string)
+     *   - output_file: Path to the output file (string)
+     */
+    {"simz_encode", simz_encode, METH_VARARGS, "Compress a file using the simz encoder."},
+    /**
+     * Decompress a file using the simz decoder.
+     * Python call signature: `simz_decode(input_file: str, output_file: str) -> None`
+     * 
+     * Arguments:
+     *   - input_file: Path to the input file (string)
+     *   - output_file: Path to the output file (string)
+     */
+    {"simz_decode", simz_decode, METH_VARARGS, "Decompress a file using the simz decoder."},
 
 // ============================================================================
 // Sentinel to end the list

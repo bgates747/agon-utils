@@ -31,13 +31,17 @@ static void countblock(unsigned char *buffer, freq length, freq *counters) {
 }
 
 /* Compress from input stream 'in' to output stream 'out' */
-static void compress_file(FILE *in, FILE *out) {
-    freq counts[257], blocksize;
+void compress_file(FILE *in, FILE *out) {
     rangecoder rc;
     unsigned char buffer[BLOCKSIZE];
+    freq counts[257], blocksize;
     freq i;
 
-    /* Initialize the range coder; here the first byte is 0 and no header is added */
+    /* Assign the file pointers for proper I/O */
+    rc.fin = in;   // Not actually used in compression, but included for consistency
+    rc.fout = out; // Critical for the outbyte() macro
+
+    /* Initialize the range coder */
     start_encoding(&rc, 0, 0);
 
     while ((blocksize = (freq)fread(buffer, 1, BLOCKSIZE, in)) > 0) {
@@ -45,20 +49,17 @@ static void compress_file(FILE *in, FILE *out) {
         encode_freq(&rc, 1, 1, 2);
 
         /* Build statistics for this block */
-        countblock(buffer, blocksize, counts);
+        for (i = 0; i < 257; i++) counts[i] = 0;
+        for (i = 0; i < blocksize; i++) counts[buffer[i]]++;
 
-        /* Write the statistics (for each symbol 0..255) */
-        for (i = 0; i < 256; i++)
-            encode_short(&rc, counts[i]);
+        /* Write the frequency statistics */
+        for (i = 0; i < 256; i++) encode_short(&rc, counts[i]);
 
-        /* Convert counts[] into cumulative counts.
-           counts[256] is set to the block size.
-           Then adjust counts[0..255] so that counts[i] is the cumulative count for all symbols less than i. */
+        /* Convert counts[] into cumulative counts */
         counts[256] = blocksize;
-        for (i = 256; i > 0; i--)
-            counts[i-1] = counts[i] - counts[i-1];
+        for (i = 256; i > 0; i--) counts[i - 1] = counts[i] - counts[i - 1];
 
-        /* Encode each symbol in the block using its frequency interval */
+        /* Encode each symbol using its frequency interval */
         for (i = 0; i < blocksize; i++) {
             int ch = buffer[i];
             encode_freq(&rc, counts[ch+1] - counts[ch], counts[ch], counts[256]);
@@ -82,26 +83,29 @@ static void readcounts(rangecoder *rc, freq *counters) {
 }
 
 /* Decompress from input stream 'in' to output stream 'out' */
-static void decompress_file(FILE *in, FILE *out) {
+void decompress_file(FILE *in, FILE *out) {
     rangecoder rc;
+    freq counts[257], i, blocksize;
+
+    /* Assign file pointers for proper I/O */
+    rc.fin = in;   // Critical for inbyte() macro
+    rc.fout = out; // Not directly used in decoding, but included for symmetry
+
     if (start_decoding(&rc) != 0) {
-        fprintf(stderr, "could not successfully open input data\n");
+        fprintf(stderr, "Could not successfully open input data\n");
         exit(1);
     }
 
     while (1) {
-        /* Check for the flag that indicates a new block.
-           A zero value means there are no more blocks. */
+        /* Check for the flag that indicates a new block */
         freq cf = decode_culfreq(&rc, 2);
-        if (cf == 0)
-            break;
+        if (cf == 0) break; // No more blocks
         decode_update(&rc, 1, 1, 2);
 
-        freq counts[257], i, blocksize;
         /* Read the 256 frequency counts */
-        readcounts(&rc, counts);
+        for (i = 0; i < 256; i++) counts[i] = decode_short(&rc);
 
-        /* Determine blocksize and build cumulative counts */
+        /* Compute cumulative counts */
         blocksize = 0;
         for (i = 0; i < 256; i++) {
             freq tmp = counts[i];
@@ -114,52 +118,15 @@ static void decompress_file(FILE *in, FILE *out) {
         for (i = 0; i < blocksize; i++) {
             freq cf_sym = decode_culfreq(&rc, blocksize);
             freq symbol = 0;
-            while (counts[symbol+1] <= cf_sym)
-                symbol++;
+
+            while (counts[symbol + 1] <= cf_sym) symbol++;
+            
             decode_update(&rc, counts[symbol+1] - counts[symbol], counts[symbol], blocksize);
             fputc((int)symbol, out);
         }
     }
+
     done_decoding(&rc);
-}
-
-/********************** Main *****************************/
-
-static void usage(void) {
-    fprintf(stderr, "Usage: simz -c|-d [infile [outfile]]\n");
-    fprintf(stderr, "   -c : compress\n");
-    fprintf(stderr, "   -d : decompress\n");
-    exit(1);
-}
-
-int main(int argc, char *argv[]) {
-    if (argc < 2)
-        usage();
-
-    /* Redirect input and output streams if files are provided */
-    if (argc >= 3) {
-        if (freopen(argv[2], "rb", stdin) == NULL) {
-            perror(argv[2]);
-            exit(1);
-        }
-    }
-    if (argc >= 4) {
-        if (freopen(argv[3], "wb", stdout) == NULL) {
-            perror(argv[3]);
-            exit(1);
-        }
-    }
-
-    fprintf(stderr, "%s\n", coderversion);
-
-    if (strcmp(argv[1], "-c") == 0)
-        compress_file(stdin, stdout);
-    else if (strcmp(argv[1], "-d") == 0)
-        decompress_file(stdin, stdout);
-    else
-        usage();
-
-    return 0;
 }
 
 /************** rangecod.c *****************/
@@ -178,8 +145,8 @@ int main(int argc, char *argv[]) {
 /* all IO is done by these macros - change them if you want to */
 /* no checking is done - do it here if you want it             */
 /* cod is a pointer to the used rangecoder                     */
-#define outbyte(cod,x) putchar(x)
-#define inbyte(cod)    getchar()
+#define outbyte(cod, x) fputc((x), (cod)->fout)
+#define inbyte(cod)     fgetc((cod)->fin)
 
 #define SHIFT_BITS (CODE_BITS - 9)
 #define EXTRA_BITS ((CODE_BITS-2) % 8 + 1)
@@ -388,4 +355,107 @@ unsigned short decode_short(rangecoder *rc)
 /* rc is the range coder to be used                          */
 void done_decoding( rangecoder *rc )
 {   dec_normalize(rc);      /* normalize to use up all bytes */
+}
+
+
+// ===================================================
+// Python C-extension entry points:
+// ---------------------------------------------------
+/* 
+ * simz_encode()
+ * Python wrapper for compress_file().
+ * Expects two string arguments: the input file path and the output file path.
+ */
+PyObject *simz_encode(PyObject *self, PyObject *args) {
+    const char *in_filename;
+    const char *out_filename;
+    
+    if (!PyArg_ParseTuple(args, "ss", &in_filename, &out_filename)) {
+        return NULL;
+    }
+    
+    FILE *infile = fopen(in_filename, "rb");
+    if (!infile) {
+        PyErr_Format(PyExc_IOError, "Could not open input file '%s'", in_filename);
+        return NULL;
+    }
+    
+    FILE *outfile = fopen(out_filename, "wb");
+    if (!outfile) {
+        fclose(infile);
+        PyErr_Format(PyExc_IOError, "Could not open output file '%s'", out_filename);
+        return NULL;
+    }
+    
+    /* Call the compressor routine (defined in your simz code) */
+    compress_file(infile, outfile);
+    
+    fclose(infile);
+    fclose(outfile);
+    
+    Py_RETURN_NONE;
+}
+
+/* 
+ * simz_decode()
+ * Python wrapper for decompress_file().
+ * Expects two string arguments: the input file path and the output file path.
+ */
+PyObject *simz_decode(PyObject *self, PyObject *args) {
+    const char *in_filename;
+    const char *out_filename;
+    
+    if (!PyArg_ParseTuple(args, "ss", &in_filename, &out_filename)) {
+        return NULL;
+    }
+    
+    FILE *infile = fopen(in_filename, "rb");
+    if (!infile) {
+        PyErr_Format(PyExc_IOError, "Could not open input file '%s'", in_filename);
+        return NULL;
+    }
+    
+    FILE *outfile = fopen(out_filename, "wb");
+    if (!outfile) {
+        fclose(infile);
+        PyErr_Format(PyExc_IOError, "Could not open output file '%s'", out_filename);
+        return NULL;
+    }
+    
+    /* Call the decompressor routine (defined in your simz code) */
+    decompress_file(infile, outfile);
+    
+    fclose(infile);
+    fclose(outfile);
+    
+    Py_RETURN_NONE;
+}
+
+/* Module method definitions */
+static PyMethodDef AgonUtilsSimzMethods[] = {
+    {"simz_encode", simz_encode, METH_VARARGS,
+     "Compress a file using the simz encoder.\n\n"
+     "Arguments:\n"
+     "  input_file: path to the input file (string)\n"
+     "  output_file: path to the output file (string)"},
+    {"simz_decode", simz_decode, METH_VARARGS,
+     "Decompress a file using the simz decoder.\n\n"
+     "Arguments:\n"
+     "  input_file: path to the input file (string)\n"
+     "  output_file: path to the output file (string)"},
+    {NULL, NULL, 0, NULL}
+};
+
+/* Module definition */
+static struct PyModuleDef agonutils_simz_module = {
+    PyModuleDef_HEAD_INIT,
+    "agonutils_simz", /* name of module */
+    "Module for simz compression and decompression.", 
+    -1,
+    AgonUtilsSimzMethods
+};
+
+/* Module initialization function */
+PyMODINIT_FUNC PyInit_agonutils_simz(void) {
+    return PyModule_Create(&agonutils_simz_module);
 }
