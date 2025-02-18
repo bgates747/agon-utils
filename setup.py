@@ -1,19 +1,16 @@
 from setuptools import setup, Extension
-import platform
-import sys
 
 module = Extension(
     'agonutils',
-    sources=['src/agonutils.c', 'src/images.c'],
-    libraries=['png16'],  # Explicitly link libpng16
-    library_dirs=['/lib/x86_64-linux-gnu'],  # Ensure correct path
-    include_dirs=['/usr/include']
+    sources=['src/agonutils.c', 'src/images.c', 'src/agm.c'],
+    libraries=['avformat', 'avcodec', 'swscale', 'avutil', 'png16'],
+    library_dirs=['/lib/x86_64-linux-gnu', '/usr/lib/x86_64-linux-gnu'],
+    include_dirs=['/usr/include', '/usr/include/ffmpeg'],
 )
 
 setup(
     name='agonutils',
     version='1.0',
-    description='A Python library written in C',
+    description='A Python library written in C for Agon utilities',
     ext_modules=[module],
-    platforms=sys.platform,
 )

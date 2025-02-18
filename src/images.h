@@ -45,6 +45,8 @@ int save_rgba_to_png(const char *filename, uint8_t *image_data, int width, int h
 // ===========================
 // 2. Color Conversion and Quantization
 // ---------------------------
+int _convert_to_palette_internal(uint8_t *buffer, int width, int height, const char *palette_file, const char *method, PyObject *transparent_color);
+uint8_t* _rgba32_to_rgba2_internal(const uint8_t *rgba32, int width, int height);
 void rgb_to_hsv_internal(uint8_t r, uint8_t g, uint8_t b, float *h, float *s, float *v);
 void rgb_to_cmyk_internal(uint8_t r, uint8_t g, uint8_t b, float *c, float *m, float *y, float *k);
 void hsv_to_rgb_internal(float h, float s, float v, uint8_t *r, uint8_t *g, uint8_t *b);

@@ -2,6 +2,7 @@
 // Modules
 #include "palettes.h"
 #include "images.h"
+#include "agm.h"
 
 // Python
 #include <Python.h>
@@ -25,6 +26,29 @@ static PyObject* hello(PyObject* self, PyObject* args) {
     printf("Python Version: %s\n", Py_GetVersion());
     
     Py_RETURN_NONE;
+}
+
+// Python wrapper for process_mp4
+static PyObject* process_mp4(PyObject *self, PyObject *args, PyObject *kwargs) {
+    const char *input_file;
+    const char *output_file;
+    int output_width, output_height;
+    const char *palette_file;
+    const char *method;
+    PyObject *transparent_color = Py_None;
+
+    static char *kwlist[] = {"input_file", "output_file", "output_width", "output_height",
+                             "palette_file", "method", "transparent_color", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ssiiss|O", kwlist,
+                                     &input_file, &output_file, &output_width, &output_height,
+                                     &palette_file, &method, &transparent_color)) {
+        return NULL;
+    }
+
+    // Call the internal process_mp4 function.
+    int ret = _process_mp4_internal(input_file, output_file, output_width, output_height,palette_file, method, transparent_color);
+    return PyLong_FromLong(ret);
 }
 
 // Function that inverts an rgba2222 data buffer by XORing each byte with 0x3F
@@ -55,12 +79,15 @@ static PyObject* invert(PyObject* self, PyObject* args) {
 
 // Method definitions for the module
 static PyMethodDef MyMethods[] = {
-// Testing Functions
+    // ============================================================================
+    // Testing Functions
+    // ----------------------------------------------------------------------------
     {"hello", hello, METH_NOARGS, "Print Hello World and system information"},
     {"invert", invert, METH_VARARGS, "Invert the colors of an rgba2222 buffer by XORing with 0x3F"},
 
-// Image Functions
-
+    // ============================================================================
+    // Image Functions
+    // ----------------------------------------------------------------------------
     // void convert_to_palette(const char *src_file, const char *tgt_file, const char *palette_file, const char *method, uint8_t *transparent_rgb);
     {"convert_to_palette", (PyCFunction)convert_to_palette, METH_VARARGS | METH_KEYWORDS, "Convert image to palette"},
 
@@ -147,9 +174,28 @@ static PyMethodDef MyMethods[] = {
     // Function: Process an image with a palette
     // uint8_t* process_image_with_palette(const char* palette_filepath, float hue, int width, int height);
     {"process_image_with_palette", process_image_with_palette, METH_VARARGS, "Process an image with a palette"},
-   
+  
+    // ============================================================================
+    // Agon Movie Functions
+    // ----------------------------------------------------------------------------
+    // Process an MP4 file, extract frames, apply palette conversion, and save as custom format
+    {"process_mp4", (PyCFunction)process_mp4, METH_VARARGS | METH_KEYWORDS,
+        "Process an MP4 video file, convert frames using a palette, and save as a custom format.\n\n"
+        "Arguments:\n"
+        "    input_file (str)       - Path to the input MP4 file.\n"
+        "    output_file (str)      - Path to the output processed video file.\n"
+        "    output_width (int)     - Width of the output frames.\n"
+        "    output_height (int)    - Height of the output frames.\n"
+        "    palette_file (str)     - Path to the palette file (GIMP format).\n"
+        "    method (str)           - Dithering method ('RGB', 'HSV', 'CMYK', 'bayer', 'floyd', 'atkinson').\n"
+        "    transparent_color (tuple, optional) - RGBA tuple defining a transparent color.\n\n"
+        "Returns:\n"
+        "    int - 0 on success, -1 on failure."
+    },
 
+// ============================================================================
 // Sentinel to end the list
+// ----------------------------------------------------------------------------
     {NULL, NULL, 0, NULL}
 };
 
