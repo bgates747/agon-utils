@@ -31,7 +31,7 @@ static void countblock(unsigned char *buffer, simz_freq length, simz_freq *count
 }
 
 /* Compress from input stream 'in' to output stream 'out' */
-static void simz_compress_file(FILE *in, FILE *out) {
+static void _simz_encode_file_internal(FILE *in, FILE *out) {
     simz_freq counts[257], blocksize;
     simz_rangecoder rc;
     unsigned char buffer[BLOCKSIZE];
@@ -82,7 +82,7 @@ static void readcounts(simz_rangecoder *rc, simz_freq *counters) {
 }
 
 /* Decompress from input stream 'in' to output stream 'out' */
-static void simz_decompress_file(FILE *in, FILE *out) {
+static void _simz_decode_file_internal(FILE *in, FILE *out) {
     simz_rangecoder rc;
     if (simz_start_decoding(&rc) != 0) {
         fprintf(stderr, "could not successfully open input data\n");
@@ -153,9 +153,9 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "%s\n", coderversion);
 
     if (strcmp(argv[1], "-c") == 0)
-        simz_compress_file(stdin, stdout);
+        _simz_encode_file_internal(stdin, stdout);
     else if (strcmp(argv[1], "-d") == 0)
-        simz_decompress_file(stdin, stdout);
+        _simz_decode_file_internal(stdin, stdout);
     else
         usage();
 
@@ -203,7 +203,7 @@ void simz_start_encoding( simz_rangecoder *rc, char c, int initlength )
 
 /* I do the normalization before I need a defined state instead of */
 /* after messing it up. This simplifies starting and ending.       */
-static Inline void enc_normalize(simz_rangecoder *rc) {
+static Inline void simz_enc_normalize(simz_rangecoder *rc) {
     while (RNGC.range <= Bottom_value) {  /* do we need renormalisation? */
         if (RNGC.low < ((simz_code_value)0xff << SHIFT_BITS)) {  /* no carry possible --> output */
             M_outbyte(RNGC.buffer);
@@ -236,7 +236,7 @@ static Inline void enc_normalize(simz_rangecoder *rc) {
 /* or (faster): tot_f = (simz_code_value)1<<shift                             */
 void simz_encode_freq( simz_rangecoder *rc, simz_freq sy_f, simz_freq lt_f, simz_freq tot_f )
 {	simz_code_value r, tmp;
-	enc_normalize( rc );
+	simz_enc_normalize( rc );
 	r = RNGC.range / tot_f;
 	tmp = r * lt_f;
 	RNGC.low += tmp;
@@ -252,7 +252,7 @@ void simz_encode_freq( simz_rangecoder *rc, simz_freq sy_f, simz_freq lt_f, simz
 
 void simz_encode_shift( simz_rangecoder *rc, simz_freq sy_f, simz_freq lt_f, simz_freq shift )
 {	simz_code_value r, tmp;
-	enc_normalize( rc );
+	simz_enc_normalize( rc );
 	r = RNGC.range >> shift;
 	tmp = r * lt_f;
 	RNGC.low += tmp;
@@ -273,7 +273,7 @@ void simz_encode_shift( simz_rangecoder *rc, simz_freq sy_f, simz_freq lt_f, sim
 /* the return value is the number of bytes written           */
 uint4 simz_done_encoding( simz_rangecoder *rc )
 {   uint tmp;
-    enc_normalize(rc);     /* now we have a normalized state */
+    simz_enc_normalize(rc);     /* now we have a normalized state */
     RNGC.bytecount += 5;
     if ((RNGC.low & (Bottom_value-1)) < ((RNGC.bytecount&0xffffffL)>>1))
        tmp = RNGC.low >> SHIFT_BITS;

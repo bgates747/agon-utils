@@ -6,6 +6,9 @@
    (c)1999 Michael Schindler, michael@compressconsult.com
 */
 
+#define PY_SSIZE_T_CLEAN
+#define _GNU_SOURCE
+
 #include "simz.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,7 +34,7 @@ static void countblock(unsigned char *buffer, simz_freq length, simz_freq *count
 }
 
 /* Compress from input stream 'in' to output stream 'out' */
-void simz_compress_file(FILE *in, FILE *out) {
+void _simz_encode_file_internal(FILE *in, FILE *out) {
     simz_rangecoder rc;
     unsigned char buffer[BLOCKSIZE];
     simz_freq counts[257], blocksize;
@@ -83,7 +86,7 @@ static void readcounts(simz_rangecoder *rc, simz_freq *counters) {
 }
 
 /* Decompress from input stream 'in' to output stream 'out' */
-void simz_decompress_file(FILE *in, FILE *out) {
+void _simz_decode_file_internal(FILE *in, FILE *out) {
     simz_rangecoder rc;
     simz_freq counts[257], i, blocksize;
 
@@ -170,7 +173,7 @@ void simz_start_encoding( simz_rangecoder *rc, char c, int initlength )
 
 /* I do the normalization before I need a defined state instead of */
 /* after messing it up. This simplifies starting and ending.       */
-static Inline void enc_normalize(simz_rangecoder *rc) {
+static Inline void simz_enc_normalize(simz_rangecoder *rc) {
     while (RNGC.range <= Bottom_value) {  /* do we need renormalisation? */
         if (RNGC.low < ((simz_code_value)0xff << SHIFT_BITS)) {  /* no carry possible --> output */
             M_outbyte(RNGC.buffer);
@@ -203,7 +206,7 @@ static Inline void enc_normalize(simz_rangecoder *rc) {
 /* or (faster): tot_f = (simz_code_value)1<<shift                             */
 void simz_encode_freq( simz_rangecoder *rc, simz_freq sy_f, simz_freq lt_f, simz_freq tot_f )
 {	simz_code_value r, tmp;
-	enc_normalize( rc );
+	simz_enc_normalize( rc );
 	r = RNGC.range / tot_f;
 	tmp = r * lt_f;
 	RNGC.low += tmp;
@@ -219,7 +222,7 @@ void simz_encode_freq( simz_rangecoder *rc, simz_freq sy_f, simz_freq lt_f, simz
 
 void simz_encode_shift( simz_rangecoder *rc, simz_freq sy_f, simz_freq lt_f, simz_freq shift )
 {	simz_code_value r, tmp;
-	enc_normalize( rc );
+	simz_enc_normalize( rc );
 	r = RNGC.range >> shift;
 	tmp = r * lt_f;
 	RNGC.low += tmp;
@@ -240,7 +243,7 @@ void simz_encode_shift( simz_rangecoder *rc, simz_freq sy_f, simz_freq lt_f, sim
 /* the return value is the number of bytes written           */
 uint4 simz_done_encoding( simz_rangecoder *rc )
 {   uint tmp;
-    enc_normalize(rc);     /* now we have a normalized state */
+    simz_enc_normalize(rc);     /* now we have a normalized state */
     RNGC.bytecount += 5;
     if ((RNGC.low & (Bottom_value-1)) < ((RNGC.bytecount&0xffffffL)>>1))
        tmp = RNGC.low >> SHIFT_BITS;
@@ -363,7 +366,7 @@ void simz_done_decoding( simz_rangecoder *rc )
 // ---------------------------------------------------
 /* 
  * simz_encode()
- * Python wrapper for simz_compress_file().
+ * Python wrapper for _simz_encode_file_internal().
  * Expects two string arguments: the input file path and the output file path.
  */
 PyObject *simz_encode(PyObject *self, PyObject *args) {
@@ -388,7 +391,7 @@ PyObject *simz_encode(PyObject *self, PyObject *args) {
     }
     
     /* Call the compressor routine (defined in your simz code) */
-    simz_compress_file(infile, outfile);
+    _simz_encode_file_internal(infile, outfile);
     
     fclose(infile);
     fclose(outfile);
@@ -398,7 +401,7 @@ PyObject *simz_encode(PyObject *self, PyObject *args) {
 
 /* 
  * simz_decode()
- * Python wrapper for simz_decompress_file().
+ * Python wrapper for _simz_decode_file_internal().
  * Expects two string arguments: the input file path and the output file path.
  */
 PyObject *simz_decode(PyObject *self, PyObject *args) {
@@ -423,7 +426,7 @@ PyObject *simz_decode(PyObject *self, PyObject *args) {
     }
     
     /* Call the decompressor routine (defined in your simz code) */
-    simz_decompress_file(infile, outfile);
+    _simz_decode_file_internal(infile, outfile);
     
     fclose(infile);
     fclose(outfile);
@@ -431,31 +434,91 @@ PyObject *simz_decode(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-// /* Module method definitions */
-// static PyMethodDef AgonUtilsSimzMethods[] = {
-//     {"simz_encode", simz_encode, METH_VARARGS,
-//      "Compress a file using the simz encoder.\n\n"
-//      "Arguments:\n"
-//      "  input_file: path to the input file (string)\n"
-//      "  output_file: path to the output file (string)"},
-//     {"simz_decode", simz_decode, METH_VARARGS,
-//      "Decompress a file using the simz decoder.\n\n"
-//      "Arguments:\n"
-//      "  input_file: path to the input file (string)\n"
-//      "  output_file: path to the output file (string)"},
-//     {NULL, NULL, 0, NULL}
-// };
+/* 
+ * simz_encode_bytes()
+ * Python wrapper for in-memory compression.
+ * Accepts one bytes object (the raw data),
+ * returns a bytes object (the compressed data).
+ */
+PyObject *simz_encode_bytes(PyObject *self, PyObject *args) {
+    const char *in_data = NULL;
+    Py_ssize_t in_len = 0;
 
-// /* Module definition */
-// static struct PyModuleDef agonutils_simz_module = {
-//     PyModuleDef_HEAD_INIT,
-//     "agonutils_simz", /* name of module */
-//     "Module for simz compression and decompression.", 
-//     -1,
-//     AgonUtilsSimzMethods
-// };
+    /* Parse Python arguments: y# means "read a bytes-like object" */
+    if (!PyArg_ParseTuple(args, "y#", &in_data, &in_len)) {
+        return NULL;
+    }
 
-// /* Module initialization function */
-// PyMODINIT_FUNC PyInit_agonutils_simz(void) {
-//     return PyModule_Create(&agonutils_simz_module);
-// }
+    /* Create a memory stream from the input data */
+    FILE *in_mem = fmemopen((void *)in_data, (size_t)in_len, "rb");
+    if (!in_mem) {
+        PyErr_SetString(PyExc_RuntimeError, "Unable to open input memory stream.");
+        return NULL;
+    }
+
+    /* Create a memory stream to capture the compressed output */
+    char *out_buf = NULL;
+    size_t out_size = 0;
+    FILE *out_mem = open_memstream(&out_buf, &out_size);
+    if (!out_mem) {
+        fclose(in_mem);
+        PyErr_SetString(PyExc_RuntimeError, "Unable to open output memory stream.");
+        return NULL;
+    }
+
+    /* Reuse the file-based compressor logic, but with our memory streams */
+    _simz_encode_file_internal(in_mem, out_mem);
+
+    fclose(in_mem);
+    fclose(out_mem);
+
+    /* Create a Python bytes object from the in-memory compressed data */
+    PyObject *result = PyBytes_FromStringAndSize(out_buf, out_size);
+    free(out_buf);   /* open_memstream() allocated this buffer */
+
+    return result;
+}
+
+/* 
+ * simz_decode_bytes()
+ * Python wrapper for in-memory decompression.
+ * Accepts one bytes object (the compressed data),
+ * returns a bytes object (the decompressed data).
+ */
+PyObject *simz_decode_bytes(PyObject *self, PyObject *args) {
+    const char *in_data = NULL;
+    Py_ssize_t in_len = 0;
+
+    if (!PyArg_ParseTuple(args, "y#", &in_data, &in_len)) {
+        return NULL;
+    }
+
+    /* Create a memory stream from the compressed input data */
+    FILE *in_mem = fmemopen((void *)in_data, (size_t)in_len, "rb");
+    if (!in_mem) {
+        PyErr_SetString(PyExc_RuntimeError, "Unable to open input memory stream.");
+        return NULL;
+    }
+
+    /* Create a memory stream to capture the decompressed output */
+    char *out_buf = NULL;
+    size_t out_size = 0;
+    FILE *out_mem = open_memstream(&out_buf, &out_size);
+    if (!out_mem) {
+        fclose(in_mem);
+        PyErr_SetString(PyExc_RuntimeError, "Unable to open output memory stream.");
+        return NULL;
+    }
+
+    /* Reuse the file-based decompressor logic, but with memory streams */
+    _simz_decode_file_internal(in_mem, out_mem);
+
+    fclose(in_mem);
+    fclose(out_mem);
+
+    /* Create a Python bytes object from the decompressed data */
+    PyObject *result = PyBytes_FromStringAndSize(out_buf, out_size);
+    free(out_buf);
+
+    return result;
+}

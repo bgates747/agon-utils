@@ -280,6 +280,13 @@ static PyMethodDef MyMethods[] = {
      */
     {"simz_decode", simz_decode, METH_VARARGS, "Decompress a file using the simz decoder."},
 
+    {"simz_encode_bytes", (PyCFunction)simz_encode_bytes, METH_VARARGS,
+        "Compress a Python bytes object and return the compressed bytes."},
+       
+    {"simz_decode_bytes", (PyCFunction)simz_decode_bytes, METH_VARARGS,
+    "Decompress a Python bytes object and return the original bytes."},
+       
+
 // ============================================================================
 // Sentinel to end the list
 // ----------------------------------------------------------------------------

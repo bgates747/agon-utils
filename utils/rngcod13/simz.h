@@ -50,7 +50,7 @@ int simz_start_decoding( simz_rangecoder *rc );
 simz_freq simz_decode_culfreq( simz_rangecoder *rc, simz_freq tot_f );
 simz_freq simz_decode_culshift( simz_rangecoder *rc, simz_freq shift );
 void simz_decode_update( simz_rangecoder *rc, simz_freq sy_f, simz_freq lt_f, simz_freq tot_f );
-#define decode_update_shift(rc,f1,f2,f3) simz_decode_update((rc),(f1),(f2),(simz_freq)1<<(f3))
+#define simz_decode_update_shift(rc,f1,f2,f3) simz_decode_update((rc),(f1),(f2),(simz_freq)1<<(f3))
 unsigned char simz_decode_byte( simz_rangecoder *rc );
 unsigned short simz_decode_short( simz_rangecoder *rc );
 
