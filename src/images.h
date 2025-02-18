@@ -101,6 +101,8 @@ PyObject* convert_to_palette_bytes(PyObject *self, PyObject *args, PyObject *kwa
 PyObject* convert_to_rgb565(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* img_to_rgba2(PyObject *self, PyObject *args);
 PyObject* img_to_rgba8(PyObject *self, PyObject *args);
+PyObject* rgba32_to_rgba2_bytes(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* rgba2_to_rgba32_bytes(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* rgba8_to_img(PyObject *self, PyObject *args);
 PyObject* rgba2_to_img(PyObject *self, PyObject *args);
 PyObject* rgb_to_hsv(PyObject *self, PyObject *args);

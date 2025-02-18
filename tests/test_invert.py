@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import agonutils
+import agonutils as au
 import agonImages as ai
 from PIL import Image
 
@@ -8,8 +8,8 @@ def main(input_path, output_path):
     with open(input_path, 'rb') as infile:
         data = infile.read()
 
-    # Invert the image data using the agonutils.invert function
-    inverted_data = agonutils.invert(data)
+    # Invert the image data using the au.invert function
+    inverted_data = au.invert(data)
 
     # Write the inverted data back to a new file
     with open(output_path, 'wb') as outfile:

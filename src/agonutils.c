@@ -87,6 +87,25 @@ static PyMethodDef MyMethods[] = {
     // void img_to_rgba8(const char *input_filepath, const char *output_filepath);
     {"img_to_rgba8", img_to_rgba8, METH_VARARGS, "Convert an image to RGBA8 and save to a file"},
 
+    {"rgba32_to_rgba2_bytes", (PyCFunction)rgba32_to_rgba2_bytes, METH_VARARGS | METH_KEYWORDS,
+        "Convert raw 32-bit RGBA bytes to packed 2-bit RGBA (RGBA2) bytes.\n\n"
+        "Arguments:\n"
+        "  rgba32 (bytes) : Raw image data (width * height * 4 bytes).\n"
+        "  width (int)    : Image width in pixels.\n"
+        "  height (int)   : Image height in pixels.\n\n"
+        "Returns:\n"
+        "  bytes : Packed RGBA2 data (1 byte per pixel)."
+    },
+    {"rgba2_to_rgba32_bytes", (PyCFunction)rgba2_to_rgba32_bytes, METH_VARARGS | METH_KEYWORDS,
+        "Convert packed 2-bit RGBA (RGBA2) bytes to raw 32-bit RGBA bytes.\n\n"
+        "Arguments:\n"
+        "  rgba2 (bytes) : Packed RGBA2 data (width * height bytes).\n"
+        "  width (int)   : Image width in pixels.\n"
+        "  height (int)  : Image height in pixels.\n\n"
+        "Returns:\n"
+        "  bytes : Raw 32-bit RGBA image data (width * height * 4 bytes)."
+    },
+
     // void rgba8_to_img(const char *input_filepath, const char *output_filepath, int width, int height);
     {"rgba8_to_img", rgba8_to_img, METH_VARARGS, "Convert RGBA8 binary file to image"},
 

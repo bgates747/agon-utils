@@ -924,7 +924,12 @@ PyObject* rgba2_to_img(PyObject *self, PyObject *args) {
     // Read and decode each packed byte
     for (size_t i = 0; i < width * height; ++i) {
         uint8_t packed_pixel;
-        fread(&packed_pixel, sizeof(uint8_t), 1, file);
+        if (fread(&packed_pixel, sizeof(uint8_t), 1, file) != 1) {
+            free(image_data);
+            fclose(file);
+            PyErr_SetString(PyExc_IOError, "Error reading from input RGBA2 file.");
+            return NULL;
+        }        
 
         // Use the helper function to decode the 2-bit packed pixel to 8-bit RGBA
         uint8_t r, g, b, a;
@@ -948,6 +953,76 @@ PyObject* rgba2_to_img(PyObject *self, PyObject *args) {
 
     free(image_data);
     Py_RETURN_NONE;
+}
+
+// Convert raw 32-bit RGBA bytes to packed RGBA2 bytes (1 byte per pixel)
+PyObject* rgba32_to_rgba2_bytes(PyObject *self, PyObject *args, PyObject *kwargs) {
+    Py_buffer rgba32;
+    int width, height;
+    static char *kwlist[] = {"rgba32", "width", "height", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "y*ii", kwlist, &rgba32, &width, &height)) {
+        return NULL;
+    }
+    if ((size_t)rgba32.len != (size_t)width * height * 4) {
+        PyBuffer_Release(&rgba32);
+        PyErr_SetString(PyExc_ValueError, "Input data length does not match width * height * 4");
+        return NULL;
+    }    
+    size_t num_pixels = width * height;
+    uint8_t *input = (uint8_t *)rgba32.buf;
+    uint8_t *output = (uint8_t *)malloc(num_pixels);
+    if (!output) {
+        PyBuffer_Release(&rgba32);
+        PyErr_SetString(PyExc_MemoryError, "Unable to allocate memory for RGBA2 data");
+        return NULL;
+    }
+    for (size_t i = 0; i < num_pixels; i++) {
+        uint8_t r = input[i * 4 + 0];
+        uint8_t g = input[i * 4 + 1];
+        uint8_t b = input[i * 4 + 2];
+        uint8_t a = input[i * 4 + 3];
+        output[i] = eight_to_two(r, g, b, a);
+    }
+    PyBuffer_Release(&rgba32);
+    PyObject *result = Py_BuildValue("y#", output, num_pixels);
+    free(output);
+    return result;
+}
+
+// Convert packed RGBA2 bytes to raw 32-bit RGBA bytes (4 bytes per pixel)
+PyObject* rgba2_to_rgba32_bytes(PyObject *self, PyObject *args, PyObject *kwargs) {
+    Py_buffer rgba2;
+    int width, height;
+    static char *kwlist[] = {"rgba2", "width", "height", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "y*ii", kwlist, &rgba2, &width, &height)) {
+        return NULL;
+    }
+    size_t num_pixels = width * height;
+    if ((size_t)rgba2.len != num_pixels) {
+        PyBuffer_Release(&rgba2);
+        PyErr_SetString(PyExc_ValueError, "Input data length does not match width * height");
+        return NULL;
+    }    
+    size_t out_size = num_pixels * 4;
+    uint8_t *input = (uint8_t *)rgba2.buf;
+    uint8_t *output = (uint8_t *)malloc(out_size);
+    if (!output) {
+        PyBuffer_Release(&rgba2);
+        PyErr_SetString(PyExc_MemoryError, "Unable to allocate memory for RGBA32 data");
+        return NULL;
+    }
+    for (size_t i = 0; i < num_pixels; i++) {
+        uint8_t r, g, b, a;
+        two_to_eight(input[i], &r, &g, &b, &a);
+        output[i * 4 + 0] = r;
+        output[i * 4 + 1] = g;
+        output[i * 4 + 2] = b;
+        output[i * 4 + 3] = a;
+    }
+    PyBuffer_Release(&rgba2);
+    PyObject *result = Py_BuildValue("y#", output, out_size);
+    free(output);
+    return result;
 }
 
 // Function: Convert a PNG image to 8-bit RGBA and save it to a file
@@ -1010,7 +1085,12 @@ PyObject* rgba8_to_img(PyObject *self, PyObject *args) {
     }
 
     // Read RGBA8 data from file
-    fread(image_data, sizeof(uint8_t), image_size, file);
+    if (fread(image_data, sizeof(uint8_t), image_size, file) != image_size) {
+        free(image_data);
+        fclose(file);
+        PyErr_SetString(PyExc_IOError, "Error reading from input RGBA8 file.");
+        return NULL;
+    }    
     fclose(file);
 
     // Write the PNG image using your libpng helper
