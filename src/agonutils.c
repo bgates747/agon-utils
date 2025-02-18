@@ -4,6 +4,7 @@
 #include "images.h"
 #include "agm.h"
 #include "rle.h"
+#include "simz.h"
 
 // Python
 #include <Python.h>

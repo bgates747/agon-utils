@@ -28,7 +28,7 @@ elif sys.platform == "linux":
 
 module = Extension(
     'agonutils',
-    sources=['src/agonutils.c', 'src/images.c', 'src/agm.c', 'src/rle.c'],
+    sources=['src/agonutils.c', 'src/images.c', 'src/agm.c', 'src/rle.c', 'src/simz.c'],
     libraries=['avformat', 'avcodec', 'swscale', 'avutil', 'png16'],
     library_dirs=library_dirs,
     include_dirs=include_dirs,
