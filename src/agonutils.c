@@ -3,6 +3,7 @@
 #include "palettes.h"
 #include "images.h"
 #include "agm.h"
+#include "rle.h"
 
 // Python
 #include <Python.h>
@@ -29,26 +30,82 @@ static PyObject* hello(PyObject* self, PyObject* args) {
 }
 
 // Python wrapper for process_mp4
-static PyObject* process_mp4(PyObject *self, PyObject *args, PyObject *kwargs) {
-    const char *input_file;
-    const char *output_file;
-    int output_width, output_height;
-    const char *palette_file;
-    const char *method;
+// Python-facing function (exported as process_mp4).
+// This function expects the following arguments from Python:
+//   input_file (str)
+//   output_file (str)
+//   output_width (int)
+//   output_height (int)
+//   palette_file (str)
+//   noDither_method (str)
+//   dither_method (str)
+//   lookback (int)
+//   transparent_color (tuple, optional)
+PyObject* process_mp4(PyObject *self, PyObject *args, PyObject *kwargs) {
+    const char *input_file, *output_file, *palette_file, *noDither_method, *dither_method;
+    int output_width, output_height, lookback;
     PyObject *transparent_color = Py_None;
 
     static char *kwlist[] = {"input_file", "output_file", "output_width", "output_height",
-                             "palette_file", "method", "transparent_color", NULL};
+                             "palette_file", "noDither_method", "dither_method", "lookback", "transparent_color", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ssiiss|O", kwlist,
+    // Note: no spaces in the format string
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ssiisssi|O", kwlist,
                                      &input_file, &output_file, &output_width, &output_height,
-                                     &palette_file, &method, &transparent_color)) {
+                                     &palette_file, &noDither_method, &dither_method, &lookback, &transparent_color)) {
         return NULL;
     }
 
-    // Call the internal process_mp4 function.
-    int ret = _process_mp4_internal(input_file, output_file, output_width, output_height,palette_file, method, transparent_color);
+    int ret = _process_mp4_internal(input_file, output_file, output_width, output_height,
+                                    palette_file, noDither_method, dither_method, lookback, transparent_color);
     return PyLong_FromLong(ret);
+}
+
+// Python wrapper for RLE compression
+PyObject* rle_encode(PyObject *self, PyObject *args) {
+    Py_buffer input_data;
+    if (!PyArg_ParseTuple(args, "y*", &input_data)) {
+        return NULL;
+    }
+
+    size_t output_size;
+    uint8_t *compressed = _rle_encode_internal((uint8_t *)input_data.buf, input_data.len, &output_size);
+    if (!compressed) {
+        PyBuffer_Release(&input_data);
+        PyErr_SetString(PyExc_MemoryError, "Failed to allocate RLE output");
+        return NULL;
+    }
+
+    PyObject *result = PyBytes_FromStringAndSize((char *)compressed, output_size);
+    free(compressed);
+    PyBuffer_Release(&input_data);
+    return result;
+}
+
+/**
+ * rle_decode - Python wrapper for _rle_decode_internal.
+ *
+ * Expects a single argument: a bytes object containing RLE-encoded rgba2222 data.
+ * Returns a bytes object containing the decoded raw data.
+ */
+static PyObject* rle_decode(PyObject *self, PyObject *args) {
+    Py_buffer input_buf;
+    if (!PyArg_ParseTuple(args, "y*", &input_buf)) {
+        return NULL;
+    }
+    
+    size_t decoded_size = 0;
+    uint8_t *decoded = _rle_decode_internal((const uint8_t *)input_buf.buf, input_buf.len, &decoded_size);
+    PyBuffer_Release(&input_buf);
+    
+    if (!decoded) {
+        PyErr_SetString(PyExc_RuntimeError, "RLE decoding failed.");
+        return NULL;
+    }
+    
+    PyObject *result = Py_BuildValue("y#", decoded, decoded_size);
+    free(decoded);
+    return result;
 }
 
 // Function that inverts an rgba2222 data buffer by XORing each byte with 0x3F
@@ -178,20 +235,24 @@ static PyMethodDef MyMethods[] = {
     // ============================================================================
     // Agon Movie Functions
     // ----------------------------------------------------------------------------
-    // Process an MP4 file, extract frames, apply palette conversion, and save as custom format
     {"process_mp4", (PyCFunction)process_mp4, METH_VARARGS | METH_KEYWORDS,
-        "Process an MP4 video file, convert frames using a palette, and save as a custom format.\n\n"
+        "Process an MP4 file by extracting frames, applying palette conversion with differencing, and producing a custom movie file.\n\n"
         "Arguments:\n"
-        "    input_file (str)       - Path to the input MP4 file.\n"
-        "    output_file (str)      - Path to the output processed video file.\n"
-        "    output_width (int)     - Width of the output frames.\n"
-        "    output_height (int)    - Height of the output frames.\n"
-        "    palette_file (str)     - Path to the palette file (GIMP format).\n"
-        "    method (str)           - Dithering method ('RGB', 'HSV', 'CMYK', 'bayer', 'floyd', 'atkinson').\n"
-        "    transparent_color (tuple, optional) - RGBA tuple defining a transparent color.\n\n"
+        "  input_file (str): Path to the input MP4 file.\n"
+        "  output_file (str): Path to the output movie file.\n"
+        "  output_width (int): Frame width.\n"
+        "  output_height (int): Frame height.\n"
+        "  palette_file (str): Path to the palette file (GIMP format).\n"
+        "  noDither_method (str): Method for base (no-dither) conversion (e.g., \"RGB\").\n"
+        "  dither_method (str): Method for dithered conversion (e.g., \"floyd\", \"bayer\").\n"
+        "  lookback (int): Threshold for consecutive unchanged frames before forcing new dithering.\n"
+        "  transparent_color (tuple, optional): RGBA tuple for transparency.\n\n"
         "Returns:\n"
-        "    int - 0 on success, -1 on failure."
-    },
+        "  int: 0 on success, negative on failure."},
+
+    {"rle_encode", rle_encode, METH_VARARGS, "Compress raw RGBA2 data using RLE."},
+    {"rle_decode", rle_decode, METH_VARARGS, "Decompress RLE-encoded data."},
+       
 
 // ============================================================================
 // Sentinel to end the list

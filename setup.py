@@ -2,7 +2,7 @@ from setuptools import setup, Extension
 
 module = Extension(
     'agonutils',
-    sources=['src/agonutils.c', 'src/images.c', 'src/agm.c'],
+    sources=['src/agonutils.c', 'src/images.c', 'src/agm.c', 'src/rle.c'],
     libraries=['avformat', 'avcodec', 'swscale', 'avutil', 'png16'],
     library_dirs=['/lib/x86_64-linux-gnu', '/usr/lib/x86_64-linux-gnu'],
     include_dirs=['/usr/include', '/usr/include/ffmpeg'],

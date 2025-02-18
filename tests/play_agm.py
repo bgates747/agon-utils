@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
 import sys
+import struct
 import pygame
 import agonutils as au
 
 # ----- Metadata for the movie -----
-VIDEO_FILE = "/home/smith/Agon/mystuff/assets/video/staging/a_ha__Take_On_Me.agm"  # our custom movie file (raw RGBA2 data)
-WIDTH = 512
-HEIGHT = 384
-FRAME_RATE = 30         # frames per second
-SCALING_FACTOR = 1.0    # change to 2.0 to double the displayed size
+VIDEO_FILE = "/home/smith/Agon/mystuff/assets/video/staging/a_ha__Take_On_Me_short_rle.agm"
+WIDTH = 320
+HEIGHT = 240
+FRAME_RATE = 30
+SCALING_FACTOR = 1.0
 
-# ----- Helper functions -----
-def load_movie_frames(filename, width, height):
+# ----- Helper function to parse .agm and load frames -----
+def load_movie_frames(filename):
     """
-    Load the raw movie file and split it into frames.
-    Each frame is assumed to be (width * height) bytes of packed RGBA2 data.
+    Pre-load all frames from the .agm file. Each frame is assumed to be stored as:
+      [4-byte little-endian length][RLE-encoded data].
+    We RLE-decode to get raw RGBA2 of size WIDTH*HEIGHT per frame.
+
+    Returns a list of RGBA2 frames (each a bytes object).
     """
     try:
         with open(filename, "rb") as f:
@@ -22,76 +26,103 @@ def load_movie_frames(filename, width, height):
     except IOError as e:
         print(f"Error opening {filename}: {e}")
         sys.exit(1)
-    
-    frame_size = width * height
-    num_frames = len(data) // frame_size
-    if num_frames == 0:
-        print("No frames found in file!")
+
+    frames = []
+    offset = 0
+    total_size = len(data)
+    frame_count = 0
+
+    while True:
+        # If not enough bytes for a frame header, we're done.
+        if offset + 4 > total_size:
+            break
+
+        # Read the 4-byte frame length (little-endian)
+        frame_len = struct.unpack_from("<I", data, offset)[0]
+        offset += 4
+
+        # If not enough bytes left for the frame data, break
+        if offset + frame_len > total_size:
+            break
+
+        # Extract the RLE-compressed data
+        compressed_frame = data[offset:offset + frame_len]
+        offset += frame_len
+
+        # Decode RLE to get the raw RGBA2 data
+        rgba2_data = au.rle_decode(compressed_frame)
+        frames.append(rgba2_data)
+        frame_count += 1
+
+        # Print progress on a single line
+        percent = (offset / total_size) * 100.0
+        sys.stderr.write(f"\rLoaded frame {frame_count} ({percent:.2f}%)")
+        sys.stderr.flush()
+
+    sys.stderr.write("\n")
+
+    if not frames:
+        print("No frames found in the .agm file!")
         sys.exit(1)
-    frames = [data[i*frame_size : (i+1)*frame_size] for i in range(num_frames)]
+
+    print(f"Loaded {len(frames)} frames from {filename}")
     return frames
 
+# ----- Convert RGBA2 -> RGBA32 (existing logic) -----
 def convert_rgba2_to_rgba32(frame_data, width, height):
     """
-    Convert a single frame of RGBA2 data (packed, 1 byte per pixel)
-    to 32-bit RGBA (4 bytes per pixel) using agonutils.
+    Convert RGBA2 data (packed, 1 byte/pixel) to 32-bit RGBA using agonutils.
     """
-    # Call the Python-accessible function from agonutils.
-    # It should return a bytes object of length width*height*4.
-    rgba32 = au.rgba2_to_rgba32_bytes(frame_data, width, height)
-    return rgba32
+    return au.rgba2_to_rgba32_bytes(frame_data, width, height)
 
 # ----- Main player function -----
 def main():
-    # Initialize pygame.
+    # Init pygame
     pygame.init()
     window_width = int(WIDTH * SCALING_FACTOR)
     window_height = int(HEIGHT * SCALING_FACTOR)
     screen = pygame.display.set_mode((window_width, window_height))
     pygame.display.set_caption("Agonutils Video Player")
-    
-    # Load the movie frames.
-    frames = load_movie_frames(VIDEO_FILE, WIDTH, HEIGHT)
-    print(f"Loaded {len(frames)} frames from {VIDEO_FILE}")
+
+    # Pre-load frames (RLE decode => RGBA2).
+    frames = load_movie_frames(VIDEO_FILE)
     
     clock = pygame.time.Clock()
     running = True
     frame_index = 0
+    total_frames = len(frames)
 
     while running:
-        # Process events.
+        # Process events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
         
-        # Get current frame (raw RGBA2 data).
+        # Convert from RGBA2 to RGBA32
         raw_frame = frames[frame_index]
-        
-        # Convert from RGBA2 to full 32-bit RGBA.
         rgba32_bytes = convert_rgba2_to_rgba32(raw_frame, WIDTH, HEIGHT)
-        
-        # Create a pygame surface from the RGBA32 data.
-        # frombuffer creates a Surface that shares the bytes buffer.
+
+        # Create a pygame surface
         try:
             frame_surface = pygame.image.frombuffer(rgba32_bytes, (WIDTH, HEIGHT), "RGBA")
         except Exception as e:
-            print("Error creating surface:", e)
+            print(f"Error creating surface for frame {frame_index+1}: {e}")
             running = False
             continue
         
-        # Scale the surface if needed.
+        # Scale if needed
         if SCALING_FACTOR != 1.0:
             frame_surface = pygame.transform.scale(frame_surface, (window_width, window_height))
         
-        # Blit the frame and update the display.
+        # Blit & update display
         screen.blit(frame_surface, (0, 0))
         pygame.display.flip()
         
-        # Wait to match the frame rate.
+        # Control frame rate
         clock.tick(FRAME_RATE)
-        
-        # Next frame.
-        frame_index = (frame_index + 1) % len(frames)
+
+        # Next frame
+        frame_index = (frame_index + 1) % total_frames
     
     pygame.quit()
 
