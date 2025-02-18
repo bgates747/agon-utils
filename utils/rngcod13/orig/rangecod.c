@@ -40,13 +40,13 @@
 
   The input and output is done by the inbyte and outbyte macros
   defined in the .c file; change them as needed; the first parameter
-  passed to them is a pointer to the rangecoder structure; extend that
+  passed to them is a pointer to the simz_rangecoder structure; extend that
   structure as needed (and don't forget to initialize the values in
-  start_encoding resp. start_decoding). This distribution writes to
+  simz_start_encoding resp. simz_start_decoding). This distribution writes to
   stdout and reads from stdin.
 
   There are no global or static var's, so if the IO is thread save the
-  whole rangecoder is - unless GLOBALRANGECODER in rangecod.h is defined.
+  whole simz_rangecoder is - unless GLOBALRANGECODER in rangecod.h is defined.
 
   For error recovery the last 3 bytes written contain the total number
   of bytes written since starting the encoder. This can be used to
@@ -54,7 +54,7 @@
   size you pass to initrangecoder is included in that count.
 
   There is a supplementary file called renorm95.c available at the
-  website (www.compressconsult.com/rangecoder/) that changes the range
+  website (www.compressconsult.com/simz_rangecoder/) that changes the range
   coder to an arithmetic coder for speed comparisons.
 
   define RENORM95 if you want the arithmetic coder type renormalisation.
@@ -86,12 +86,12 @@
 /* SIZE OF RANGE ENCODING CODE VALUES. */
 
 #define CODE_BITS 32
-#define Top_value ((code_value)1 << (CODE_BITS-1))
+#define Top_value ((simz_code_value)1 << (CODE_BITS-1))
 
 
 /* all IO is done by these macros - change them if you want to */
 /* no checking is done - do it here if you want it             */
-/* cod is a pointer to the used rangecoder                     */
+/* cod is a pointer to the used simz_rangecoder                     */
 #define outbyte(cod,x) putchar(x)
 #define inbyte(cod)    getchar()
 
@@ -106,15 +106,15 @@
 
 #ifdef NOWARN
 #ifdef GLOBALRANGECODER
-char coderversion[]="rangecoder 1.3 NOWARN GLOBAL (c) 1997-2000 Michael Schindler";
+char coderversion[]="simz_rangecoder 1.3 NOWARN GLOBAL (c) 1997-2000 Michael Schindler";
 #else
-char coderversion[]="rangecoder 1.3 NOWARN (c) 1997-2000 Michael Schindler";
+char coderversion[]="simz_rangecoder 1.3 NOWARN (c) 1997-2000 Michael Schindler";
 #endif
 #else    /*NOWARN*/
 #ifdef GLOBALRANGECODER
-char coderversion[]="rangecoder 1.3 GLOBAL (c) 1997-2000 Michael Schindler";
+char coderversion[]="simz_rangecoder 1.3 GLOBAL (c) 1997-2000 Michael Schindler";
 #else
-char coderversion[]="rangecoder 1.3 (c) 1997-2000 Michael Schindler";
+char coderversion[]="simz_rangecoder 1.3 (c) 1997-2000 Michael Schindler";
 #endif
 #endif   /*NOWARN*/
 #endif   /*RENORM95*/
@@ -123,12 +123,12 @@ char coderversion[]="rangecoder 1.3 (c) 1997-2000 Michael Schindler";
 #ifdef GLOBALRANGECODER
 /* if this is defined we'll make a global variable rngc and    */
 /* make RNGC use that var; we'll also omit unneeded parameters */
-static rangecoder rngc;
+static simz_rangecoder rngc;
 #define RNGC (rngc)
 #define M_outbyte(a) outbyte(&rngc,a)
 #define M_inbyte inbyte(&rngc)
 #define enc_normalize(rc) M_enc_normalize()
-#define dec_normalize(rc) M_dec_normalize()
+#define simz_dec_normalize(rc) M_dec_normalize()
 #else
 #define RNGC (*rc)
 #define M_outbyte(a) outbyte(rc,a)
@@ -140,7 +140,7 @@ static rangecoder rngc;
 /* c is written as first byte in the datastream                */
 /* one could do without c, but then you have an additional if  */
 /* per outputbyte.                                             */
-void start_encoding( rangecoder *rc, char c, int initlength )
+void simz_start_encoding( simz_rangecoder *rc, char c, int initlength )
 {   RNGC.low = 0;                /* Full code range */
     RNGC.range = Top_value;
     RNGC.buffer = c;
@@ -152,9 +152,9 @@ void start_encoding( rangecoder *rc, char c, int initlength )
 #ifndef RENORM95
 /* I do the normalization before I need a defined state instead of */
 /* after messing it up. This simplifies starting and ending.       */
-static Inline void enc_normalize( rangecoder *rc )
+static Inline void enc_normalize( simz_rangecoder *rc )
 {   while(RNGC.range <= Bottom_value)     /* do we need renormalisation?  */
-    {   if (RNGC.low < (code_value)0xff<<SHIFT_BITS)  /* no carry possible --> output */
+    {   if (RNGC.low < (simz_code_value)0xff<<SHIFT_BITS)  /* no carry possible --> output */
         {   M_outbyte(RNGC.buffer);
             for(; RNGC.help; RNGC.help--)
                 M_outbyte(0xff);
@@ -186,9 +186,9 @@ static Inline void enc_normalize( rangecoder *rc )
 /* sy_f is the interval length (frequency of the symbol)     */
 /* lt_f is the lower end (frequency sum of < symbols)        */
 /* tot_f is the total interval length (total frequency sum)  */
-/* or (faster): tot_f = (code_value)1<<shift                             */
-void encode_freq( rangecoder *rc, freq sy_f, freq lt_f, freq tot_f )
-{	code_value r, tmp;
+/* or (faster): tot_f = (simz_code_value)1<<shift                             */
+void simz_encode_freq( simz_rangecoder *rc, simz_freq sy_f, simz_freq lt_f, simz_freq tot_f )
+{	simz_code_value r, tmp;
 	enc_normalize( rc );
 	r = RNGC.range / tot_f;
 	tmp = r * lt_f;
@@ -203,8 +203,8 @@ void encode_freq( rangecoder *rc, freq sy_f, freq lt_f, freq tot_f )
 #endif
 }
 
-void encode_shift( rangecoder *rc, freq sy_f, freq lt_f, freq shift )
-{	code_value r, tmp;
+void simz_encode_shift( simz_rangecoder *rc, simz_freq sy_f, simz_freq lt_f, simz_freq shift )
+{	simz_code_value r, tmp;
 	enc_normalize( rc );
 	r = RNGC.range >> shift;
 	tmp = r * lt_f;
@@ -226,7 +226,7 @@ void encode_shift( rangecoder *rc, freq sy_f, freq lt_f, freq shift )
 /* actually not that many bytes need to be output, but who   */
 /* cares. I output them because decode will read them :)     */
 /* the return value is the number of bytes written           */
-uint4 done_encoding( rangecoder *rc )
+uint4 simz_done_encoding( simz_rangecoder *rc )
 {   uint tmp;
     enc_normalize(rc);     /* now we have a normalized state */
     RNGC.bytecount += 5;
@@ -253,19 +253,19 @@ uint4 done_encoding( rangecoder *rc )
 
 /* Start the decoder                                         */
 /* rc is the range coder to be used                          */
-/* returns the char from start_encoding or EOF               */
-int start_decoding( rangecoder *rc )
+/* returns the char from simz_start_encoding or EOF               */
+int simz_start_decoding( simz_rangecoder *rc )
 {   int c = M_inbyte;
     if (c==EOF)
         return EOF;
     RNGC.buffer = M_inbyte;
     RNGC.low = RNGC.buffer >> (8-EXTRA_BITS);
-    RNGC.range = (code_value)1 << EXTRA_BITS;
+    RNGC.range = (simz_code_value)1 << EXTRA_BITS;
     return c;
 }
 
 
-static Inline void dec_normalize( rangecoder *rc )
+static Inline void simz_dec_normalize( simz_rangecoder *rc )
 {   while (RNGC.range <= Bottom_value)
     {   RNGC.low = (RNGC.low<<8) | ((RNGC.buffer<<EXTRA_BITS)&0xff);
         RNGC.buffer = M_inbyte;
@@ -279,11 +279,11 @@ static Inline void dec_normalize( rangecoder *rc )
 /* Calculate culmulative frequency for next symbol. Does NO update!*/
 /* rc is the range coder to be used                          */
 /* tot_f is the total frequency                              */
-/* or: totf is (code_value)1<<shift                                      */
+/* or: totf is (simz_code_value)1<<shift                                      */
 /* returns the culmulative frequency                         */
-freq decode_culfreq( rangecoder *rc, freq tot_f )
-{   freq tmp;
-    dec_normalize(rc);
+simz_freq simz_decode_culfreq( simz_rangecoder *rc, simz_freq tot_f )
+{   simz_freq tmp;
+    simz_dec_normalize(rc);
     RNGC.help = RNGC.range/tot_f;
     tmp = RNGC.low/RNGC.help;
 #ifdef EXTRAFAST
@@ -293,15 +293,15 @@ freq decode_culfreq( rangecoder *rc, freq tot_f )
 #endif
 }
 
-freq decode_culshift( rangecoder *rc, freq shift )
-{   freq tmp;
-    dec_normalize(rc);
+simz_freq simz_decode_culshift( simz_rangecoder *rc, simz_freq shift )
+{   simz_freq tmp;
+    simz_dec_normalize(rc);
     RNGC.help = RNGC.range>>shift;
     tmp = RNGC.low/RNGC.help;
 #ifdef EXTRAFAST
     return tmp;
 #else
-    return (tmp>>shift ? ((code_value)1<<shift)-1 : tmp);
+    return (tmp>>shift ? ((simz_code_value)1<<shift)-1 : tmp);
 #endif
 }
 
@@ -311,8 +311,8 @@ freq decode_culshift( rangecoder *rc, freq shift )
 /* sy_f is the interval length (frequency of the symbol)     */
 /* lt_f is the lower end (frequency sum of < symbols)        */
 /* tot_f is the total interval length (total frequency sum)  */
-void decode_update( rangecoder *rc, freq sy_f, freq lt_f, freq tot_f)
-{   code_value tmp;
+void simz_decode_update( simz_rangecoder *rc, simz_freq sy_f, simz_freq lt_f, simz_freq tot_f)
+{   simz_code_value tmp;
     tmp = RNGC.help * lt_f;
     RNGC.low -= tmp;
 #ifdef EXTRAFAST
@@ -328,21 +328,21 @@ void decode_update( rangecoder *rc, freq sy_f, freq lt_f, freq tot_f)
 
 /* Decode a byte/short without modelling                     */
 /* rc is the range coder to be used                          */
-unsigned char decode_byte(rangecoder *rc)
-{   unsigned char tmp = decode_culshift(rc,8);
-    decode_update( rc,1,tmp,(freq)1<<8);
+unsigned char simz_decode_byte(simz_rangecoder *rc)
+{   unsigned char tmp = simz_decode_culshift(rc,8);
+    simz_decode_update( rc,1,tmp,(simz_freq)1<<8);
     return tmp;
 }
 
-unsigned short decode_short(rangecoder *rc)
-{   unsigned short tmp = decode_culshift(rc,16);
-    decode_update( rc,1,tmp,(freq)1<<16);
+unsigned short simz_decode_short(simz_rangecoder *rc)
+{   unsigned short tmp = simz_decode_culshift(rc,16);
+    simz_decode_update( rc,1,tmp,(simz_freq)1<<16);
     return tmp;
 }
 
 
 /* Finish decoding                                           */
 /* rc is the range coder to be used                          */
-void done_decoding( rangecoder *rc )
-{   dec_normalize(rc);      /* normalize to use up all bytes */
+void simz_done_decoding( simz_rangecoder *rc )
+{   simz_dec_normalize(rc);      /* normalize to use up all bytes */
 }

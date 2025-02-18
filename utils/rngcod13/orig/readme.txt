@@ -32,7 +32,7 @@ e) a simple sample compression program with order 1 adaptive
 
 f) a debugging range coder; this coder expands files but
    stores explicit information about parameters passed to
-   rangecoder. It has exactly the same interface as rangecod.c
+   simz_rangecoder. It has exactly the same interface as rangecod.c
    so just replace.  This coder is handy if you can't decode
    correctly, it will help you locate the problem in your model.
    files: dummycod.c
@@ -45,18 +45,18 @@ h) text files:
    license: GNU general public license, version 2.
    makefile: makefile to build examples.
 
-reliability information: qsmodel and rangecoder are used in szip;
+reliability information: qsmodel and simz_rangecoder are used in szip;
 several hunderd GB (including testsets) were handled sucessfully.
 I do not have a 16-bit compiler any more and there were some
-problems with rangecoder 1.1 on these (things like "0xff<<23"
-which of course now reads "(code_value)0xff<<23".
+problems with simz_rangecoder 1.1 on these (things like "0xff<<23"
+which of course now reads "(simz_code_value)0xff<<23".
 qsmodel assumes int's to be able to hold frequency counts;
 so be careful on 16-bit computers.
 
 
 There is a supplimentary file called renorm95.c distributed under
 different conditions (basically: research purposes) that changes
-the rangecoder into an arithmetic coder to allow comparisons.
+the simz_rangecoder into an arithmetic coder to allow comparisons.
 It can be downloaded from the homepage (see below). Note that these
 programs differ in the closing from the ones used to produce the
 tables for my DCC98 poster "Data Compression Conference, March 1998,
@@ -65,7 +65,7 @@ Coding" so filesize does vary by some bytes.
 
 contact:
 michael@compressconsult.com
-http://www.compressconsult.com/rangecoder/
+http://www.compressconsult.com/simz_rangecoder/
 
 
 

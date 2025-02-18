@@ -51,7 +51,7 @@ void usage()
 
 
 /* count number of occurances of each byte */
-void countblock(unsigned char *buffer, freq length, freq *counters)
+void countblock(unsigned char *buffer, simz_freq length, simz_freq *counters)
 {   unsigned int i;
     /* first zero the counters */
     for (i=0; i<257; i++)
@@ -63,8 +63,8 @@ void countblock(unsigned char *buffer, freq length, freq *counters)
 
 
 int main( int argc, char *argv[] )
-{   freq counts[257], blocksize;
-    rangecoder rc;
+{   simz_freq counts[257], blocksize;
+    simz_rangecoder rc;
     unsigned char buffer[BLOCKSIZE];
 
     if ((argc > 3) || ((argc>0) && (argv[1][0]=='-')))
@@ -90,23 +90,23 @@ int main( int argc, char *argv[] )
 #endif
 
     /* initialize the range coder, first byte 0, no header */
-    start_encoding(&rc,0,0);
+    simz_start_encoding(&rc,0,0);
 
     while (1)
-    {   freq i;
+    {   simz_freq i;
         /* get the statistics */
         blocksize = fread(buffer,1,(size_t)BLOCKSIZE,stdin);
         
         /* terminate if no more data */
         if (blocksize==0) break;
         
-        encode_freq(&rc,1,1,2); /* a stupid way to code a bit */
+        simz_encode_freq(&rc,1,1,2); /* a stupid way to code a bit */
 
         countblock(buffer,blocksize,counts);
 
         /* write the statistics. */
-        /* Cant use putchar or other since we are after start of the rangecoder */
-        /* as you can see the rangecoder doesn't care where probabilities come */
+        /* Cant use putchar or other since we are after start of the simz_rangecoder */
+        /* as you can see the simz_rangecoder doesn't care where probabilities come */
         /* from, it uses a flat distribution of 0..0xffff in encode_short. */
         for(i=0; i<256; i++)
             encode_short(&rc,counts[i]);
@@ -120,15 +120,15 @@ int main( int argc, char *argv[] )
         /* output the encoded symbols */
         for(i=0; i<blocksize; i++) {
             int ch = buffer[i];
-            encode_freq(&rc,counts[ch+1]-counts[ch],counts[ch],counts[256]);
+            simz_encode_freq(&rc,counts[ch+1]-counts[ch],counts[ch],counts[256]);
         }
     }
 
     /* flag absence of next block by a bit */
-    encode_freq(&rc,1,0,2);
+    simz_encode_freq(&rc,1,0,2);
 
     /* close the encoder */
-    done_encoding(&rc);
+    simz_done_encoding(&rc);
 
     return 0;
 }

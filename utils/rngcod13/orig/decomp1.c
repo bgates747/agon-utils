@@ -52,7 +52,7 @@ void usage()
 
 int main( int argc, char *argv[] )
 {   int ch, syfreq, ltfreq, lastchar=0;
-    rangecoder rc;
+    simz_rangecoder rc;
     qsmodel qsm[256];
     if ((argc > 3) || ((argc>0) && (argv[1][0]=='-')))
         usage();
@@ -79,23 +79,23 @@ int main( int argc, char *argv[] )
     /* init the model the same as in the compressor */
     for (ch=0; ch<256; ch++)
         initqsmodel(qsm+ch,257,12,2000,NULL,0);
-    start_decoding(&rc);
+    simz_start_decoding(&rc);
 
     while (1)
     {
-        ltfreq = decode_culshift(&rc,12);
+        ltfreq = simz_decode_culshift(&rc,12);
         ch = qsgetsym(qsm+lastchar, ltfreq);
         if (ch==256)  /* check for end-of-file */
             break;
         putc(ch,stdout);
         qsgetfreq(qsm+lastchar,ch,&syfreq,&ltfreq);
-        decode_update( &rc, syfreq, ltfreq, 1<<12);
+        simz_decode_update( &rc, syfreq, ltfreq, 1<<12);
         qsupdate(qsm+lastchar,ch);
         lastchar = ch;
     }
     qsgetfreq(qsm+lastchar,256,&syfreq,&ltfreq);
-    decode_update( &rc, syfreq, ltfreq, 1<<12);
-    done_decoding(&rc);
+    simz_decode_update( &rc, syfreq, ltfreq, 1<<12);
+    simz_done_decoding(&rc);
     for (ch=0; ch<256; ch++)
         deleteqsmodel(qsm+ch);
 

@@ -49,16 +49,16 @@ void usage()
 }
 
 
-void readcounts(rangecoder *rc, freq *counters)
+void readcounts(simz_rangecoder *rc, simz_freq *counters)
 {   int i;
     for (i=0; i<256; i++)
-        counters[i] = decode_short(rc);
+        counters[i] = simz_decode_short(rc);
 }
 
 
 int main( int argc, char *argv[] )
-{   freq cf;
-    rangecoder rc;
+{   simz_freq cf;
+    simz_rangecoder rc;
     if ((argc > 3) || ((argc>0) && (argv[1][0]=='-')))
         usage();
 
@@ -81,38 +81,38 @@ int main( int argc, char *argv[] )
     setmode( fileno( stdout ), O_BINARY );
 #endif
 
-    if (start_decoding(&rc) != 0)
+    if (simz_start_decoding(&rc) != 0)
     {   fprintf(stderr,"could not suceessfully open input data\n");
         exit(1);
     }
 
-    while (cf = decode_culfreq(&rc,2))
-    {   freq counts[257], i, blocksize;
+    while (cf = simz_decode_culfreq(&rc,2))
+    {   simz_freq counts[257], i, blocksize;
         
-        decode_update(&rc,1,1,2);
+        simz_decode_update(&rc,1,1,2);
         readcounts(&rc,counts);
         
         /* figure out blocksize by summing counts; also use counta as in encoder */
         blocksize = 0;
         for (i=0; i<256; i++)
-        {   freq tmp = counts[i];
+        {   simz_freq tmp = counts[i];
             counts[i] = blocksize;
             blocksize += tmp;
         }
         counts[256] = blocksize;
 
         for (i=0; i<blocksize; i++)
-        {   freq cf, symbol;
-            cf = decode_culfreq(&rc,blocksize);
+        {   simz_freq cf, symbol;
+            cf = simz_decode_culfreq(&rc,blocksize);
             /* figure out symbol inefficiently; a binary search would be much better */
             for (symbol=0; counts[symbol+1]<=cf; symbol++)
                 /* void */;
-            decode_update(&rc, counts[symbol+1]-counts[symbol],counts[symbol],blocksize);
+            simz_decode_update(&rc, counts[symbol+1]-counts[symbol],counts[symbol],blocksize);
             putchar(symbol);
         }
     }
 
-    done_decoding(&rc);
+    simz_done_decoding(&rc);
 
     return 0;
 }

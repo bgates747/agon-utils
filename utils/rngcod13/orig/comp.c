@@ -52,7 +52,7 @@ void usage()
 
 int main( int argc, char *argv[] )
 {   int ch, syfreq, ltfreq;
-    rangecoder rc;
+    simz_rangecoder rc;
     qsmodel qsm;
 
     if ((argc > 3) || ((argc>0) && (argv[1][0]=='-')))
@@ -79,19 +79,19 @@ int main( int argc, char *argv[] )
 
     /* make an alphabet with 257 symbols, use 256 as end-of-file */
     initqsmodel(&qsm,257,12,2000,NULL,1);
-    start_encoding(&rc,0,0);
+    simz_start_encoding(&rc,0,0);
 
     /* do the coding */
     while ((ch=getc(stdin))!=EOF)
     {   qsgetfreq(&qsm,ch,&syfreq,&ltfreq);
-        encode_shift(&rc,syfreq,ltfreq,12);
+        simz_encode_shift(&rc,syfreq,ltfreq,12);
         qsupdate(&qsm,ch);
     }
     /* write 256 as end-of-file */
     qsgetfreq(&qsm,256,&syfreq,&ltfreq);
-    encode_shift(&rc,syfreq,ltfreq,12);
+    simz_encode_shift(&rc,syfreq,ltfreq,12);
 
-    done_encoding(&rc);
+    simz_done_encoding(&rc);
     deleteqsmodel(&qsm);
 
     return 0;

@@ -16,8 +16,8 @@ the order 0 and order 1 versions.
 
 This is mainly to show that the frequency estimations can come
 from different models/rules/sources/whatever and still can form one
-rangecoder stream.
-It also serves as usage examples of qsmodel and rangecoder so that
+simz_rangecoder stream.
+It also serves as usage examples of qsmodel and simz_rangecoder so that
 you have at least one working application.
 
 have fun
@@ -60,4 +60,4 @@ tar-file after the error is lost - comp does not restart.
 
 contact:
 michael@compressconsult.com
-http://www.compressconsult.com/rangecoder/
+http://www.compressconsult.com/simz_rangecoder/
