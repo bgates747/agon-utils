@@ -117,13 +117,6 @@ static void _simz_decode_file_internal(FILE *in, FILE *out) {
         exit(1);
     }
 
-    // /* Extract expected decompressed size */
-    // uint32_t expectedOutputSize = 
-    //     ((uint32_t)header[6]) |
-    //     ((uint32_t)header[7] << 8) |
-    //     ((uint32_t)header[8] << 16) |
-    //     ((uint32_t)header[9] << 24);
-
     simz_rangecoder rc;
     if (simz_start_decoding(&rc) != 0) {
         fprintf(stderr, "could not successfully open input data\n");

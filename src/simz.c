@@ -22,6 +22,8 @@ char coderversion[] = "simple zip v1.0 (c)1999 Michael Schindler";
 /* Maximum block size (keep below 1<<16 to avoid overflows) */
 #define BLOCKSIZE 60000
 
+#define SIMZ_HEADER_SIZE 10
+
 /***************** Compression Functions *****************/
 
 /* Count occurrences of each byte in the buffer */
@@ -40,9 +42,22 @@ void _simz_encode_file_internal(FILE *in, FILE *out) {
     simz_freq counts[257], blocksize;
     simz_freq i;
 
+    /* Determine total uncompressed size */
+    fseek(in, 0, SEEK_END);
+    uint32_t uncompressed_size = ftell(in);
+    rewind(in);
+
+    /* Write the SIMZ header */
+    uint8_t header[SIMZ_HEADER_SIZE] = {'S', 'I', 'M', 'Z', 0, 9, 
+        (uncompressed_size & 0xFF), 
+        ((uncompressed_size >> 8) & 0xFF), 
+        ((uncompressed_size >> 16) & 0xFF), 
+        ((uncompressed_size >> 24) & 0xFF)};
+    fwrite(header, 1, SIMZ_HEADER_SIZE, out);
+
     /* Assign the file pointers for proper I/O */
-    rc.fin = in;   // Not actually used in compression, but included for consistency
-    rc.fout = out; // Critical for the outbyte() macro
+    rc.fin = in;
+    rc.fout = out;
 
     /* Initialize the range coder */
     simz_start_encoding(&rc, 0, 0);
@@ -90,16 +105,34 @@ void _simz_decode_file_internal(FILE *in, FILE *out) {
     simz_rangecoder rc;
     simz_freq counts[257], i, blocksize;
 
+    /* Read and verify the SIMZ header */
+    uint8_t header[SIMZ_HEADER_SIZE];
+    if (fread(header, 1, SIMZ_HEADER_SIZE, in) != SIMZ_HEADER_SIZE) {
+        fprintf(stderr, "Invalid SIMZ file: header too short\n");
+        exit(1);
+    }
+    if (header[0] != 'S' || header[1] != 'I' || header[2] != 'M' || header[3] != 'Z') {
+        fprintf(stderr, "Invalid SIMZ file: bad magic bytes\n");
+        exit(1);
+    }
+    if (header[4] != 0 || header[5] != 9) {
+        fprintf(stderr, "Unsupported SIMZ version: %d.%d\n", header[4], header[5]);
+        exit(1);
+    }
+
+    uint32_t expectedOutputSize = header[6] | (header[7] << 8) | (header[8] << 16) | (header[9] << 24);
+
     /* Assign file pointers for proper I/O */
-    rc.fin = in;   // Critical for inbyte() macro
-    rc.fout = out; // Not directly used in decoding, but included for symmetry
+    rc.fin = in;
+    rc.fout = out;
 
     if (simz_start_decoding(&rc) != 0) {
         fprintf(stderr, "Could not successfully open input data\n");
         exit(1);
     }
 
-    while (1) {
+    uint32_t out_index = 0;
+    while (out_index < expectedOutputSize) {
         /* Check for the flag that indicates a new block */
         simz_freq cf = simz_decode_culfreq(&rc, 2);
         if (cf == 0) break; // No more blocks
@@ -118,7 +151,7 @@ void _simz_decode_file_internal(FILE *in, FILE *out) {
         counts[256] = blocksize;
 
         /* Decode each symbol in the block */
-        for (i = 0; i < blocksize; i++) {
+        for (i = 0; i < blocksize && out_index < expectedOutputSize; i++) {
             simz_freq cf_sym = simz_decode_culfreq(&rc, blocksize);
             simz_freq symbol = 0;
 
@@ -126,6 +159,7 @@ void _simz_decode_file_internal(FILE *in, FILE *out) {
             
             simz_decode_update(&rc, counts[symbol+1] - counts[symbol], counts[symbol], blocksize);
             fputc((int)symbol, out);
+            out_index++;
         }
     }
 
