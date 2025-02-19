@@ -19,6 +19,8 @@ char coderversion[] = "simple zip v1.0 (c)1999 Michael Schindler";
 /* Maximum block size (keep below 1<<16 to avoid overflows) */
 #define BLOCKSIZE 60000
 
+#define SIMZ_HEADER_SIZE 10
+
 /***************** Compression Functions *****************/
 
 /* Count occurrences of each byte in the buffer */
@@ -32,6 +34,23 @@ static void countblock(unsigned char *buffer, simz_freq length, simz_freq *count
 
 /* Compress from input stream 'in' to output stream 'out' */
 static void _simz_encode_file_internal(FILE *in, FILE *out) {
+    /* Compute total decompressed size */
+    fseek(in, 0, SEEK_END);
+    uint32_t decompressed_size = ftell(in);
+    fseek(in, 0, SEEK_SET);
+
+    /* Write the SIMZ header */
+    fputc('S', out);
+    fputc('I', out);
+    fputc('M', out);
+    fputc('Z', out);
+    fputc(0, out);  /* Major version */
+    fputc(9, out);  /* Minor version */
+    fputc(decompressed_size & 0xFF, out);
+    fputc((decompressed_size >> 8) & 0xFF, out);
+    fputc((decompressed_size >> 16) & 0xFF, out);
+    fputc((decompressed_size >> 24) & 0xFF, out);
+    
     simz_freq counts[257], blocksize;
     simz_rangecoder rc;
     unsigned char buffer[BLOCKSIZE];
@@ -83,6 +102,28 @@ static void readcounts(simz_rangecoder *rc, simz_freq *counters) {
 
 /* Decompress from input stream 'in' to output stream 'out' */
 static void _simz_decode_file_internal(FILE *in, FILE *out) {
+    /* Read and verify the SIMZ header */
+    uint8_t header[SIMZ_HEADER_SIZE];
+    if (fread(header, 1, SIMZ_HEADER_SIZE, in) != SIMZ_HEADER_SIZE) {
+        fprintf(stderr, "Invalid SIMZ file: header too short\n");
+        exit(1);
+    }
+    if (header[0] != 'S' || header[1] != 'I' || header[2] != 'M' || header[3] != 'Z') {
+        fprintf(stderr, "Invalid SIMZ file: bad magic bytes\n");
+        exit(1);
+    }
+    if (header[4] != 0 || header[5] != 9) {
+        fprintf(stderr, "Unsupported SIMZ version: %d.%d\n", header[4], header[5]);
+        exit(1);
+    }
+
+    // /* Extract expected decompressed size */
+    // uint32_t expectedOutputSize = 
+    //     ((uint32_t)header[6]) |
+    //     ((uint32_t)header[7] << 8) |
+    //     ((uint32_t)header[8] << 16) |
+    //     ((uint32_t)header[9] << 24);
+
     simz_rangecoder rc;
     if (simz_start_decoding(&rc) != 0) {
         fprintf(stderr, "could not successfully open input data\n");
