@@ -16,7 +16,6 @@ extern "C" {
 typedef struct {
     uint8_t r, g, b;  // RGB values
     float h, s, v;    // HSV values
-    float c, m, y, k; // CMYK values
     char name[64];    // Color name
 } Color;
 
@@ -44,7 +43,6 @@ int _write_png(const char *filename, uint8_t *image_data, int width, int height)
 // 2. Color Conversion and Quantization
 // ---------------------------
 void _rgb_to_hsv(uint8_t r, uint8_t g, uint8_t b, float *h, float *s, float *v);
-void _rgb_to_cmyk(uint8_t r, uint8_t g, uint8_t b, float *c, float *m, float *y, float *k);
 void _hsv_to_rgb(float h, float s, float v, uint8_t *r, uint8_t *g, uint8_t *b);
 uint8_t _quantize_channel(uint8_t channel);
 uint8_t _eight_to_two(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
@@ -75,7 +73,6 @@ void _convert_floyd_steinberg(uint8_t* image_data, int width, int height, Palett
 // ---------------------------
 void _convert_method_rgb(uint8_t *image_data, int width, int height, Palette *palette, bool has_transparent_color, const uint8_t transparent_rgb[3]);
 void _convert_method_hsv(uint8_t *image_data, int width, int height, Palette *palette, bool has_transparent_color, const uint8_t transparent_rgb[3]);
-void _convert_method_cmyk(uint8_t *image_data, int width, int height, Palette *palette, bool has_transparent_color, const uint8_t transparent_rgb[3]);
 
 // ===========================
 // 8. Utility Functions

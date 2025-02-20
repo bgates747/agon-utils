@@ -140,25 +140,6 @@ void _rgb_to_hsv(uint8_t r, uint8_t g, uint8_t b, float *h, float *s, float *v) 
     *v = max;
 }
 
-// Function to convert RGB to CMYK (normalized 0-1)
-void _rgb_to_cmyk(uint8_t r, uint8_t g, uint8_t b, float *c, float *m, float *y, float *k) {
-    float r_norm = r / 255.0f;
-    float g_norm = g / 255.0f;
-    float b_norm = b / 255.0f;
-
-    *k = 1.0f - fmaxf(fmaxf(r_norm, g_norm), b_norm);
-
-    if (*k < 1.0f) {
-        *c = (1.0f - r_norm - *k) / (1.0f - *k);
-        *m = (1.0f - g_norm - *k) / (1.0f - *k);
-        *y = (1.0f - b_norm - *k) / (1.0f - *k);
-    } else {
-        *c = 0;
-        *m = 0;
-        *y = 0;
-    }
-}
-
 void _hsv_to_rgb(float h, float s, float v, uint8_t *r, uint8_t *g, uint8_t *b) {
     float c = v * s;  // Chroma
     float x = c * (1.0f - fabsf(fmodf(h * 6.0f, 2.0f) - 1.0f));
@@ -195,12 +176,6 @@ void _hsv_to_rgb(float h, float s, float v, uint8_t *r, uint8_t *g, uint8_t *b) 
     *r = (uint8_t)((r_temp + m) * 255.0f);
     *g = (uint8_t)((g_temp + m) * 255.0f);
     *b = (uint8_t)((b_temp + m) * 255.0f);
-}
-
-void _cmyk_to_rgb(float c, float m, float y, float k, uint8_t *r, uint8_t *g, uint8_t *b) {
-    *r = (uint8_t)(255.0f * (1.0f - c) * (1.0f - k));
-    *g = (uint8_t)(255.0f * (1.0f - m) * (1.0f - k));
-    *b = (uint8_t)(255.0f * (1.0f - y) * (1.0f - k));
 }
 
 // Helper function to quantize an 8-bit channel to 2-bit
@@ -316,7 +291,7 @@ int _load_gimp_palette(const char *filename, Palette *palette) {
         return -1;
     }
 
-    // Skip header lines (lines starting with # or containing "GIMP Palette")
+    // Skip header lines (lines starting with '#' or containing "GIMP Palette" or "Columns")
     while (fgets(line, sizeof(line), file)) {
         if (line[0] == '#' || strncmp(line, "GIMP Palette", 12) == 0 || strncmp(line, "Columns", 7) == 0) {
             continue;
@@ -342,10 +317,10 @@ int _load_gimp_palette(const char *filename, Palette *palette) {
             palette->colors[color_count].b = (uint8_t)b;
 
             // Convert and store HSV values
-            _rgb_to_hsv(r, g, b, &palette->colors[color_count].h, &palette->colors[color_count].s, &palette->colors[color_count].v);
-
-            // Convert and store CMYK values
-            _rgb_to_cmyk(r, g, b, &palette->colors[color_count].c, &palette->colors[color_count].m, &palette->colors[color_count].y, &palette->colors[color_count].k);
+            _rgb_to_hsv(r, g, b, 
+                        &palette->colors[color_count].h, 
+                        &palette->colors[color_count].s, 
+                        &palette->colors[color_count].v);
 
             color_count++;
         }
@@ -511,10 +486,6 @@ void _convert_floyd_steinberg(uint8_t* image_data, int width, int height, Palett
                 .h = 0.0f,      // Not used for RGB matching
                 .s = 0.0f,      // Not used for RGB matching
                 .v = 0.0f,      // Not used for RGB matching
-                .c = 0.0f,      // Not used for RGB matching
-                .m = 0.0f,      // Not used for RGB matching
-                .y = 0.0f,      // Not used for RGB matching
-                .k = 0.0f       // Not used for RGB matching
             };
 
             // Find the nearest RGB color in the palette
@@ -583,9 +554,8 @@ void _convert_method_rgb(uint8_t *image_data, int width, int height, Palette *pa
             }
 
             // Create a temporary Color struct for the current pixel's RGB values
-            Color current_pixel = {r, g, b, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+            Color current_pixel = {r, g, b, 0.0f, 0.0f, 0.0f};
             _rgb_to_hsv(r, g, b, &current_pixel.h, &current_pixel.s, &current_pixel.v);
-            _rgb_to_cmyk(r, g, b, &current_pixel.c, &current_pixel.m, &current_pixel.y, &current_pixel.k);
 
             // Find the nearest RGB color in the palette
             const Color *nearest_rgb = _nearest_rgb(&current_pixel, palette);
@@ -899,8 +869,6 @@ PyObject* convert_to_palette(PyObject *self, PyObject *args, PyObject *kwargs) {
         _convert_method_rgb(image_data, width, height, &palette, has_transparent_color, transparent_rgb);
     } else if (strcasecmp(method, "HSV") == 0) {
         _convert_method_hsv(image_data, width, height, &palette, has_transparent_color, transparent_rgb);
-    } else if (strcasecmp(method, "CMYK") == 0) {
-        _convert_method_cmyk(image_data, width, height, &palette, has_transparent_color, transparent_rgb);
     } else if (strcasecmp(method, "atkinson") == 0) {
         _convert_atkinson(image_data, width, height, &palette);
     } else if (strcasecmp(method, "bayer") == 0) {
@@ -908,7 +876,7 @@ PyObject* convert_to_palette(PyObject *self, PyObject *args, PyObject *kwargs) {
     } else if (strcasecmp(method, "floyd") == 0) {
         _convert_floyd_steinberg(image_data, width, height, &palette);
     } else {
-        PyErr_SetString(PyExc_ValueError, "Invalid method. Must be 'RGB', 'HSV', 'CMYK', 'bayer', or 'floyd'");
+        PyErr_SetString(PyExc_ValueError, "Invalid method. Must be 'RGB', 'HSV', 'bayer', or 'floyd'");
         free(image_data);
         free_palette(&palette);
         return NULL;

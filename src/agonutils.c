@@ -39,7 +39,8 @@ PyObject* csv_to_palette(PyObject *self, PyObject *args) {
         free(palette);
         fclose(file);
         return NULL;
-        }
+    }
+
     // Read the CSV file line by line
     while (fgets(line, sizeof(line), file)) {
         if (color_count >= capacity) {
@@ -52,15 +53,14 @@ PyObject* csv_to_palette(PyObject *self, PyObject *args) {
             }
         }
 
-        // Parse the CSV line (expecting "r,g,b,h,s,v,c,m,y,k,hex,name")
+        // Parse the CSV line (expecting "r,g,b,h,s,v,hex,name")
         uint8_t r, g, b;
         char name[64];  // For the color name
-        char hex[8];    // For the hex code
-        float h, s, v, c, m, y, k;
+        char hex[8];    // For the hex code (if needed)
+        float h, s, v;
 
-        // Parse the fields correctly, skipping over HSV and CMYK as needed
-        if (sscanf(line, "%hhu,%hhu,%hhu,%f,%f,%f,%f,%f,%f,%f,%7[^,],%63[^\n]", 
-                &r, &g, &b, &h, &s, &v, &c, &m, &y, &k, hex, name) == 12) {
+        if (sscanf(line, "%hhu,%hhu,%hhu,%f,%f,%f,%7[^,],%63[^\n]",
+                &r, &g, &b, &h, &s, &v, hex, name) == 8) {
             // Fill in the RGB values
             palette->colors[color_count].r = r;
             palette->colors[color_count].g = g;
@@ -68,9 +68,6 @@ PyObject* csv_to_palette(PyObject *self, PyObject *args) {
 
             // Convert RGB to HSV
             _rgb_to_hsv(r, g, b, &palette->colors[color_count].h, &palette->colors[color_count].s, &palette->colors[color_count].v);
-
-            // Convert RGB to CMYK
-            _rgb_to_cmyk(r, g, b, &palette->colors[color_count].c, &palette->colors[color_count].m, &palette->colors[color_count].y, &palette->colors[color_count].k);
 
             // Store the color name
             snprintf(palette->colors[color_count].name, sizeof(palette->colors[color_count].name), "%s", name);
