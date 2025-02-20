@@ -2,7 +2,7 @@
 
 
 // Helper function to read a PNG file into RGBA format
-int read_png(const char *filename, uint8_t **image_data, int *width, int *height) {
+int _read_png(const char *filename, uint8_t **image_data, int *width, int *height) {
     FILE *fp = fopen(filename, "rb");
     if (!fp) {
         fprintf(stderr, "Failed to open file: %s\n", filename);
@@ -63,7 +63,7 @@ int read_png(const char *filename, uint8_t **image_data, int *width, int *height
 }
 
 // Helper function to write RGBA data to a PNG file
-int write_png(const char *filename, uint8_t *image_data, int width, int height) {
+int _write_png(const char *filename, uint8_t *image_data, int width, int height) {
     FILE *fp = fopen(filename, "wb");
     if (!fp) {
         fprintf(stderr, "Failed to open file for writing: %s\n", filename);
@@ -111,144 +111,8 @@ int write_png(const char *filename, uint8_t *image_data, int width, int height) 
     return 1;
 }
 
-// Function to load a PNG file and convert it to raw RGBA bytes
-uint8_t* load_png_to_rgba(const char *filename, int *width, int *height) {
-    FILE *fp = fopen(filename, "rb");
-    if (!fp) {
-        fprintf(stderr, "Could not open file %s for reading\n", filename);
-        return NULL;
-    }
-
-    // Read the PNG header
-    png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if (!png) {
-        fclose(fp);
-        return NULL;
-    }
-
-    png_infop info = png_create_info_struct(png);
-    if (!info) {
-        png_destroy_read_struct(&png, NULL, NULL);
-        fclose(fp);
-        return NULL;
-    }
-
-    if (setjmp(png_jmpbuf(png))) {
-        png_destroy_read_struct(&png, &info, NULL);
-        fclose(fp);
-        return NULL;
-    }
-
-    png_init_io(png, fp);
-    png_read_info(png, info);
-
-    *width = png_get_image_width(png, info);
-    *height = png_get_image_height(png, info);
-    png_byte color_type = png_get_color_type(png, info);
-    png_byte bit_depth = png_get_bit_depth(png, info);
-
-    // Convert palette and grayscale images to RGBA
-    if (bit_depth == 16) {
-        png_set_strip_16(png);
-    }
-    if (color_type == PNG_COLOR_TYPE_PALETTE) {
-        png_set_palette_to_rgb(png);
-    }
-    if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) {
-        png_set_expand_gray_1_2_4_to_8(png);
-    }
-    if (png_get_valid(png, info, PNG_INFO_tRNS)) {
-        png_set_tRNS_to_alpha(png);
-    }
-    if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_GRAY) {
-        png_set_filler(png, 0xFF, PNG_FILLER_AFTER);
-    }
-    if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
-        png_set_gray_to_rgb(png);
-    }
-
-    png_read_update_info(png, info);
-
-    // Allocate memory for image data (RGBA = 4 bytes per pixel)
-    int row_bytes = png_get_rowbytes(png, info);
-    uint8_t *image_data = (uint8_t *)malloc((*height) * row_bytes);
-
-    png_bytep *row_pointers = (png_bytep *)malloc(sizeof(png_bytep) * (*height));
-    for (int y = 0; y < *height; y++) {
-        row_pointers[y] = image_data + y * row_bytes;
-    }
-
-    // Read the image into row_pointers
-    png_read_image(png, row_pointers);
-
-    free(row_pointers);
-    png_destroy_read_struct(&png, &info, NULL);
-    fclose(fp);
-
-    return image_data;
-}
-
-// Function to save raw RGBA data to a PNG file
-int save_rgba_to_png(const char *filename, uint8_t *image_data, int width, int height) {
-    FILE *fp = fopen(filename, "wb");
-    if (!fp) {
-        fprintf(stderr, "Could not open file %s for writing\n", filename);
-        return -1;
-    }
-
-    // Initialize write structure
-    png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if (!png) {
-        fclose(fp);
-        return -1;
-    }
-
-    png_infop info = png_create_info_struct(png);
-    if (!info) {
-        png_destroy_write_struct(&png, NULL);
-        fclose(fp);
-        return -1;
-    }
-
-    if (setjmp(png_jmpbuf(png))) {
-        png_destroy_write_struct(&png, &info);
-        fclose(fp);
-        return -1;
-    }
-
-    png_init_io(png, fp);
-
-    // Write PNG header
-    png_set_IHDR(
-        png,
-        info,
-        width, height,
-        8, // bit depth
-        PNG_COLOR_TYPE_RGBA, // color type
-        PNG_INTERLACE_NONE,
-        PNG_COMPRESSION_TYPE_DEFAULT,
-        PNG_FILTER_TYPE_DEFAULT
-    );
-    png_write_info(png, info);
-
-    // Write image data
-    png_bytep *row_pointers = (png_bytep *)malloc(sizeof(png_bytep) * height);
-    for (int y = 0; y < height; y++) {
-        row_pointers[y] = image_data + y * width * 4; // 4 bytes per pixel (RGBA)
-    }
-
-    png_write_image(png, row_pointers);
-    png_write_end(png, NULL);
-
-    free(row_pointers);
-    png_destroy_write_struct(&png, &info);
-    fclose(fp);
-
-    return 0; // Success
-}
-
 // Function to convert RGB to HSV (normalized 0-1)
-void rgb_to_hsv_internal(uint8_t r, uint8_t g, uint8_t b, float *h, float *s, float *v) {
+void _rgb_to_hsv(uint8_t r, uint8_t g, uint8_t b, float *h, float *s, float *v) {
     float r_norm = r / 255.0f;
     float g_norm = g / 255.0f;
     float b_norm = b / 255.0f;
@@ -277,7 +141,7 @@ void rgb_to_hsv_internal(uint8_t r, uint8_t g, uint8_t b, float *h, float *s, fl
 }
 
 // Function to convert RGB to CMYK (normalized 0-1)
-void rgb_to_cmyk_internal(uint8_t r, uint8_t g, uint8_t b, float *c, float *m, float *y, float *k) {
+void _rgb_to_cmyk(uint8_t r, uint8_t g, uint8_t b, float *c, float *m, float *y, float *k) {
     float r_norm = r / 255.0f;
     float g_norm = g / 255.0f;
     float b_norm = b / 255.0f;
@@ -295,7 +159,7 @@ void rgb_to_cmyk_internal(uint8_t r, uint8_t g, uint8_t b, float *c, float *m, f
     }
 }
 
-void hsv_to_rgb_internal(float h, float s, float v, uint8_t *r, uint8_t *g, uint8_t *b) {
+void _hsv_to_rgb(float h, float s, float v, uint8_t *r, uint8_t *g, uint8_t *b) {
     float c = v * s;  // Chroma
     float x = c * (1.0f - fabsf(fmodf(h * 6.0f, 2.0f) - 1.0f));
     float m = v - c;
@@ -333,14 +197,14 @@ void hsv_to_rgb_internal(float h, float s, float v, uint8_t *r, uint8_t *g, uint
     *b = (uint8_t)((b_temp + m) * 255.0f);
 }
 
-void cmyk_to_rgb_internal(float c, float m, float y, float k, uint8_t *r, uint8_t *g, uint8_t *b) {
+void _cmyk_to_rgb(float c, float m, float y, float k, uint8_t *r, uint8_t *g, uint8_t *b) {
     *r = (uint8_t)(255.0f * (1.0f - c) * (1.0f - k));
     *g = (uint8_t)(255.0f * (1.0f - m) * (1.0f - k));
     *b = (uint8_t)(255.0f * (1.0f - y) * (1.0f - k));
 }
 
 // Helper function to quantize an 8-bit channel to 2-bit
-uint8_t quantize_channel(uint8_t channel) {
+uint8_t _quantize_channel(uint8_t channel) {
     if (channel < 64) {
         return 0;
     } else if (channel < 128) {
@@ -353,19 +217,19 @@ uint8_t quantize_channel(uint8_t channel) {
 }
 
 // Helper function to encode 8-bit RGBA into a 2-bit packed pixel
-uint8_t eight_to_two(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+uint8_t _eight_to_two(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     // Quantize 8-bit values to 2-bit values
-    uint8_t r_q = quantize_channel(r);
-    uint8_t g_q = quantize_channel(g);
-    uint8_t b_q = quantize_channel(b);
-    uint8_t a_q = quantize_channel(a);
+    uint8_t r_q = _quantize_channel(r);
+    uint8_t g_q = _quantize_channel(g);
+    uint8_t b_q = _quantize_channel(b);
+    uint8_t a_q = _quantize_channel(a);
 
     // Pack the 2-bit channels into a single byte
     return (a_q << 6) | (b_q << 4) | (g_q << 2) | r_q;
 }
 
 // Helper function to decode a 2-bit pixel into 8-bit RGBA (used for palette colors)
-void two_to_eight(uint8_t pixel, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
+void _two_to_eight(uint8_t pixel, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a) {
     // Extract the individual 2-bit values from the byte
     *a = (pixel >> 6) & 0b11;
     *b = (pixel >> 4) & 0b11;
@@ -383,26 +247,18 @@ void two_to_eight(uint8_t pixel, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a)
 #include <float.h>  // For FLT_MAX (instead of INFINITY)
 
 // Function to calculate Euclidean distance between two RGB colors in the Color struct
-float get_color_distance_rgb(const Color *color1, const Color *color2) {
+float _distance_rgb(const Color *color1, const Color *color2) {
     return sqrtf(powf(color1->r - color2->r, 2) +
                  powf(color1->g - color2->g, 2) +
                  powf(color1->b - color2->b, 2));
 }
 
-// Function to calculate Euclidean distance between two CMYK colors in the Color struct
-float get_color_distance_cmyk(const Color *color1, const Color *color2) {
-    return sqrtf(powf(color1->c - color2->c, 2) +
-                 powf(color1->m - color2->m, 2) +
-                 powf(color1->y - color2->y, 2) +
-                 powf(color1->k - color2->k, 2));
-}
-
 // Function to find the nearest RGB color in the palette
-const Color* find_nearest_color_rgb_internal(const Color *target_rgb, const Palette *palette) {
+const Color* _nearest_rgb(const Color *target_rgb, const Palette *palette) {
     const Color *nearest_color = NULL;
     float min_distance = FLT_MAX;  // Set to max float value
     for (size_t i = 0; i < palette->size; ++i) {
-        float distance = get_color_distance_rgb(target_rgb, &palette->colors[i]);
+        float distance = _distance_rgb(target_rgb, &palette->colors[i]);
         if (distance < min_distance) {
             min_distance = distance;
             nearest_color = &palette->colors[i];
@@ -411,7 +267,7 @@ const Color* find_nearest_color_rgb_internal(const Color *target_rgb, const Pale
     return nearest_color;
 }
 
-const Color* find_nearest_color_hsv_internal(const Color *target_hsv, const Palette *palette) {
+const Color* _nearest_hsv(const Color *target_hsv, const Palette *palette) {
     const Color *nearest_color = NULL;
     float min_distance = FLT_MAX;
 
@@ -440,22 +296,8 @@ const Color* find_nearest_color_hsv_internal(const Color *target_hsv, const Pale
     return nearest_color;
 }
 
-// Function to find the nearest CMYK color in the palette
-const Color* find_nearest_color_cmyk_internal(const Color *target_cmyk, const Palette *palette) {
-    const Color *nearest_color = NULL;
-    float min_distance = FLT_MAX;
-    for (size_t i = 0; i < palette->size; ++i) {
-        float distance = get_color_distance_cmyk(target_cmyk, &palette->colors[i]);
-        if (distance < min_distance) {
-            min_distance = distance;
-            nearest_color = &palette->colors[i];
-        }
-    }
-    return nearest_color;
-}
-
 // Function to read a GIMP palette file and load it into the Palette struct
-int load_gimp_palette(const char *filename, Palette *palette) {
+int _load_gimp_palette(const char *filename, Palette *palette) {
     FILE *file = fopen(filename, "r");
     if (!file) {
         fprintf(stderr, "Error: Cannot open file %s\n", filename);
@@ -500,10 +342,10 @@ int load_gimp_palette(const char *filename, Palette *palette) {
             palette->colors[color_count].b = (uint8_t)b;
 
             // Convert and store HSV values
-            rgb_to_hsv_internal(r, g, b, &palette->colors[color_count].h, &palette->colors[color_count].s, &palette->colors[color_count].v);
+            _rgb_to_hsv(r, g, b, &palette->colors[color_count].h, &palette->colors[color_count].s, &palette->colors[color_count].v);
 
             // Convert and store CMYK values
-            rgb_to_cmyk_internal(r, g, b, &palette->colors[color_count].c, &palette->colors[color_count].m, &palette->colors[color_count].y, &palette->colors[color_count].k);
+            _rgb_to_cmyk(r, g, b, &palette->colors[color_count].c, &palette->colors[color_count].m, &palette->colors[color_count].y, &palette->colors[color_count].k);
 
             color_count++;
         }
@@ -527,7 +369,7 @@ void free_palette(Palette *palette) {
     palette->size = 0;
 }
 
-void dither_atkinson(uint8_t* image_data, int width, int height, Palette *palette) {
+void _convert_atkinson(uint8_t* image_data, int width, int height, Palette *palette) {
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             uint8_t* pixel = &image_data[(y * width + x) * 4];  // RGBA format
@@ -539,7 +381,7 @@ void dither_atkinson(uint8_t* image_data, int width, int height, Palette *palett
             Color current_pixel = { .r = pixel[0], .g = pixel[1], .b = pixel[2] };
 
             // Find the nearest RGB color in the palette
-            const Color* nearest_color = find_nearest_color_rgb_internal(&current_pixel, palette);
+            const Color* nearest_color = _nearest_rgb(&current_pixel, palette);
 
             // Compute the error (difference between original and nearest color)
             int16_t err_r = pixel[0] - nearest_color->r;
@@ -560,53 +402,53 @@ void dither_atkinson(uint8_t* image_data, int width, int height, Palette *palett
             // Propagate to right neighbor (x + 1)
             if (x + 1 < width) {
                 uint8_t* right_pixel = &image_data[(y * width + (x + 1)) * 4];
-                right_pixel[0] = clamp(right_pixel[0] + error_r);
-                right_pixel[1] = clamp(right_pixel[1] + error_g);
-                right_pixel[2] = clamp(right_pixel[2] + error_b);
+                right_pixel[0] = _clamp_256(right_pixel[0] + error_r);
+                right_pixel[1] = _clamp_256(right_pixel[1] + error_g);
+                right_pixel[2] = _clamp_256(right_pixel[2] + error_b);
             }
 
             // Propagate to right+2 neighbor (x + 2)
             if (x + 2 < width) {
                 uint8_t* right2_pixel = &image_data[(y * width + (x + 2)) * 4];
-                right2_pixel[0] = clamp(right2_pixel[0] + error_r);
-                right2_pixel[1] = clamp(right2_pixel[1] + error_g);
-                right2_pixel[2] = clamp(right2_pixel[2] + error_b);
+                right2_pixel[0] = _clamp_256(right2_pixel[0] + error_r);
+                right2_pixel[1] = _clamp_256(right2_pixel[1] + error_g);
+                right2_pixel[2] = _clamp_256(right2_pixel[2] + error_b);
             }
 
             // Propagate to bottom neighbor (y + 1)
             if (y + 1 < height) {
                 uint8_t* bottom_pixel = &image_data[((y + 1) * width + x) * 4];
-                bottom_pixel[0] = clamp(bottom_pixel[0] + error_r);
-                bottom_pixel[1] = clamp(bottom_pixel[1] + error_g);
-                bottom_pixel[2] = clamp(bottom_pixel[2] + error_b);
+                bottom_pixel[0] = _clamp_256(bottom_pixel[0] + error_r);
+                bottom_pixel[1] = _clamp_256(bottom_pixel[1] + error_g);
+                bottom_pixel[2] = _clamp_256(bottom_pixel[2] + error_b);
             }
 
             // Propagate to bottom-right neighbor (y + 1, x + 1)
             if (x + 1 < width && y + 1 < height) {
                 uint8_t* bottom_right_pixel = &image_data[((y + 1) * width + (x + 1)) * 4];
-                bottom_right_pixel[0] = clamp(bottom_right_pixel[0] + error_r);
-                bottom_right_pixel[1] = clamp(bottom_right_pixel[1] + error_g);
-                bottom_right_pixel[2] = clamp(bottom_right_pixel[2] + error_b);
+                bottom_right_pixel[0] = _clamp_256(bottom_right_pixel[0] + error_r);
+                bottom_right_pixel[1] = _clamp_256(bottom_right_pixel[1] + error_g);
+                bottom_right_pixel[2] = _clamp_256(bottom_right_pixel[2] + error_b);
             }
 
             // Propagate to bottom-right+2 neighbor (y + 1, x + 2)
             if (x + 2 < width && y + 1 < height) {
                 uint8_t* bottom_right2_pixel = &image_data[((y + 1) * width + (x + 2)) * 4];
-                bottom_right2_pixel[0] = clamp(bottom_right2_pixel[0] + error_r);
-                bottom_right2_pixel[1] = clamp(bottom_right2_pixel[1] + error_g);
-                bottom_right2_pixel[2] = clamp(bottom_right2_pixel[2] + error_b);
+                bottom_right2_pixel[0] = _clamp_256(bottom_right2_pixel[0] + error_r);
+                bottom_right2_pixel[1] = _clamp_256(bottom_right2_pixel[1] + error_g);
+                bottom_right2_pixel[2] = _clamp_256(bottom_right2_pixel[2] + error_b);
             }
         }
     }
 }
 
 void extrapolate_color(const Color *orig, const Color *matched, Color *extrapolated) {
-    extrapolated->r = clamp(orig->r + (orig->r - matched->r));
-    extrapolated->g = clamp(orig->g + (orig->g - matched->g));
-    extrapolated->b = clamp(orig->b + (orig->b - matched->b));
+    extrapolated->r = _clamp_256(orig->r + (orig->r - matched->r));
+    extrapolated->g = _clamp_256(orig->g + (orig->g - matched->g));
+    extrapolated->b = _clamp_256(orig->b + (orig->b - matched->b));
 }
 
-void dither_bayer(uint8_t* image_data, int width, int height, Palette *palette) {
+void _convert_bayer(uint8_t* image_data, int width, int height, Palette *palette) {
     for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++) {
             uint8_t* pixel = &image_data[(y * width + x) * 4];  // RGBA format
@@ -621,17 +463,17 @@ void dither_bayer(uint8_t* image_data, int width, int height, Palette *palette) 
             Color current_pixel = { .r = pixel[0], .g = pixel[1], .b = pixel[2] };
 
             // Find the nearest RGB color in the palette (initial color1)
-            const Color* color1 = find_nearest_color_rgb_internal(&current_pixel, palette);
+            const Color* color1 = _nearest_rgb(&current_pixel, palette);
 
             // Extrapolate a second color (color2) based on the error from color1
             Color extrapolated_color;
             extrapolate_color(&current_pixel, color1, &extrapolated_color);
 
-            const Color* color2 = find_nearest_color_rgb_internal(&extrapolated_color, palette);
+            const Color* color2 = _nearest_rgb(&extrapolated_color, palette);
 
             // Calculate distances
-            float err1 = get_color_distance_rgb(&current_pixel, color1);
-            float err2 = get_color_distance_rgb(&current_pixel, color2);
+            float err1 = _distance_rgb(&current_pixel, color1);
+            float err2 = _distance_rgb(&current_pixel, color2);
 
             // Determine the relative probability of choosing color1 vs color2
             if (err1 || err2) {
@@ -650,7 +492,7 @@ void dither_bayer(uint8_t* image_data, int width, int height, Palette *palette) 
 }
 
 // Floyd-Steinberg dithering
-void dither_floyd_steinberg(uint8_t* image_data, int width, int height, Palette *palette) {
+void _convert_floyd_steinberg(uint8_t* image_data, int width, int height, Palette *palette) {
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             int pixel_index = (y * width + x) * 4;  // RGBA format
@@ -676,7 +518,7 @@ void dither_floyd_steinberg(uint8_t* image_data, int width, int height, Palette 
             };
 
             // Find the nearest RGB color in the palette
-            const Color* nearest_color = find_nearest_color_rgb_internal(&current_pixel, palette);
+            const Color* nearest_color = _nearest_rgb(&current_pixel, palette);
 
             // Store the original pixel values
             uint8_t old_r = pixel[0];
@@ -696,26 +538,26 @@ void dither_floyd_steinberg(uint8_t* image_data, int width, int height, Palette 
             // Distribute the error to neighboring pixels (Floyd-Steinberg dithering)
             if (x + 1 < width) {
                 int neighbor_index = (y * width + (x + 1)) * 4;
-                image_data[neighbor_index + 0] = clamp(image_data[neighbor_index + 0] + (error_r * 7 / 16));
-                image_data[neighbor_index + 1] = clamp(image_data[neighbor_index + 1] + (error_g * 7 / 16));
-                image_data[neighbor_index + 2] = clamp(image_data[neighbor_index + 2] + (error_b * 7 / 16));
+                image_data[neighbor_index + 0] = _clamp_256(image_data[neighbor_index + 0] + (error_r * 7 / 16));
+                image_data[neighbor_index + 1] = _clamp_256(image_data[neighbor_index + 1] + (error_g * 7 / 16));
+                image_data[neighbor_index + 2] = _clamp_256(image_data[neighbor_index + 2] + (error_b * 7 / 16));
             }
             if (y + 1 < height) {
                 if (x > 0) {
                     int neighbor_index = ((y + 1) * width + (x - 1)) * 4;
-                    image_data[neighbor_index + 0] = clamp(image_data[neighbor_index + 0] + (error_r * 3 / 16));
-                    image_data[neighbor_index + 1] = clamp(image_data[neighbor_index + 1] + (error_g * 3 / 16));
-                    image_data[neighbor_index + 2] = clamp(image_data[neighbor_index + 2] + (error_b * 3 / 16));
+                    image_data[neighbor_index + 0] = _clamp_256(image_data[neighbor_index + 0] + (error_r * 3 / 16));
+                    image_data[neighbor_index + 1] = _clamp_256(image_data[neighbor_index + 1] + (error_g * 3 / 16));
+                    image_data[neighbor_index + 2] = _clamp_256(image_data[neighbor_index + 2] + (error_b * 3 / 16));
                 }
                 int neighbor_index = ((y + 1) * width + x) * 4;
-                image_data[neighbor_index + 0] = clamp(image_data[neighbor_index + 0] + (error_r * 5 / 16));
-                image_data[neighbor_index + 1] = clamp(image_data[neighbor_index + 1] + (error_g * 5 / 16));
-                image_data[neighbor_index + 2] = clamp(image_data[neighbor_index + 2] + (error_b * 5 / 16));
+                image_data[neighbor_index + 0] = _clamp_256(image_data[neighbor_index + 0] + (error_r * 5 / 16));
+                image_data[neighbor_index + 1] = _clamp_256(image_data[neighbor_index + 1] + (error_g * 5 / 16));
+                image_data[neighbor_index + 2] = _clamp_256(image_data[neighbor_index + 2] + (error_b * 5 / 16));
                 if (x + 1 < width) {
                     int neighbor_index = ((y + 1) * width + (x + 1)) * 4;
-                    image_data[neighbor_index + 0] = clamp(image_data[neighbor_index + 0] + (error_r * 1 / 16));
-                    image_data[neighbor_index + 1] = clamp(image_data[neighbor_index + 1] + (error_g * 1 / 16));
-                    image_data[neighbor_index + 2] = clamp(image_data[neighbor_index + 2] + (error_b * 1 / 16));
+                    image_data[neighbor_index + 0] = _clamp_256(image_data[neighbor_index + 0] + (error_r * 1 / 16));
+                    image_data[neighbor_index + 1] = _clamp_256(image_data[neighbor_index + 1] + (error_g * 1 / 16));
+                    image_data[neighbor_index + 2] = _clamp_256(image_data[neighbor_index + 2] + (error_b * 1 / 16));
                 }
             }
         }
@@ -723,7 +565,7 @@ void dither_floyd_steinberg(uint8_t* image_data, int width, int height, Palette 
 }
 
 // Convert a PNG image to use a custom palette by matching RGB colors
-void convert_image_rgb(uint8_t *image_data, int width, int height, Palette *palette, bool has_transparent_color, const uint8_t transparent_rgb[3]) {
+void _convert_method_rgb(uint8_t *image_data, int width, int height, Palette *palette, bool has_transparent_color, const uint8_t transparent_rgb[3]) {
     // Loop over every pixel in the image
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
@@ -742,11 +584,11 @@ void convert_image_rgb(uint8_t *image_data, int width, int height, Palette *pale
 
             // Create a temporary Color struct for the current pixel's RGB values
             Color current_pixel = {r, g, b, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
-            rgb_to_hsv_internal(r, g, b, &current_pixel.h, &current_pixel.s, &current_pixel.v);
-            rgb_to_cmyk_internal(r, g, b, &current_pixel.c, &current_pixel.m, &current_pixel.y, &current_pixel.k);
+            _rgb_to_hsv(r, g, b, &current_pixel.h, &current_pixel.s, &current_pixel.v);
+            _rgb_to_cmyk(r, g, b, &current_pixel.c, &current_pixel.m, &current_pixel.y, &current_pixel.k);
 
             // Find the nearest RGB color in the palette
-            const Color *nearest_rgb = find_nearest_color_rgb_internal(&current_pixel, palette);
+            const Color *nearest_rgb = _nearest_rgb(&current_pixel, palette);
 
             // Update the image data with the nearest RGB color
             image_data[pixel_index] = nearest_rgb->r;
@@ -760,7 +602,7 @@ void convert_image_rgb(uint8_t *image_data, int width, int height, Palette *pale
 }
 
 // Convert a PNG image to use a custom palette by matching HSV colors
-void convert_image_hsv(uint8_t *image_data, int width, int height, Palette *palette, bool has_transparent_color, const uint8_t transparent_rgb[3]) {
+void _convert_method_hsv(uint8_t *image_data, int width, int height, Palette *palette, bool has_transparent_color, const uint8_t transparent_rgb[3]) {
     // Loop over every pixel in the image
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
@@ -779,14 +621,14 @@ void convert_image_hsv(uint8_t *image_data, int width, int height, Palette *pale
 
             // Convert the current pixel's RGB values to HSV
             Color current_pixel;
-            rgb_to_hsv_internal(r, g, b, &current_pixel.h, &current_pixel.s, &current_pixel.v);
+            _rgb_to_hsv(r, g, b, &current_pixel.h, &current_pixel.s, &current_pixel.v);
 
             // Find the nearest HSV color in the palette
-            const Color *nearest_hsv = find_nearest_color_hsv_internal(&current_pixel, palette);
+            const Color *nearest_hsv = _nearest_hsv(&current_pixel, palette);
 
             // Convert the nearest HSV color back to RGB for output
             uint8_t nearest_r, nearest_g, nearest_b;
-            hsv_to_rgb_internal(nearest_hsv->h, nearest_hsv->s, nearest_hsv->v, &nearest_r, &nearest_g, &nearest_b);
+            _hsv_to_rgb(nearest_hsv->h, nearest_hsv->s, nearest_hsv->v, &nearest_r, &nearest_g, &nearest_b);
 
             // Update the image data with the nearest RGB color
             image_data[pixel_index] = nearest_r;
@@ -799,48 +641,8 @@ void convert_image_hsv(uint8_t *image_data, int width, int height, Palette *pale
     free_palette(palette);
 }
 
-// Convert a PNG image to use a custom palette by matching CMYK colors
-void convert_image_cmyk(uint8_t *image_data, int width, int height, Palette *palette, bool has_transparent_color, const uint8_t transparent_rgb[3]) {
-    // Loop over every pixel in the image
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            int pixel_index = (y * width + x) * 4;  // Assuming RGBA format
-
-            uint8_t r = image_data[pixel_index];
-            uint8_t g = image_data[pixel_index + 1];
-            uint8_t b = image_data[pixel_index + 2];
-            uint8_t a = image_data[pixel_index + 3];
-
-            // Handle transparency based on alpha or a specific transparent color
-            if (a < 1 || (has_transparent_color && r == transparent_rgb[0] && g == transparent_rgb[1] && b == transparent_rgb[2])) {
-                image_data[pixel_index + 3] = 0;  // Fully transparent
-                continue;
-            }
-
-            // Convert the current pixel's RGB values to CMYK
-            Color current_pixel;
-            rgb_to_cmyk_internal(r, g, b, &current_pixel.c, &current_pixel.m, &current_pixel.y, &current_pixel.k);
-
-            // Find the nearest CMYK color in the palette
-            const Color *nearest_cmyk = find_nearest_color_cmyk_internal(&current_pixel, palette);
-
-            // Convert the nearest CMYK color back to RGB for output
-            uint8_t nearest_r, nearest_g, nearest_b;
-            cmyk_to_rgb_internal(nearest_cmyk->c, nearest_cmyk->m, nearest_cmyk->y, nearest_cmyk->k, &nearest_r, &nearest_g, &nearest_b);
-
-            // Update the image data with the nearest RGB color
-            image_data[pixel_index] = nearest_r;
-            image_data[pixel_index + 1] = nearest_g;
-            image_data[pixel_index + 2] = nearest_b;
-        }
-    }
-
-    // Free the palette memory
-    free_palette(palette);
-}
-
-// Helper function to clamp values between 0 and 255
-inline uint8_t clamp(int value) {
+// Helper function to _clamp_256 values between 0 and 255
+inline uint8_t _clamp_256(int value) {
     if (value < 0) return 0;
     if (value > 255) return 255;
     return (uint8_t)value;
@@ -858,7 +660,7 @@ PyObject* img_to_rgba2(PyObject *self, PyObject *args) {
     // Open the input PNG file (use your libpng helpers for loading)
     uint8_t *image_data;
     int width, height;
-    if (!read_png(input_filepath, &image_data, &width, &height)) {
+    if (!_read_png(input_filepath, &image_data, &width, &height)) {
         PyErr_SetString(PyExc_IOError, "Failed to load PNG file.");
         return NULL;
     }
@@ -883,7 +685,7 @@ PyObject* img_to_rgba2(PyObject *self, PyObject *args) {
             uint8_t a = image_data[pixel_index + 3];
 
             // Use the helper function to encode 8-bit RGBA into a 2-bit packed pixel
-            uint8_t packed_pixel = eight_to_two(r, g, b, a);
+            uint8_t packed_pixel = _eight_to_two(r, g, b, a);
 
             // Write the packed pixel to the file
             fwrite(&packed_pixel, sizeof(uint8_t), 1, file);
@@ -907,7 +709,7 @@ PyObject* img_to_rgba8(PyObject *self, PyObject *args) {
     // Open the input PNG file (use your libpng helpers for loading)
     uint8_t *image_data;
     int width, height;
-    if (!read_png(input_filepath, &image_data, &width, &height)) {
+    if (!_read_png(input_filepath, &image_data, &width, &height)) {
         PyErr_SetString(PyExc_IOError, "Failed to load PNG file.");
         return NULL;
     }
@@ -971,7 +773,7 @@ PyObject* rgba2_to_img(PyObject *self, PyObject *args) {
         
         // Use the helper function to decode the 2-bit packed pixel to 8-bit RGBA
         uint8_t r, g, b, a;
-        two_to_eight(packed_pixel, &r, &g, &b, &a);
+        _two_to_eight(packed_pixel, &r, &g, &b, &a);
 
         // Store the expanded 8-bit values in the image data
         image_data[i * 4 + 0] = r;
@@ -983,7 +785,7 @@ PyObject* rgba2_to_img(PyObject *self, PyObject *args) {
     fclose(file);
 
     // Write the PNG image using your libpng helper
-    if (!write_png(output_filepath, image_data, width, height)) {
+    if (!_write_png(output_filepath, image_data, width, height)) {
         PyErr_SetString(PyExc_IOError, "Failed to save PNG file.");
         free(image_data);
         return NULL;
@@ -1030,7 +832,7 @@ PyObject* rgba8_to_img(PyObject *self, PyObject *args) {
     fclose(file);
 
     // Write the PNG image using your libpng helper
-    if (!write_png(output_filepath, image_data, width, height)) {
+    if (!_write_png(output_filepath, image_data, width, height)) {
         PyErr_SetString(PyExc_IOError, "Failed to save PNG file.");
         free(image_data);
         return NULL;
@@ -1053,15 +855,15 @@ PyObject* convert_to_palette(PyObject *self, PyObject *args, PyObject *kwargs) {
 
     // Load the palette from the GIMP palette file
     Palette palette;
-    if (load_gimp_palette(palette_file, &palette) != 0) {
+    if (_load_gimp_palette(palette_file, &palette) != 0) {
         PyErr_SetString(PyExc_IOError, "Failed to load palette file");
         return NULL;
     }
 
-    // Load image using the helper function (read_png)
+    // Load image using the helper function (_read_png)
     uint8_t *image_data;
     int width, height;
-    if (!read_png(src_file, &image_data, &width, &height)) {
+    if (!_read_png(src_file, &image_data, &width, &height)) {
         PyErr_SetString(PyExc_IOError, "Failed to load source PNG file");
         free_palette(&palette);
         return NULL;
@@ -1094,17 +896,17 @@ PyObject* convert_to_palette(PyObject *self, PyObject *args, PyObject *kwargs) {
 
     // Call the appropriate conversion or dithering function based on the method
     if (strcasecmp(method, "RGB") == 0) {
-        convert_image_rgb(image_data, width, height, &palette, has_transparent_color, transparent_rgb);
+        _convert_method_rgb(image_data, width, height, &palette, has_transparent_color, transparent_rgb);
     } else if (strcasecmp(method, "HSV") == 0) {
-        convert_image_hsv(image_data, width, height, &palette, has_transparent_color, transparent_rgb);
+        _convert_method_hsv(image_data, width, height, &palette, has_transparent_color, transparent_rgb);
     } else if (strcasecmp(method, "CMYK") == 0) {
-        convert_image_cmyk(image_data, width, height, &palette, has_transparent_color, transparent_rgb);
+        _convert_method_cmyk(image_data, width, height, &palette, has_transparent_color, transparent_rgb);
     } else if (strcasecmp(method, "atkinson") == 0) {
-        dither_atkinson(image_data, width, height, &palette);
+        _convert_atkinson(image_data, width, height, &palette);
     } else if (strcasecmp(method, "bayer") == 0) {
-        dither_bayer(image_data, width, height, &palette);
+        _convert_bayer(image_data, width, height, &palette);
     } else if (strcasecmp(method, "floyd") == 0) {
-        dither_floyd_steinberg(image_data, width, height, &palette);
+        _convert_floyd_steinberg(image_data, width, height, &palette);
     } else {
         PyErr_SetString(PyExc_ValueError, "Invalid method. Must be 'RGB', 'HSV', 'CMYK', 'bayer', or 'floyd'");
         free(image_data);
@@ -1113,7 +915,7 @@ PyObject* convert_to_palette(PyObject *self, PyObject *args, PyObject *kwargs) {
     }
 
     // Write the PNG file
-    if (!write_png(tgt_file, image_data, width, height)) {
+    if (!_write_png(tgt_file, image_data, width, height)) {
         PyErr_SetString(PyExc_IOError, "Failed to save target PNG file");
         free(image_data);
         free_palette(&palette);
@@ -1126,77 +928,8 @@ PyObject* convert_to_palette(PyObject *self, PyObject *args, PyObject *kwargs) {
     Py_RETURN_NONE;
 }
 
-void quantize_to_rgb565(uint8_t *image_data, int width, int height) {
-    // Iterate through each pixel in the image (RGBA = 4 bytes per pixel)
-    for (int i = 0; i < width * height * 4; i += 4) {
-        uint8_t r = image_data[i];     // Red channel
-        uint8_t g = image_data[i + 1]; // Green channel
-        uint8_t b = image_data[i + 2]; // Blue channel
-
-        // Quantize the color channels to RGB565
-        uint8_t r5 = round(r / 32) * 32;
-        uint8_t g6 = round(g / 64) * 64;
-        uint8_t b5 = round(b / 32) * 32;
-
-        // Write the quantized RGB values back to the image data
-        image_data[i] = r5;
-        image_data[i + 1] = g6;
-        image_data[i + 2] = b5;
-
-    }
-}
-
-// Function: Convert image colors to RGB565 and save it as a PNG file
-PyObject* convert_to_rgb565(PyObject *self, PyObject *args, PyObject *kwargs) {
-    const char *src_file, *tgt_file;
-
-    // Parse arguments (source file, target file)
-    static char *kwlist[] = {"src_file", "tgt_file", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ss", kwlist, &src_file, &tgt_file)) {
-        return NULL;
-    }
-
-    // Load image using the helper function (read_png)
-    uint8_t *image_data;
-    int width, height;
-    if (!read_png(src_file, &image_data, &width, &height)) {
-        PyErr_SetString(PyExc_IOError, "Failed to load source PNG file");
-        return NULL;
-    }
-    
-    // Convert the image data to RGB565 format
-    quantize_to_rgb565(image_data, width, height);
-
-    // Write the PNG file
-    if (!write_png(tgt_file, image_data, width, height)) {
-        PyErr_SetString(PyExc_IOError, "Failed to save target PNG file");
-        free(image_data);
-        return NULL;
-    }
-
-    // Free memory
-    free(image_data);
-    Py_RETURN_NONE;
-}
-
-// Helper function: Convert a Color struct to a Python tuple (RGB, HSV, CMYK, Name)
-PyObject* convert_color_to_python(const Color *color) {
-    if (color == NULL) {
-        Py_RETURN_NONE;
-    }
-
-    // Convert the Color struct to a Python tuple, including the name
-    return Py_BuildValue(
-        "(iii)(fff)(ffff)s", 
-        color->r, color->g, color->b,           // RGB
-        color->h, color->s, color->v,           // HSV
-        color->c, color->m, color->y, color->k, // CMYK
-        color->name                             // Name (if available)
-    );
-}
-
 // Helper function: Parse Python arguments into a Color struct (internal use)
-int parse_color(PyObject *args, Color *color) {
+int _parse_color(PyObject *args, Color *color) {
     int r, g, b;
 
     if (!PyArg_ParseTuple(args, "iii", &r, &g, &b)) {

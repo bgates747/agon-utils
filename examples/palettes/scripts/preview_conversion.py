@@ -15,10 +15,6 @@ if __name__ == '__main__':
     # Transparent color (optional) set to None
     transparent_rgb = (0, 0, 0, 0)
 
-    # # No dithering RGB565
-    # output_image_rgb = f"{output_dir}/RGB565{ext}"
-    # au.convert_to_rgb565(input_image, output_image_rgb)
-
     # No dithering RGB
     output_image_rgb = f"{output_dir}/RGB{ext}"
     au.convert_to_palette(input_image, output_image_rgb, palette_filepath, 'RGB', transparent_rgb)

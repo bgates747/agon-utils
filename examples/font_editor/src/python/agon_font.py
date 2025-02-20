@@ -672,7 +672,7 @@ def bin_to_text(filepath, hexdump=False):
             f.write(output_row + '\n')
 
 # Helper function to quantize an 8-bit channel to 2-bit
-def quantize_channel(channel):
+def _quantize_channel(channel):
     if channel < 64:
         return 0
     elif channel < 128:
@@ -685,10 +685,10 @@ def quantize_channel(channel):
 # Helper function to encode 8-bit RGBA tuple into a 2-bit packed pixel
 def rgba8_to_rgba2(rgba):
     r, g, b, a = rgba
-    r_q = quantize_channel(r)
-    g_q = quantize_channel(g)
-    b_q = quantize_channel(b)
-    a_q = quantize_channel(a)
+    r_q = _quantize_channel(r)
+    g_q = _quantize_channel(g)
+    b_q = _quantize_channel(b)
+    a_q = _quantize_channel(a)
 
     # Pack the 2-bit channels into a single integer
     return (a_q << 6) | (b_q << 4) | (g_q << 2) | r_q

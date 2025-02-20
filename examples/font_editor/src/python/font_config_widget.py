@@ -233,7 +233,7 @@ class FontConfigColorPicker(FontConfigWidget):
         super().__init__(parent, config_setting, font_config_xml, **kwargs)
 
         # Initialize color_value from the default value
-        self.color_value = self.parse_color(self._value)
+        self.color_value = self._parse_color(self._value)
 
         # Button to display and select color
         self.color_button = tk.Button(
@@ -258,13 +258,13 @@ class FontConfigColorPicker(FontConfigWidget):
 
     def set_display_value(self, new_value):
         """Update the display for the color picker."""
-        self.color_value = self.parse_color(new_value)
+        self.color_value = self._parse_color(new_value)
         self.color_button.config(
             bg=self.rgb_to_hex(self.color_value), 
             text=self.value
         )
 
-    def parse_color(self, color_string):
+    def _parse_color(self, color_string):
         """Parse the color string to a tuple of integers (R, G, B, A)."""
         try:
             return tuple(map(int, color_string.split(',')))

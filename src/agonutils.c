@@ -67,10 +67,10 @@ PyObject* csv_to_palette(PyObject *self, PyObject *args) {
             palette->colors[color_count].b = b;
 
             // Convert RGB to HSV
-            rgb_to_hsv_internal(r, g, b, &palette->colors[color_count].h, &palette->colors[color_count].s, &palette->colors[color_count].v);
+            _rgb_to_hsv(r, g, b, &palette->colors[color_count].h, &palette->colors[color_count].s, &palette->colors[color_count].v);
 
             // Convert RGB to CMYK
-            rgb_to_cmyk_internal(r, g, b, &palette->colors[color_count].c, &palette->colors[color_count].m, &palette->colors[color_count].y, &palette->colors[color_count].k);
+            _rgb_to_cmyk(r, g, b, &palette->colors[color_count].c, &palette->colors[color_count].m, &palette->colors[color_count].y, &palette->colors[color_count].k);
 
             // Store the color name
             snprintf(palette->colors[color_count].name, sizeof(palette->colors[color_count].name), "%s", name);
@@ -102,7 +102,7 @@ PyObject* process_image_with_palette(PyObject* self, PyObject* args) {
     }
 
     Palette palette;
-    if (load_gimp_palette(palette_filepath, &palette) != 0) {
+    if (_load_gimp_palette(palette_filepath, &palette) != 0) {
         return PyErr_Format(PyExc_RuntimeError, "Failed to load palette");
     }
 
@@ -121,7 +121,7 @@ PyObject* process_image_with_palette(PyObject* self, PyObject* args) {
             target_color.s = saturation;
             target_color.v = value;
 
-            const Color* nearest_color = find_nearest_color_hsv_internal(&target_color, &palette);
+            const Color* nearest_color = _nearest_hsv(&target_color, &palette);
 
             // Fill the image data with the nearest palette color
             int index = (y * width + x) * 4;
@@ -149,10 +149,6 @@ static PyMethodDef MyMethods[] = {
     {"convert_to_palette", (PyCFunction)convert_to_palette, METH_VARARGS | METH_KEYWORDS, 
      "Convert image to palette"},
 
-    // void convert_to_rgb565(const char *src_file, const char *tgt_file);
-    {"convert_to_rgb565", (PyCFunction)convert_to_rgb565, METH_VARARGS | METH_KEYWORDS, 
-     "Convert image to RGB565"},
-
     // void img_to_rgba2(const char *input_filepath, const char *output_filepath);
     {"img_to_rgba2", img_to_rgba2, METH_VARARGS, 
      "Convert an image to 2-bit RGBA and save to a file"},
@@ -168,7 +164,7 @@ static PyMethodDef MyMethods[] = {
     // void rgba2_to_img(const char *input_filepath, const char *output_filepath, int width, int height);
     {"rgba2_to_img", rgba2_to_img, METH_VARARGS, 
      "Convert RGBA2 binary file to image"},
-     
+
     // Function: Convert a CSV file to a Palette object
     // Palette* csv_to_palette(const char *csv_filepath);
     {"csv_to_palette", csv_to_palette, METH_VARARGS, "Convert a CSV file to a Palette object"},
