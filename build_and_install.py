@@ -2,54 +2,63 @@ import os
 import shutil
 import subprocess
 import sys
+import glob
 import site
 
-def clean_build():
-    """Remove the build directory if it exists."""
-    build_dir = 'build'
-    if os.path.exists(build_dir):
-        print(f"Cleaning {build_dir} directory...")
-        shutil.rmtree(build_dir)
-    else:
-        print(f"{build_dir} directory not found, nothing to clean.")
+def clean_build_artifacts():
+    """Remove build, dist, and *.egg-info directories."""
+    paths_to_remove = ["build", "dist"]
+    for path in paths_to_remove:
+        if os.path.exists(path):
+            print(f"Removing '{path}' directory...")
+            shutil.rmtree(path)
+        else:
+            print(f"'{path}' directory not found, skipping...")
 
-def build_project():
-    """Run the setup.py build command."""
-    print("Building the project...")
-    result = subprocess.run([sys.executable, 'setup.py', 'build'], check=True)
-    if result.returncode == 0:
-        print("Build successful!")
-    else:
-        print("Build failed!")
+    # Remove any .egg-info directories (should not be necessary but just in case ...)
+    for item in os.listdir("."):
+        if item.endswith(".egg-info") and os.path.isdir(item):
+            print(f"Removing '{item}' directory...")
+            shutil.rmtree(item)
+
+def build_and_install():
+    # 1. Build the wheel
+    print("Building wheel with python -m build...")
+    result = subprocess.run([sys.executable, "-m", "build"], check=True)
+    if result.returncode != 0:
         sys.exit(result.returncode)
 
-def local_install():
-    """Run the setup.py install command in the virtual environment."""
-    print("Installing the project in the virtual environment...")
-    result = subprocess.run([sys.executable, 'setup.py', 'install'], check=True)
-    if result.returncode == 0:
-        print("Install successful!")
-    else:
-        print("Install failed!")
+    # 2. Install the wheel from dist/
+    wheel_files = glob.glob("dist/*.whl")
+    if not wheel_files:
+        print("No wheel files found in 'dist/'")
+        sys.exit(1)
+    wheel_file = wheel_files[0]
+
+    print(f"Installing {wheel_file}...")
+    # Note: --upgrade to ensure any existing older version is replaced
+    result = subprocess.run([sys.executable, "-m", "pip", "install", "--upgrade", wheel_file], check=True)
+    if result.returncode != 0:
         sys.exit(result.returncode)
+
+    print("Install successful!")
 
 def set_pythonpath():
-    """Set the PYTHONPATH to the user's local site-packages directory."""
+    """Set the PYTHONPATH to the user's local site-packages directory if not already set."""
     user_site = site.getusersitepackages()
     current_pythonpath = os.environ.get('PYTHONPATH', '')
-
     if user_site not in current_pythonpath:
-        os.environ['PYTHONPATH'] = f"${current_pythonpath}:${user_site}" if current_pythonpath else user_site
-        print(f"PYTHONPATH set to: ${os.environ['PYTHONPATH']}")
+        new_path = f"{current_pythonpath}:{user_site}" if current_pythonpath else user_site
+        os.environ['PYTHONPATH'] = new_path
+        print(f"PYTHONPATH set to: {os.environ['PYTHONPATH']}")
     else:
-        print(f"PYTHONPATH already set to: ${os.environ['PYTHONPATH']}")
+        print(f"PYTHONPATH already set to: {current_pythonpath}")
 
 def test_install():
-    """Test the installed package by importing it and calling a function."""
+    # 3. Test the installed package
     print("Testing the installed package...")
-
     try:
-        result = subprocess.run(
+        subprocess.run(
             [sys.executable, '-c', 'import agonutils; agonutils.hello()'],
             check=True,
             stdout=subprocess.PIPE,
@@ -58,15 +67,12 @@ def test_install():
         )
         print("Package works!")
     except subprocess.CalledProcessError as e:
-        print("Package failed to run!")
-        print("Error output:")
+        print("Package failed to run!\nError output:")
         print(e.stderr)
         sys.exit(e.returncode)
 
-
 if __name__ == '__main__':
-    clean_build()
-    build_project()
-    local_install()
+    clean_build_artifacts()
+    build_and_install()
     set_pythonpath()
     test_install()
