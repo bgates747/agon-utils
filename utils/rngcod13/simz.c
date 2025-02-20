@@ -12,6 +12,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
+#include <stdint.h>
 
 /* Version string */
 char coderversion[] = "simple zip v1.0 (c)1999 Michael Schindler";

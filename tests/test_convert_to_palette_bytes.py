@@ -7,7 +7,8 @@ if __name__ == '__main__':
     transparent_color = None 
     palette_file = 'src/palettes/Agon64.gpl'
 
-    base_file = "tests/rainbow_swirl"
+    # base_file = "tests/rainbow_swirl"
+    base_file = "/home/smith/Agon/mystuff/AgonJukebox/tgt/rainbow_swirl"
     rgba2_file = f"{base_file}_{method}.rgba2"
     png_file = f"{base_file}.png"
 

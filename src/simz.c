@@ -172,7 +172,7 @@ void _simz_decode_file_internal(FILE *in, FILE *out) {
   define EXTRAFAST for increased speed; you loose compression and
   compatibility in exchange.
 */
-/* #define EXTRAFAST */
+#define EXTRAFAST
 
 /* SIZE OF RANGE ENCODING CODE VALUES. */
 #define CODE_BITS 32

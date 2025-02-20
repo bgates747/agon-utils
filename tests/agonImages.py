@@ -241,7 +241,7 @@ def findNearestColorHSV(targetColor, numcolors):
 
 # the optional transparent_color parameter is a tuple of RGB values to treat as transparent
 # it can contain a fourth value for alpha, but it will be ignored
-def convert_to_agon_palette(image, numcolors, method, transparent_color=None):
+def convert_to_palette(image, numcolors, method, transparent_color=None):
     width, height = image.size
     # Ensure the image is in RGBA mode
     if image.mode != 'RGBA':
@@ -273,7 +273,7 @@ def convert_to_agon_palette(image, numcolors, method, transparent_color=None):
                     nearest_color = nearest_color[:3] + (255,)  # Preserve full opacity unless transparent
                 new_img.putpixel((x, y), nearest_color)
     else:
-        raise ValueError("convert_to_agon_palette: Invalid method. Use 'RGB' or 'HSV'.")
+        raise ValueError("convert_to_palette: Invalid method. Use 'RGB' or 'HSV'.")
 
     return new_img
 
@@ -406,7 +406,7 @@ if __name__ == "__main__":
     png_file = f"{base_file}.png"
     pil_img = Image.open(png_file)
     transparent_color = None 
-    pil_img = convert_to_agon_palette(pil_img, 64, 'RGB', transparent_color)
+    pil_img = convert_to_palette(pil_img, 64, 'RGB', transparent_color)
     img_to_rgba2(pil_img, rgba2_file)
     height = pil_img.height
     width = pil_img.width

@@ -24,7 +24,7 @@ if __name__ == '__main__':
     png_file = f"{base_file}.png"
     pil_img = Image.open(png_file)
     transparent_color = None 
-    pil_img = ai.convert_to_agon_palette(pil_img, 64, method, transparent_color)
+    pil_img = ai.convert_to_palette(pil_img, 64, method, transparent_color)
     ai.img_to_rgba2(pil_img, rgba2_file)
 
     height = pil_img.height
