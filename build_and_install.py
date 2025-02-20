@@ -47,12 +47,22 @@ def set_pythonpath():
 def test_install():
     """Test the installed package by importing it and calling a function."""
     print("Testing the installed package...")
-    result = subprocess.run([sys.executable, '-c', 'import agonutils; agonutils.hello()'], check=True)
-    if result.returncode == 0:
+
+    try:
+        result = subprocess.run(
+            [sys.executable, '-c', 'import agonutils; agonutils.hello()'],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
         print("Package works!")
-    else:
+    except subprocess.CalledProcessError as e:
         print("Package failed to run!")
-        sys.exit(result.returncode)
+        print("Error output:")
+        print(e.stderr)
+        sys.exit(e.returncode)
+
 
 if __name__ == '__main__':
     clean_build()

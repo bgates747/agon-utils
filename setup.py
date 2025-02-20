@@ -1,5 +1,4 @@
 from setuptools import setup, Extension
-import platform
 import sys
 import subprocess
 
@@ -20,7 +19,7 @@ cflags, libs = get_libpng_flags()
 # Define the extension module
 module = Extension(
     'agonutils',
-    sources=['src/agonutils.c'],
+    sources=['src/agonutils.c', 'src/images.c'],
     extra_compile_args=cflags,  # Include libpng's compiler flags
     extra_link_args=libs,       # Include libpng's linker flags
 )

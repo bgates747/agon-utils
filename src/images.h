@@ -1,4 +1,9 @@
-#pragma once
+#ifndef IMAGES_H
+#define IMAGES_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <Python.h>
 #include <math.h>
@@ -71,6 +76,7 @@ const Color* find_nearest_color_cmyk_internal(const Color *target_cmyk, const Pa
 void dither_atkinson(uint8_t* image_data, int width, int height, Palette *palette);
 void dither_bayer(uint8_t* image_data, int width, int height, Palette *palette);
 void dither_floyd_steinberg(uint8_t* image_data, int width, int height, Palette *palette);
+
 // ===========================
 // 6. Image Conversion Functions
 // ---------------------------
@@ -81,4 +87,22 @@ void convert_image_cmyk(uint8_t *image_data, int width, int height, Palette *pal
 // ===========================
 // 8. Utility Functions
 // ---------------------------
-inline uint8_t clamp(int value);
+uint8_t clamp(int value);
+
+// ===================================================
+// Prototypes for the Python C-extension entry points:
+// ---------------------------------------------------
+PyObject* convert_to_palette(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* convert_to_rgb565(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* img_to_rgba2(PyObject *self, PyObject *args);
+PyObject* img_to_rgba8(PyObject *self, PyObject *args);
+PyObject* rgba8_to_img(PyObject *self, PyObject *args);
+PyObject* rgba2_to_img(PyObject *self, PyObject *args);
+PyObject* csv_to_palette(PyObject *self, PyObject *args);
+PyObject* process_image_with_palette(PyObject *self, PyObject *args);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // IMAGES_H

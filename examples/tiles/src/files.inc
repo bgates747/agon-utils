@@ -83,7 +83,7 @@ test_files:
 
     align 256
 
-; @filename: db "/mystuff/agonutils/examples/asm/tgt/images/nurples_space_01.rgba2",0
+; @filename: db "/mystuff/agon-utils/examples/asm/tgt/images/nurples_space_01.rgba2",0
 @filename: db "images/nurples_space_01.rgba2",0
 
     align 256

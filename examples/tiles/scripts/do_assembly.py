@@ -50,7 +50,7 @@ def copy_to_emulator():
 
         # Define the source and target directories
         src_directory = "examples/asm/tgt"
-        tgt_directory = "emulator/sdcard/mystuff/agonutils/examples/asm/tgt"
+        tgt_directory = "emulator/sdcard/mystuff/agon-utils/examples/asm/tgt"
 
         # Change working directory to the original directory to ensure correct paths
         os.chdir(original_dir)
@@ -75,7 +75,7 @@ def copy_to_sdcard():
     try:
         # Define the source and target directories
         src_directory = "examples/asm/tgt"
-        tgt_directory = "/media/smith/Agon/emulator/sdcard/mystuff/agonutils/examples/asm/tgt"
+        tgt_directory = "/media/smith/Agon/emulator/sdcard/mystuff/agon-utils/examples/asm/tgt"
 
         # Check if the target directory exists, if so, delete it recursively
         if os.path.exists(tgt_directory):
