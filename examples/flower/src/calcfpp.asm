@@ -31,7 +31,7 @@
 	INCLUDE	"strings24.asm"
 
 ; BASIC FLOATING POINT FUNCTIONS
-    include "mathfpp.inc"
+    include "fpp_ext.inc"
 
 ; APPLICATION INCLUDES
 str_usage: ASCIZ "Usage: scratch <args>\r\n"

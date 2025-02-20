@@ -1,5 +1,6 @@
 PC     Output      Line
-040000             0001       assume adl=1
+
+040000             0001       assume adl=1
 040000             0002       org 0x040000
 040000             0003       include "mos_api.inc"
 040000             0001*  ;
@@ -4023,7 +4024,7 @@ PC     Output      Line
 04159A C1          0207*      pop bc
 04159B C9          0208*      ret
 04159C 50          0209*  r_seed: defb $50
-04159D             0057       include "mathfpp.inc"
+04159D             0057       include "fpp_ext.inc"
 04159D             0001*  ; integer operations
 04159D             0002*  iand:	EQU 58	; AND (INTEGER)
 04159D             0003*  ibdiv:	EQU 59	; DIV
@@ -4149,7 +4150,7 @@ PC     Output      Line
 0415D8 E5          0121*      push hl
 0415D9 D9          0122*      exx
 0415DA E1          0123*      pop hl
-0415DB F1          0124*      pop af
+0415DB F1          0124*       A_TO_HLU
 0415DC CD 9F 0E 04 0125*      call A_TO_HLU
 0415E0 C9          0126*      ret
 0415E1             0127*  

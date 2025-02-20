@@ -122,7 +122,7 @@ int2hlu:
     exx
     pop hl
     pop af
-    call A_TO_HLU
+    A_TO_HLU
     ret
 
 ; convert polar coordinates to cartesian coordinates as deltas from the origin
@@ -169,12 +169,12 @@ polar_to_cartesian_fpp:
 ; destroys: nothing
 store_float_nor:
     ld (ix+0),c
+    exx
     ld (ix+3),l
     ld (ix+4),h
     exx
     ld (ix+1),l
     ld (ix+2),h
-    exx
     ret
 
 ; fetch HLH'L'C floating point number from a 40-bit buffer
@@ -183,12 +183,12 @@ store_float_nor:
 ; destroys: HLH'L'C
 fetch_float_nor:
     ld c,(ix+0)
+    exx
     ld l,(ix+3)
     ld h,(ix+4)
     exx
     ld l,(ix+1)
     ld h,(ix+2)
-    exx
     ret
 
 ; store DED'E'B floating point number in a 40-bit buffer
@@ -198,12 +198,12 @@ fetch_float_nor:
 ; destroys: nothing
 store_float_alt:
     ld (ix+0),b
+    exx
     ld (ix+3),e
     ld (ix+4),d
     exx
     ld (ix+1),e
     ld (ix+2),d
-    exx
     ret
 
 ; fetch DED'E'B floating point number from a 40-bit buffer
@@ -212,12 +212,12 @@ store_float_alt:
 ; destroys: DED'E'B
 fetch_float_alt:
     ld b,(ix+0)
+    exx
     ld e,(ix+3)
     ld d,(ix+4)
     exx
     ld e,(ix+1)
     ld d,(ix+2)
-    exx
     ret
 
 
@@ -228,12 +228,12 @@ fetch_float_alt:
 ; destroys: nothing
 store_float_iy_nor:
     ld (iy+0),c
+    exx
     ld (iy+3),l
     ld (iy+4),h
     exx
     ld (iy+1),l
     ld (iy+2),h
-    exx
     ret
 
 ; fetch HLH'L'C floating point number from a 40-bit buffer
@@ -242,12 +242,12 @@ store_float_iy_nor:
 ; destroys: HLH'L'C
 fetch_float_iy_nor:
     ld c,(iy+0)
+    exx
     ld l,(iy+3)
     ld h,(iy+4)
     exx
     ld l,(iy+1)
     ld h,(iy+2)
-    exx
     ret
 
 ; store DED'E'B floating point number in a 40-bit buffer
@@ -257,12 +257,12 @@ fetch_float_iy_nor:
 ; destroys: nothing
 store_float_iy_alt:
     ld (iy+0),b
+    exx
     ld (iy+3),e
     ld (iy+4),d
     exx
     ld (iy+1),e
     ld (iy+2),d
-    exx
     ret
 
 ; fetch DED'E'B floating point number from a 40-bit buffer
@@ -271,12 +271,124 @@ store_float_iy_alt:
 ; destroys: DED'E'B
 fetch_float_iy_alt:
     ld b,(iy+0)
+    exx
     ld e,(iy+3)
     ld d,(iy+4)
     exx
     ld e,(iy+1)
     ld d,(iy+2)
+    ret
+
+; store HLH'L'C integer number in a 32-bit buffer
+; inputs: HLH'L'C = integer number
+;         ix = buffer address
+; outputs: buffer filled with integer number
+; destroys: nothing
+store_int_nor:
     exx
+    ld (ix+0),l
+    ld (ix+1),h
+    exx
+    ld (ix+2),l
+    ld (ix+3),h
+    ret
+
+; fetch HLH'L'C integer number from a 32-bit buffer
+; inputs: ix = buffer address
+; outputs: HLH'L'C = integer number
+; destroys: HLH'L'C
+fetch_int_nor:
+    exx
+    ld l,(ix+0)
+    ld h,(ix+1)
+    exx
+    ld l,(ix+2)
+    ld h,(ix+3)
+    ld c,0 ; set exponent to 0
+    ret
+
+; store DED'E'B integer number in a 32-bit buffer
+; inputs: DED'E'B = integer number
+;         ix = buffer address
+; outputs: buffer filled with integer number
+; destroys: nothing
+store_int_alt:
+
+    ld (ix+0),e
+    ld (ix+1),d
+    exx
+    ld (ix+2),e
+    ld (ix+3),d
+    ret
+
+; fetch DED'E'B integer number from a 32-bit buffer
+; inputs: ix = buffer address
+; outputs: DED'E'B = integer number
+; destroys: DED'E'B
+fetch_int_alt:
+    exx
+    ld e,(ix+0)
+    ld d,(ix+1)
+    exx
+    ld e,(ix+2)
+    ld d,(ix+3)
+    ld b,0 ; set exponent to 0
+    ret
+
+; store HLH'L'C integer number in a 32-bit buffer
+; inputs: HLH'L'C = integer number
+;         iy = buffer address
+; outputs: buffer filled with integer number
+; destroys: nothing
+store_int_iy_nor:
+    exx
+    ld (iy+0),l
+    ld (iy+1),h
+    exx
+    ld (iy+2),l
+    ld (iy+3),h
+    ret
+
+; fetch HLH'L'C integer number from a 32-bit buffer
+; inputs: iy = buffer address
+; outputs: HLH'L'C = integer number
+; destroys: HLH'L'C
+fetch_int_iy_nor:
+
+    ld l,(iy+0)
+    ld h,(iy+1)
+    exx
+    ld l,(iy+2)
+    ld h,(iy+3)
+    ld c,0 ; set exponent to 0
+    ret
+
+; store DED'E'B integer number in a 32-bit buffer
+; inputs: DED'E'B = integer number
+;         iy = buffer address
+; outputs: buffer filled with integer number
+; destroys: nothing
+store_int_iy_alt:
+    exx
+    ld (iy+0),e
+    ld (iy+1),d
+    exx
+    ld (iy+2),e
+    ld (iy+3),d
+    ret
+
+; fetch DED'E'B integer number from a 32-bit buffer
+; inputs: iy = buffer address
+; outputs: DED'E'B = integer number
+; destroys: DED'E'B
+fetch_int_iy_alt:
+    exx
+    ld e,(iy+0)
+    ld d,(iy+1)
+    exx
+    ld e,(iy+2)
+    ld d,(iy+3)
+    ld b,0 ; set exponent to 0
     ret
 
 ; print HLH'L'C floating point number in hex format

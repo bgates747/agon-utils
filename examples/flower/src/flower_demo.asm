@@ -54,7 +54,7 @@ filedata: equ 0xB7E000 ; start address of 8k onboard sram
     include "basic/fpp.asm"
     include "functions.inc"
 	include "maths.inc"
-    include "mathfpp.inc"
+    include "fpp_ext.inc"
     include "vdu.inc"
     include "parse_args.inc"
 

@@ -30,6 +30,7 @@
 ;
     ASSUME	ADL = 1			
     INCLUDE "mos_api.inc"
+    INCLUDE "macros.inc"
     ORG 0x0B0000 ; Is a moslet
 
     MACRO PROGNAME
@@ -178,8 +179,9 @@ _clear_ram:
 ; API INCLUDES
     include "basic/fpp.asm"
     include "functions.inc"
+    include "arith24.inc"
 	include "maths.inc"
-    include "mathfpp.inc"
+    include "fpp_ext.inc"
     include "vdu.inc"
     include "vdu_plot.inc"
     include "files.inc"

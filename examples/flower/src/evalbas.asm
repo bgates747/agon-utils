@@ -154,7 +154,7 @@ _clear_ram:
 ; API INCLUDES
 	include "basic.inc"
     include "calcbas.inc"
-    include "mathfpp.inc"
+    include "fpp_ext.inc"
 
 ; APPLICATION INCLUDES
 

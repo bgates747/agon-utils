@@ -2609,7 +2609,7 @@ printNewLine:
 	RET
 
 ; ==============================================================================
-; from mathfpp.inc
+; from fpp_ext.inc
 ; ------------------------------------------------------------------------------
 
 ; integer operations		
@@ -2863,7 +2863,7 @@ int2hlu:
     exx
     pop hl
     pop af
-    call A_TO_HLU
+     A_TO_HLU
     ret
 
 ; convert polar coordinates to cartesian coordinates as deltas from the origin
@@ -3167,7 +3167,7 @@ _clear_ram:
     ; include "basic/fpp.asm"
     ; include "functions.inc"
 	; include "maths.inc"
-    ; include "mathfpp.inc"
+    ; include "fpp_ext.inc"
     ; include "vdu.inc"
     ; include "vdu_plot.inc"
     ; include "files.inc"

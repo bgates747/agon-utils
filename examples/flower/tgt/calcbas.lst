@@ -6934,7 +6934,7 @@
 0B15B2 C1     0207* pop bc
 0B15B3 C9     0208* ret
 0B15B4 50     0209* r_seed: defb $50
-               0171 include "mathfpp.inc"
+               0171 include "fpp_ext.inc"
               0001* ; integer operations
               0002* iand:	EQU 58	; AND (INTEGER)
               0003* ibdiv:	EQU 59	; DIV
@@ -7086,7 +7086,7 @@
 0B15F1 D9     0122* exx
 0B15F2 E1     0123* pop hl
 0B15F3 F1     0124* pop af
-0B15F4 CD     0125* call A_TO_HLU
+0B15F4 CD     0125*  A_TO_HLU
 0B15F5 B7 
 0B15F6 0E 
 0B15F7 0B 

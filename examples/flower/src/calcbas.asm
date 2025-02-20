@@ -168,7 +168,7 @@ _clear_ram:
 	include "basic/fpp.asm"
     include "functions.inc"
 	include "maths.inc"
-    include "mathfpp.inc"
+    include "fpp_ext.inc"
 
 ; APPLICATION INCLUDES
 

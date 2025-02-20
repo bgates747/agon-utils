@@ -2,10 +2,13 @@ GIMP Palette
 Name: temp_palette
 Columns: 16
 #
-170  85   0 Color 0
-255 170   0 Color 1
-255 170  85 Color 2
-  0   0   0 Color 3
-170 170 170 Color 4
- 85  85  85 Color 5
-255 255 255 Color 6
+  0   0 170 Color 0
+  0   0 255 Color 1
+  0   0  85 Color 2
+ 85  85 170 Color 3
+ 85  85 255 Color 4
+170 170 255 Color 5
+  0   0   0 Color 6
+170 170 170 Color 7
+ 85  85  85 Color 8
+255 255 255 Color 9
