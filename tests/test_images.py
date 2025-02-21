@@ -2,6 +2,7 @@
 import agonutils as au
 import os
 from PIL import Image
+import subprocess
 
 def report_compression(compression_type, original_file, compressed_file):
     """Report the compression percentage for a file."""
@@ -20,18 +21,18 @@ def main():
     # Convert RGBA2 to back to PNG to verify
     au.rgba2_to_img(tgt_rgba2_file, f"{base_file}_check.png", image_width, image_height)
 
-    # subprocess.run(["szip", tgt_rgba2_file], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    # report_compression("SZIP", tgt_rgba2_file, tgt_szip_file)
+    subprocess.run(["szip", tgt_rgba2_file, tgt_szip_file], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    report_compression("SZIP", tgt_rgba2_file, tgt_szip_file)
 
-    # # Compress files using PC command-line tools
-    # subprocess.run(["simz", "-c", tgt_rgba2_file, tgt_simz_file], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    # report_compression("SIMZ", tgt_rgba2_file, tgt_simz_file)
+    # Compress files using PC command-line tools
+    subprocess.run(["simz", "-c", tgt_rgba2_file, tgt_simz_file], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    report_compression("SIMZ", tgt_rgba2_file, tgt_simz_file)
 
-    # subprocess.run(["compress", tgt_rgba2_file, tgt_tvc_file], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    # report_compression("TVC", tgt_rgba2_file, tgt_tvc_file)
+    subprocess.run(["tvcompress", tgt_rgba2_file, tgt_tvc_file], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    report_compression("TVC", tgt_rgba2_file, tgt_tvc_file)
     
-    # subprocess.run(["rlecompress", tgt_rgba2_file, f"{tgt_rgba2_file}.rle"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    # report_compression("RLE", tgt_rgba2_file, f"{tgt_rgba2_file}.rle")
+    subprocess.run(["rlecompress", tgt_rgba2_file, f"{tgt_rgba2_file}.rle"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    report_compression("RLE", tgt_rgba2_file, f"{tgt_rgba2_file}.rle")
 
 if __name__ == '__main__':
     palette_conversion_method = 'floyd'

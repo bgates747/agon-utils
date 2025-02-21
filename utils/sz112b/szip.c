@@ -403,8 +403,14 @@ int main( int argc, char *argv[] )
 		{	s++;
 			while (*s)
 				switch (*(s++))
-				{	case 'o': {order = readnum(&s,0,255); 
-								  if(order==1 || order==2) usage(); break;}
+				{	
+                    case 'o': {
+                        order = readnum(&s, 0, 255);
+                        if (order == 1 || order == 2) {
+                            usage();
+                        }
+                        break;
+                    }                    
 					case 'r': {recordsize = (recordsize & 0x80) | 
 								  readnum(&s,1,255); break;}
 					// case 'b': {blocksize = (100000*readnum(&s,1,41)+0x7fff) & 0x7fff8000L; break;}
@@ -431,28 +437,36 @@ int main( int argc, char *argv[] )
 
 	if (verbosity) fprintf( stderr, "szip Version %d.%d on ", vmayor, vminor);
 
-    if ( infilename == NULL )
-    {   if (verbosity) fprintf( stderr, "stdin" );}
-	else
-	{	freopen( infilename, "rb", stdin );
-        if (verbosity) fprintf( stderr, "%s", infilename );
+    if (infilename == NULL) {
+        if (verbosity) fprintf(stderr, "stdin");
+    } else {
+        if (!freopen(infilename, "rb", stdin)) {
+            fprintf(stderr, "Error opening input file: %s\n", infilename);
+            exit(1);
+        }
+        if (verbosity) fprintf(stderr, "%s", infilename);
     }
-    if ( outfilename == NULL )
-    {   if (verbosity) fprintf( stderr, " to stdout\n" );}
-	else
-	{	freopen( outfilename, "wb", stdout );
-        if (verbosity) fprintf( stderr, " to %s\n", outfilename );
-    }
+    
+    if (outfilename == NULL) {
+        if (verbosity) fprintf(stderr, " to stdout\n");
+    } else {
+        if (!freopen(outfilename, "wb", stdout)) {
+            fprintf(stderr, "Error opening output file: %s\n", outfilename);
+            exit(1);
+        }
+        if (verbosity) fprintf(stderr, " to %s\n", outfilename);
+    }    
 
 #ifndef unix
     setmode( fileno( stdin ), O_BINARY );
     setmode( fileno( stdout ), O_BINARY );
 #endif
 
-    if (compress)
+    if (compress) {
         compressit();
-    else
+    } else {
         decompressit();
+    }
 
-	return 0;
+    return 0;
 }

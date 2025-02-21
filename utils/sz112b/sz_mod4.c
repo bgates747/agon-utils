@@ -494,7 +494,7 @@ void sz_decode(sz_model *m, uint *symbol, uint4 *runlength)
     }
     else if (sym < MOD.whatmod[0]+MOD.whatmod[1])  /* MTF */
     {   mtfentry *pred;
-        uint sy_f, lt_f;
+        int sy_f, lt_f;
         decode_update_shift(&(MOD.ac), MOD.whatmod[1], MOD.whatmod[0], 6);
         MOD.whatmod[1] += 6;
         sym = qsgetsym( &(MOD.mtfmod), decode_culshift( &(MOD.ac), MTFSHIFT));
@@ -544,7 +544,7 @@ void sz_decode(sz_model *m, uint *symbol, uint4 *runlength)
         *symbol = sym;
     }
     else /* full model */
-    {   uint sy_f, lt_f;
+    {   int sy_f, lt_f;
         decode_update_shift(&(MOD.ac), MOD.whatmod[2], MOD.whatmod[0]+MOD.whatmod[1], 6);
         MOD.whatmod[2] += 6;
         /* first adjust the size of the MTF */

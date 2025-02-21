@@ -27,15 +27,15 @@ static int qscompare(uint4 a, uint4 b, unsigned char *data, uint4 *ml)
 		return -qscmp(b,a,data,ml);
 }
 
-
-static void checksort(uint4 *lo, uint4 *hi, unsigned char *data)
-{   uint4 ml;
-    while(lo<hi)
-    {   if (qscompare(*lo,*(lo+1),data,&ml)!= -1)
-            ml=1;
-        lo++;
-    }
-}        
+// never used but we leave here for reference
+// static void checksort(uint4 *lo, uint4 *hi, unsigned char *data)
+// {   uint4 ml;
+//     while(lo<hi)
+//     {   if (qscompare(*lo,*(lo+1),data,&ml)!= -1)
+//             ml=1;
+//         lo++;
+//     }
+// }        
 
 
 /* this parameter defines the cutoff between using quick sort and
