@@ -76,12 +76,15 @@ def build_and_install():
     print("Install successful!")
 
 def verify_install():
-    """Verify which .so file is actually being loaded."""
+    """Verify which .so file is actually being loaded and execute the hello() function."""
     print("Verifying import of agonutils...")
+
     code = (
         "import agonutils; "
-        "print('agonutils loaded from:', agonutils.__file__)"
+        "print('agonutils loaded from:', agonutils.__file__); "
+        "agonutils.hello()"
     )
+
     subprocess.run([sys.executable, "-c", code], check=True)
 
 if __name__ == "__main__":
