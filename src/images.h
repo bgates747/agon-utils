@@ -47,6 +47,7 @@ void _hsv_to_rgb(float h, float s, float v, uint8_t *r, uint8_t *g, uint8_t *b);
 uint8_t _quantize_channel(uint8_t channel);
 uint8_t _eight_to_two(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 void _two_to_eight(uint8_t pixel, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a);
+void _rgba32_to_rgba2(uint8_t *image_data, size_t num_pixels, uint8_t *output_buffer);
 int _parse_color(PyObject *args, Color *color);
 
 // ===========================
@@ -73,6 +74,9 @@ void _convert_floyd_steinberg(uint8_t* image_data, int width, int height, Palett
 // ---------------------------
 void _convert_method_rgb(uint8_t *image_data, int width, int height, Palette *palette, bool has_transparent_color, const uint8_t transparent_rgb[3]);
 void _convert_method_hsv(uint8_t *image_data, int width, int height, Palette *palette, bool has_transparent_color, const uint8_t transparent_rgb[3]);
+bool _parse_transparent_color(PyObject *transparent_color, uint8_t transparent_rgb[3]);
+bool _parse_palette_conversion_args(PyObject *args, PyObject *kwargs, const char **src_file, const char **tgt_file, const char **palette_file, const char **method, uint8_t **image_data, int *width, int *height, Palette *palette, bool *use_transparent, uint8_t transparent_rgb[3]);
+uint8_t* _convert_to_palette(uint8_t *image_data, int width, int height, Palette *palette, const char *method, bool use_transparent, uint8_t transparent_rgb[3]);
 
 // ===========================
 // 8. Utility Functions
@@ -83,12 +87,10 @@ uint8_t _clamp_256(int value);
 // Prototypes for the Python C-extension entry points:
 // ---------------------------------------------------
 PyObject* convert_to_palette(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* img_to_rgba2(PyObject *self, PyObject *args);
-PyObject* img_to_rgba8(PyObject *self, PyObject *args);
+PyObject* img_to_rgba2(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* rgba8_to_img(PyObject *self, PyObject *args);
 PyObject* rgba2_to_img(PyObject *self, PyObject *args);
 PyObject* csv_to_palette(PyObject *self, PyObject *args);
-PyObject* process_image_with_palette(PyObject *self, PyObject *args);
 
 #ifdef __cplusplus
 }
