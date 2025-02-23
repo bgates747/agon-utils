@@ -7,6 +7,10 @@
 #include "sz_err.h"
 #include "sz_srt.h"
 
+#ifndef verbosity
+extern uint verbosity;
+#endif
+
 #if defined SZ_UNSRT_O4
 #include "sz_hash2.h"		// only used in sz_unsrt_o4
 #endif

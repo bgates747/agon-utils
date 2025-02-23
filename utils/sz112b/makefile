@@ -1,25 +1,14 @@
-CFLAGS = -O6 -Wall -fomit-frame-pointer -funroll-loops
-NAME = szip_112b_$(shell uname)_$(shell uname -m).tar
-%.exe : %
+CC = gcc
+CFLAGS = -O2 -Wall -fomit-frame-pointer -funroll-loops
+TARGET = szip
 
-all: $(NAME).gz test
-szip: bitmodel.c bitmodel.h comp.c port.h qsmodel.c qsmodel.h rangecod.c rangecod.h reorder.c reorder.h sz_bit.c sz_bit.h sz_err.h sz_mod4.c sz_mod4.h qsort_u4.c sz_srt.c sz_srt.h szip.c
-	$(CC) $(CFLAGS) comp.c -o szip
-	strip szip
-check: check.c
-	$(CC) $(CFLAGS) check.c -o check
-test: szip check
-	echo The following files had an error: >logfile
-	find . -type f -exec ./testszip '{}' logfile ';'
-	echo -- end of list -- >>logfile
-	more logfile
-fulltest: szip check
-	echo full test: The following files had an error: >logfile
-	find / -mtime +1 -type f -perm +4 -exec ./testszip '{}' logfile ';'
-	echo -- end of list -- >>logfile
-	more logfile
-$(NAME).gz: szip readme.txt techinfo.txt history.txt
-	tar -cf $(NAME) szip readme.txt techinfo.txt history.txt
-	gzip $(NAME)
+SRC = szip.c rangecod.c qsmodel.c bitmodel.c sz_mod4.c sz_srt.c reorder.c
+OBJ = $(SRC:.c=.o)
+
+all: $(TARGET)
+
+$(TARGET): $(OBJ)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ)
+
 clean:
-	-rm *.o szip check logfile
+	rm -f $(OBJ) $(TARGET)

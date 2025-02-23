@@ -14,10 +14,7 @@ static char vmayor=1, vminor=12;
 #endif
 #include <string.h>
 #include <ctype.h>
-#include "port.h"
-#include "sz_mod4.h"
-#include "sz_srt.h"
-#include "reorder.h"
+#include "szip.h"
 
 #define BLOCK_SIZE (1 << SIZE_SHIFT)
 
@@ -228,6 +225,15 @@ static void writeszipblock(uint dirsize, uint4 buflen, unsigned char *buffer)
         sz_encode(&m, ch, (uint4)(buffer-begin));
     }
   }
+
+    #ifndef MODELGLOBAL
+        FILE *model_file = fopen("0szip_model.bin", "wb");
+        fwrite(&m, sizeof(sz_model), 1, model_file);
+        fclose(model_file);
+    #else
+        fwrite(m, sizeof(sz_model), 1, model_file);
+    #endif // MODELGLOBAL
+
     deletemodel(&m);
 }
 
