@@ -15,8 +15,10 @@ static char vmayor=1, vminor=12;
 #include <string.h>
 #include <ctype.h>
 #include "szip.h"
+#include <sys/stat.h>
 
 #define BLOCK_SIZE (1 << SIZE_SHIFT)
+#define COMPRESSION_TYPE_SZIP 'S'
 
 static void usage()
 {   fprintf(stderr,"szip %d.%d (c)1997-2000 Michael Schindler, szip@compressconsult.com\n",
@@ -25,7 +27,6 @@ static void usage()
     fprintf(stderr,"usage: szip [options] [inputfile [outputfile]]\n");
     fprintf(stderr,"option           meaning              default   range\n");
     fprintf(stderr,"-d               decompress\n");
-    // fprintf(stderr,"-b<blocksize>    blocksize in 100kB   -b17      1-41\n");
     fprintf(stderr,"-b<blocksize>    blocksize in 100kB   -b1      1-41\n"); // default block size to minimum for ESP32-friendly decompression
     fprintf(stderr,"-o<order>        order of context     -o6       0, 3-255\n");
     fprintf(stderr,"-r<recordsize>   recordsize           -r1       1-127\n");
@@ -52,24 +53,47 @@ uint4 blocksize = 32768; // 32 KB = 0x8000, ESP32-friendly default
 uint order=6, verbosity=0, compress=1;
 unsigned char recordsize=1;
 
-static void writeglobalheader()
-{   /* write magic SZ\012\004 */
-    putchar(0x53);
-    putchar(0x5a);
-    putchar(0x0a);
-    putchar(0x04);
-    putchar(vmayor); /* version mayor of first version using the format */
-    putchar(vminor); /* version minor of first version using the format */
-}
-
-
 static void no_szip()
 {   fprintf(stderr, "probably not an szip file; could be szip version prior to 1.10\n");
     exit(1);
 }
 
+static void writeglobalheader(uint4 orig_size) 
+{   /* Write Agon compression header prefix: "Cmp" and COMPRESSION_TYPE_SZIP */
+    putchar('C');
+    putchar('m');
+    putchar('p');
+    putchar(COMPRESSION_TYPE_SZIP);
+    /* Write original file size (4 bytes, little-endian order) */
+    putchar(orig_size & 0xFF);
+    putchar((orig_size >> 8) & 0xFF);
+    putchar((orig_size >> 16) & 0xFF);
+    putchar((orig_size >> 24) & 0xFF);
+    /* write SZIP magic SZ\012\004 and version numbers */
+    putchar(0x53); // S
+    putchar(0x5a); // Z
+    putchar(0x0a); // \n
+    putchar(0x04); // \004
+    putchar(vmayor); /* version mayor of first version using the format */
+    putchar(vminor); /* version minor of first version using the format */
+}
+
 static void readglobalheader()
-{   int ch, vmay;
+{   /* Verify the Agon compression header prefix */
+    if (getchar() != 'C') no_szip();
+    if (getchar() != 'm') no_szip();
+    if (getchar() != 'p') no_szip();
+    if (getchar() != COMPRESSION_TYPE_SZIP) no_szip();
+    /* Read the original file size (4 bytes, little-endian order).
+       We could store this value if needed; for now we just read and ignore it. */
+    uint4 orig_size = 0;
+    orig_size |= (uint4)(unsigned char)getchar();
+    orig_size |= (uint4)(unsigned char)getchar() << 8;
+    orig_size |= (uint4)(unsigned char)getchar() << 16;
+    orig_size |= (uint4)(unsigned char)getchar() << 24;
+
+    /* Verify the SZIP magic SZ\012\004 and version numbers */
+    int ch, vmay;
     ch = getchar();
     if (ch == EOF) return;
     if (ch == 0x42) {ungetc(ch, stdin); return;} /* maybe blockheader */
@@ -343,7 +367,20 @@ static void compressit()
 		exit(1);
 	}
 
-    writeglobalheader();
+    /* Attempt to get the original file size from stdin */
+    uint4 orig_size = 0;
+    struct stat st;
+    if (fstat(fileno(stdin), &st) == 0) {
+        orig_size = (uint4) st.st_size;
+        /* If stdin is a regular file, rewind to the beginning */
+        if (S_ISREG(st.st_mode)) {
+            rewind(stdin);
+        }
+    } else {
+        fprintf(stderr, "Warning: unable to determine file size; using 0\n");
+    }
+
+    writeglobalheader(orig_size);
 
     while (1)
     {   uint4 buflen;
