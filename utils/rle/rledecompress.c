@@ -1,16 +1,27 @@
 /*
- * encodeRLE:
- *   Input:
- *      - input: pointer to an array of 8-bit RGBA2222 pixels.
- *      - input_size: number of pixels.
- *   Returns a newly allocated buffer with the encoded data and sets *encoded_size.
+ * RLE compressor/decompressor for 8-bit RGBA2222 data
  *
- *   Encoding rules (matching the doc block above):
- *     - Single pixel: set top bit (0x80). bit 6 => alpha, bits 5..0 => color
- *       alpha=1 if (pixel & 0xC0)==0xC0, else alpha=0.
- *     - Two pixels => encode each pixel as two singletons (no run).
- *     - Run of 3..130 => top bit=0, next 7 bits=(n-3),
- *         then one byte for the pixel.
+ * Encoding rules:
+ *   - Single pixel (n=1): 
+ *       top bit = 1 (0x80)
+ *       bit 6 encodes alpha (1 => fully opaque [bits 7,6=11], 0 => fully transparent [bits 7,6=00])
+ *       bits 5..0 = color
+ *
+ *   - Two pixels (n=2): stored as two singletons (no run used).
+ *
+ *   - Run of 3..130 (n >=3): 
+ *       the run byte is (n - 3) with top bit 0 (so 0 => 3 pixels, 127 => 130 pixels),
+ *       then one more byte containing the pixel in RGBA2222 format, 
+ *         but only bits 7,6 are actually used for alpha (1 => 11, 0 => 00).
+ *
+ * Example:
+ *   If count=3, run byte=0, second byte=<pixel>
+ *   If count=130, run byte=127, second byte=<pixel>
+ *
+ * The system displays only fully transparent or fully opaque, so if either bit 7 or bit 6 
+ * in the original pixel is clear, we treat alpha as 0 => bits 7,6=00, else bits 7,6=11.
+ *
+ * Worst-case compressed size is (original file size + 14-byte header).
  */
 
 #include <stdio.h>
@@ -43,27 +54,6 @@ static int verifyRLEHeader(const uint8_t *input, size_t input_size, uint32_t *or
     return 1; // Header is valid
 }
 
-/* Compute the decoded size by scanning through the input buffer.
-   Each command is either a singleton (1 byte) or a run (2 bytes).
-*/
-static size_t _rle_decoded_size(const uint8_t *input, size_t input_size) {
-    size_t decoded_size = 0;
-    size_t i = HEADER_SIZE; // Skip header
-
-    while (i < input_size) {
-        uint8_t cmd = input[i++];
-        if (cmd & 0x80) {
-            decoded_size += 1; // Singleton is always 1 byte
-        } else {
-            if (i >= input_size) break; // Prevent reading past buffer
-            size_t run = (cmd & 0x7F) + 3; // Minimum run length is 3
-            decoded_size += run;
-            i++; // Skip the literal byte
-        }
-    }
-    return decoded_size;
-}
-
 /* Decode an RLE-encoded buffer. */
 uint8_t *decodeRLE(const uint8_t *input, size_t input_size, size_t *output_size) {
     if (!input || input_size < HEADER_SIZE) {
@@ -77,8 +67,7 @@ uint8_t *decodeRLE(const uint8_t *input, size_t input_size, size_t *output_size)
         return NULL;
     }
 
-    size_t dec_size = _rle_decoded_size(input, input_size);
-    uint8_t *output = (uint8_t *)malloc(dec_size);
+    uint8_t *output = (uint8_t *)malloc(orig_size);
     if (!output) {
         if (output_size) *output_size = 0;
         return NULL;
