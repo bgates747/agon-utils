@@ -1,57 +1,79 @@
-/* rledecompress.c - RLE decompressor for 8-bit rgba2222 pixels
-   (c)2025 ChatGPT <https://chatgpt.com>
-
-   This program reads an RLE-compressed file produced by our RLE compressor,
-   decodes it to raw rgba2222 data (with full alpha, i.e. 11cccccc), and writes
-   the output to a target file.
-
-   Compression scheme:
-     - Singleton (literal): If the command byte has its top bit set (1xxx xxxx),
-       then the lower 6 bits represent the color.
-       Decompressed pixel = 0xC0 | (cmd & 0x3F)
-     - Run: If the command byte’s top bit is 0 (0xxx xxxx),
-       then the lower 7 bits represent (n - 2), where n is the number of pixels.
-       The next byte is a literal pixel (already in 11cccccc form).
-       The run length n = (cmd & 0x7F) + 2.
-*/
+/*
+ * encodeRLE:
+ *   Input:
+ *      - input: pointer to an array of 8-bit RGBA2222 pixels.
+ *      - input_size: number of pixels.
+ *   Returns a newly allocated buffer with the encoded data and sets *encoded_size.
+ *
+ *   Encoding rules (matching the doc block above):
+ *     - Single pixel: set top bit (0x80). bit 6 => alpha, bits 5..0 => color
+ *       alpha=1 if (pixel & 0xC0)==0xC0, else alpha=0.
+ *     - Two pixels => encode each pixel as two singletons (no run).
+ *     - Run of 3..130 => top bit=0, next 7 bits=(n-3),
+ *         then one byte for the pixel.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 
+#define HEADER_SIZE 14
+#define COMPRESSION_TYPE_RLE2 'r'
+
+/* Verify header and extract original size */
+static int verifyRLEHeader(const uint8_t *input, size_t input_size, uint32_t *orig_size) {
+    if (input_size < HEADER_SIZE) {
+        return 0; // Invalid file, too small for a valid header.
+    }
+
+    // Check magic bytes
+    if (input[0] != 'C' || input[1] != 'm' || input[2] != 'p' || input[3] != COMPRESSION_TYPE_RLE2) {
+        return 0; // Invalid header
+    }
+
+    // Extract original file size (little-endian)
+    *orig_size = input[4] | (input[5] << 8) | (input[6] << 16) | (input[7] << 24);
+
+    // Verify RLE2 magic
+    if (input[8] != 'R' || input[9] != 'L' || input[10] != 'E' || input[11] != '2') {
+        return 0; // Invalid header
+    }
+
+    return 1; // Header is valid
+}
+
 /* Compute the decoded size by scanning through the input buffer.
    Each command is either a singleton (1 byte) or a run (2 bytes).
 */
 static size_t _rle_decoded_size(const uint8_t *input, size_t input_size) {
     size_t decoded_size = 0;
-    size_t i = 0;
+    size_t i = HEADER_SIZE; // Skip header
+
     while (i < input_size) {
         uint8_t cmd = input[i++];
         if (cmd & 0x80) {
-            // Singleton command.
-            decoded_size += 1;
+            decoded_size += 1; // Singleton is always 1 byte
         } else {
-            // Run command: next byte holds the literal.
-            decoded_size += ((cmd & 0x7F) + 2);
-            i++; // Skip the literal byte.
+            if (i >= input_size) break; // Prevent reading past buffer
+            size_t run = (cmd & 0x7F) + 3; // Minimum run length is 3
+            decoded_size += run;
+            i++; // Skip the literal byte
         }
     }
     return decoded_size;
 }
 
-/* Decode an RLE-encoded buffer.
-   Parameters:
-      input: pointer to the encoded data.
-      input_size: size in bytes of the encoded data.
-      output_size: pointer to a size_t to receive the decoded size.
-   Returns:
-      A newly allocated buffer with the decoded data, or NULL on error.
-      The caller is responsible for freeing the buffer.
-*/
+/* Decode an RLE-encoded buffer. */
 uint8_t *decodeRLE(const uint8_t *input, size_t input_size, size_t *output_size) {
-    if (!input || input_size == 0) {
+    if (!input || input_size < HEADER_SIZE) {
         if (output_size) *output_size = 0;
+        return NULL;
+    }
+
+    uint32_t orig_size;
+    if (!verifyRLEHeader(input, input_size, &orig_size)) {
+        fprintf(stderr, "Error: Invalid RLE2 header\n");
         return NULL;
     }
 
@@ -62,37 +84,36 @@ uint8_t *decodeRLE(const uint8_t *input, size_t input_size, size_t *output_size)
         return NULL;
     }
 
-    size_t i = 0, out_index = 0;
+    size_t i = HEADER_SIZE, out_index = 0;
+
     while (i < input_size) {
         uint8_t cmd = input[i++];
+
         if (cmd & 0x80) {
-            // Singleton command: lower 6 bits encode the color.
+            // Singleton: Restore transparency by copying bit 6 into bit 7
             uint8_t color = cmd & 0x3F;
-            // Decompressed pixel: force full alpha (11xxxxxx).
-            output[out_index++] = 0xC0 | color;
+            uint8_t alpha = (cmd & 0x40) ? 0xC0 : 0x00; // If bit 6 is 1, set 7+6 to 11; else 00
+            output[out_index++] = alpha | color;
         } else {
-            // Run command: lower 7 bits indicate (n - 2)
-            size_t run = (cmd & 0x7F) + 2;
-            if (i >= input_size) { // Ensure there is a literal byte.
+            // Run: Read length and literal
+            size_t run = (cmd & 0x7F) + 3; // Minimum run length is 3
+            if (i >= input_size) {
                 free(output);
                 if (output_size) *output_size = 0;
                 return NULL;
             }
             uint8_t literal = input[i++];
-            // Output the literal 'run' times.
             for (size_t j = 0; j < run; j++) {
                 output[out_index++] = literal;
             }
         }
     }
+
     if (output_size)
         *output_size = out_index;
     return output;
 }
 
-/* Main function: command-line interface for decompression.
-   Usage: rledecompress <src file> <tgt file>
-*/
 int main(int argc, char *argv[]) {
     if (argc != 3) {
         fprintf(stderr, "Usage: rledecompress <src file> <tgt file>\n");
