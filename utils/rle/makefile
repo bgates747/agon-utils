@@ -11,17 +11,14 @@ ifeq ($(UNAME_S),Darwin)
     CFLAGS = -std=c99 -O2 -Wall
 endif
 
-# Source files and targets
-SRCS = rlecompress.c rledecompress.c
-TARGETS = rlecompress rledecompress
+# Source files and target
+SRCS = rle2.c
+TARGET = rle2
 
-all: $(TARGETS)
+all: $(TARGET)
 
-rlecompress: rlecompress.c
-	$(CC) $(CFLAGS) -o rlecompress rlecompress.c
-
-rledecompress: rledecompress.c
-	$(CC) $(CFLAGS) -o rledecompress rledecompress.c
+$(TARGET): $(SRCS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS)
 
 clean:
-	rm -f $(TARGETS)
+	rm -f $(TARGET)
