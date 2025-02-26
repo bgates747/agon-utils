@@ -1,0 +1,24 @@
+szip -b41o6
+Decompress took 122 ms
+Decompress took 54 ms
+Decompress took 6 ms
+
+szip -b41o0
+Decompress took 118 ms
+Decompress took 37 ms
+Decompress took 5 ms
+
+szip -b41o4
+Decompress took 100 ms
+Decompress took 51 ms
+Decompress took 6 ms
+
+szip -b41o3
+Decompress took 88 ms
+Decompress took 47 ms
+Decompress took 6 ms
+
+szip -b41o5
+Decompress took 111 ms
+Decompress took 54 ms
+Decompress took 6 ms
