@@ -26,11 +26,12 @@ def main():
 
 
 if __name__ == '__main__':
-    palette_conversion_method = 'bayer'
+    palette_conversion_method = 'HSV'
     transparent_color = (0, 0, 0, 0)  # Alpha 0 means NO transparent color
     palette_file = '/home/smith/Agon/mystuff/agon-utils/examples/palettes/Agon64.gpl'
 
     base_files = [
+        'tests/images/rainbow_240x180.png',
         'tests/images/rainbow_320x240.png',
         'tests/images/rainbow_512x384.png',
         'tests/images/rainbow_640x480.png'
