@@ -250,13 +250,13 @@ static void writeszipblock(uint dirsize, uint4 buflen, unsigned char *buffer)
     }
   }
 
-    #ifndef MODELGLOBAL
-        FILE *model_file = fopen("0szip_model.bin", "wb");
-        fwrite(&m, sizeof(sz_model), 1, model_file);
-        fclose(model_file);
-    #else
-        fwrite(m, sizeof(sz_model), 1, model_file);
-    #endif // MODELGLOBAL
+    // #ifndef MODELGLOBAL
+    //     FILE *model_file = fopen("0szip_model.bin", "wb");
+    //     fwrite(&m, sizeof(sz_model), 1, model_file);
+    //     fclose(model_file);
+    // #else
+    //     fwrite(m, sizeof(sz_model), 1, model_file);
+    // #endif // MODELGLOBAL
 
     deletemodel(&m);
 }
