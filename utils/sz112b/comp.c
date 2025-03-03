@@ -1,5 +1,5 @@
-#define GLOBALRANGECODER
-#define MODELGLOBAL
+// #define GLOBALRANGECODER
+// #define MODELGLOBAL
 
 #include "rangecod.c"
 #include "qsmodel.c"
