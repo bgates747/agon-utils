@@ -683,14 +683,14 @@ bool _parse_transparent_color(PyObject *transparent_color, uint8_t transparent_r
     return use_transparent;
 }
 
-bool _parse_palette_conversion_args(PyObject *args, PyObject *kwargs, const char **src_file, const char **tgt_file, const char **palette_file, const char **method, uint8_t **image_data, int *width, int *height, Palette *palette, bool *use_transparent, uint8_t transparent_rgb[3]) {
+bool _parse_palette_conversion_args(PyObject *args, PyObject *kwargs, const char **src_file, const char **tgt_file, const char **palette_file, const char **palette_conversion_method, uint8_t **image_data, int *width, int *height, Palette *palette, bool *use_transparent, uint8_t transparent_rgb[3]) {
     PyObject *transparent_color = Py_None;  // Default to None
 
     // Define keyword argument names
-    static char *kwlist[] = {"src_file", "tgt_file", "palette_file", "method", "transparent_color", NULL};
+    static char *kwlist[] = {"src_file", "tgt_file", "palette_file", "palette_conversion_method", "transparent_color", NULL};
 
     // Parse the function arguments
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ssss|O", kwlist, src_file, tgt_file, palette_file, method, &transparent_color)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ssss|O", kwlist, src_file, tgt_file, palette_file, palette_conversion_method, &transparent_color)) {
         return false;
     }
 
@@ -713,20 +713,20 @@ bool _parse_palette_conversion_args(PyObject *args, PyObject *kwargs, const char
     return true;
 }
 
-uint8_t* _convert_to_palette(uint8_t *image_data, int width, int height, Palette *palette, const char *method, bool use_transparent, uint8_t transparent_rgb[3]) {
+uint8_t* _convert_to_palette(uint8_t *image_data, int width, int height, Palette *palette, const char *palette_conversion_method, bool use_transparent, uint8_t transparent_rgb[3]) {
     // Dispatch to the appropriate conversion function.
-    if (strcasecmp(method, "RGB") == 0) {
+    if (strcasecmp(palette_conversion_method, "RGB") == 0) {
         _convert_method_rgb(image_data, width, height, palette, use_transparent, transparent_rgb);
-    } else if (strcasecmp(method, "HSV") == 0) {
+    } else if (strcasecmp(palette_conversion_method, "HSV") == 0) {
         _convert_method_hsv(image_data, width, height, palette, use_transparent, transparent_rgb);
-    } else if (strcasecmp(method, "atkinson") == 0) {
+    } else if (strcasecmp(palette_conversion_method, "atkinson") == 0) {
         _convert_atkinson(image_data, width, height, palette);
-    } else if (strcasecmp(method, "bayer") == 0) {
+    } else if (strcasecmp(palette_conversion_method, "bayer") == 0) {
         _convert_bayer(image_data, width, height, palette);
-    } else if (strcasecmp(method, "floyd") == 0) {
+    } else if (strcasecmp(palette_conversion_method, "floyd") == 0) {
         _convert_floyd_steinberg(image_data, width, height, palette);
     } else {
-        // Invalid conversion method provided.
+        // Invalid conversion palette_conversion_method provided.
         return NULL;
     }
     
@@ -734,15 +734,15 @@ uint8_t* _convert_to_palette(uint8_t *image_data, int width, int height, Palette
 }
 
 PyObject* convert_to_palette(PyObject *self, PyObject *args, PyObject *kwargs) {
-    const char *src_file, *tgt_file, *palette_file, *method; uint8_t *image_data; int width, height; Palette palette; bool use_transparent; uint8_t transparent_rgb[3] = {0, 0, 0};
+    const char *src_file, *tgt_file, *palette_file, *palette_conversion_method; uint8_t *image_data; int width, height; Palette palette; bool use_transparent; uint8_t transparent_rgb[3] = {0, 0, 0};
 
     // Use helper function to parse arguments and set up data
-    if (!_parse_palette_conversion_args(args, kwargs, &src_file, &tgt_file, &palette_file, &method, &image_data, &width, &height, &palette, &use_transparent, transparent_rgb)) {
+    if (!_parse_palette_conversion_args(args, kwargs, &src_file, &tgt_file, &palette_file, &palette_conversion_method, &image_data, &width, &height, &palette, &use_transparent, transparent_rgb)) {
         return NULL;
     }
 
     // Perform conversion
-    if (_convert_to_palette(image_data, width, height, &palette, method, use_transparent, transparent_rgb) == NULL) {
+    if (_convert_to_palette(image_data, width, height, &palette, palette_conversion_method, use_transparent, transparent_rgb) == NULL) {
         free(image_data);
         _free_palette(&palette);
         return NULL;
@@ -763,7 +763,7 @@ PyObject* convert_to_palette(PyObject *self, PyObject *args, PyObject *kwargs) {
 
 // Python-facing function: Convert a PNG to a palette-based image, then output it as an .rgba2 file
 PyObject* img_to_rgba2(PyObject *self, PyObject *args, PyObject *kwargs) {
-    const char *src_file, *tgt_file, *palette_file, *method;
+    const char *src_file, *tgt_file, *palette_file, *palette_conversion_method;
     uint8_t *image_data = NULL;
     int width, height;
     Palette palette;
@@ -772,14 +772,14 @@ PyObject* img_to_rgba2(PyObject *self, PyObject *args, PyObject *kwargs) {
 
     // Use helper function to parse arguments and set up data
     if (!_parse_palette_conversion_args(args, kwargs,
-            &src_file, &tgt_file, &palette_file, &method,
+            &src_file, &tgt_file, &palette_file, &palette_conversion_method,
             &image_data, &width, &height, &palette,
             &use_transparent, transparent_rgb)) {
         return NULL;
     }
 
     // Perform the palette conversion on the image_data
-    if (_convert_to_palette(image_data, width, height, &palette, method, use_transparent, transparent_rgb) == NULL) {
+    if (_convert_to_palette(image_data, width, height, &palette, palette_conversion_method, use_transparent, transparent_rgb) == NULL) {
         free(image_data);
         _free_palette(&palette);
         return NULL;
