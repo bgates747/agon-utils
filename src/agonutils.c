@@ -10,25 +10,27 @@ PyObject* hello(PyObject* self, PyObject* args) {
 
 // Define the methods callable from Python
 static PyMethodDef MyMethods[] = {
-    {"convert_to_palette", (PyCFunction)convert_to_palette, METH_VARARGS | METH_KEYWORDS,
-    "Convert a PNG image to use a custom palette."},
-       
+    {"convert_to_palette", (PyCFunction)convert_to_palette, METH_VARARGS | METH_KEYWORDS, 
+     "convert_to_palette(src_file: str, tgt_file: str, palette_file: str, method: str, use_transparent: bool = False, transparent_rgb: tuple[int, int, int] = (0, 0, 0)) -> None"},
+    
     {"img_to_rgba2", (PyCFunction)img_to_rgba2, METH_VARARGS | METH_KEYWORDS, 
-    "Convert a PNG image to a custom palette and save as an RGBA2 binary file."},
-
+     "img_to_rgba2(src_file: str, tgt_file: str, palette_file: str, method: str, use_transparent: bool = False, transparent_rgb: tuple[int, int, int] = (0, 0, 0)) -> None"},
+    
     {"rgba8_to_img", rgba8_to_img, METH_VARARGS, 
-     "Convert RGBA8 binary file to image"},
+     "rgba8_to_img(input_filepath: str, output_filepath: str, width: int, height: int) -> None"},
     
     {"rgba2_to_img", rgba2_to_img, METH_VARARGS, 
-     "Convert RGBA2 binary file to image"},
-
-    {"csv_to_palette", csv_to_palette, METH_VARARGS, "Convert a CSV file to a Palette object"},
+     "rgba2_to_img(input_filepath: str, output_filepath: str, width: int, height: int) -> None"},
+    
+    {"csv_to_palette", csv_to_palette, METH_VARARGS, 
+     "csv_to_palette(csv_filepath: str) -> Palette"},
     
     {"hello", hello, METH_NOARGS, 
-     "Print Hello World"},
+     "hello() -> None"},
     
     {NULL, NULL, 0, NULL}  // Sentinel value to indicate end of methods array
 };
+
 
 // Module definition
 static struct PyModuleDef agonutilsmodule = {
