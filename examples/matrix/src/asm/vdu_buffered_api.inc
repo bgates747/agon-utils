@@ -168,7 +168,7 @@ vdu_call_buffer_offset:
 ; Command 23: Set affine transforms test flag
 ; VDU 23, 0, &F8, 1; 1;
 ; inputs: none
-vdu_set_affine_transforms_test_flag:
+vdu_enable_transforms:
     ld hl,@cmd
     ld bc,@end-@cmd
     rst.lil $18
@@ -177,59 +177,75 @@ vdu_set_affine_transforms_test_flag:
         dw 1 ; magic number
         dw 1 ; ditto
 @end:
-; end vdu_set_affine_transforms_test_flag
+; end vdu_enable_transforms
 
 ; Command 32: Create or manipulate a 2D affine transformation matrix
 ; VDU 23, 0, &A0, bufferId; 32, operation, [<format>, <arguments...>] 
-; inputs: hl = bufferId, de = pointer to arguments, bc = length of arguments
+; inputs: a = operation, hl = bufferId, de = pointer to arguments, bc = length of arguments, ixl = format
 vdu_do_2d_matrix_transform:
+    push af ; save operation
     push bc ; length of arguments
     push de ; pointer to arguments
+    ld (@operation),a
     ld a,l
     ld (@bufferId+0),a
     ld a,h
     ld (@bufferId+1),a
+    ld a,ixl
+    ld (@format),a
     ld hl,@cmd
     ld bc,@end-@cmd
     rst.lil $18
     pop hl ; pointer to arguments (was de)
     pop bc ; length of arguments
+    pop af ; restore operation
+    cp 1 ; if > 1, send the arguments
+    ret c ; no arguments
     rst.lil $18 ; send the arguments
     ret
 @cmd:       db 23,0,0xA0
 @bufferId:  dw 0x0000
             db 32 ; create transform matrix
 @operation: db 0x00
+@format:    db 0x00
 @end:
 ; end vdu_do_2d_matrix_transform
 
 ; Command 33: Create or manipulate a 3D affine transformation matrix
 ; VDU 23, 0, &A0, bufferId; 33, operation, [<format>, <arguments...>]
-; inputs: hl = bufferId, de = pointer to arguments, bc = length of arguments
+; inputs: a = operation, hl = bufferId, de = pointer to arguments, bc = length of arguments, ixl = format
 vdu_do_3d_matrix_transform:
+    push af ; save operation
     push bc ; length of arguments
     push de ; pointer to arguments
+    ld (@operation),a
     ld a,l
     ld (@bufferId+0),a
     ld a,h
     ld (@bufferId+1),a
+    ld a,ixl
+    ld (@format),a
     ld hl,@cmd
     ld bc,@end-@cmd
     rst.lil $18
     pop hl ; pointer to arguments (was de)
     pop bc ; length of arguments
+    pop af ; restore operation
+    cp 1 ; if > 1, send the arguments
+    ret c ; no arguments
     rst.lil $18 ; send the arguments
     ret
 @cmd:       db 23,0,0xA0
 @bufferId:  dw 0x0000
             db 33 ; manipulate transform matrix
 @operation: db 0x00
+@format:    db 0x00
 @end:
 ; end vdu_do_3d_matrix_transform
 
 ; Command 40: Create a transformed bitmap
 ; VDU 23, 0, &A0, bufferId; 40, options, transformBufferId; sourceBitmapId; [width; height;]
-; inputs a = options, hl = bufferId, de = transformBufferId, bc = sourceBitmapId, ix = width, iy = height
+; inputs a = options, de = bufferId, bc = transformBufferId, hl = sourceBitmapId, ix = width, iy = height
 ; options:
 ; Bit value Arguments       Description
 ; 1 		                Target bitmap should be resized. When not set, target will be same dimensions as the original bitmap.
@@ -238,12 +254,12 @@ vdu_do_3d_matrix_transform:
 vdu_transform_bitmap:
     push af ; save options
     ld (@options),a
-    ld a,l
+    ld a,e
     ld (@bufferId+0),a
-    ld a,h
+    ld a,d
     ld (@bufferId+1),a
-    ld (@transformBufferId),de
-    ld (@sourceBitmapId),bc
+    ld (@transformBufferId),bc
+    ld (@sourceBitmapId),hl
     ld hl,@cmd
     ld bc,@end-@cmd
     rst.lil $18
@@ -266,6 +282,7 @@ vdu_transform_bitmap:
 ; these are only included when bit 2 of options (resize) is set
 @width:     dw 0x0000
 @height:    dw 0x0000
+            db 0x00 ; padding
 ; end vdu_transform_bitmap
 
 ; Command 64: Compress a buffer
