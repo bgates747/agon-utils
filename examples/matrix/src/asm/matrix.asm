@@ -85,17 +85,18 @@ main:
 ; enable transform matrices
     call vdu_enable_transforms
 
-    ; ld hl,-1        ; anticlockwise degrees 360 in 16.0 fixed-point
-    ; ld hl,1*256   ; anticlockwise degrees in 16.8 fixed-point
-    ld hl,0x2478 ; 1 degree converted to radians in floating point
+    ; ld hl,1        ; anticlockwise degrees 360 in 16.0 fixed-point
+    ; ld hl,0x2478 ; 1 degree converted to radians in 16-bit floating point
+    ld hl,0x2478+0x8000 ; -1 degree converted to radians in 16-bit floating point
     ld (rotation),hl
 @loop:
 ; create a rotation transform matrix
     ; ld a,2 ; anticlockwise rotation in degrees
-    ld a,3 ; anticlockwise rotation in radians
-
     ; ld ixl,$80 | $40 | 0 ; 16-bit | fixed-point | 0 shift = 16.0 fixed-point
-    ld ixl,$80 | $00 | 0 ; 16-bit | floating-point | 0 shift = 16.0 fixed-point
+
+    ld a,3 ; anticlockwise rotation in radians
+    ld ixl,$80 | $00 | 0 ; 16-bit | floating-point | 0 shift
+
     ld bc,2 ; argument length: 2 bytes to a 16.0 fixed-point number
 
     ld de,rotation ; argument pointer
