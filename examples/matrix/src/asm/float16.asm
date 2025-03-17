@@ -79,6 +79,51 @@ main:
     ; call time_fixed24_to_float16
     ; call compare_fixed24_to_float16
 
+    ld hl,f16_fil
+    ld de,f16_filename
+    ld c,fa_read
+    FFSCALL ffs_fopen
+    or a
+    jr z,@start
+    call printInline
+    asciz "Error opening file\r\n"
     ret
+@start:
+    ld hl,0 ; error counter
+@loop:
+    push hl ; save error counter
+    ld hl,f16_fil
+    ld de,filedata
+    ld bc,9 ; 9 bytes for a single record
+    FFSCALL ffs_fread
+    push bc
+    pop hl
+    add hl,de
+    or a
+    sbc hl,de
+    jr z,@end
+    ld ix,filedata
+    ld hl,(ix+0)
+    ld de,(ix+3)
+    call smul_fixed16
+    ld de,(ix+6)
+    or a
+    sbc hl,de
+    pop hl ; restore error counter
+    jr z,@loop
+    inc hl
+    jr @loop
+@end:
+    pop hl ; restore error counter
+    call printDec
+    call printInline
+    asciz " errors\r\n"
+
+    ld hl,f16_fil
+    FFSCALL ffs_fclose
+
+    ret
+
+f16_filename: asciz "../scripts/fp16_mul_test.bin"
 
     include "files.inc"

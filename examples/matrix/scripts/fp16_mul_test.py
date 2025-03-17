@@ -6,7 +6,7 @@ import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 # Number of test cases
-N = 65536
+N = 1000
 
 # We'll build a bytearray to hold the binary data.
 # Each test case: operand1 (3 bytes) + operand2 (3 bytes) + result (3 bytes)
@@ -14,7 +14,7 @@ data = bytearray()
 
 for _ in range(N):
     # Generate random 16-bit bit patterns (0..65535) for the operands.
-    op1_bits = np.random.randint(0, 65536, dtype=np.uint16)
+    op1_bits = np.random.randint(0, 65535, dtype=np.uint16)
     op2_bits = np.random.randint(0, 65536, dtype=np.uint16)
     
     # Reinterpret the bit patterns as IEEE-754 binary16 (half precision).

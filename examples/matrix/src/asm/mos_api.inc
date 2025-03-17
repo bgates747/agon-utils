@@ -223,6 +223,7 @@ fil_clust:		EQU	21	;  4: Current cluster of fpter (invalid when fptr is 0)
 fil_sect:		EQU	25	;  4: Sector number appearing in buf[] (0:invalid)
 fil_dir_sect:	EQU	29	;  4: Sector number containing the directory entry
 fil_dir_ptr:	EQU	33	;  3: Pointer to the directory entry in the win[]
+fil_struct_size: EQU fil_dir_ptr+3 ; size of the FIL structure
 ;
 ; Directory object structure (DIR)
 ; Indexes into DIR structure
