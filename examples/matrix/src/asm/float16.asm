@@ -72,26 +72,53 @@ main:
     ; ld de,0x1FFF ; 0.007808684396234746, 16.8 fixed = 0x000002 | Biased exp: 7 (00111), True exp: -8 (-1000)
     ; ; ld hl,0x03FF ; 6.0975552e-05, 16.8 fixed = 0x000000 | Biased exp: 0 (00000), True exp: -15 (-1111)
 
-    ; call smul_fixed16
-    ; call dumpRegistersHex
+    ; ld hl,0x005D92		
+    ; ld de,0x0050F9
+
+    ; call smul_fixed16 ; 0x0072ED
+    ; call dumpRegistersHex 
+
+    ; ret
 
     ; call make_table
     ; call time_fixed24_to_float16
     ; call compare_fixed24_to_float16
+
+    ; ld h,-1	
+    ; ld d,1
+
+    ; ld a,h
+    ; and %10000000
+    ; xor d
+    ; and %10000000
+
+    ; call printBin8
+    ; ret
 
     ld hl,f16_fil
     ld de,f16_filename
     ld c,fa_read
     FFSCALL ffs_fopen
     or a
+    jr z,@F
+    call printInline
+    asciz "Error opening file for reading\r\n"
+    ret
+@@:
+    ld hl,f16_fil_out
+    ld de,f16_filename_out
+    ld c,fa_write | fa_create_always
+    FFSCALL ffs_fopen
+    or a
     jr z,@start
     call printInline
-    asciz "Error opening file\r\n"
+    asciz "Error opening file for writing\r\n"
     ret
 @start:
     ld hl,0 ; error counter
-@loop:
     push hl ; save error counter
+    ld ix,filedata
+@loop:
     ld hl,f16_fil
     ld de,filedata
     ld bc,9 ; 9 bytes for a single record
@@ -102,16 +129,23 @@ main:
     or a
     sbc hl,de
     jr z,@end
-    ld ix,filedata
     ld hl,(ix+0)
     ld de,(ix+3)
     call smul_fixed16
+    ld (ix+9),hl
     ld de,(ix+6)
     or a
     sbc hl,de
-    pop hl ; restore error counter
+    push af
+    ld hl,f16_fil_out
+    ld de,filedata
+    ld bc,12
+    FFSCALL ffs_fwrite
+    pop af
     jr z,@loop
+    pop hl ; restore error counter
     inc hl
+    push hl
     jr @loop
 @end:
     pop hl ; restore error counter
@@ -122,8 +156,12 @@ main:
     ld hl,f16_fil
     FFSCALL ffs_fclose
 
+    ld hl,f16_fil_out
+    FFSCALL ffs_fclose
+
     ret
 
-f16_filename: asciz "../scripts/fp16_mul_test.bin"
+f16_filename: asciz "fp16_mul_test.bin"
+f16_filename_out: asciz "fp16_mul_test_out.bin"
 
     include "files.inc"

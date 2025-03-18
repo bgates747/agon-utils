@@ -206,11 +206,12 @@ fixed24_to_float16_opt:
 ; operation: 0hl * 0de -> 0hl
 ; destroys: af, de
 smul_fixed16:
-; stack the sign bits in carry
-    bit 7,h
-    push af
-    bit 7,d
-    push af
+; determine sign of result and stack it
+    ld a,h
+    and %10000000
+    xor d
+    and %10000000
+    push af ; stack the sign
 ; get hl's stored exponent
     ld a,h
     and %01111100
@@ -242,21 +243,26 @@ smul_fixed16:
     ld d,a
 ; multiply the mantissae
     call umul24 ; TODO: a 11x11->22 multiply would be more efficient
-; compute the biased exponent
-    pop af ; a = true exponent of de
-    pop de ; d = true exponent of hl
-    add a,d ; a = true exponent of product
-    add a,19 ; a = biased exponent assuming normal product
 ; normalise the result
+    ld a,24 ; number of bits in uhl
 @exp_loop:
-    dec a
     add hl,hl ; left shift uhl
-    jr nc,@exp_loop ; loop until first non-zero mantissa bit shifts into carry
-; check exponent for underflow
-    cp 16
-    jr nz,@skip_none
+    jr c,@F ; loop until first non-zero mantissa bit shifts into carry ...
+    dec a
+    jr nz,@exp_loop ; ... or we run out of bits
+
+@@: ; compute product's biased exponent
+    pop de ; d = true exponent of de
+    add a,d
+    pop de ; d = true exponent of hl
+    add a,d
+    sub a,38 ; bias the exponent / adjust for the shifts
+; test biased exponent for normality
+    cp 1
+    jr nc,@skip_none
     xor a ; set stored exponent to zero
     jr @skip_one
+
 ; rotate bottom 2 mantissa bits into hlu
 ; and top two mantissa bits into a
 @skip_none:
@@ -276,15 +282,9 @@ smul_fixed16:
     dec hl
     inc.s hl
 ; determine sign of product
-    pop af ; sign of de to carry
-    jr c,@de_neg
-    pop af ; sign of hl to carry
-    ret nc ; both positive, nothing to do
-    bit 7,h ; set sign bit to negative
-    ret
-@de_neg:
-    pop af ; sign of hl to carry
-    ret c ; both negative, nothing to do
-    bit 7,h ; set sign bit to negative
+    res 7,h ; clear sign bit
+    pop af ; bit 7 of a is the sign of the product
+    or a,h
+    ld h,a
     ret    
 ; end smul_fixed16
