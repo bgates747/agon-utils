@@ -251,12 +251,19 @@ smul_fixed16:
     dec a
     jr nz,@exp_loop ; ... or we run out of bits
 
-@@: ; compute product's biased exponent
+@@: ; compute product's provisional biased exponent prior to rounding
     pop de ; d = true exponent of de
     add a,d
     pop de ; d = true exponent of hl
     add a,d
     sub a,38 ; bias the exponent / adjust for the shifts
+
+; apply rounding to the normalised result
+    ld de,0x002000
+    add hl,de
+    adc a,0 ; carry to exponent
+    ld e,a ; store exponent
+
 ; test biased exponent for normality
     cp 1
     jr nc,@skip_none
@@ -284,7 +291,7 @@ smul_fixed16:
 ; determine sign of product
     res 7,h ; clear sign bit
     pop af ; bit 7 of a is the sign of the product
-    or a,h
+    or h
     ld h,a
     ret    
 ; end smul_fixed16

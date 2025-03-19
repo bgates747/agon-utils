@@ -136,13 +136,11 @@ main:
     ld de,(ix+6)
     or a
     sbc hl,de
-    push af
+    jr z,@loop
     ld hl,f16_fil_out
     ld de,filedata
     ld bc,12
     FFSCALL ffs_fwrite
-    pop af
-    jr z,@loop
     pop hl ; restore error counter
     inc hl
     push hl

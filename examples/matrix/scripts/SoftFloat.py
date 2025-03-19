@@ -1,6 +1,4 @@
-# ----------------------------
-# Initialize cffi and load SoftFloat
-# ----------------------------
+#!/usr/bin/env python3
 from cffi import FFI
 import struct
 import numpy as np
@@ -16,7 +14,7 @@ ffi.cdef("""
     // Convert a float16 value to a float32 value.
     float32_t f16_to_f32(float16_t a);
 """)
-# Adjust the path to your shared library as necessary.
+# Adjust the path to your shared library as needed.
 lib = ffi.dlopen("utils/SoftFloat-3e/build/Linux-x86_64-GCC/softfloat.so")
 
 # ----------------------------
@@ -51,3 +49,19 @@ def f16_to_f32_softfloat(a_f16):
     """
     bits32 = lib.f16_to_f32(a_f16)
     return struct.unpack('<f', struct.pack('<I', bits32))[0]
+
+def float16_bits_to_float(f16_bits):
+    """
+    Convert a 16-bit integer (representing a float16) to a Python float using NumPy.
+    """
+    return np.array([f16_bits], dtype=np.uint16).view(np.float16)[0]
+
+def f16_mul_python(a, b):
+    """
+    Convenience function: multiply two Python floats interpreted as float16,
+    using SoftFloat's f16_mul, and return a Python float result.
+    """
+    a_bits = np.float16(a).view(np.uint16)
+    b_bits = np.float16(b).view(np.uint16)
+    res_bits = lib.f16_mul(a_bits, b_bits)
+    return float16_bits_to_float(res_bits)
