@@ -111,7 +111,7 @@ main:
     ; ld de,0x1FFF ; 0.007808684396234746, 16.8 fixed = 0x000002 | Biased exp: 7 (00111), True exp: -8 (-1000)
     ; ; ld hl,0x03FF ; 6.0975552e-05, 16.8 fixed = 0x000000 | Biased exp: 0 (00000), True exp: -15 (-1111)
 
-    call smul_fixed16
+    call float16_smul
     call dumpRegistersHex
 
     ; call make_table
@@ -123,7 +123,7 @@ main:
 ; multiply two signed fixed16 numbers and get a fixed16 result
 ; operation: 0hl * 0de -> 0hl
 ; destroys: af, de
-smul_fixed16:
+float16_smul:
 ; stack the sign bits in carry
     bit 7,h
     push af
@@ -205,6 +205,6 @@ smul_fixed16:
     ret c ; both negative, nothing to do
     bit 7,h ; set sign bit to negative
     ret    
-; end smul_fixed16
+; end float16_smul
 
     include "files.inc"

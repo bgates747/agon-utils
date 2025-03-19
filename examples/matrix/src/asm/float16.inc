@@ -201,46 +201,100 @@ fixed24_to_float16_opt:
 
     ret
 
+; normalise a subnormal float16 mantissa and compute its true exponent
+; inputs: hl is the subnormal float16
+; outputs: hl is the normalised float16, a is the true exponent
+; modifies: af, hl
+float16_norm_sub:
+    xor a ; starting exponent is zero
+@norm_loop:
+    add hl,hl ; left shift uhl
+    dec a ; bump exponent
+    bit 2,h ; test bit 10 of hl
+    jr z,@norm_loop ; loop until first non-zero mantissa bit shifts into bit 10 of hl
+    ret
+; end float16_norm_sub
+
+float16_unpack:
+; get hl's stored exponent
+    ld a,h
+    and %01111100
+    jr nz,@F ; non-zero mantissa means normal number
+; check for zero or -zero
+    SIGN_HLU
+    scf ; assume zero result
+    ret z ; result is zero so nothing more to do
+    ret m ; result is -zero so nothing more to do
+    call float16_norm_sub ; number is subnormal
+    or a ; clear carry indicating non-zero result
+    ret
+@@: ; compute hl's true exponent
+    srl a
+    srl a
+    sub a,15
+; put the explicit 1 into the mantissa
+    set 2,h
+    push af ; stack the true exponent
+; mask out everything but the top three bits of hl's mantissa
+    ld a,h
+    and %00000111
+    ld h,a
+    pop af ; restore the true exponent
+    or a ; clear carry indicating non-zero result
+    ret
+; end float16_unpack
+
 
 ; multiply two signed fixed16 numbers and get a fixed16 result
 ; operation: 0hl * 0de -> 0hl
 ; destroys: af, de
-smul_fixed16:
+float16_smul:
 ; determine sign of result and stack it
     ld a,h
     and %10000000
     xor d
     and %10000000
     push af ; stack the sign
-; get hl's stored exponent
-    ld a,h
-    and %01111100
-; stored mantissa of zero means subnormal number
-; so no need to adjust mantissa or exponent
-    jr z,@F 
-; compute hl's true exponent
-    srl a
-    srl a
-    sub a,15
-; put the explicit 1 into the mantissa
-    set 2,h
-@@: push af ; stack the true exponent
-; mask out everything but the top three bits of hl's mantissa
-    ld a,h
-    and %00000111
-    ld h,a
-; de gets the exact same treatment as hl
-    ld a,d
-    and %01111100
-    jr z,@F
-    srl a
-    srl a
-    sub a,15
-    set 2,d
-@@: push af 
-    ld a,d
-    and %00000111
-    ld d,a
+
+; ; get hl's stored exponent
+;     ld a,h
+;     and %01111100
+; ; stored mantissa of zero means subnormal number
+; ; so no need to adjust mantissa or exponent
+;     jr z,@F 
+; ; compute hl's true exponent
+;     srl a
+;     srl a
+;     sub a,15
+; ; put the explicit 1 into the mantissa
+;     set 2,h
+; @@: push af ; stack the true exponent
+; ; mask out everything but the top three bits of hl's mantissa
+;     ld a,h
+;     and %00000111
+;     ld h,a
+; ; de gets the exact same treatment as hl
+;     ld a,d
+;     and %01111100
+;     jr z,@F
+;     srl a
+;     srl a
+;     sub a,15
+;     set 2,d
+; @@: push af 
+;     ld a,d
+;     and %00000111
+;     ld d,a
+
+; unpack hl
+    call float16_unpack
+    push af ; stack the true exponent
+; unpack de
+    ex de,hl
+    call float16_unpack
+    push af ; stack the true exponent
+    ex de,hl ; not strictly necessary because multiplication is commutative
+
 ; multiply the mantissae
     call umul24 ; TODO: a 11x11->22 multiply would be more efficient
 ; normalise the result
@@ -266,19 +320,20 @@ smul_fixed16:
 
 ; test biased exponent for normality
     cp 1
-    jr nc,@skip_none
+    jr nc,@F
     xor a ; set stored exponent to zero
-    jr @skip_one
+    add hl,hl ; an extra shift for subnormals
+    adc a,a
 
 ; rotate bottom 2 mantissa bits into hlu
 ; and top two mantissa bits into a
-@skip_none:
+@@:
     add hl,hl
     adc a,a
-@skip_one:
     add hl,hl
     adc a,a
     ld h,a ; exponent and top 2 bits of mantissa to h
+
 ; hlu -> a -> l
     dec sp
     push hl
@@ -294,4 +349,4 @@ smul_fixed16:
     or h
     ld h,a
     ret    
-; end smul_fixed16
+; end float16_smul

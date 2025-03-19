@@ -72,27 +72,25 @@ main:
     ; ld de,0x1FFF ; 0.007808684396234746, 16.8 fixed = 0x000002 | Biased exp: 7 (00111), True exp: -8 (-1000)
     ; ; ld hl,0x03FF ; 6.0975552e-05, 16.8 fixed = 0x000000 | Biased exp: 0 (00000), True exp: -15 (-1111)
 
-    ; ld hl,0x005D92		
-    ; ld de,0x0050F9
-
-    ; call smul_fixed16 ; 0x0072ED
-    ; call dumpRegistersHex 
-
+    ; ld hl,0x000001 ; 0.000000059604645 smallest positive subnormal number
+    ; call float16_norm_sub
+    ; call dumpRegistersHex
+    ; call printNewLine
     ; ret
 
-    ; call make_table
-    ; call time_fixed24_to_float16
-    ; call compare_fixed24_to_float16
+    ; ld hl,0x00069F					
+    ; ld de,0x003270
 
-    ; ld h,-1	
-    ; ld d,1
+    ; ld hl,0x000001 ; 0.000000059604645 smallest positive subnormal number
+    ; ld de,0x003c00 ; 1.0
 
-    ; ld a,h
-    ; and %10000000
-    ; xor d
-    ; and %10000000
+    ; ld hl,0x003982				
+    ; ld de,0x003500	; 0x0032E2	0x0032E3
 
-    ; call printBin8
+    ; call float16_smul 
+    ; call dumpRegistersHex 
+    ; call printNewLine 
+
     ; ret
 
     ld hl,f16_fil
@@ -131,7 +129,7 @@ main:
     jr z,@end
     ld hl,(ix+0)
     ld de,(ix+3)
-    call smul_fixed16
+    call float16_smul
     ld (ix+9),hl
     ld de,(ix+6)
     or a

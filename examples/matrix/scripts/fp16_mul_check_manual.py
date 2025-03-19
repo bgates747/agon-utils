@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import struct
 import numpy as np
-from SoftFloat import float_to_float32_bits, float_to_f16_bits, f16_mul_softfloat, f16_to_f32_softfloat
+from SoftFloat import float_to_f16_bits, f16_mul_softfloat, f16_to_f32_softfloat
 
 # ----------------------------
 # Decoding and Formatting Functions
@@ -50,8 +50,9 @@ def format_fp16_output(val):
 # ----------------------------
 if __name__ == "__main__":
     # Input parameters (hard-coded)
-    a_input = -0.87353515625	
-    b_input = 25216
+    a_input = 0.6884765625	
+    b_input = 0.3125
+    output = 0x0582
 
     # Convert the Python floats to half-precision using SoftFloat.
     a_f16 = float_to_f16_bits(a_input)  # 16-bit integer representation for a
@@ -64,3 +65,4 @@ if __name__ == "__main__":
     print(format_fp16_output(a_f16))
     print(format_fp16_output(b_f16))
     print(format_fp16_output(result_f16))
+    print(format_fp16_output(output))
