@@ -15,7 +15,7 @@ ffi.cdef("""
     float32_t f16_to_f32(float16_t a);
 """)
 # Adjust the path to your shared library as needed.
-lib = ffi.dlopen("utils/SoftFloat-3e/build/Linux-x86_64-GCC/softfloat.so")
+lib = ffi.dlopen("/home/smith/Agon/mystuff/agon-utils/utils/SoftFloat-3e/build/Linux-x86_64-GCC/softfloat.so")
 
 # ----------------------------
 # Helper conversion functions

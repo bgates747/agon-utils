@@ -99,8 +99,8 @@ def convert_fp16_test_out_to_csv(infile, outfile):
 
 if __name__ == "__main__":
     # Hard-coded file paths
-    CONVERT_INFILE = 'examples/matrix/tgt/fp16_mul_test_out.bin'
-    CONVERT_OUTFILE = 'examples/matrix/tgt/fp16_mul_test_out.csv'
+    CONVERT_INFILE = '/home/smith/Agon/mystuff/agon-utils/examples/matrix/tgt/fp16_mul_test_out.bin'
+    CONVERT_OUTFILE = '/home/smith/Agon/mystuff/agon-utils/examples/matrix/tgt/fp16_mul_test_out.csv'
     
     convert_fp16_test_out_to_csv(CONVERT_INFILE, CONVERT_OUTFILE)
 

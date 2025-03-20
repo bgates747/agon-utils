@@ -48,51 +48,27 @@ exit:
     include "debug.inc"
 
 main:
-    ; ld hl,0x4000 ; 2.0, 16.8 fixed = 0x000200 | Biased exp: 16 (10000), True exp: 1 (00001)
-    ; ld de,0x4200 ; 3.0, 16.8 fixed = 0x000300 | Biased exp: 16 (10000), True exp: 1 (00001)
-    ; ; ld hl,0x4600 ; 6.0, 16.8 fixed = 0x000600 | Biased exp: 17 (10001), True exp: 2 (00010)
+    jr @test_file
 
-    ; ld hl,0x5A40 ; 200.0, 16.8 fixed = 0x00C800 | Biased exp: 22 (10110), True exp: 7 (00111)
-    ; ld de,0x5CB0 ; 300.0, 16.8 fixed = 0x012C00 | Biased exp: 23 (10111), True exp: 8 (01000)
-    ; ; ld hl,0x7B53 ; 60000.0, 16.8 fixed = 0xEA6000 | Biased exp: 30 (11110), True exp: 15 (01111)
+; TEST SINGLE
+; -------------------------------------------
+    ld hl,0x002DE4 ; 9.2041015625000000e-02
+    ld de,0x00112B ; 6.3085556030273438e-04
+    call float16_smul
+    push hl
+    call printInline
+    asciz "\r\n5.8054924011230469e-05\r\n0003CE 00000000 00000011 11001110\r\n"
 
-    ; ld hl,0x5A40 ; 200.0, 16.8 fixed = 0x00C800 | Biased exp: 22 (10110), True exp: 7 (00111)
-    ; ld de,0x34CD ; 0.3, 16.8 fixed = 0x00004D | Biased exp: 13 (01101), True exp: -2 (-0010)
-    ; ; ld hl,0x5380 ; 60.0, 16.8 fixed = 0x003C00 | Biased exp: 20 (10100), True exp: 5 (00101)
+    pop hl
+    call printHexUHL
+    call printBinUHL
+    call printNewLine 
 
-    ; ld hl,0x3266 ; 0.2, 16.8 fixed = 0x000033 | Biased exp: 12 (01100), True exp: -3 (-0011)
-    ; ld de,0x34CD ; 0.3, 16.8 fixed = 0x00004D | Biased exp: 13 (01101), True exp: -2 (-0010)
-    ; ; ld hl,0x2BAE ; 0.06, 16.8 fixed = 0x00000F | Biased exp: 10 (01010), True exp: -5 (-0101)
+    ret
 
-    ; ld hl,0x251F ; 0.02, 16.8 fixed = 0x000005 | Biased exp: 9 (01001), True exp: -6 (-0110)
-    ; ld de,0x27AE ; 0.03, 16.8 fixed = 0x000008 | Biased exp: 9 (01001), True exp: -6 (-0110)
-    ; ; ld hl,0x10EA ; 0.0006, 16.8 fixed = 0x000000 | Biased exp: 4 (00100), True exp: -11 (-1011)
-
-    ; ld hl,0x1FFF ; 0.007808684396234746, 16.8 fixed = 0x000002 | Biased exp: 7 (00111), True exp: -8 (-1000)
-    ; ld de,0x1FFF ; 0.007808684396234746, 16.8 fixed = 0x000002 | Biased exp: 7 (00111), True exp: -8 (-1000)
-    ; ; ld hl,0x03FF ; 6.0975552e-05, 16.8 fixed = 0x000000 | Biased exp: 0 (00000), True exp: -15 (-1111)
-
-    ; ld hl,0x000001 ; 0.000000059604645 smallest positive subnormal number
-    ; call float16_norm_sub
-    ; call dumpRegistersHex
-    ; call printNewLine
-    ; ret
-
-    ; ld hl,0x00069F					
-    ; ld de,0x003270
-
-    ; ld hl,0x000001 ; 0.000000059604645 smallest positive subnormal number
-    ; ld de,0x003c00 ; 1.0
-
-    ; ld hl,0x003982				
-    ; ld de,0x003500	; 0x0032E2	0x0032E3
-
-    ; call float16_smul 
-    ; call dumpRegistersHex 
-    ; call printNewLine 
-
-    ; ret
-
+; TEST FILE
+; -------------------------------------------
+@test_file:
     ld hl,f16_fil
     ld de,f16_filename
     ld c,fa_read
@@ -134,11 +110,23 @@ main:
     ld de,(ix+6)
     or a
     sbc hl,de
-    jr z,@loop
+
+; write to file
+    push af
     ld hl,f16_fil_out
     ld de,filedata
     ld bc,12
     FFSCALL ffs_fwrite
+    pop af
+
+    jr z,@loop
+
+; ; write to file
+;     ld hl,f16_fil_out
+;     ld de,filedata
+;     ld bc,12
+;     FFSCALL ffs_fwrite
+
     pop hl ; restore error counter
     inc hl
     push hl

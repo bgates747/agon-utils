@@ -477,8 +477,10 @@ print_s168_a:
 ; #### new functions added by Brandon R. Gates ####
 
 ; print the binary representation of the 8-bit value in a
-; destroys a, hl, bc
 printBin8:
+    push af
+    push hl
+    push bc
     ld b,8 ; loop counter for 8 bits
     ld hl,@cmd ; set hl to the low byte of the output string
     ; (which will be the high bit of the value in a)
@@ -496,9 +498,29 @@ printBin8:
     ld hl,@cmd 
     ld bc,@end-@cmd 
     rst.lil $18 
+    pop bc
+    pop hl
+    pop af
     ret
 @cmd: ds 8 ; eight bytes for eight bits
 @end:
+
+printBinUHL:
+    push af
+    push hl
+    HLU_TO_A
+    call printBin8
+    ld a,' '
+    rst.lil 10h
+    ld a,h
+    call printBin8
+    ld a,' '
+    rst.lil 10h
+    ld a,l
+    call printBin8
+    pop hl
+    pop af
+    ret
 
 ; print the binary representation of the 8-bit value in a
 ; in reverse order (lsb first)
