@@ -19,6 +19,11 @@ float16_smul:
     push af ; stack the true exponent
 ; multiply the mantissae
     call umul24 ; TODO: a 11x11->22 multiply would be more efficient
+
+    call printHexUHL
+    call printBinUHL
+    call printNewLine
+
 ; normalise the result
     ld a,24 ; number of bits in uhl
 @exp_loop:
@@ -36,6 +41,44 @@ float16_smul:
     ld de,0x002000
     add hl,de
     adc a,0 ; carry to exponent
+    ld (ix+12),a ; store biased exponent
+
+; check for subnormal product
+    ; call printHexUHL
+    ; call printBinUHL
+    ; call printNewLine
+
+    cp 1
+    jp p,@rotate
+
+    ; call printDec8
+    ; call printNewLine
+
+    ld d,a
+    ld l,0
+    ld a,h
+    and %11000000
+    ld h,a
+    ld a,d
+    add 10
+
+    call printDec8
+
+    ; call printHexUHL
+    ; call printBinUHL
+    ; call printNewLine
+    ; call printNewLine
+
+    scf ; restore carry flag
+@loop:
+    adc hl,hl
+    ; call printHexUHL
+    ; call printBinUHL
+    ; call printNewLine
+    dec a
+    jr nz,@loop 
+    jr @zero_uhl
+
 ; rotate bottom 2 mantissa bits into hlu
 ; and top two mantissa bits into a
 @rotate:
@@ -51,7 +94,7 @@ float16_smul:
     inc sp 
     pop af
     ld l,a ; bottom 8 bits of mantissa to l
-; zero uhl
+@zero_uhl:
     dec hl
     inc.s hl
 ; determine sign of product
@@ -73,11 +116,20 @@ float16_smul:
 ; modifies: af, hl
 float16_norm_sub:
     ld a,27 
+
+    call printHexUHL
+    call printBinUHL
+
+
 @norm_loop:
     add hl,hl ; left shift uhl
     dec a ; bump exponent
     bit 2,h ; test bit 10 of hl
     jr z,@norm_loop ; loop until first non-zero mantissa bit shifts into bit 10 of hl
+
+    call printDec8
+    call printNewLine
+    call printNewLine
     ret
 ; end float16_norm_sub
 

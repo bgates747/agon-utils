@@ -24,7 +24,6 @@ def format_fp16_output(val):
     byte2 = raw_bin[8:16]
     byte3 = raw_bin[16:]
     s, exp, mantissa = decode_fp16(hex_field)
-    # Use SoftFloat to get the decimal value:
     dec = f16_to_f32_softfloat(val)
     return f"{hex_field}\tRaw: {byte1} {byte2} {byte3}\tSign: {s}\tExponent: {exp}\tMantissa: {mantissa}\tDecimal: {dec}"
 
@@ -53,28 +52,28 @@ def decode_fp16(hex_str):
 def convert_fp16_test_out_to_csv(infile, outfile):
     """
     Reads a binary file containing FP16 multiplication test output and converts it to CSV.
-    Each record is 12 bytes (4 fields of 3 bytes each) with fields: op1, op2, python, asm.
+    Each record is 13 bytes:
+      - 4 fields of 3 bytes each (op1, op2, python, asm)
+      - 1 additional byte representing the biased exponent (signed 8-bit)
     The CSV will contain both the numeric values and the corresponding hex representations.
     For the 'asm' field, the decimal value is obtained using SoftFloat's f16_to_f32_softfloat.
+    The extra byte is output as the rightmost column named 'bexp'.
     """
     with open(infile, 'rb') as f:
         data = f.read()
     
-    record_size = 4 * 3  # 12 bytes per record
+    record_size = 13  # 4 fields * 3 bytes + 1 extra byte
     num_records = len(data) // record_size
     rows = []
     
-    # For each record, process each of the 4 fields:
+    # Process each record.
     for i in range(num_records):
         rec = data[i * record_size: (i + 1) * record_size]
-        # We'll accumulate numeric values and hex strings separately.
         rec_values = []
         rec_hex = []
         for j in range(4):
             field_bytes = rec[j * 3: j * 3 + 3]
-            # The first 2 bytes are the 16-bit value.
             (val_uint16,) = struct.unpack('<H', field_bytes[:2])
-            # Convert the full 3 bytes into a 24-bit little-endian hex string.
             val_uint24 = int.from_bytes(field_bytes, 'little')
             rec_hex.append(f"0x{val_uint24:06X}")
             
@@ -86,9 +85,15 @@ def convert_fp16_test_out_to_csv(infile, outfile):
                 # For the asm field, use SoftFloat conversion.
                 rec_values.append(f16_to_f32_softfloat(val_uint16))
         
+        # Process the additional extra byte as a signed 8-bit integer.
+        biased_exp = struct.unpack('b', rec[12:13])[0]
+        rec_values.append(biased_exp)
+        
+        # Combine numeric values and hex strings.
         rows.append(rec_values + rec_hex)
     
-    header = ['op1', 'op2', 'python', 'asm', '0xop1', '0xop2', '0xpython', '0xasm']
+    # Header: 4 numeric fields, then bexp, then 4 hex fields.
+    header = ['op1', 'op2', 'python', 'asm', 'bexp', '0xop1', '0xop2', '0xpython', '0xasm']
     os.makedirs(os.path.dirname(outfile), exist_ok=True)
     with open(outfile, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
@@ -103,5 +108,3 @@ if __name__ == "__main__":
     CONVERT_OUTFILE = '/home/smith/Agon/mystuff/agon-utils/examples/matrix/tgt/fp16_mul_test_out.csv'
     
     convert_fp16_test_out_to_csv(CONVERT_INFILE, CONVERT_OUTFILE)
-
-

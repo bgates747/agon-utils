@@ -67,7 +67,7 @@ def generate_fp16_mul_test(N, outfile):
 # Main Execution
 # ----------------------------
 if __name__ == "__main__":
-    MAX_OP = 1.0
+    MAX_OP = 0.01
     NUM_TESTS = 1000
     GENERATE_OUTFILE = '/home/smith/Agon/mystuff/agon-utils/examples/matrix/tgt/fp16_mul_test.bin'
     generate_fp16_mul_test(NUM_TESTS, GENERATE_OUTFILE)

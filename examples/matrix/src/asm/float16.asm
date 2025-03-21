@@ -48,16 +48,18 @@ exit:
     include "debug.inc"
 
 main:
-    jr @test_file
+    ; jr @test_file
 
 ; TEST SINGLE
 ; -------------------------------------------
-    ld hl,0x002DE4 ; 9.2041015625000000e-02
-    ld de,0x00112B ; 6.3085556030273438e-04
+    ld ix,filedata
+
+    ld hl,0x009CE4 ; -4.7760009765625000e-03
+    ld de,0x00826D ; -3.7014484405517578e-05
     call float16_smul
     push hl
     call printInline
-    asciz "\r\n5.8054924011230469e-05\r\n0003CE 00000000 00000011 11001110\r\n"
+    asciz "\r\n1.7881393432617188e-07\r\n000003 00000000 00000000 00000011\r\n"
 
     pop hl
     call printHexUHL
@@ -115,7 +117,7 @@ main:
     push af
     ld hl,f16_fil_out
     ld de,filedata
-    ld bc,12
+    ld bc,13
     FFSCALL ffs_fwrite
     pop af
 
