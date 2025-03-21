@@ -48,25 +48,14 @@ exit:
     include "debug.inc"
 
 main:
-    ; jr @test_file
+    ; ld hl,0
+    ; SIGN_HL
+    ; call dumpFlags
+    ; call printHexUHL
+    ; call printNewLine
+    ; ret
 
-; TEST SINGLE
-; -------------------------------------------
-    ld ix,filedata
-
-    ld hl,0x009CE4 ; -4.7760009765625000e-03
-    ld de,0x00826D ; -3.7014484405517578e-05
-    call float16_smul
-    push hl
-    call printInline
-    asciz "\r\n1.7881393432617188e-07\r\n000003 00000000 00000000 00000011\r\n"
-
-    pop hl
-    call printHexUHL
-    call printBinUHL
-    call printNewLine 
-
-    ret
+    jp @test_single
 
 ; TEST FILE
 ; -------------------------------------------
@@ -109,19 +98,26 @@ main:
     ld de,(ix+3)
     call float16_smul
     ld (ix+9),hl
+
+; check for error
     ld de,(ix+6)
     or a
     sbc hl,de
 
 ; write to file
+    push hl
     push af
     ld hl,f16_fil_out
     ld de,filedata
     ld bc,13
     FFSCALL ffs_fwrite
     pop af
-
+    pop hl
     jr z,@loop
+
+    ld a,l
+    cp -1
+    jr z,@loop ; rounding error
 
 ; ; write to file
 ;     ld hl,f16_fil_out
@@ -144,6 +140,26 @@ main:
 
     ld hl,f16_fil_out
     FFSCALL ffs_fclose
+
+    ret
+
+
+; TEST SINGLE
+; -------------------------------------------
+@test_single:
+    ld ix,filedata
+
+    ld hl,0x009CE4 ; -4.7760009765625000e-03
+    ld de,0x00826D ; -3.7014484405517578e-05
+    call float16_smul
+    push hl
+    call printInline
+    asciz "\r\n1.7881393432617188e-07\r\n000003 00000000 00000000 00000011\r\n"
+
+    pop hl
+    call printHexUHL
+    call printBinUHL
+    call printNewLine 
 
     ret
 

@@ -9,7 +9,9 @@ float16_smul:
     and %10000000
     push af ; stack the sign
 ; unpack hl
+    push de ; TODO: figure out why DE gets stomped here
     call float16_unpack
+    pop de ; restore de TODO: figure out why DE gets stomped above
     jr c,@hl_zero
     push af ; stack the true exponent
 ; unpack de
@@ -20,9 +22,9 @@ float16_smul:
 ; multiply the mantissae
     call umul24 ; TODO: a 11x11->22 multiply would be more efficient
 
-    call printHexUHL
-    call printBinUHL
-    call printNewLine
+    ; call printHexUHL
+    ; call printBinUHL
+    ; call printNewLine
 
 ; normalise the result
     ld a,24 ; number of bits in uhl
@@ -51,7 +53,7 @@ float16_smul:
     cp 1
     jp p,@rotate
 
-    ; call printDec8
+    ; call printDecS8
     ; call printNewLine
 
     ld d,a
@@ -62,7 +64,7 @@ float16_smul:
     ld a,d
     add 10
 
-    call printDec8
+    ; call printDecS8
 
     ; call printHexUHL
     ; call printBinUHL
@@ -115,11 +117,12 @@ float16_smul:
 ; outputs: hl is the normalised float16, a is the true exponent
 ; modifies: af, hl
 float16_norm_sub:
-    ld a,27 
+    ; ld a,27 
+    ld a,-14
 
     call printHexUHL
     call printBinUHL
-
+    call printNewLine
 
 @norm_loop:
     add hl,hl ; left shift uhl
@@ -127,7 +130,9 @@ float16_norm_sub:
     bit 2,h ; test bit 10 of hl
     jr z,@norm_loop ; loop until first non-zero mantissa bit shifts into bit 10 of hl
 
-    call printDec8
+    call printHexUHL
+    call printBinUHL
+    call printDecS8
     call printNewLine
     call printNewLine
     ret
@@ -137,16 +142,21 @@ float16_unpack:
 ; get hl's stored exponent
     ld a,h
     and %01111100
-    jr nz,@F ; non-zero mantissa means normal number
+    jr nz,@is_nor ; non-zero exponent means normal number
 ; check for zero or -zero
-    SIGN_HLU
+    SIGN_HL ; get the 16-bit sign of hl
     scf ; assume zero result
     ret z ; result is zero so nothing more to do
-    ret m ; result is -zero so nothing more to do
+    or l ; test l for zero (a is zero)
+    jr nz,@is_sub ; number is subnormal
+    ld a,h
+    add a,a ; sets carry and zero flags if hl is -zero
+    ret z ; result is -zero so nothing more to do
+@is_sub:
     call float16_norm_sub ; number is subnormal
     or a ; clear carry indicating non-zero result
     ret
-@@: ; compute hl's true exponent
+@is_nor: ; compute hl's true exponent
     srl a
     srl a
     sub a,15

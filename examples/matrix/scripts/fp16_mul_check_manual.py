@@ -148,13 +148,13 @@ def main(input_string):
     # The asciz string: first line is the product's decimal value, second line the FP16 fields.
     asm_lines.append(f'    asciz "\\r\\n{product_float_str}\\r\\n{result_hex_str} {raw_parts}\\r\\n"')
     
-    # print("\n; --- Generated Assembly Test Code ---")
-    # for line in asm_lines:
-    #     print(line)
+    print("\n; --- Generated Assembly Test Code ---")
+    for line in asm_lines:
+        print(line)
 
 # ----------------------------
 # Main Execution
 # ----------------------------
 if __name__ == "__main__":
-    input_string = "0x009CE4	0x00826D	0x000003	0x0013DE"
+    input_string = "0x009CE4	0x00826D	0x000003	0x00001E"
     main(input_string)

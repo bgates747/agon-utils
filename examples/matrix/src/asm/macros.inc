@@ -1,13 +1,21 @@
 
-; test the sign of HL
-; inputs: HL obviously
-; outputs: sign flag set if HL is negative, zero flag set if HL is zero
-; destroys: flags    
+; test the sign of UHL
+; inputs: UHL obviously
+; outputs: sign flag set if UHL is negative, zero flag set if UHL is zero
     MACRO SIGN_HLU
     add hl,de ; 1 cycle
     or a ; clear flags ; 1 cycle
     sbc hl,de ; 2 cycles
     ; 4 cycles total
+    ENDMACRO
+
+; test the sign of HL
+; inputs: HL obviously
+; outputs: sign flag set if HL is negative, zero flag set if HL is zero, ***hlu is zeroed***
+    MACRO SIGN_HL
+    add hl,de
+    or a ; clear flags
+    sbc.s hl,de ; 16-bit subtract so bit 7 of H is the sign. ***clears hlu***
     ENDMACRO
 
 ; put the value in A into HLU

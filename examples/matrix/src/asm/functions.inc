@@ -239,7 +239,7 @@ printDec8:
     INC HL
     DJNZ @loop
 @done:
-    LD HL, _printDecBuffer
+    LD HL, _printDecBuffer+1
     CALL printString
 ; restore all the things
     pop hl
@@ -248,6 +248,25 @@ printDec8:
     pop af
     RET
 ; end printDec8
+
+printDecS8:
+    bit 7,a
+    jr z,@F
+    neg
+    push af
+    ld a,'-'
+    rst.lil 10h
+    pop af
+    call printDec8
+    neg
+    ret
+@@:
+    push af
+    ld a,'+'
+    rst.lil 10h
+    pop af
+    call printDec8
+    ret
 
 ; This routine converts the unsigned 24-bit value in HLU into its ASCII representation, 
 ; starting to memory location pointing by DE, in decimal form and with leading zeroes 
