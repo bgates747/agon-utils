@@ -48,15 +48,7 @@ exit:
     include "debug.inc"
 
 main:
-    ; ld hl,0x000003
-    ; call float16_unpack
-    ; call printHexUHL
-    ; call printBinUHL
-    ; call printDecS8
-    ; call printNewLine 
-    ; ret
-
-    ; jp @test_single
+    jp @test_single
 
 ; TEST FILE
 ; -------------------------------------------
@@ -150,19 +142,12 @@ main:
 @test_single:
     ld ix,filedata
 
-    ld hl,0x009CE4 ; -4.7760009765625000e-03
-    ld de,0x00826D ; -3.7014484405517578e-05
+    ld hl,0x00C500 ; -5.0000000000000000e+00
+    ld de,0x004122 ; 2.5664062500000000e+00
     call float16_smul
     push hl
     call printInline
-    asciz "\r\n1.7881393432617188e-07\r\n000003 00000000 00000000 00000011\r\n"
-
-    ; ld hl,0x001519 ; 1.2445449829101562e-03
-    ; ld de,0x0014BE ; 1.1577606201171875e-03
-    ; call float16_smul
-    ; push hl
-    ; call printInline
-    ; asciz "\r\n1.4305114746093750e-06\r\n000018 00000000 00000000 00011000\r\n"
+    asciz "\r\n-1.2828125000000000e+01\r\n00CA6A 00000000 11001010 01101010\r\n"
 
     pop hl
     call printHexUHL
