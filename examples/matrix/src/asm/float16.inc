@@ -11,16 +11,31 @@ float16_smul:
 ; unpack hl
     push de ; TODO: figure out why DE gets stomped here
     call float16_unpack
+
+    ; call printHexUHL
+    ; call printBinUHL
+    ; call printNewLine 
+
     pop de ; restore de TODO: figure out why DE gets stomped above
     jr c,@hl_zero
     push af ; stack the true exponent
 ; unpack de
     ex de,hl
     call float16_unpack
+
+    ; call printHexUHL
+    ; call printBinUHL
+    ; call printNewLine 
+
     jr c,@de_zero
     push af ; stack the true exponent
 ; multiply the mantissae
     call umul24 ; TODO: a 11x11->22 multiply would be more efficient
+
+    ; call printHexUHL
+    ; call printBinUHL
+    ; call printNewLine 
+
 ; normalise the result
     ld a,24 ; number of bits in uhl
 @exp_loop:
@@ -33,16 +48,16 @@ float16_smul:
     add a,d
     pop de ; d = true exponent of hl
     add a,d
+
+    ; call printDecS8
+    ; call printNewLine
+
     sub a,6 ; biased exponent
-; apply rounding to the normalised result
-    ld de,0x002000
-    add hl,de
-    adc a,0 ; carry to exponent
-    ld (ix+12),a ; store biased exponent
+
 
 ; check for subnormal product
     cp 1
-    jp p,@rotate
+    jp p,@round_normal
     ld de,1 ; accumulator for mantissa bits
     ; call printDecS8
     ; call printNewLine
@@ -67,6 +82,12 @@ float16_smul:
     ex de,hl
     jr @zero_uhl
 
+@round_normal:
+; apply rounding to the normalised result
+    ld de,0x002000
+    add hl,de
+    adc a,0 ; carry to exponent
+    ld (ix+12),a ; store biased exponent
 ; rotate bottom 2 mantissa bits into hlu
 ; and top two mantissa bits into a
 @rotate:
@@ -127,6 +148,7 @@ float16_unpack:
     add a,a ; sets carry and zero flags if hl is -zero
     ret z ; result is -zero so nothing more to do
 @is_sub:
+    res 7,h ; clear sign bit
     call float16_norm_sub ; number is subnormal
     or a ; clear carry indicating non-zero result
     ret
