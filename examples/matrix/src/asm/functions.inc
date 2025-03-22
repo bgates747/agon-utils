@@ -250,6 +250,7 @@ printDec8:
 ; end printDec8
 
 printDecS8:
+    push af
     bit 7,a
     jr z,@F
     neg
@@ -258,7 +259,7 @@ printDecS8:
     rst.lil 10h
     pop af
     call printDec8
-    neg
+    pop af
     ret
 @@:
     push af
@@ -266,6 +267,7 @@ printDecS8:
     rst.lil 10h
     pop af
     call printDec8
+    pop af
     ret
 
 ; This routine converts the unsigned 24-bit value in HLU into its ASCII representation, 
@@ -525,8 +527,7 @@ printBin8:
 @end:
 
 printBinUHL:
-    push af
-    push hl
+    PUSH_ALL
     HLU_TO_A
     call printBin8
     ld a,' '
@@ -537,8 +538,7 @@ printBinUHL:
     rst.lil 10h
     ld a,l
     call printBin8
-    pop hl
-    pop af
+    POP_ALL
     ret
 
 ; print the binary representation of the 8-bit value in a

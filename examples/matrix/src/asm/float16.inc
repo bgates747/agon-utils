@@ -21,11 +21,6 @@ float16_smul:
     push af ; stack the true exponent
 ; multiply the mantissae
     call umul24 ; TODO: a 11x11->22 multiply would be more efficient
-
-    ; call printHexUHL
-    ; call printBinUHL
-    ; call printNewLine
-
 ; normalise the result
     ld a,24 ; number of bits in uhl
 @exp_loop:
@@ -46,39 +41,30 @@ float16_smul:
     ld (ix+12),a ; store biased exponent
 
 ; check for subnormal product
-    ; call printHexUHL
-    ; call printBinUHL
-    ; call printNewLine
-
     cp 1
     jp p,@rotate
-
+    ld de,1 ; accumulator for mantissa bits
     ; call printDecS8
     ; call printNewLine
-
-    ld d,a
-    ld l,0
-    ld a,h
-    and %11000000
-    ld h,a
-    ld a,d
-    add 10
-
-    ; call printDecS8
-
+    add 9
     ; call printHexUHL
     ; call printBinUHL
-    ; call printNewLine
-    ; call printNewLine
-
-    scf ; restore carry flag
+    ; call printDecS8
+    ; call printNewLine 
 @loop:
+    add hl,hl
+    ex de,hl
     adc hl,hl
+
     ; call printHexUHL
     ; call printBinUHL
-    ; call printNewLine
+    ; call printDecS8
+    ; call printNewLine 
+
+    ex de,hl
     dec a
-    jr nz,@loop 
+    jr nz,@loop
+    ex de,hl
     jr @zero_uhl
 
 ; rotate bottom 2 mantissa bits into hlu
@@ -117,24 +103,12 @@ float16_smul:
 ; outputs: hl is the normalised float16, a is the true exponent
 ; modifies: af, hl
 float16_norm_sub:
-    ; ld a,27 
     ld a,-14
-
-    call printHexUHL
-    call printBinUHL
-    call printNewLine
-
 @norm_loop:
     add hl,hl ; left shift uhl
     dec a ; bump exponent
     bit 2,h ; test bit 10 of hl
     jr z,@norm_loop ; loop until first non-zero mantissa bit shifts into bit 10 of hl
-
-    call printHexUHL
-    call printBinUHL
-    call printDecS8
-    call printNewLine
-    call printNewLine
     ret
 ; end float16_norm_sub
 
@@ -278,8 +252,6 @@ make_table:
 @loop:
     call prng24 ; hl = random number
     ld (ix),hl ; store it
-    ; call printHex24
-    ; call printNewLine
     lea ix,ix+3 ; next entry
     djnz @loop ; loop until b == 0
     ret
