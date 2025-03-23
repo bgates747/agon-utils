@@ -34,13 +34,13 @@ float16_smul_dev:
 ; normal product looks like this:
 ;      hlu       h       l
 ; C 76543210 76543210 76543210
-; I 98765432 10GRSxxx xxxxxxxx
+; I 98765432 10GRS000 00000000
 ; ^-- implied 1 of mantissa
 ;
 ; subnormal product looks like this:
 ;      hlu       h       l
 ; C 76543210 76543210 76543210
-; 9 87654321 0GRSxxxx xxxxxxxI
+; 9 87654321 0GRS0000 0000000I
 ;    implied 0 of mantissa --^
 @@: 
 ; compute product's provisional biased exponent prior to rounding
@@ -97,7 +97,7 @@ float16_smul_dev:
 ; now subnormal and normal products have same alignment:
 ;      hlu       h       l
 ; C 76543210 76543210 76543210
-; 8 76543210 GRSxxxxx xxxxxI98
+; 8 76543210 GRS00000 00000I98
 @prep_rounding:
 ; mask out everything in h except the mantissa bits we're keeping *plus* the implied 1 if normal
     ld a,%00000111
@@ -110,40 +110,56 @@ float16_smul_dev:
 ; now hl is a 16-bit integer with d holding the GRS bits:
 ;      h       l         d
 ; C 76543210 76543210 76543210
-; x xxxxxI98 76543210 GRSxxxxx
+; x 00000I98 76543210 GRS00000
 
     ; call printHexUHL
     ; call printBinUHL
+    ; ld a,d
+    ; call printBin8
     ; call printNewLine
 
-    jr @set_sign_exp ; DEBUG: skip rounding for comparison to original function
+    ; jr @set_sign_exp ; DEBUG: skip rounding for comparison to original function
 ; do the rounding
 ; set sticky bit
     ld a,d
-    and %11100000
+    or %00011111
     jr z,@F ; no need to set sticky bit
     set 5,a ; set sticky bit
 @@:
 ; now test GRS bits for rounding
+    and %11100000
     cp %10000000
+
+    ; call dumpFlags
+    ; call printBin8
+    ; call printNewLine
+
     jp m,@set_sign_exp ; no rounding needed
     jr nz,@round_up ; same as jp p in this case
 @round_to_even:
-    res 0,l
+    bit 0,l
     jr z,@set_sign_exp ; no rounding needed
 @round_up:
     inc hl
-    bit 2,h ; check carry
-    jr z,@F ; no carry
-    inc e ; carry to exponent
+    bit 3,h ; check carry out of implied 1
+    jr z,@set_sign_exp ; no carry
+    SRL H ; shift hl down one 
+    RR L
+    inc e ; and increment the exponent
 
 @set_sign_exp:
+    ; call printHexUHL
+    ; call printBinUHL
+    ; call printBin8
+    ; call printNewLine
+
 ; determine sign of product
     res 7,h ; clear sign bit
     pop af ; bit 7 of a is the sign of the product
     or h
     ld h,a
 ; set the exponent
+    ld (ix+12),e ; DEBUG write biased exponent to file out buffer
     res 2,h ; clear implied 1 of mantissa
     ld a,e
     rla
@@ -213,7 +229,7 @@ float16_smul:
     ld de,0x002000
     add hl,de
     adc a,0 ; carry to exponent
-    ld (ix+12),a ; store biased exponent
+    ld (ix+12),a ; DEBUG write biased exponent to file out buffer
 ; rotate bottom 2 mantissa bits into hlu
 ; and top two mantissa bits into a
 @rotate:

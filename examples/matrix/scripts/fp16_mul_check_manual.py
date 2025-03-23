@@ -159,7 +159,7 @@ def main(input_string):
     asm_lines = []
     asm_lines.append(f"    ld hl,{a_hex} ; {a_float_str}")
     asm_lines.append(f"    ld de,{b_hex} ; {b_float_str}")
-    asm_lines.append("    call float16_smul")
+    asm_lines.append("    call float16_smul_dev")
     asm_lines.append("    push hl")
     asm_lines.append("    call printInline")
     # The asciz string: first line is the product's decimal value, second line the FP16 fields.
@@ -173,5 +173,5 @@ def main(input_string):
 # Main Execution
 # ----------------------------
 if __name__ == "__main__":
-    input_string = "0x00C0B9	0x00C3E5	0x0048A9	0x0048A9"
+    input_string = "0x00482F	0x0063A6	0x007000	0x007800"
     main(input_string)

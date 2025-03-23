@@ -50,80 +50,18 @@ exit:
 main:
     jp test_file
 
-    ld hl,0x00C0B9 ; -2.3613281250000000e+00
-    ld de,0x00C3E5 ; -3.9472656250000000e+00
+    ld hl,0x00482F ; 8.3671875000000000e+00
+    ld de,0x0063A6 ; 9.7900000000000000e+02
     call float16_smul_dev
     push hl
     call printInline
-    asciz "\r\n9.3203125000000000e+00\r\n0048A9 00000000 01001000 10101001\r\n"
+    asciz "\r\n8.1920000000000000e+03\r\n007000 00000000 01110000 00000000\r\n"
 
     pop hl
     call printHexUHL
     call printBinUHL
     call printNewLine
 
-    ret
-
-; normal product looks like this:
-;      hlu       h       l
-; C 76543210 76543210 76543210
-; I 98765432 10GRSxxx xxxxxxxx
-;   10100000 00111000 00100000
-
-;      hlu       h       l
-; C 76543210 76543210 76543210
-; x 76543210 GRSxxxxx xxxxxI98  
-
-    ld hl,%101000000011100000000000
-
-    ld a,1
-    scf
-
-    call printCarry
-    call printBinUHL
-    call printNewLine
-
-    ld b,2
-@loop:
-    add hl,hl
-    call printCarry
-    adc a,a
-    ld l,a
-    call printBinUHL
-    call printNewLine
-
-    djnz @loop
-
-    call printNewLine
-
-    call printInline
-    asciz "0 10000000 11100000 00000110"
-    call printNewLine
-
-; 1 101000000011100000000001
-; 1 010000000111000000000011
-; 0 100000001110000000000110
-
-    ret
-
-    ld hl,0x00C0B9
-    ld de,0x00C3E5
-
-    call dumpFlags
-    call dumpRegistersHex
-
-    call float16_smul
-
-    call dumpFlags
-    call dumpRegistersHex
-    call printNewLine
-
-    call printHexUHL
-    call printBinUHL
-    call printNewLine 
-    ret
-
-    call test_file
     ret
 
 ; TEST FILE
