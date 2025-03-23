@@ -114,7 +114,7 @@ float16_smul:
 ; zero hlu
     dec hl
     inc.s hl
-; shift hl down three to put GSB into bits 0-2 of hl
+; shift hl down three to put GRS into bits 0-2 of hl
 ; https://www.chilliant.com/z80shift.html
     LD A, L
     SRL H
@@ -128,7 +128,7 @@ float16_smul:
     set 5,h
 ; set up for rounding
     xor a ; clear sticky bit
-    ld d,0 ; clear GSB accumulator
+    ld d,0 ; clear GRS accumulator
 ; shift one of three
     SRL H
     RR L

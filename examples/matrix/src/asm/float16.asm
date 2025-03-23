@@ -48,11 +48,87 @@ exit:
     include "debug.inc"
 
 main:
-    jp @test_single
+    jp test_file
+
+    ld hl,0x00C0B9 ; -2.3613281250000000e+00
+    ld de,0x00C3E5 ; -3.9472656250000000e+00
+    call float16_smul_dev
+    push hl
+    call printInline
+    asciz "\r\n9.3203125000000000e+00\r\n0048A9 00000000 01001000 10101001\r\n"
+
+    pop hl
+    call printHexUHL
+    call printBinUHL
+    call printNewLine
+
+    ret
+
+; normal product looks like this:
+;      hlu       h       l
+; C 76543210 76543210 76543210
+; I 98765432 10GRSxxx xxxxxxxx
+;   10100000 00111000 00100000
+
+;      hlu       h       l
+; C 76543210 76543210 76543210
+; x 76543210 GRSxxxxx xxxxxI98  
+
+    ld hl,%101000000011100000000000
+
+    ld a,1
+    scf
+
+    call printCarry
+    call printBinUHL
+    call printNewLine
+
+    ld b,2
+@loop:
+    add hl,hl
+    call printCarry
+    adc a,a
+    ld l,a
+    call printBinUHL
+    call printNewLine
+
+    djnz @loop
+
+    call printNewLine
+
+    call printInline
+    asciz "0 10000000 11100000 00000110"
+    call printNewLine
+
+; 1 101000000011100000000001
+; 1 010000000111000000000011
+; 0 100000001110000000000110
+
+    ret
+
+    ld hl,0x00C0B9
+    ld de,0x00C3E5
+
+    call dumpFlags
+    call dumpRegistersHex
+
+    call float16_smul
+
+    call dumpFlags
+    call dumpRegistersHex
+    call printNewLine
+
+    call printHexUHL
+    call printBinUHL
+    call printNewLine 
+    ret
+
+    call test_file
+    ret
 
 ; TEST FILE
 ; -------------------------------------------
-@test_file:
+test_file:
     ld hl,f16_fil
     ld de,f16_filename
     ld c,fa_read
@@ -89,7 +165,7 @@ main:
     jr z,@end
     ld hl,(ix+0)
     ld de,(ix+3)
-    call float16_smul
+    call float16_smul_dev
     ld (ix+9),hl
 
 ; check for error
@@ -108,9 +184,13 @@ main:
     pop hl
     jr z,@loop
 
-    ld a,l
-    cp -1
-    jr z,@loop ; rounding error
+; ignore rounding erorrs
+    ; ld a,l
+    ; cp -1
+    ; jr z,@loop
+
+; don't ignore rounding errors
+    jr z,@loop
 
 ; ; write to file
 ;     ld hl,f16_fil_out
@@ -133,26 +213,6 @@ main:
 
     ld hl,f16_fil_out
     FFSCALL ffs_fclose
-
-    ret
-
-
-; TEST SINGLE
-; -------------------------------------------
-@test_single:
-    ld ix,filedata
-
-    ld hl,0x00C500 ; -5.0000000000000000e+00
-    ld de,0x004122 ; 2.5664062500000000e+00
-    call float16_smul
-    push hl
-    call printInline
-    asciz "\r\n-1.2828125000000000e+01\r\n00CA6A 00000000 11001010 01101010\r\n"
-
-    pop hl
-    call printHexUHL
-    call printBinUHL
-    call printNewLine 
 
     ret
 

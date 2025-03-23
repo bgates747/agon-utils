@@ -1,3 +1,163 @@
+
+; multiply two signed fixed16 numbers and get a fixed16 result
+; operation: 0hl * 0de -> 0hl
+; destroys: af, de
+float16_smul_dev:
+; determine sign of result and stack it
+    ld a,h
+    and %10000000
+    xor d
+    and %10000000
+    push af ; stack the sign
+; unpack hl
+    push de ; TODO: figure out why DE gets stomped here
+    call float16_unpack
+    pop de ; restore de TODO: figure out why DE gets stomped above
+    ; jr c,@hl_zero
+    jp c,@hl_zero
+    push af ; stack the true exponent
+; unpack de
+    ex de,hl
+    call float16_unpack
+    ; jr c,@de_zero
+    jp c,@de_zero
+    push af ; stack the true exponent
+; multiply the mantissae
+    call umul24 ; TODO: a 11x11->22 multiply would be more efficient
+; normalise the result
+    ld a,24 ; number of bits in uhl
+@norm_loop:
+    add hl,hl ; left shift uhl
+    jr c,@F ; loop until first non-zero mantissa bit shifts into carry ...
+    dec a
+    jr nz,@norm_loop ; ... or we run out of bits
+; normal product looks like this:
+;      hlu       h       l
+; C 76543210 76543210 76543210
+; I 98765432 10GRSxxx xxxxxxxx
+; ^-- implied 1 of mantissa
+;
+; subnormal product looks like this:
+;      hlu       h       l
+; C 76543210 76543210 76543210
+; 9 87654321 0GRSxxxx xxxxxxxI
+;    implied 0 of mantissa --^
+@@: 
+; compute product's provisional biased exponent prior to rounding
+    pop de ; d = true exponent of de
+    add a,d
+    pop de ; d = true exponent of hl
+    add a,d
+    sub a,6 ; biased exponent
+    ld e,a ; store biased exponent
+
+; check for subnormal product TODO
+    cp 1
+    jp p,@normal_product
+
+; SUBNORMAL PRODUCT
+; rotate product left once *with* carry
+    add hl,hl
+    adc a,a
+    ld l,a
+; simulate right shift with left rotation and rearrangement
+    ld a,e ; get biased exponent
+    add 9
+    ld de,1 ; accumulator for mantissa bits
+@rot_subnorm:
+    add hl,hl
+    ex de,hl
+    adc hl,hl
+    ex de,hl
+    dec a
+    jr nz,@rot_subnorm
+    ex de,hl
+    ld e,0 ; store subnormal exponent
+    jr @prep_rounding
+
+; NORMAL PRODUCT
+@normal_product:
+; rotate product left twice *with* carry
+    ld a,1 ; implied 1 of mantissa
+    add hl,hl
+    adc a,a
+    add hl,hl
+    adc a,a
+    ld l,a
+
+; put GRS bits into d and mantissa bits into hl 
+    ld d,h
+    ld h,l
+    dec sp
+    push hl
+    inc sp 
+    pop af
+    ld l,a
+
+; now subnormal and normal products have same alignment:
+;      hlu       h       l
+; C 76543210 76543210 76543210
+; 8 76543210 GRSxxxxx xxxxxI98
+@prep_rounding:
+; mask out everything in h except the mantissa bits we're keeping *plus* the implied 1 if normal
+    ld a,%00000111
+    and h
+    ld h,a
+; zero hlu
+    dec hl
+    inc.s hl
+;
+; now hl is a 16-bit integer with d holding the GRS bits:
+;      h       l         d
+; C 76543210 76543210 76543210
+; x xxxxxI98 76543210 GRSxxxxx
+
+    ; call printHexUHL
+    ; call printBinUHL
+    ; call printNewLine
+
+    jr @set_sign_exp ; DEBUG: skip rounding for comparison to original function
+; do the rounding
+; set sticky bit
+    ld a,d
+    and %11100000
+    jr z,@F ; no need to set sticky bit
+    set 5,a ; set sticky bit
+@@:
+; now test GRS bits for rounding
+    cp %10000000
+    jp m,@set_sign_exp ; no rounding needed
+    jr nz,@round_up ; same as jp p in this case
+@round_to_even:
+    res 0,l
+    jr z,@set_sign_exp ; no rounding needed
+@round_up:
+    inc hl
+    bit 2,h ; check carry
+    jr z,@F ; no carry
+    inc e ; carry to exponent
+
+@set_sign_exp:
+; determine sign of product
+    res 7,h ; clear sign bit
+    pop af ; bit 7 of a is the sign of the product
+    or h
+    ld h,a
+; set the exponent
+    res 2,h ; clear implied 1 of mantissa
+    ld a,e
+    rla
+    rla
+    or h
+    ld h,a
+    ret   
+@de_zero:
+    pop de ; dummy pop to balance stack
+@hl_zero:
+    pop de ; dummy pop to balance stack
+    ret 
+; end float16_smul_dev
+
 ; multiply two signed fixed16 numbers and get a fixed16 result
 ; operation: 0hl * 0de -> 0hl
 ; destroys: af, de
@@ -11,77 +171,43 @@ float16_smul:
 ; unpack hl
     push de ; TODO: figure out why DE gets stomped here
     call float16_unpack
-
-    ; call printHexUHL
-    ; call printBinUHL
-    ; call printNewLine 
-
     pop de ; restore de TODO: figure out why DE gets stomped above
     jr c,@hl_zero
     push af ; stack the true exponent
 ; unpack de
     ex de,hl
     call float16_unpack
-
-    ; call printHexUHL
-    ; call printBinUHL
-    ; call printNewLine 
-
     jr c,@de_zero
     push af ; stack the true exponent
 ; multiply the mantissae
     call umul24 ; TODO: a 11x11->22 multiply would be more efficient
-
-    ; call printHexUHL
-    ; call printBinUHL
-    ; call printNewLine 
-
 ; normalise the result
     ld a,24 ; number of bits in uhl
-@exp_loop:
+@norm_loop:
     add hl,hl ; left shift uhl
     jr c,@F ; loop until first non-zero mantissa bit shifts into carry ...
     dec a
-    jr nz,@exp_loop ; ... or we run out of bits
+    jr nz,@norm_loop ; ... or we run out of bits
 @@: ; compute product's provisional biased exponent prior to rounding
     pop de ; d = true exponent of de
     add a,d
     pop de ; d = true exponent of hl
     add a,d
-
-    ; call printDecS8
-    ; call printNewLine
-
     sub a,6 ; biased exponent
-
-
 ; check for subnormal product
     cp 1
     jp p,@round_normal
     ld de,1 ; accumulator for mantissa bits
-    ; call printDecS8
-    ; call printNewLine
     add 9
-    ; call printHexUHL
-    ; call printBinUHL
-    ; call printDecS8
-    ; call printNewLine 
 @loop:
     add hl,hl
     ex de,hl
     adc hl,hl
-
-    ; call printHexUHL
-    ; call printBinUHL
-    ; call printDecS8
-    ; call printNewLine 
-
     ex de,hl
     dec a
     jr nz,@loop
     ex de,hl
     jr @zero_uhl
-
 @round_normal:
 ; apply rounding to the normalised result
     ld de,0x002000

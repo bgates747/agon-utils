@@ -342,6 +342,33 @@ print_hex_de:
     ret
 
 
+printCarry:
+;save all the things
+    push af
+    push hl
+    push bc
+    push de
+; check carry
+    push af 
+    pop af
+    jr c,@carry
+    ld a,'0'
+    rst.lil 10h
+    jr @space
+@carry:
+    ld a,'1'
+    rst.lil 10h
+@space:
+    ld a,' '
+    rst.lil 10h
+;restore all the things
+    pop de
+    pop bc
+    pop hl
+    pop af
+    ret
+; end printCarry
+
 ; inputs: whatever is in the flags register
 ; outputs: binary representation of flags
 ;          with a header so we know which is what

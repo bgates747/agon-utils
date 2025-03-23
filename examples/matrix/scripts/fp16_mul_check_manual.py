@@ -9,13 +9,16 @@ from SoftFloat import float_to_f16_bits, f16_mul_softfloat, f16_to_f32_softfloat
 def decode_fp16(val):
     """
     Decodes a 16-bit integer (representing an IEEE 754 binary16 value)
-    into its sign, exponent, and mantissa fields.
-    For normalized numbers, the implicit leading bit is '1'; for subnormals it is '0'.
+    into its sign, exponent, and fraction fields.
+    For normalized numbers, the implied leading bit is '1'; for subnormals it is '0'.
+    Returns a tuple: (sign, exponent, mantissa)
+    where 'mantissa' is a string consisting of the implied bit concatenated with the 10-bit fraction.
     """
     bin_str = format(val, '016b')
     sign = bin_str[0]
     exponent = bin_str[1:6]
     fraction = bin_str[6:]
+    # If normalized, the implied bit is 1; if subnormal, it is 0.
     assumed = "1" if exponent != "00000" else "0"
     mantissa = assumed + fraction
     return sign, exponent, mantissa
@@ -25,8 +28,11 @@ def format_fp16_output(val):
     Given a 16-bit integer representing a float16 value, pack it into 3 bytes
     (2 bytes for the value and a pad byte 0) to form a 24-bit little-endian number.
     Then, format and return a string with the hex representation, the raw binary
-    split into three 8-bit segments, the decoded sign, exponent, mantissa, and
-    the decimal value (via f16_to_f32_softfloat).
+    split into three 8-bit segments, the decoded sign, exponent, and a formatted mantissa,
+    and the decimal value (via f16_to_f32_softfloat).
+    
+    The formatted mantissa displays the implied bit, then a space, then the top 2 bits of the fraction,
+    then a space, then the lower 8 bits of the fraction.
     """
     # Pack into 3 bytes: two bytes for the 16-bit value and one pad byte (0)
     packed = struct.pack('<HB', val, 0)
@@ -36,11 +42,22 @@ def format_fp16_output(val):
     byte1 = raw_bin[:8]
     byte2 = raw_bin[8:16]
     byte3 = raw_bin[16:]
+    
     s, exp, mantissa = decode_fp16(val)
+    # Format the mantissa: if normalized, mantissa length is 11; if subnormal, 10.
+    if len(mantissa) == 11:
+        # For normalized numbers, the format becomes: implied_bit, space, next 2 bits, space, remaining 8 bits.
+        formatted_mantissa = f"{mantissa[0]} {mantissa[1:3]} {mantissa[3:]}"
+    elif len(mantissa) == 10:
+        # For subnormals, do the same (implied bit is '0').
+        formatted_mantissa = f"{mantissa[0]} {mantissa[1:3]} {mantissa[3:]}"
+    else:
+        formatted_mantissa = mantissa
+
     decimal_value = f16_to_f32_softfloat(val)
-    return (f"{hex_field}\tRaw: {byte1} {byte2} {byte3}\t"
-            f"Sign: {s}\tExponent: {exp}\tMantissa: {mantissa}\t"
-            f"Decimal: {decimal_value}")
+    return (f"{hex_field} r:{byte1} {byte2} {byte3} "
+            f"s:{s} e:{exp} m:{formatted_mantissa} "
+            f"d:{decimal_value}")
 
 # ----------------------------
 # Intermediate Mantissa Multiplication Functions
@@ -100,7 +117,7 @@ def main(input_string):
     # Print the SoftFloat outputs.
     print(format_fp16_output(a_f16))
     print(format_fp16_output(b_f16))
-    print(f"{mantissa_hex}\tRaw: {mantissa_bin}")
+    print(f"{mantissa_hex} r:{mantissa_bin}")
     print(format_fp16_output(result_f16))
     print(format_fp16_output(assembly_output))
     
@@ -156,5 +173,5 @@ def main(input_string):
 # Main Execution
 # ----------------------------
 if __name__ == "__main__":
-    input_string = "0x00C500	0x004122	0x00CA6A	0x00CA6B"
+    input_string = "0x00C0B9	0x00C3E5	0x0048A9	0x0048A9"
     main(input_string)

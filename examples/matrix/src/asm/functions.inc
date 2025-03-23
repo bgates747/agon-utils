@@ -502,6 +502,7 @@ printBin8:
     push af
     push hl
     push bc
+    push de ; TOD0: WHY?
     ld b,8 ; loop counter for 8 bits
     ld hl,@cmd ; set hl to the low byte of the output string
     ; (which will be the high bit of the value in a)
@@ -519,6 +520,7 @@ printBin8:
     ld hl,@cmd 
     ld bc,@end-@cmd 
     rst.lil $18 
+    pop de
     pop bc
     pop hl
     pop af
@@ -538,6 +540,8 @@ printBinUHL:
     rst.lil 10h
     ld a,l
     call printBin8
+    ld a,' '
+    rst.lil 10h
     POP_ALL
     ret
 

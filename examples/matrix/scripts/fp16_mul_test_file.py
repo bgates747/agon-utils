@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+import struct
+import numpy as np
+import os
 from SoftFloat import (
     float_to_f16_bits,
     f16_mul_softfloat,
@@ -5,43 +9,42 @@ from SoftFloat import (
     float16_bits_to_float,
     f16_mul_python
 )
-import numpy as np
-import struct
-import os
 
 # ----------------------------
 # Modified generate_valid_fp16 using SoftFloat conversion
 # ----------------------------
-def generate_valid_fp16(abs_limit):
+def generate_valid_fp16(min_val, max_val):
     """
-    Generates a number uniformly between -abs_limit and abs_limit as a float64,
-    converts it to float16 using SoftFloat, and rejects values with abs < 0.01.
-    
-    Parameters:
-        abs_limit (float): Maximum absolute value for the random number.
+    Generates a number uniformly between min_val and max_val as a float64,
+    converts it to float16 using SoftFloat, and returns the resulting value.
+    (Additional rejection criteria can be added if desired.)
     """
     while True:
-        candidate = np.random.uniform(-abs_limit, abs_limit)
+        candidate = np.random.uniform(min_val, max_val)
         candidate_f16 = float16_bits_to_float(float_to_f16_bits(candidate))
-        # if -0.01 < candidate_f16 < 0.01:
-        #     continue
+        # You can add extra checks here if desired.
         return candidate_f16
 
-def generate_fp16_mul_test(N, outfile):
+def generate_fp16_mul_test(N, op1_min, op1_max, op2_min, op2_max, outfile):
     data = bytearray()
     for i in range(N):
-        # Step 1: Generate op1 within MAX_OP range
-        op1 = generate_valid_fp16(MAX_OP)
+        # Step 1: Generate op1 within [op1_min, op1_max]
+        op1 = generate_valid_fp16(op1_min, op1_max)
 
-        # Step 2: Calculate safe op2 range to avoid overflow
+        # Step 2: Determine safe op2 range.
+        # To avoid overflow, if op1 is nonzero, restrict op2_max to min( op2_max, 65504/abs(op1) ).
         if abs(op1) > 0:
-            max_abs_op2 = min(65504 / abs(op1), MAX_OP)
+            safe_op2_max = min(op2_max, 65504 / abs(op1))
         else:
-            max_abs_op2 = MAX_OP  # Avoid division by zero
+            safe_op2_max = op2_max
 
-        # Step 3: Find valid op2 within this range
+        # Ensure that op2_min is less than safe_op2_max.
+        if op2_min > safe_op2_max:
+            safe_op2_max = op2_min
+
+        # Step 3: Generate op2 within [op2_min, safe_op2_max]
         while True:
-            op2 = generate_valid_fp16(max_abs_op2)
+            op2 = generate_valid_fp16(op2_min, safe_op2_max)
             result = f16_mul_python(op1, op2)
             if not (np.isinf(result) or np.isnan(result)):
                 break
@@ -68,9 +71,12 @@ def generate_fp16_mul_test(N, outfile):
 # ----------------------------
 if __name__ == "__main__":
     NUM_TESTS = 10000
-    MAX_OP = 10.0
-    GENERATE_OUTFILE = '/home/smith/Agon/mystuff/agon-utils/examples/matrix/tgt/fp16_mul_test.bin'
+    # Specify op1 range: e.g., between -10.0 and 10.0
+    OP1_MIN = 1.0
+    OP1_MAX = 10.0
+    # Specify op2 range: e.g., between -5.0 and 5.0
+    OP2_MIN = 10.0
+    OP2_MAX = 1000.0
 
-    # MAX_OP = 0.01
-    # GENERATE_OUTFILE = '/home/smith/Agon/mystuff/agon-utils/examples/matrix/tgt/fp16_mul_test_tiny.bin'
-    generate_fp16_mul_test(NUM_TESTS, GENERATE_OUTFILE)
+    GENERATE_OUTFILE = '/home/smith/Agon/mystuff/agon-utils/examples/matrix/tgt/fp16_mul_test.bin'
+    generate_fp16_mul_test(NUM_TESTS, OP1_MIN, OP1_MAX, OP2_MIN, OP2_MAX, GENERATE_OUTFILE)
