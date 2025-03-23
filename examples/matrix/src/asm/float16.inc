@@ -122,22 +122,39 @@ float16_smul_dev:
 ; do the rounding
 ; set sticky bit
     ld a,d
-    or %00011111
+    and %00011111
     jr z,@F ; no need to set sticky bit
-    set 5,a ; set sticky bit
+    set 5,d ; set sticky bit
 @@:
 ; now test GRS bits for rounding
+    ld a,d
     and %11100000
+
+    ; call printBin8
+    ; call printNewLine
+
     cp %10000000
 
+    ; call printNewLine
     ; call dumpFlags
-    ; call printBin8
     ; call printNewLine
 
     jp m,@set_sign_exp ; no rounding needed
     jr nz,@round_up ; same as jp p in this case
+
+    ; call printNewLine
+    ; call dumpFlags
+    ; call printBin8
+    ; call printNewLine
+
 @round_to_even:
     bit 0,l
+
+    ; call printNewLine
+    ; call dumpFlags
+    ; call printBin8
+    ; call printNewLine
+    
     jr z,@set_sign_exp ; no rounding needed
 @round_up:
     inc hl
