@@ -1,4 +1,3 @@
-
 ; multiply two signed fixed16 numbers and get a fixed16 result
 ; operation: 0hl * 0de -> 0hl
 ; destroys: af, de
@@ -24,6 +23,10 @@ float16_smul_dev:
     push af ; stack the true exponent
 ; multiply the mantissae
     call umul24 ; TODO: a 11x11->22 multiply would be more efficient
+; At this point, u:hl contains the 24-bit product
+; Save the original LSB of the product for sticky bit calculation later
+    ld c,l    ; Save the LSB in register C for sticky bit calculation
+
 ; normalise the result
     ld a,24 ; number of bits in uhl
 @norm_loop:
@@ -31,6 +34,9 @@ float16_smul_dev:
     jr c,@F ; loop until first non-zero mantissa bit shifts into carry ...
     dec a
     jr nz,@norm_loop ; ... or we run out of bits
+    ; If we get here, we've shifted all bits out, so the original LSBs matter
+    ; for the sticky bit (in register C)
+    
 ; normal product looks like this:
 ;      hlu       h       l
 ; C 76543210 76543210 76543210
@@ -112,48 +118,36 @@ float16_smul_dev:
 ; C 76543210 76543210 76543210
 ; x 00000I98 76543210 GRS00000
 
-    ; call printHexUHL
-    ; call printBinUHL
-    ; ld a,d
-    ; call printBin8
-    ; call printNewLine
-
-    ; jr @set_sign_exp ; DEBUG: skip rounding for comparison to original function
 ; do the rounding
 ; set sticky bit
     ld a,d
     and %00011111
-    jr z,@F ; no need to set sticky bit
-    set 5,d ; set sticky bit
+    jr nz,@set_sticky  ; If there are any bits set in the lower 5 bits of d, set sticky
+    
+    ; If we're here, check our saved LSB (in C) for any sticky bits
+    ld a,c
+    and a             ; Set flags based on value in C
+    jr z,@F           ; If C is zero, no need to set sticky
+    
+@set_sticky:
+    set 5,d           ; set sticky bit
 @@:
 ; now test GRS bits for rounding
     ld a,d
     and %11100000
 
-    ; call printBin8
-    ; call printNewLine
-
     cp %10000000
-
-    ; call printNewLine
-    ; call dumpFlags
-    ; call printNewLine
 
     jp m,@set_sign_exp ; no rounding needed
     jr nz,@round_up ; same as jp p in this case
 
-    ; call printNewLine
-    ; call dumpFlags
-    ; call printBin8
-    ; call printNewLine
-
 @round_to_even:
     bit 0,l
 
-    ; call printNewLine
-    ; call dumpFlags
-    ; call printBin8
-    ; call printNewLine
+;     ; call printNewLine
+;     ; call dumpFlags
+;     ; call printBin8
+;     ; call printNewLine
     
     jr z,@set_sign_exp ; no rounding needed
 @round_up:

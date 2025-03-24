@@ -50,12 +50,12 @@ exit:
 main:
     jp test_file
 
-    ld hl,0x004524 ; 5.1406250000000000e+00
-    ld de,0x006080 ; 5.7600000000000000e+02
+    ld hl,0x00447A ; 4.4765625000000000e+00
+    ld de,0x005A15 ; 1.9462500000000000e+02
     call float16_smul_dev
     push hl
     call printInline
-    asciz "\r\n2.9600000000000000e+03\r\n0069C8 00000000 01101001 11001000\r\n"
+    asciz "\r\n8.7150000000000000e+02\r\n0062CF 00000000 01100010 11001111\r\n"
 
     pop hl
     call printHexUHL

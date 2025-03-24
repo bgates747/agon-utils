@@ -173,5 +173,5 @@ def main(input_string):
 # Main Execution
 # ----------------------------
 if __name__ == "__main__":
-    input_string = "0x004524	0x006080	0x0069C8	0x0069C9"
+    input_string = "0x00447A	0x005A15	0x0062CF	0x0062CE"
     main(input_string)
