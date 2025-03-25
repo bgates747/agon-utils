@@ -121,30 +121,14 @@ def main(input_string):
     print(format_fp16_output(result_f16))
     print(format_fp16_output(assembly_output))
     
-    # --- Generate the assembly test code ---
-    #
-    # We generate the following assembly snippet:
-    #
-    #   ld hl,0x000CF8 ; 0.0003032684326171875
-    #   ld de,0x00ADFE ; -0.0936279296875
-    #   call float16_smul 
-    #   push hl
-    #   call printInline
-    #   asciz "-2.8371810913085938e-05\r\n0081DC 00000000 10000001 11011100\r\n"
-    #
-    # The product's decimal value (in scientific notation) and its 24-bit fields
-    # are generated from our SoftFloat multiplication result.
-    
     # Get float (decimal) values for the operands and product.
     a_float = f16_to_f32_softfloat(a_f16)
     b_float = f16_to_f32_softfloat(b_f16)
-    product_float = f16_to_f32_softfloat(result_f16)
     
     # Format the float values in a human-readable (or scientific) form.
     # Adjust precision as desired.
     a_float_str = f"{a_float:.16e}"
     b_float_str = f"{b_float:.16e}"
-    product_float_str = f"{product_float:.16e}"
     
     # For the product, generate the 24-bit representation.
     packed = struct.pack('<HB', result_f16, 0)
@@ -160,10 +144,11 @@ def main(input_string):
     asm_lines.append(f"    ld hl,{a_hex} ; {a_float_str}")
     asm_lines.append(f"    ld de,{b_hex} ; {b_float_str}")
     asm_lines.append("    call float16_smul_dev")
-    asm_lines.append("    push hl")
+    asm_lines.append("    call printNewLine")
+    asm_lines.append("    call printHexUHL")
+    asm_lines.append("    call printBinUHL")
     asm_lines.append("    call printInline")
-    # The asciz string: first line is the product's decimal value, second line the FP16 fields.
-    asm_lines.append(f'    asciz "\\r\\n{product_float_str}\\r\\n{result_hex_str} {raw_parts}\\r\\n"')
+    asm_lines.append(f'    asciz "\\r\\n{result_hex_str} {raw_parts}\\r\\n"')
     
     print("\n; --- Generated Assembly Test Code ---")
     for line in asm_lines:
@@ -173,5 +158,9 @@ def main(input_string):
 # Main Execution
 # ----------------------------
 if __name__ == "__main__":
-    input_string = "0x00447A	0x005A15	0x0062CF	0x0062CE"
+    input_string = "0x00005E	0x00416D	0x0000FF	0x0003FC"
+    input_string = "0x0003EF	0x003D24	0x00050E	0x000071"
+    input_string = "0x000002	0x003C53	0x000002	0x000000"
+    input_string = "0x00489D	0x005739	0x00642A	0x00642A"
+    input_string = "0x00021A	0x003E3F	0x000348	0x000690"
     main(input_string)

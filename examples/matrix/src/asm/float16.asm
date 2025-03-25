@@ -48,19 +48,64 @@ exit:
     include "debug.inc"
 
 main:
-    jp test_file
+    call vdu_cls
 
-    ld hl,0x00447A ; 4.4765625000000000e+00
-    ld de,0x005A15 ; 1.9462500000000000e+02
+    ; jp test_file
+
+    ld hl,0x00005E ; 5.6028366088867188e-06
+    ld de,0x00416D ; 2.7128906250000000e+00
     call float16_smul_dev
-    push hl
-    call printInline
-    asciz "\r\n8.7150000000000000e+02\r\n0062CF 00000000 01100010 11001111\r\n"
-
-    pop hl
+    call printNewLine
     call printHexUHL
     call printBinUHL
+    call printInline
+    asciz "\r\n0000FF 00000000 00000000 11111111\r\n"
+    call printInline
+    asciz "=================================\r\n\r\n"
+
+    ld hl,0x0003EF ; 6.0021877288818359e-05
+    ld de,0x003D24 ; 1.2851562500000000e+00
+    call float16_smul_dev
     call printNewLine
+    call printHexUHL
+    call printBinUHL
+    call printInline
+    asciz "\r\n00050E 00000000 00000101 00001110\r\n"
+    call printInline
+    asciz "=================================\r\n\r\n"
+
+    ld hl,0x000002 ; 1.1920928955078125e-07
+    ld de,0x003C53 ; 1.0810546875000000e+00
+    call float16_smul_dev
+    call printNewLine
+    call printHexUHL
+    call printBinUHL
+    call printInline
+    asciz "\r\n000002 00000000 00000000 00000010\r\n"
+    call printInline
+    asciz "=================================\r\n\r\n"
+
+    ld hl,0x00489D ; 9.2265625000000000e+00
+    ld de,0x005739 ; 1.1556250000000000e+02
+    call float16_smul_dev
+    call printNewLine
+    call printHexUHL
+    call printBinUHL
+    call printInline
+    asciz "\r\n00642A 00000000 01100100 00101010\r\n"
+    call printInline
+    asciz "=================================\r\n\r\n"
+
+    ld hl,0x00021A ; 3.2067298889160156e-05
+    ld de,0x003E3F ; 1.5615234375000000e+00
+    call float16_smul_dev
+    call printNewLine
+    call printHexUHL
+    call printBinUHL
+    call printInline
+    asciz "\r\n000348 00000000 00000011 01001000\r\n"
+
+
 
     ret
 
