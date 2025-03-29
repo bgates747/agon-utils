@@ -11,101 +11,101 @@ float16_smul_dev:
 ; unpack hl
     push de ; TODO: figure out why DE gets stomped here
     call float16_unpack
+    ; add hl,hl ; shift only first operand up one bit for some magic reason
+; ; DEBUG
+;     call printHexUHL
+;     call printBinUHL
+;     call printNewLine
+; ; END DEBUG
     pop de ; restore de TODO: figure out why DE gets stomped above
     ; jr c,@hl_zero
     jp c,@hl_zero
     push af ; stack the true exponent
 ; unpack de
     ex de,hl
+    push de ; TODO: figure out why DE gets stomped here
     call float16_unpack
+; ; DEBUG
+;     call printHexUHL
+;     call printBinUHL
+;     call printNewLine
+; ; END DEBUG
+    pop de ; restore de TODO: figure out why DE gets stomped above
+    ex de,hl
     ; jr c,@de_zero
     jp c,@de_zero
     push af ; stack the true exponent
 ; multiply the mantissae
     call umul24 ; TODO: a 11x11->22 multiply would be more efficient
+
+; ; DEBUG
+;     call printHexUHL
+;     call printBinUHL
+;     call printNewLine
+; ; END DEBUG
+
+; determine whether we need the sticky bit
     ld a,l
     and a
-    jr nz,@F
+    jr nz,@F ; non-zero, so need sticky
     ld a,h
     and %00000111
 @@:
-    ld c,a ; store sticky status in c
+    ld c,a ; we test c for non-zero later to determine whether to set sticky bit
 
 ; compute product's provisional biased exponent prior to normalisation and rounding
-    ld a,15-2 ; -2 to account for the two extra shifts to hl we need to put msb of mantissa into carry
+    ld a,15+4 ; add the exponent bias
     pop de ; d = true exponent of de
     add a,d
     pop de ; d = true exponent of hl
     add a,d
+    ld e,a ; store provisional biased exponent
 
-; DEBUG
-    call printHexUHL
-    call printBinUHL
-    call printNewLine
-; END DEBUG
+; ; DEBUG
+;     ld a,e
+;     call printDecS8
+;     call printNewLine
+; ; END DEBUG
 
 ; normalise the result and adjust biased exponent
 @norm_loop:
-    add hl,hl ; left shift uhl
     dec e ; decrement biased exponent
-    jr nc,@norm_loop ; loop until first non-zero mantissa bit shifts into carry
-    ld e,a ; store biased exponent
+    add hl,hl ; left shift uhl
+    jr nc,@norm_loop
 
-; DEBUG
-    call printHexUHL
-    call printBinUHL
-    call printDecS8
-    call printNewLine
-; END DEBUG
-   
-; normal product looks like this:
-;      hlu       h       l
-; C 76543210 76543210 76543210
-; I 98765432 10GRS000 00000000
-; ^-- implied 1 of mantissa
-;
-; subnormal product looks like this:
-;      hlu       h       l
-; C 76543210 76543210 76543210
-; 9 87654321 0GRS0000 0000000I
-;    implied 0 of mantissa --^
+; ; DEBUG
+;     call printHexUHL
+;     call printBinUHL
+;     ld a,e
+;     call printDecS8
+;     call printNewLine
+; ; END DEBUG
 
-
-; check for subnormal product 
+ ; check for subnormal product 
+    ld a,e
     cp 1
     jp p,@normal_product
 
 ; SUBNORMAL PRODUCT
-; effect right shift via left rotation *with* carry
-    add 8
-    ld de,1 ; accumulator for mantissa bits
 @rot_subnorm:
-    add hl,hl
-    ex de,hl
-    adc hl,hl
-    ex de,hl
-    dec a
-    jr nz,@rot_subnorm
-    ex de,hl
-    ld e,0 ; store subnormal exponent
 
-; DEBUG
-    call printHexUHL
-    call printBinUHL
-    call printDecS8
-    call printNewLine
-; END DEBUG
 
     jr @prep_rounding
 
 ; NORMAL PRODUCT
 @normal_product:
 ; rotate product left twice *with* carry
+    xor a
     add hl,hl
-    adc a,1 ; implied 1 of mantissa
+    adc a,a
     add hl,hl
     adc a,a
     ld l,a
+; ; DEBUG
+;     call printHexUHL
+;     call printBinUHL
+;     call printNewLine
+; ; END DEBUG
 
 ; put GRS bits into d and mantissa bits into hl 
     ld d,h
@@ -121,11 +121,11 @@ float16_smul_dev:
 ; C 76543210 76543210 76543210
 ; 8 76543210 GRS00000 00000I98
 @prep_rounding:
-; DEBUG
-    call printHexUHL
-    call printBinUHL
-    call printNewLine
-; END DEBUG
+; ; DEBUG
+;     call printHexUHL
+;     call printBinUHL
+;     call printNewLine
+; ; END DEBUG
 
 ; mask out everything in h except the mantissa bits we're keeping *plus* the implied 1 if normal
     ld a,%00000111
@@ -297,25 +297,21 @@ float16_smul:
 ; compute the true exponent of a subnormal float16
 ; inputs: hl is the subnormal float16 mantissa
 ; outputs: hl is the normalised float16, a is the true exponent
-; modifies: af, hl
+; destroys: flags
 float16_norm_sub:
-    push hl ; save original mantissa
-    ld a,-15
+    ld a,1 ; initialize exponent
 @norm_loop:
-    add hl,hl ; left shift uhl
-    dec a ; bump exponent
     bit 2,h ; test bit 10 of hl
-    jr z,@norm_loop ; loop until first non-zero mantissa bit shifts into bit 10 of hl
-
-; DEBUG
-    call printDecS8
-    call printNewLine
-; END DEBUG
-
-    pop hl ; restore original mantissa
-    ret
+    ret nz ; return if if set
+    add hl,hl ; left shift uhl
+    dec a ; dec exponent
+    jr @norm_loop ; loop until first non-zero mantissa bit shifts into bit 10 of hl
 ; end float16_norm_sub
 
+; unpack the sign, exponent, and mantissa of a float16
+; inputs: hl is the float16 to unpack
+; outputs: a is the true exponent, hl is the normalised mantissa
+;          sign and zero flags are correctly (re)set, carry set if hl is +/-zero
 float16_unpack:
 ; get hl's stored exponent
     ld a,h
@@ -339,15 +335,17 @@ float16_unpack:
     srl a
     srl a
     sub a,15
-; put the explicit 1 into the mantissa
+; put the explicit 1 into the mantissa and (re)set sign flag
     set 2,h
-    push af ; stack the true exponent
+    SIGN_HL
+    push af ; stack sign the true exponent
 ; mask out everything but the top three bits of hl's mantissa
     ld a,h
     and %00000111
     ld h,a
     pop af ; restore the true exponent
-    or a ; clear carry indicating non-zero result
+    scf ; set carry ...
+    ccf ; ... then reset it indicating non-zero result
     ret
 ; end float16_unpack
 

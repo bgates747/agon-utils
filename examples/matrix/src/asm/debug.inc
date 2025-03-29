@@ -41,6 +41,32 @@ printHexAUHL:
     pop af
     ret
 
+printHexHLBC:
+    push af
+    push bc
+    call printHex16
+    pop hl ; bc
+    push hl 
+    call printHex16
+    ld a,' '
+    rst.lil 10h
+    pop bc
+    pop af
+    ret
+
+printHexHLDE:
+    push af
+    call printHex16
+    ld a,' '
+    rst.lil 10h
+    ex de,hl
+    call printHex16
+    ld a,' '
+    rst.lil 10h
+    ex de,hl
+    pop af
+    ret
+
 printHexABHL:
 ; preserve registers
     push bc ; b will be ok c will not
