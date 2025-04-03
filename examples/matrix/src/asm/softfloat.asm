@@ -50,6 +50,27 @@ exit:
 main:
     call vdu_cls
 
+    ld hl,0x4001
+    ; if ( sigZ < 0x4000 ) {
+    ;     --expZ;
+    ;     sigZ <<= 1;
+    ; }
+    ex de,hl ; keep hl safe for the compare
+    ld hl,0x4000
+    or a ; clear carry
+    sbc hl,de ; sigZ - 0x4000
+    ex de,hl ; restore hl
+
+    call dumpFlags
+    ret
+
+    ld hl,0x03ff
+    call softfloat_normSubnormalF16Sig
+    call printBinUHL
+    call printDecS8
+    call printNewLine
+    ret
+
     jp test_file
 
     ld hl,0x9a42

@@ -241,3 +241,28 @@ vdu_plot_cf:
 @x1:    dw 0x0000
 @y1:    dw 0x0000
 @end:   db 0x00 ; padding
+
+; draw an unfilled rectangle
+vdu_plot_rect:
+    ld hl,@cmd
+    ld bc,@end-@cmd
+    rst.lil $18
+    ret
+@cmd:   
+    db 25,mv_abs
+    dw 0 ; x upper left
+    dw 0 ; y upper left
+    db 25,plot_sl_both+dr_abs_fg
+    dw 320 ; x upper right
+    dw 0 ; y upper right
+    db 25,plot_sl_both+dr_abs_fg
+    dw 320 ; x lower right
+    dw 240 ; y lower right
+    db 25,plot_sl_both+dr_abs_fg
+    dw 0 ; x lower left
+    dw 240 ; y lower left
+    db 25,plot_sl_both+dr_abs_fg
+    dw 0 ; x upper left
+    dw 0 ; y upper left
+@end:
+; end vdu_plot_rect

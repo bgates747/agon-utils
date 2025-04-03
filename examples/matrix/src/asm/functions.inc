@@ -144,8 +144,8 @@ DisplayHexPrefix:
     ENDMACRO
 
 
-; Prints the right justified decimal value in HL without leading zeroes
-; HL : Value to print
+; Prints the right justified decimal value in UHL without leading zeroes
+; UHL : Value to print
 ; preserves all registers and flags
 printDec:
 ; back up all the things
@@ -534,6 +534,19 @@ printBinUHL:
     call printBin8
     ld a,' '
     rst.lil 10h
+    ld a,h
+    call printBin8
+    ld a,' '
+    rst.lil 10h
+    ld a,l
+    call printBin8
+    ld a,' '
+    rst.lil 10h
+    POP_ALL
+    ret
+
+printBinHL:
+    PUSH_ALL
     ld a,h
     call printBin8
     ld a,' '
