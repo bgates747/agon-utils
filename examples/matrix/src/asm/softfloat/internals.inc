@@ -51,15 +51,14 @@ softfloat16_unpack:
 ; #define packToF16UI( sign, exp, sig ) (((uint16_t) (sign)<<15) + ((uint16_t) (exp)<<10) + (sig))
 ; inputs: c = sign (0=pos, 0x80=neg), b = exp, hl = sig (implied 1 place in bit 10)
 packToF16UI:
-; sign
-    ld a,c
-    or h
-    ld h,a
 ; exponent
     ld a,b
-    ; add a,15 ; bias
     add a,a
     add a,a
+    add a,h
+    ld h,a
+; sign
+    ld a,c
     or h
     ld h,a
     ret

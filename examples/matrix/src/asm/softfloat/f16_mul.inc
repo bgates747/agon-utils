@@ -106,10 +106,10 @@ f16_mul:
     ld a,d
     and a
     jr nz,@need_sticky
-    jr @F
+    jr @no_sticky
 @need_sticky:
     set 0,l ; set sticky bit
-@@: ; we land here if we did not need sticky
+@no_sticky:
     ; if ( sigZ < 0x4000 ) {
     ;     --expZ;
     ;     sigZ <<= 1;
@@ -122,7 +122,7 @@ f16_mul:
     dec c ; --expZ
     add hl,hl ; sigZ <<= 1
     bit 6,h ; test for carry into assumed 1 place
-    jr nz @normalise_loop
+    jr nz,@normalise_loop
 @@: ; we land here if product was normal
 
 ;     return softfloat_roundPackToF16( signZ, expZ, sigZ );

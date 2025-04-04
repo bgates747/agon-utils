@@ -107,7 +107,6 @@
 ;  uiZ:
 ;     uZ.ui = uiZ;
 ;     return uZ.f;
-
 ; }
 
 
@@ -139,6 +138,7 @@
 ; ------------------------------------------------------------------------------
 ; uint16_t softfloat_roundPackToF16( bool sign, int_fast16_t exp, uint_fast16_t sig )
 ; inputs: c = sign (0=pos, 0x80=neg), b = biased exp, hl = sig (implied 1 place in bit 14)
+; outputs: hl = packed float16, c = sign (0=pos, 0x80=neg), b = biased exp
 ; destroys: af, de
 softfloat_roundPackToF16:
 ; {
