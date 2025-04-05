@@ -74,8 +74,8 @@ def create_test_data_file(filename, num_trials, min_exp, max_exp, min_sig, max_s
             sign, exp, sig, packed_p, sign_p, exp_p, mantissa_p, packed_a, sign_a, exp_a, mantissa_a = generate_test_case(min_exp, max_exp, min_sig, max_sig)
             
             # Pack all data into binary format - 11 fields total
-            # Format: <BBHHBBHHBBH for sign,exp,sig,packed_p,sign_p,exp_p,mantissa_p,packed_a,sign_a,exp_a,mantissa_a
-            record = struct.pack('<BBHHBBHHBBH', sign, exp, sig, packed_p, sign_p, exp_p, mantissa_p, packed_a, sign_a, exp_a, mantissa_a)
+            # Format: <BbHHBBHHBBH for sign,exp,sig,packed_p,sign_p,exp_p,mantissa_p,packed_a,sign_a,exp_a,mantissa_a
+            record = struct.pack('<BbHHBBHHBBH', sign, exp, sig, packed_p, sign_p, exp_p, mantissa_p, packed_a, sign_a, exp_a, mantissa_a)
             f.write(record)
     
     print(f"Generated {num_trials} test cases in {filename}")
@@ -86,10 +86,17 @@ def create_test_data_file(filename, num_trials, min_exp, max_exp, min_sig, max_s
 if __name__ == "__main__":
     # Set parameters directly
     output_file = 'tgt/softfloat_roundPackToF16.bin'
-    num_trials = 100000
-    min_exp = 1
-    max_exp = 0x1D
-    min_sig = 0x4000  # Ensure bit 14 is set
+    num_trials = 1000
+# Test normal numbers
+    # min_exp = 1
+    # max_exp = 0x1D
+    # min_sig = 0x4000
+    # max_sig = 0x7FFF
+
+    # Test subnormal numbers
+    min_exp = -35
+    max_exp = -1
+    min_sig = 0x4000
     max_sig = 0x7FFF
     
     create_test_data_file(

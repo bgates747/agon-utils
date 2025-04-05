@@ -46,83 +46,24 @@ exit:
 main:
     call vdu_cls
 
-    jp test_file
 
+    ; jp test_file
 
-    ld c,0x00
-    ld b,0x0e
-    ld hl,0x74bb
+    ld hl,0x8001
 
-    call softfloat_roundPackToF16
+    call printUnpackF16
 
-    call printHexHL
-    call printBinHL
-    ld a,h
-    and 0x80
-    call printHexA
-    ld a,h
-    and %01111100
-    rra
-    rra
-    call printHexA
-    res 2,h
-    or a
-    jr z,@F
-    set 2,h
-@@:
-    ld a,h
-    and %00000111
-    ld h,a
-    call printHexHL
-    call printBinHL
-    call printNewLine
-
-    ret
-
-    jp test_file
-
-    ld hl,0x3c00 ; 1.0
-    ld d,%11110000 ; rounding bits
-
-    ; call dumpRegistersHex
-    call printHexHL
-    call printBinHL
-    call printNewLine
-
-    call softfloat16_unpack
-
-    ; ; call dumpRegistersHex
-    ; call printHexHL
-    ; call printBinHL
-    ; call printNewLine
-
-; shift rounding bits into significand
-; once
-    sla d 
-    adc hl,hl
-; twice
-    sla d
-    adc hl,hl
-; thrice
-    sla d
-    adc hl,hl
-; four times
-    sla d
-    adc hl,hl
-
-    ; call printHexHL
-    ; call printBinHL
-    ; call printNewLine
+    ld c,0x80
+    ld b,0xf5
+    ld hl,0x4213
 
     call softfloat_roundPackToF16
 
-    call printHexHL
-    call printBinHL
-    call printNewLine
+    call printUnpackF16
 
     ret
+
 ; end main
-
 
 ; TEST FILE
 ; -------------------------------------------
@@ -215,5 +156,31 @@ test_file:
 
 mul_16_32_filename: asciz "softfloat_roundPackToF16.bin"
 mul_16_32_filename_out: asciz "softfloat_roundPackToF16.bin"
+
+printUnpackF16:
+    PUSH_ALL
+    call printHexHL
+    call printBinHL
+    ld a,h
+    and 0x80
+    call printHexA
+    ld a,h
+    and %01111100
+    rra
+    rra
+    call printHexA
+    res 2,h
+    or a
+    jr z,@F
+    set 2,h
+@@:
+    ld a,h
+    and %00000111
+    ld h,a
+    call printHexHL
+    call printBinHL
+    call printNewLine
+    POP_ALL
+    ret
 
     include "files.inc"

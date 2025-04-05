@@ -27,10 +27,10 @@ softfloat_shiftRightJam32:
     ld b,a ; loop counter
     xor a ; zero jam bits and clear carry
 @shift_loop:
-    srl h
-    srl l
-    srl d
-    srl e
+    rr h
+    rr l
+    rr d
+    rr e
     adc a,a ; jam bit
     or a ; clear carry
     djnz @shift_loop
