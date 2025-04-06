@@ -60,38 +60,25 @@ exit:
     include "debug.inc"
 
 main:
-    call vdu_cls
+    ; jp test_file
 
-    ld hl,0x4001
-    ; if ( sigZ < 0x4000 ) {
-    ;     --expZ;
-    ;     sigZ <<= 1;
-    ; }
-    ex de,hl ; keep hl safe for the compare
-    ld hl,0x4000
-    or a ; clear carry
-    sbc hl,de ; sigZ - 0x4000
-    ex de,hl ; restore hl
-
-    call dumpFlags
-    ret
-
-    ld hl,0x03ff
-    call softfloat_normSubnormalF16Sig
-    call printBinUHL
-    call printDecS8
-    call printNewLine
-    ret
-
-    jp test_file
-
-    ld hl,0x9a42
-    ld de,0x77b8
-    call mul_16_32
-    call printHexHLDE
-    call printNewLine
+    ld hl,0x4804
+    ; PRINT_UNPACK_F16 "OP1:"
+    ld de,0x56BD ; 1.0
+    ex de,hl
+    ; PRINT_UNPACK_F16 "OP2:"
+    ex de,hl
+    call f16_mul
+    PRINT_UNPACK_F16 "Result:"
+    ld hl,0x62C4
+    PRINT_UNPACK_F16 "Should be:"
 
     ret
+
+; DEBUG
+    call dumpRegistersHex
+    ret
+; END DEBUG
 
 ; TEST FILE
 ; -------------------------------------------
@@ -108,52 +95,41 @@ test_file:
 @@:
     ld hl,f16_fil_out
     ld de,mul_16_32_filename_out
-    ld c,fa_write | fa_create_always
+    ld c,fa_write | fa_open_existing
     FFSCALL ffs_fopen
     or a
     jr z,@start
     call printInline
     asciz "Error opening file for writing\r\n"
     ret
-@start:
+@start:    
     ld hl,0 ; error counter
     push hl ; save error counter
     ld ix,filedata
 @loop:
     ld hl,f16_fil
     ld de,filedata
-    ld bc,8 ; 8 bytes for a single record
+    ld bc,8 ; bytes per record
     FFSCALL ffs_fread
     push bc
     pop hl
-    add hl,de
-    or a
-    sbc hl,de
+    SIGN_HLU
     jr z,@end
-    ld hl,(ix+0)
-    ld de,(ix+2)
-    call mul_16_32
-    ld (ix+8),e
-    ld (ix+9),d
-    ld (ix+10),l
-    ld (ix+11),h
+    ld hl,(ix+0) ; op1
+    ld de,(ix+2) ; op2
+    call f16_mul
+    ld (ix+6),l ; assembly product low byte
+    ld (ix+7),h ; assembly product high byte
 ; write to file
     ld hl,f16_fil_out
     ld de,filedata
-    ld bc,12
+    ld bc,8 ; bytes per record
     FFSCALL ffs_fwrite
 ; check for error
-    ld l,(ix+4)
-    ld h,(ix+5)
-    ld e,(ix+8)
-    ld d,(ix+9)
-    sbc.s hl,de
-    jr nz,@error
-    ld l,(ix+6)
-    ld h,(ix+7)
-    ld e,(ix+10)
-    ld d,(ix+11)
-    or a
+    ld l,(ix+6) ; assembly product low byte
+    ld h,(ix+7) ; assembly product high byte
+    ld e,(ix+4) ; python product low byte
+    ld d,(ix+5) ; python product high byte
     sbc.s hl,de
     jr nz,@error
     jr @loop
@@ -176,8 +152,8 @@ test_file:
 
     ret
 
-mul_16_32_filename: asciz "mul_16_32_test.bin"
-mul_16_32_filename_out: asciz "mul_16_32_test_out.bin"
+mul_16_32_filename: asciz "fp16_mul_test.bin"
+mul_16_32_filename_out: asciz "fp16_mul_test.bin"
 
 printUnpackF16:
     push af

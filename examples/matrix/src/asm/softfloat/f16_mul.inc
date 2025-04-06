@@ -68,13 +68,17 @@ f16_mul:
     and %10000000
     xor d
     and %10000000
-    push af ; stack the sign
+    ld c,a ; save sign ; a=0x00
+
+; ; DEBUG
+;     call dumpRegistersHex
+; ; END DEBUG
+
 ; unpack hl
-    push de ; TODO: figure out why DE gets stomped here
     call softfloat16_unpack
-    pop de ; restore de TODO: figure out why DE gets stomped above
     jr c,@hl_zero
-    push af ; stack the biased exponent
+    ld a,b ; get exponent
+    push af ; save exponent
     ; sigA = (sigA | 0x0400)<<4; (softfloat16_unpack already OR'd in the implicit 1)
     add hl,hl
     add hl,hl
@@ -84,21 +88,40 @@ f16_mul:
     ex de,hl
     call softfloat16_unpack
     jr c,@de_zero
-    ld c,a ; store biased exponent of de
-    pop af ; restore biased exponent of hl
+    pop af ; restore exponent of hl
+    ; a=0x0f, b=0x0f, hl=0x0400, de=0x4000
+
+; ; DEBUG
+;     call dumpRegistersHex
+; ; END DEBUG
+
     ; expZ = expA + expB - 0xF;
-    add a,c
-    sub a,0xF
-    ld c,a ; store biased exponent of hl
+    add a,b ; expA + expB
+    sub 0x0F ; expA + expB - 0xF
+    ld b,a ; store exponent of hl
     ; sigB = (sigB | 0x0400)<<5; (softfloat16_unpack already OR'd in the implicit 1)
     add hl,hl
     add hl,hl
     add hl,hl
     add hl,hl
     add hl,hl
+    ; c=0x00, b=0x0f, hl=0x8000, de=0x4000
+
+; ; DEBUG
+;     call dumpRegistersHex
+; ; END DEBUG
+
     ; sig32Z = (uint_fast32_t) sigA * sigB;
+    push bc ; save sign and exponent
     call mul_16_32 ; 32-bit product in hlde ...
-    ; sigZ = sig32Z>>16; ... so we only need hl
+    pop bc ; restore sign and exponent
+    ; b=0x0f, c=0x00, hl=0x2000, de=0x0000
+
+; ; DEBUG
+;     call dumpRegistersHex
+; ; END DEBUG
+
+    ; sigZ = sig32Z>>16;
     ; if ( sig32Z & 0xFFFF ) sigZ |= 1; set sticky bit
     ld a,e
     and a
@@ -109,26 +132,27 @@ f16_mul:
     jr @no_sticky
 @need_sticky:
     set 0,l ; set sticky bit
+    ; not taken
+; ; DEBUG
+;     call dumpRegistersHex
+; ; END DEBUG
 @no_sticky:
     ; if ( sigZ < 0x4000 ) {
     ;     --expZ;
     ;     sigZ <<= 1;
     ; }
-; check for underflow
+; check for subnormal
     ld a,h
     and %11000000 ; sigZ - 0x4000
-    jr nz,@F ; sigZ >= 0x4000
+    jr nz,@end_normalise ; sigZ >= 0x4000
 @normalise_loop:
-    dec c ; --expZ
+    dec b ; --expZ
     add hl,hl ; sigZ <<= 1
     bit 6,h ; test for carry into assumed 1 place
     jr nz,@normalise_loop
-@@: ; we land here if product was normal
-
+@end_normalise: ; we land here if product was normal
 ;     return softfloat_roundPackToF16( signZ, expZ, sigZ );
     jp softfloat_roundPackToF16
-
-
 ;     /*------------------------------------------------------------------------
 ;     *------------------------------------------------------------------------*/
 ;  propagateNaN:
