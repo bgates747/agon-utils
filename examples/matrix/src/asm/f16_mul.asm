@@ -24,27 +24,39 @@ exit:
 
     ret
 
+    MACRO PRINT_UNPACK_F16 msg
+        push hl
+        call printInline
+        asciz "\r\n",msg,"\r\n"
+        pop hl
+        call printUnpackF16
+    ENDMACRO
+
+    MACRO PRINT_PACK_F16 msg
+        push hl
+        call printInline
+        asciz "\r\n",msg,"\r\n"
+        pop hl
+        call printPackF16
+    ENDMACRO
+
 ; API INCLUDES
     include "mos_api.inc"
     include "macros.inc"
     include "functions.inc"
     include "arith24.inc"
     include "maths.inc"
-    include "fixed168.inc"
     include "timer.inc"
     include "vdu.inc"
     include "vdu_buffered_api.inc"
-    include "vdu_fonts.inc"
     include "vdu_plot.inc"
-    include "vdu_sound.inc"
-
-    include "fpp.inc"
-    include "fpp_ext.inc"
-    include "softfloat.inc"
-    include "timer_prt_stopwatch.inc"
 
 ; APPLICATION INCLUDES
-    
+    include "softfloat/f16_mul.inc"
+    include "softfloat/internals.inc"
+    include "softfloat/s_normSubnormalF16Sig.inc"
+    include "softfloat/s_roundPackToF16.inc"
+    include "softfloat/s_shiftRightJam32.inc"
     include "debug.inc"
 
 main:
@@ -166,5 +178,59 @@ test_file:
 
 mul_16_32_filename: asciz "mul_16_32_test.bin"
 mul_16_32_filename_out: asciz "mul_16_32_test_out.bin"
+
+printUnpackF16:
+    push af
+    push bc
+    call printHexHL
+    call printBinHL
+    ld a,h
+    and 0x80
+    call printHexA
+    ld a,h
+    and %01111100
+    rra
+    rra
+    call printHexA
+    res 2,h
+    or a
+    jr z,@F
+    set 2,h
+@@:
+    ld a,h
+    and %00000111
+    ld h,a
+    call printHexHL
+    call printBinHL
+    call printNewLine
+    pop bc
+    pop af
+    ret
+; end printUnpackF16
+
+printPackF16:
+    push af
+    push bc
+    push hl
+    ld a,b ; exponent
+    or a,h
+    ld h,a
+    ld a,c ; sign
+    or a
+    ld h,a
+    call printHexHL
+    call printBinHL
+    ld a,c ; sign
+    call printHexA
+    ld a,b ; exponent
+    call printHexA
+    pop hl ; restore sig
+    call printHexHL
+    call printBinHL
+    call printNewLine
+    pop bc
+    pop af
+    ret
+; end printPackF16
 
     include "files.inc"

@@ -71,17 +71,11 @@ def generate_fp16_mul_test(N, op1_min, op1_max, op2_min, op2_max, outfile):
 # ----------------------------
 if __name__ == "__main__":
     NUM_TESTS = 10000
-    # # Specify op1 range: e.g., between -10.0 and 10.0
-    # OP1_MIN = 0.000000059604645 # smallest positive subnormal
-    # OP1_MAX = 0.000060975552 # largest positive subnormal
-    # # Specify op2 range: e.g., between -5.0 and 5.0
-    # OP2_MIN = 1.00097656 # smallest positive normal
-    # OP2_MAX = 10.0
 
-    # Specify op1 range: e.g., between -10.0 and 10.0
+    # Specify op1 range:
     OP1_MIN = 1.0
     OP1_MAX = 10.0
-    # Specify op2 range: e.g., between -5.0 and 5.0
+    # Specify op2 range:
     OP2_MIN = 1.0
     OP2_MAX = 1000.0
 
