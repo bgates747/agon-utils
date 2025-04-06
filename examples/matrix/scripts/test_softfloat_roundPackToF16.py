@@ -62,7 +62,6 @@ def generate_test_case(min_exp, max_exp, min_sig, max_sig):
     exp_a = 0
     mantissa_a = 0
     
-    # Return the adjusted exponent, not the original
     return sign_byte, exp, sig, packed_p, sign_p, exp_p, mantissa_p, packed_a, sign_a, exp_a, mantissa_a
 
 def create_test_data_file(filename, num_trials, min_exp, max_exp, min_sig, max_sig):
@@ -74,8 +73,7 @@ def create_test_data_file(filename, num_trials, min_exp, max_exp, min_sig, max_s
             sign, exp, sig, packed_p, sign_p, exp_p, mantissa_p, packed_a, sign_a, exp_a, mantissa_a = generate_test_case(min_exp, max_exp, min_sig, max_sig)
             
             # Pack all data into binary format - 11 fields total
-            # Format: <BbHHBBHHBBH for sign,exp,sig,packed_p,sign_p,exp_p,mantissa_p,packed_a,sign_a,exp_a,mantissa_a
-            record = struct.pack('<BbHHBBHHBBH', sign, exp, sig, packed_p, sign_p, exp_p, mantissa_p, packed_a, sign_a, exp_a, mantissa_a)
+            record = struct.pack('<BbHHBBHHBBH', sign, int(np.int8(exp)), sig, packed_p, sign_p, exp_p, mantissa_p, packed_a, sign_a, exp_a, mantissa_a)
             f.write(record)
     
     print(f"Generated {num_trials} test cases in {filename}")
@@ -86,18 +84,37 @@ def create_test_data_file(filename, num_trials, min_exp, max_exp, min_sig, max_s
 if __name__ == "__main__":
     # Set parameters directly
     output_file = 'tgt/softfloat_roundPackToF16.bin'
-    num_trials = 1000
-# Test normal numbers
-    # min_exp = 1
-    # max_exp = 0x1D
-    # min_sig = 0x4000
-    # max_sig = 0x7FFF
+    num_trials = 1000000
 
-    # Test subnormal numbers
-    min_exp = -35
-    max_exp = -1
-    min_sig = 0x4000
+# # Test normal numbers
+#     min_exp = 1
+#     max_exp = 0x1D
+#     min_sig = 0x4000
+#     max_sig = 0x7FFF
+
+# # Test subnormal numbers
+#     min_exp = -30
+#     max_exp = -1
+#     min_sig = 0x4000
+#     max_sig = 0x7FFF
+
+# # Test 0 exponent numbers
+#     min_exp = 0
+#     max_exp = 0
+#     min_sig = 0x4000
+#     max_sig = 0x7FFF
+
+# The full monty
+    min_exp = -32
+    max_exp = 32
+    min_sig = 0x0000
     max_sig = 0x7FFF
+
+# # Near overflow
+#     min_exp = 0x1C
+#     max_exp = 0x1D
+#     min_sig = 0x4000
+#     max_sig = 0x7FFF
     
     create_test_data_file(
         output_file, 

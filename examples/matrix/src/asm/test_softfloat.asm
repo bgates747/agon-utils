@@ -24,6 +24,22 @@ exit:
 
     ret
 
+    MACRO PRINT_UNPACK_F16 msg
+        push hl
+        call printInline
+        asciz "\r\n",msg,"\r\n"
+        pop hl
+        call printUnpackF16
+    ENDMACRO
+
+    MACRO PRINT_PACK_F16 msg
+        push hl
+        call printInline
+        asciz "\r\n",msg,"\r\n"
+        pop hl
+        call printPackF16
+    ENDMACRO
+
 ; API INCLUDES
     include "mos_api.inc"
     include "macros.inc"
@@ -46,20 +62,20 @@ exit:
 main:
     call vdu_cls
 
-
     ; jp test_file
 
-    ld hl,0x8001
-
-    call printUnpackF16
-
     ld c,0x80
-    ld b,0xf5
-    ld hl,0x4213
-
+    ld b,0x1c
+    ld hl,0x7ffb
+    PRINT_PACK_F16 "Input:"
     call softfloat_roundPackToF16
+    ld a,b
+    call printHexA
+    call printNewLine
+    PRINT_UNPACK_F16 "Actual output:"
 
-    call printUnpackF16
+    ld hl,0xf800
+    PRINT_UNPACK_F16 "Output should be:"
 
     ret
 
@@ -158,7 +174,8 @@ mul_16_32_filename: asciz "softfloat_roundPackToF16.bin"
 mul_16_32_filename_out: asciz "softfloat_roundPackToF16.bin"
 
 printUnpackF16:
-    PUSH_ALL
+    push af
+    push bc
     call printHexHL
     call printBinHL
     ld a,h
@@ -180,7 +197,34 @@ printUnpackF16:
     call printHexHL
     call printBinHL
     call printNewLine
-    POP_ALL
+    pop bc
+    pop af
     ret
+; end printUnpackF16
+
+printPackF16:
+    push af
+    push bc
+    push hl
+    ld a,b ; exponent
+    or a,h
+    ld h,a
+    ld a,c ; sign
+    or a
+    ld h,a
+    call printHexHL
+    call printBinHL
+    ld a,c ; sign
+    call printHexA
+    ld a,b ; exponent
+    call printHexA
+    pop hl ; restore sig
+    call printHexHL
+    call printBinHL
+    call printNewLine
+    pop bc
+    pop af
+    ret
+; end printPackF16
 
     include "files.inc"

@@ -18,17 +18,16 @@ def read_test_data_and_create_csv(bin_filename, csv_filename):
         
         # Read binary data in chunks - each record is 16 bytes
         while True:
-            record_bytes = bin_file.read(16)  # 16 bytes per record
+            record_bytes = bin_file.read(16)
             if not record_bytes or len(record_bytes) < 16:
                 break
             
-            # Unpack the full record - 11 fields total
-            # Format: <BBHHBBHHBBH for sign,exp,sig,packed_p,sign_p,exp_p,mantissa_p,packed_a,sign_a,exp_a,mantissa_a
-            sign, exp, sig, packed_p, sign_p, exp_p, mantissa_p, packed_a, sign_a, exp_a, mantissa_a = struct.unpack('<BBHHBBHHBBH', record_bytes)
+            # Corrected: interpret second byte as signed (b)
+            sign, exp, sig, packed_p, sign_p, exp_p, mantissa_p, packed_a, sign_a, exp_a, mantissa_a = struct.unpack('<BbHHBBHHBBH', record_bytes)
             
             # Write row to CSV with consistent hex formatting
             csv_writer.writerow([
-                f"0x{sign:02x}", f"0x{exp:02x}", f"0x{sig:04x}",
+                f"0x{sign:02x}", f"0x{exp & 0xFF:02x}", f"0x{sig:04x}",
                 f"0x{packed_p:04x}", f"0x{sign_p:02x}", f"0x{exp_p:02x}", f"0x{mantissa_p:04x}",
                 f"0x{packed_a:04x}", f"0x{sign_a:02x}", f"0x{exp_a:02x}", f"0x{mantissa_a:04x}"
             ])
@@ -39,7 +38,6 @@ def read_test_data_and_create_csv(bin_filename, csv_filename):
 # Main Function
 # ----------------------------
 if __name__ == "__main__":
-    # Set parameters directly
     bin_file = 'tgt/softfloat_roundPackToF16.bin'
     csv_file = 'tgt/softfloat_roundPackToF16.csv'
     

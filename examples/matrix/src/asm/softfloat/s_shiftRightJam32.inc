@@ -31,12 +31,13 @@ softfloat_shiftRightJam32:
     rr l
     rr d
     rr e
-    adc a,a ; jam bit
+    adc a,0 ; jam bit
     or a ; clear carry
     djnz @shift_loop
-    and %00000001 ; mask out all but the jam bit
-    or a,e
-    ld e,a ; jam bit to LSB
+    or a ; check whether to set jam bit
+    jr z, @done ; no jam bit set
+    set 0,e ; set jam bit to LSB
+@done:
     pop bc ; restore b
     ret
 ; end softfloat_shiftRightJam32

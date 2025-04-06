@@ -142,23 +142,31 @@ softfloat_roundPackToF16:
 ;     exp = 0;
         ld b,0
 ;     roundBits = sig & 0xF;
+        ld a,0x0F
+        and l
+        ld d,a ; store roundBits
 ;     if (isTiny && roundBits) {
+        jr z,@do_rounding ; skip if roundBits is zero
+        and a,b ; check exponent for 0 (tiny)
+        jr z,@do_rounding ; skip if exponent is zero
 ;         softfloat_raiseFlags(softfloat_flag_underflow);
 ;     }
         jr @do_rounding
 ; }
-; else if (exp > 0x1D) {
 @check_overflow:
-    cp 0x1E
-    jr nc,@return_inf
-; }
-; else if ((sig + roundIncrement) >= 0x8000) {
-    ex de,hl ; preserve sig in de for upcoming test
-    ld hl, 0x8000 - 0x0008 - 1 ; 0x8000 - roundIncrement - 1
-    or a ; clear carry
-    sbc hl,de ; sig + roundIncrement > 0x8000 
-    ex de,hl ; restore sig to hl
-    jr c,@return_inf ; return inf if sig + roundIncrement < 0x8000
+    ; } else if ( (0x1D < exp) || (0x8000 <= sig + roundIncrement) ) {
+    ;     softfloat_raiseFlags(
+    ;         softfloat_flag_overflow | softfloat_flag_inexact );
+    ;     uiZ = packToF16UI( sign, 0x1F, 0 ) - ! roundIncrement;
+        cp 0x1E
+        jr nc,@return_inf ; return inf if exp < 0x1D
+        jr nz,@do_rounding ; skip if exp != 0x1E (meaning we can round up without going to inf)
+        ex de,hl ; preserve sig in de for upcoming test
+        ld hl,0x8000 - 0x0008 - 1 ; 0x8000 - roundIncrement = 0x7FF7
+        or a ; clear carry
+        sbc hl, de           ; HL = 0x7FF7 - DE
+        ex de, hl
+        jr c, @return_inf    ; if sig > 0x7FF7, overflow
 ; }
 @do_rounding:
 ; roundBits = sig & 0xF
@@ -194,7 +202,6 @@ softfloat_roundPackToF16:
 ; if (roundBits) {
 ;     softfloat_exceptionFlags |= softfloat_flag_inexact;
 ; }
-;
     ; d == roundBits
     ld a,d
     cp 0x08
@@ -204,17 +211,10 @@ softfloat_roundPackToF16:
     jp z,@check_sig_zero       ; If LSB = 0 (already even), skip
     res 0,l                    ; Else clear LSB => rounding to even
     jp packToF16UI
-;
 ; if (!sig) {
 @check_sig_zero:
-
-    call printHexHL
-    ld a,d
-    call printHexA
-    call printNewLine
-
     SIGN_HL
-    jp nz,packToF16UI ; skip if sign is zero
+    jp nz,packToF16UI ; skip if sig is not zero
 ;     exp = 0;
         ld b,0
 ; }
@@ -230,5 +230,6 @@ softfloat_roundPackToF16:
     ld a,c ; get sign
     or h
     ld h,a
+    ld b,0x1F ; exponent
     ret
 ; end softfloat_roundPackToF16

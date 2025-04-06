@@ -61,6 +61,11 @@ packToF16UI:
     ld a,c
     or h
     ld h,a
+; extract exponent
+    rra
+    rra
+    and %00011111
+    ld b,a
     ret
 ; end packToF16UI
 
