@@ -60,14 +60,31 @@ def format_fp16_output(val, description=""):
 # ----------------------------
 # Intermediate Mantissa Multiplication Functions
 # ----------------------------
-def get_mantissa(fp16):
+def get_mantissa_and_exp(fp16):
     """
-    Extracts the 11-bit mantissa from a 16-bit float16 representation.
-    For normals, returns (1<<10)|fraction; for subnormals, just the fraction.
+    Extracts the normalized mantissa and adjusted exponent from a float16 bit pattern.
+    For normalized numbers: returns (mantissa, exponent)
+    For subnormals: shifts left until bit 10 is set, adjusts exponent accordingly.
+    The returned exponent is unbiased.
     """
     fraction = fp16 & 0x03FF
     exponent = (fp16 >> 10) & 0x1F
-    return (1 << 10) | fraction if exponent != 0 else fraction
+
+    if exponent != 0:
+        mantissa = (1 << 10) | fraction
+        return mantissa, exponent - 15
+    else:
+        if fraction == 0:
+            return 0, -14  # zero has exponent -14 by convention
+        # normalize subnormal
+        shift = 0
+        while (fraction & 0x0400) == 0:
+            fraction <<= 1
+            shift += 1
+        mantissa = fraction & 0x07FF
+        exponent = -14 - shift + 1  # subnormal exponent logic
+        return mantissa, exponent
+
 
 def hex_bin_format(val, width=16):
     """
@@ -87,18 +104,14 @@ def hex_bin_format(val, width=16):
 
 def print_intermediate_result(a_fp16, b_fp16):
     """
-    Formats the intermediate multiplication results of two float16 values as:
-    - shifted sigA
-    - shifted sigB
-    - upper 16 bits of sig32Z
-    - lower 16 bits of sig32Z
-    Each as 4-digit hex and 2-byte binary split, with a short descriptor at the end.
+    Formats intermediate multiplication results using normalized mantissas
+    and adjusted exponents from float16 values.
     """
-    m1 = get_mantissa(a_fp16)
-    m2 = get_mantissa(b_fp16)
+    m1, e1 = get_mantissa_and_exp(a_fp16)
+    m2, e2 = get_mantissa_and_exp(b_fp16)
 
-    sigA = (m1 | 0x0400) << 4
-    sigB = (m2 | 0x0400) << 5
+    sigA = m1 << 4
+    sigB = m2 << 5
     sig32Z = sigA * sigB
 
     hi16 = (sig32Z >> 16) & 0xFFFF
@@ -110,10 +123,11 @@ def print_intermediate_result(a_fp16, b_fp16):
     hexLo, binLo = hex_bin_format(lo16, 16)
 
     return [
-        f"; {hexA} {binA}  sigA (<<4, 11-bit mantissa with implied bit)",
-        f"; {hexB} {binB}  sigB (<<5, 11-bit mantissa with implied bit)",
+        f"; {hexA} {binA}  sigA (<<4, normalized)",
+        f"; {hexB} {binB}  sigB (<<5, normalized)",
         f"; {hexHi} {binHi}  sig32Z >> 16 (upper 16 bits of 32-bit product)",
-        f"; {hexLo} {binLo}  sig32Z & 0xFFFF (lower 16 bits of 32-bit product)"
+        f"; {hexLo} {binLo}  sig32Z & 0xFFFF (lower 16 bits of 32-bit product)",
+        f"; expA = {e1}, expB = {e2}, expA + expB = {e1 + e2}"
     ]
 
 

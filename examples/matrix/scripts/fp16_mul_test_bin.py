@@ -60,11 +60,19 @@ def generate_fp16_mul_test(N, op1_min, op1_max, op2_min, op2_max, outfile):
 
 
 if __name__ == "__main__":
-    NUM_TESTS = 10000
-    OP1_MIN = -65504.0
-    OP1_MAX = 65504.0
-    OP2_MIN = -65504.0
-    OP2_MAX = 65504.0
+# # Passed 100%
+    # NUM_TESTS = 1000000
+    # OP1_MIN = -65504.0
+    # OP1_MAX = 65504.0
+    # OP2_MIN = -65504.0
+    # OP2_MAX = 65504.0
+
+    NUM_TESTS = 1000000
+    OP1_MIN = -32768.0
+    OP1_MAX = 32768.0
+    OP2_MIN = -2.0
+    OP2_MAX = 2.0
+
     GENERATE_OUTFILE = '/home/smith/Agon/mystuff/agon-utils/examples/matrix/tgt/fp16_mul_test.bin'
 
     generate_fp16_mul_test(NUM_TESTS, OP1_MIN, OP1_MAX, OP2_MIN, OP2_MAX, GENERATE_OUTFILE)

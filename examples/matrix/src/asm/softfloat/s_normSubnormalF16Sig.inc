@@ -14,12 +14,11 @@
 
 ; }
 softfloat_normSubnormalF16Sig:
-    ld a,1 ; set starting exponent
+    ld b,1 ; set starting exponent
 @norm_loop:
     add hl,hl ; shift left
-    dec a ; decrement exponent
+    dec b ; decrement exponent
     bit 2,h ; test for carry into assumed 1 place
     jr z,@norm_loop
-    ld b,a ; return exponent
     ret
 ; end softfloat_normSubnormalF16Sig

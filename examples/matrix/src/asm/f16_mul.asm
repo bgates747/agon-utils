@@ -75,12 +75,21 @@ exit:
     include "debug.inc"
 
 main:
-    ; jp test_file
+    jp test_file
 
     ; ld hl,0x008b
     ; call softfloat_normSubnormalF16Sig
     ; call printHLHexBin
+    ; ld a,b
     ; call printHexA
+    ; call printNewLine
+    ; add hl,hl
+    ; add hl,hl
+    ; add hl,hl
+    ; add hl,hl
+    ; add hl,hl
+    ; call printHLHexBin
+    ; call printNewLine
     ; ret
 
 ; --- Inputs / Outputs ---
@@ -90,10 +99,11 @@ main:
 ; b0b5 10110000 10110101 80 0c 04b5 100 10110101 -0.1470947265625 Assembly Result
 
 ; --- Intermediate Results ---
-; 4560 01000101 01100000  sigA (<<4, 11-bit mantissa with implied bit)
-; 9160 10010001 01100000  sigB (<<5, 11-bit mantissa with implied bit)
-; 2765 00100111 01100101  sig32Z >> 16 (upper 16 bits of 32-bit product)
-; 6400 01100100 00000000  sig32Z & 0xFFFF (lower 16 bits of 32-bit product)
+; 4560 01000101 01100000  sigA (<<4, normalized)
+; 8b00 10001011 00000000  sigB (<<5, normalized)
+; 25ab 00100101 10101011  sig32Z >> 16 (upper 16 bits of 32-bit product)
+; 2000 00100000 00000000  sig32Z & 0xFFFF (lower 16 bits of 32-bit product)
+; expA = 15, expB = -16, expA + expB = -1
 
 ; --- Generated Assembly Test Code ---
     ld hl,0xF856

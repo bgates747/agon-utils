@@ -4,6 +4,7 @@
 ; inputs: hl is the float16 to unpack
 ; outputs: c is the sign (0=pos,1=neg), b is the biased exponent, hl is the normalised mantissa
 ;          sign and zero flags are correctly (re)set, carry set if hl is +/-zero
+; destroys: a
 softfloat16_unpack:
 ; set sign
     ld a,h
@@ -17,17 +18,13 @@ softfloat16_unpack:
     ld b,a ; biased exponent
     jr nz,@is_nor ; non-zero exponent means normal number
 ; check for zero or -zero
-    SIGN_HL ; get the 16-bit sign of hl
-    jr z,@is_zero ; result is zero
-    or l ; test l for zero (a is zero)
-    jr z,@is_zero ; result is zero
-    ld a,h
-    add a,a ; sets carry and zero flags if hl is -zero
-    jr z,@is_zero ; result is zero
-@is_sub:
     res 7,h ; clear sign bit
+    SIGN_HL
+    jr z,@is_zero ; result is zero so nothing more to do
+@is_sub:
     call softfloat_normSubnormalF16Sig ; number is subnormal
-    or a ; clear carry indicating non-zero result
+    ld a,c ; get sign
+    or a ; (re)set sign flag and clear carry indicating non-zero result    
     ret
 @is_nor: 
 ; put the explicit 1 into the mantissa and (re)set sign flag
@@ -42,9 +39,9 @@ softfloat16_unpack:
     or a ; reset carry indicating non-zero result
     ret
 @is_zero:
+    ld a,c ; get sign
+    or a ; (re)set sign flag 
     scf ; set carry indicating zero result
-
-
 ; end softfloat16_unpack
 
 

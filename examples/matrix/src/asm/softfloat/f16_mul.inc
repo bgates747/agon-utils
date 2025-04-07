@@ -79,7 +79,7 @@ f16_mul:
     add hl,hl
     add hl,hl
     add hl,hl
-    PRINT_HL_HEX_BIN "sigA <<4:"
+    ; PRINT_HL_HEX_BIN "sigA <<4:"
 ; unpack de
     ex de,hl
     call softfloat16_unpack
@@ -95,7 +95,7 @@ f16_mul:
     add hl,hl
     add hl,hl
     add hl,hl
-    PRINT_HL_HEX_BIN "sigB <<5:"
+    ; PRINT_HL_HEX_BIN "sigB <<5:"
 
     ; sig32Z = (uint_fast32_t) sigA * sigB;
     pop af ; restore sign
@@ -104,10 +104,10 @@ f16_mul:
     call mul_16_32 ; 32-bit product in hlde ...
     pop bc ; restore sign and exponent
 
-    PRINT_HL_HEX_BIN "sig32Z upper (hl):"
-    ex de,hl
-    PRINT_HL_HEX_BIN "sig32Z lower (de):"
-    ex de,hl
+    ; PRINT_HL_HEX_BIN "sig32Z upper (hl):"
+    ; ex de,hl
+    ; PRINT_HL_HEX_BIN "sig32Z lower (de):"
+    ; ex de,hl
 
     ; sigZ = sig32Z>>16;
     ; if ( sig32Z & 0xFFFF ) sigZ |= 1; set sticky bit
@@ -120,12 +120,12 @@ f16_mul:
     jr @no_sticky
 @need_sticky:
     set 0,l ; set sticky bit
-; DEBUG
-    push hl
-    call printInline
-    asciz "Sticky set.\r\n"
-    pop hl
-; END DEBUG
+; ; DEBUG
+;     push hl
+;     call printInline
+;     asciz "Sticky set.\r\n"
+;     pop hl
+; ; END DEBUG
 @no_sticky:
     ; if ( sigZ < 0x4000 ) {
     ;     --expZ;
@@ -135,13 +135,13 @@ f16_mul:
     ld a,h
     and %11000000 ; sigZ - 0x4000
     jr nz,@end_normalise ; sigZ >= 0x4000
-    PRINT_HL_HEX_BIN "sigZ subnormal (hl):"
+    ; PRINT_HL_HEX_BIN "sigZ subnormal (hl):"
 @normalise_loop:
     dec b ; --expZ
     add hl,hl ; sigZ <<= 1
     bit 6,h ; test for carry into assumed 1 place
     jr z,@normalise_loop
-    PRINT_HL_HEX_BIN "sigZ normalised (hl):"
+    ; PRINT_HL_HEX_BIN "sigZ normalised (hl):"
 @end_normalise: ; we land here if product was normal
 ;     return softfloat_roundPackToF16( signZ, expZ, sigZ );
     jp softfloat_roundPackToF16
