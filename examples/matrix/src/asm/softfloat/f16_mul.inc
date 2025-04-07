@@ -68,15 +68,10 @@ f16_mul:
     and %10000000
     xor d
     and %10000000
-    ld c,a ; save sign ; a=0x00
-
-; ; DEBUG
-;     call dumpRegistersHex
-; ; END DEBUG
-
+    push af ; stack sign
 ; unpack hl
     call softfloat16_unpack
-    jr c,@hl_zero
+    jp c,@hl_zero ; jr c,@hl_zero
     ld a,b ; get exponent
     push af ; save exponent
     ; sigA = (sigA | 0x0400)<<4; (softfloat16_unpack already OR'd in the implicit 1)
@@ -84,17 +79,12 @@ f16_mul:
     add hl,hl
     add hl,hl
     add hl,hl
+    PRINT_HL_HEX_BIN "sigA <<4:"
 ; unpack de
     ex de,hl
     call softfloat16_unpack
-    jr c,@de_zero
+    jp c,@de_zero ; jr c,@de_zero
     pop af ; restore exponent of hl
-    ; a=0x0f, b=0x0f, hl=0x0400, de=0x4000
-
-; ; DEBUG
-;     call dumpRegistersHex
-; ; END DEBUG
-
     ; expZ = expA + expB - 0xF;
     add a,b ; expA + expB
     sub 0x0F ; expA + expB - 0xF
@@ -105,21 +95,19 @@ f16_mul:
     add hl,hl
     add hl,hl
     add hl,hl
-    ; c=0x00, b=0x0f, hl=0x8000, de=0x4000
-
-; ; DEBUG
-;     call dumpRegistersHex
-; ; END DEBUG
+    PRINT_HL_HEX_BIN "sigB <<5:"
 
     ; sig32Z = (uint_fast32_t) sigA * sigB;
+    pop af ; restore sign
+    ld c,a ; store sign of product
     push bc ; save sign and exponent
     call mul_16_32 ; 32-bit product in hlde ...
     pop bc ; restore sign and exponent
-    ; b=0x0f, c=0x00, hl=0x2000, de=0x0000
 
-; ; DEBUG
-;     call dumpRegistersHex
-; ; END DEBUG
+    PRINT_HL_HEX_BIN "sig32Z upper (hl):"
+    ex de,hl
+    PRINT_HL_HEX_BIN "sig32Z lower (de):"
+    ex de,hl
 
     ; sigZ = sig32Z>>16;
     ; if ( sig32Z & 0xFFFF ) sigZ |= 1; set sticky bit
@@ -132,10 +120,12 @@ f16_mul:
     jr @no_sticky
 @need_sticky:
     set 0,l ; set sticky bit
-    ; not taken
-; ; DEBUG
-;     call dumpRegistersHex
-; ; END DEBUG
+; DEBUG
+    push hl
+    call printInline
+    asciz "Sticky set.\r\n"
+    pop hl
+; END DEBUG
 @no_sticky:
     ; if ( sigZ < 0x4000 ) {
     ;     --expZ;
@@ -145,11 +135,13 @@ f16_mul:
     ld a,h
     and %11000000 ; sigZ - 0x4000
     jr nz,@end_normalise ; sigZ >= 0x4000
+    PRINT_HL_HEX_BIN "sigZ subnormal (hl):"
 @normalise_loop:
     dec b ; --expZ
     add hl,hl ; sigZ <<= 1
     bit 6,h ; test for carry into assumed 1 place
-    jr nz,@normalise_loop
+    jr z,@normalise_loop
+    PRINT_HL_HEX_BIN "sigZ normalised (hl):"
 @end_normalise: ; we land here if product was normal
 ;     return softfloat_roundPackToF16( signZ, expZ, sigZ );
     jp softfloat_roundPackToF16
@@ -178,6 +170,7 @@ f16_mul:
 @de_zero:
     pop de ; dummy pop to balance stack
 @hl_zero:
+    pop de ; dummy pop to balance stack
     pop de ; dummy pop to balance stack
     ret 
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import struct
 import numpy as np
-from SoftFloat import float_to_f16_bits, f16_mul_softfloat, f16_to_f32_softfloat
+from SoftFloat import f16_mul_softfloat, f16_to_f32_softfloat
 
 # ----------------------------
 # Decoding and Formatting Functions
@@ -23,41 +23,39 @@ def decode_fp16(val):
     mantissa = assumed + fraction
     return sign, exponent, mantissa
 
-def format_fp16_output(val):
+def format_fp16_output(val, description=""):
     """
-    Given a 16-bit integer representing a float16 value, pack it into 3 bytes
-    (2 bytes for the value and a pad byte 0) to form a 24-bit little-endian number.
-    Then, format and return a string with the hex representation, the raw binary
-    split into three 8-bit segments, the decoded sign, exponent, and a formatted mantissa,
-    and the decimal value (via f16_to_f32_softfloat).
-    
-    The formatted mantissa displays the implied bit, then a space, then the top 2 bits of the fraction,
-    then a space, then the lower 8 bits of the fraction.
+    Format a 16-bit float16 integer representation into:
+    val (4-digit hex) val (binary, 2-byte split) sign (2-digit hex) exponent (2-digit hex)
+    mantissa (4-digit hex) mantissa (binary, 2-byte split) decimal
     """
-    # Pack into 3 bytes: two bytes for the 16-bit value and one pad byte (0)
-    packed = struct.pack('<HB', val, 0)
-    val_uint24 = int.from_bytes(packed, 'little')
-    hex_field = f"0x{val_uint24:06X}"
-    raw_bin = format(val_uint24, '024b')
-    byte1 = raw_bin[:8]
-    byte2 = raw_bin[8:16]
-    byte3 = raw_bin[16:]
-    
-    s, exp, mantissa = decode_fp16(val)
-    # Format the mantissa: if normalized, mantissa length is 11; if subnormal, 10.
-    if len(mantissa) == 11:
-        # For normalized numbers, the format becomes: implied_bit, space, next 2 bits, space, remaining 8 bits.
-        formatted_mantissa = f"{mantissa[0]} {mantissa[1:3]} {mantissa[3:]}"
-    elif len(mantissa) == 10:
-        # For subnormals, do the same (implied bit is '0').
-        formatted_mantissa = f"{mantissa[0]} {mantissa[1:3]} {mantissa[3:]}"
-    else:
-        formatted_mantissa = mantissa
+    val_hex = f"{val:04x}"
 
-    decimal_value = f16_to_f32_softfloat(val)
-    return (f"{hex_field} r:{byte1} {byte2} {byte3} "
-            f"s:{s} e:{exp} m:{formatted_mantissa} "
-            f"d:{decimal_value}")
+    bin_str = f"{val:016b}"
+    byte1 = bin_str[:8]
+    byte2 = bin_str[8:]
+
+    sign_bit = (val >> 15) & 0x1
+    sign_hex = "80" if sign_bit else "00"
+
+    exp_bits = (val >> 10) & 0x1F
+    exp_hex = f"{exp_bits:02x}"
+
+    frac_bits = val & 0x03FF
+    if exp_bits != 0:
+        mantissa_val = 0x0400 | frac_bits  # implied 1
+    else:
+        mantissa_val = frac_bits  # subnormal
+
+    mantissa_hex = f"{mantissa_val:04x}"
+    mantissa_bin = f"{mantissa_val:011b}".zfill(11)
+    mantissa_byte1 = mantissa_bin[:3]  # implied + next 2
+    mantissa_byte2 = mantissa_bin[3:]  # lower 8 bits
+
+    dec_val = f16_to_f32_softfloat(val)
+
+    return f"; {val_hex} {byte1} {byte2} {sign_hex} {exp_hex} {mantissa_hex} {mantissa_byte1} {mantissa_byte2} {dec_val} {description}"
+
 
 # ----------------------------
 # Intermediate Mantissa Multiplication Functions
@@ -67,33 +65,57 @@ def get_mantissa(fp16):
     Extracts the 11-bit mantissa from a 16-bit float16 representation.
     For normals, returns (1<<10)|fraction; for subnormals, just the fraction.
     """
-    fraction = fp16 & 0x03FF      # lower 10 bits
-    exponent = (fp16 >> 10) & 0x1F  # 5-bit exponent
-    if exponent != 0:
-        # Normalized number: implicit 1 is added as bit 10.
-        mantissa = (1 << 10) | fraction
-    else:
-        # Subnormal: no implicit 1.
-        mantissa = fraction
-    return mantissa
+    fraction = fp16 & 0x03FF
+    exponent = (fp16 >> 10) & 0x1F
+    return (1 << 10) | fraction if exponent != 0 else fraction
 
-def format_mantissa_product(a_fp16, b_fp16):
+def hex_bin_format(val, width=16):
     """
-    Multiplies the 11-bit mantissae (with implicit bit for normals)
-    of two float16 numbers to produce a 22-bit product,
-    and returns both the 6-digit hex (zero-padded to 24 bits) and the byte-separated
-    24-bit binary string.
-    Note: The product is not left-shifted.
+    Return formatted hex and byte-split binary for a given value.
+    Width can be 16 or 32 (bits).
+    """
+    if width == 16:
+        hexstr = f"{val:04x}"
+        binstr = f"{val:016b}"
+        return hexstr, f"{binstr[:8]} {binstr[8:]}"
+    elif width == 32:
+        hexstr = f"{val:08x}"
+        binstr = f"{val:032b}"
+        return hexstr, f"{binstr[:8]} {binstr[8:16]} {binstr[16:24]} {binstr[24:]}"
+    else:
+        raise ValueError("Unsupported width")
+
+def print_intermediate_result(a_fp16, b_fp16):
+    """
+    Formats the intermediate multiplication results of two float16 values as:
+    - shifted sigA
+    - shifted sigB
+    - upper 16 bits of sig32Z
+    - lower 16 bits of sig32Z
+    Each as 4-digit hex and 2-byte binary split, with a short descriptor at the end.
     """
     m1 = get_mantissa(a_fp16)
     m2 = get_mantissa(b_fp16)
-    product = m1 * m2  # 22-bit product, maximum result from two 11-bit numbers
-    # Represent product in a 24-bit format without any left-shift.
-    product_24 = product
-    hex_field = f"0x{product_24:06X}"
-    bin_str = f"{product_24:024b}"
-    formatted_bin = f"{bin_str[0:8]} {bin_str[8:16]} {bin_str[16:24]}"
-    return hex_field, formatted_bin
+
+    sigA = (m1 | 0x0400) << 4
+    sigB = (m2 | 0x0400) << 5
+    sig32Z = sigA * sigB
+
+    hi16 = (sig32Z >> 16) & 0xFFFF
+    lo16 = sig32Z & 0xFFFF
+
+    hexA, binA = hex_bin_format(sigA, 16)
+    hexB, binB = hex_bin_format(sigB, 16)
+    hexHi, binHi = hex_bin_format(hi16, 16)
+    hexLo, binLo = hex_bin_format(lo16, 16)
+
+    return [
+        f"; {hexA} {binA}  sigA (<<4, 11-bit mantissa with implied bit)",
+        f"; {hexB} {binB}  sigB (<<5, 11-bit mantissa with implied bit)",
+        f"; {hexHi} {binHi}  sig32Z >> 16 (upper 16 bits of 32-bit product)",
+        f"; {hexLo} {binLo}  sig32Z & 0xFFFF (lower 16 bits of 32-bit product)"
+    ]
+
 
 def main(input_string):
 
@@ -112,14 +134,19 @@ def main(input_string):
 
     # Compute SoftFloat multiplication result.
     result_f16 = f16_mul_softfloat(a_f16, b_f16)
-    mantissa_hex, mantissa_bin = format_mantissa_product(a_f16, b_f16)
+    intermediate_results = print_intermediate_result(a_f16, b_f16)
 
     # Print the SoftFloat outputs.
-    print(format_fp16_output(a_f16))
-    print(format_fp16_output(b_f16))
-    print(f"{mantissa_hex} r:{mantissa_bin}")
-    print(format_fp16_output(result_f16))
-    print(format_fp16_output(assembly_output))
+    print("; --- Inputs / Outputs ---")
+    print(format_fp16_output(a_f16, "sigA"))
+    print(format_fp16_output(b_f16, "sigB"))
+    print(format_fp16_output(result_f16,"Expected Result"))
+    print(format_fp16_output(assembly_output,"Assembly Result"))
+
+    print("\n; --- Intermediate Results ---")
+    for line in intermediate_results:
+        print(line)
+
     
     # Get float (decimal) values for the operands and product.
     a_float = f16_to_f32_softfloat(a_f16)
@@ -140,16 +167,12 @@ def main(input_string):
     raw_parts = f"{raw_bin[:8]} {raw_bin[8:16]} {raw_bin[16:]}"
     
     # Now, generate the assembly test code.
-    asm_lines = []
-    asm_lines.append(f"    ld hl,{a_hex} ; {a_float_str}")
-    asm_lines.append(f"    ld de,{b_hex} ; {b_float_str}")
-    asm_lines.append("    call float16_smul_dev")
-    asm_lines.append("    call printNewLine")
-    asm_lines.append("    call printHexUHL")
-    asm_lines.append("    call printBinUHL")
-    asm_lines.append("    call printInline")
-    asm_lines.append(f'    asciz "\\r\\n{result_hex_str} {raw_parts}\\r\\n"')
-    
+    asm_lines = [
+        f"    ld hl,{a_hex}",
+        f"    ld de,{b_hex}",
+        f"    ld bc,{expected_hex}"
+    ]
+
     print("\n; --- Generated Assembly Test Code ---")
     for line in asm_lines:
         print(line)
@@ -158,5 +181,5 @@ def main(input_string):
 # Main Execution
 # ----------------------------
 if __name__ == "__main__":
-    input_string = "0x00A00B	0x001C06	0x008209	0x008208"
+    input_string = "0xF856	0x008B	0xB4B5	0xB0B5"
     main(input_string)

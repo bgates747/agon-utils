@@ -40,6 +40,21 @@ exit:
         call printPackF16
     ENDMACRO
 
+    MACRO PRINT_HL_HEX_BIN msg
+        push de
+        push af
+        push hl
+        call printInline
+        asciz "\r\n",msg,"\r\n"
+        pop hl
+        push hl
+        call printHLHexBin
+        pop hl
+        pop af
+        pop de
+    ENDMACRO
+
+
 ; API INCLUDES
     include "mos_api.inc"
     include "macros.inc"
@@ -62,23 +77,54 @@ exit:
 main:
     ; jp test_file
 
-    ld hl,0x4804
-    ; PRINT_UNPACK_F16 "OP1:"
-    ld de,0x56BD ; 1.0
-    ex de,hl
-    ; PRINT_UNPACK_F16 "OP2:"
-    ex de,hl
-    call f16_mul
-    PRINT_UNPACK_F16 "Result:"
-    ld hl,0x62C4
-    PRINT_UNPACK_F16 "Should be:"
+    ; ld hl,0x008b
+    ; call softfloat_normSubnormalF16Sig
+    ; call printHLHexBin
+    ; call printHexA
+    ; ret
 
-    ret
+; --- Inputs / Outputs ---
+; f856 11111000 01010110 80 1e 0456 100 01010110 -35520.0 sigA
+; 008b 00000000 10001011 00 00 008b 000 10001011 8.285045623779297e-06 sigB
+; b4b5 10110100 10110101 80 0d 04b5 100 10110101 -0.294189453125 Expected Result
+; b0b5 10110000 10110101 80 0c 04b5 100 10110101 -0.1470947265625 Assembly Result
+
+; --- Intermediate Results ---
+; 4560 01000101 01100000  sigA (<<4, 11-bit mantissa with implied bit)
+; 9160 10010001 01100000  sigB (<<5, 11-bit mantissa with implied bit)
+; 2765 00100111 01100101  sig32Z >> 16 (upper 16 bits of 32-bit product)
+; 6400 01100100 00000000  sig32Z & 0xFFFF (lower 16 bits of 32-bit product)
+
+; --- Generated Assembly Test Code ---
+    ld hl,0xF856
+    ld de,0x008B
+    ld bc,0xB4B5
+
+    jp test_manual
 
 ; DEBUG
     call dumpRegistersHex
     ret
 ; END DEBUG
+
+test_manual:
+    push bc
+    push hl
+    push de
+    PRINT_UNPACK_F16 "OP1:"
+    pop de
+    pop hl
+    ex de,hl
+    push hl
+    push de
+    PRINT_UNPACK_F16 "OP2:"
+    pop hl
+    pop de
+    call f16_mul
+    PRINT_UNPACK_F16 "Result:"
+    pop hl ; was bcs
+    PRINT_UNPACK_F16 "Should be:"
+    ret
 
 ; TEST FILE
 ; -------------------------------------------
@@ -208,5 +254,11 @@ printPackF16:
     pop af
     ret
 ; end printPackF16
+
+printHLHexBin:
+    call printHexHL
+    call printBinHL
+    call printNewLine
+    ret
 
     include "files.inc"

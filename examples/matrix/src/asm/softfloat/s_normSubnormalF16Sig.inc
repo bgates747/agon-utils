@@ -19,6 +19,7 @@ softfloat_normSubnormalF16Sig:
     add hl,hl ; shift left
     dec a ; decrement exponent
     bit 2,h ; test for carry into assumed 1 place
-    ret nz
-    jr @norm_loop
+    jr z,@norm_loop
+    ld b,a ; return exponent
+    ret
 ; end softfloat_normSubnormalF16Sig
