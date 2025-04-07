@@ -75,47 +75,32 @@ exit:
     include "debug.inc"
 
 main:
-    jp test_file
+    ; jp test_file
 
-    ; ld hl,0x008b
-    ; call softfloat_normSubnormalF16Sig
-    ; call printHLHexBin
-    ; ld a,b
-    ; call printHexA
-    ; call printNewLine
-    ; add hl,hl
-    ; add hl,hl
-    ; add hl,hl
-    ; add hl,hl
-    ; add hl,hl
-    ; call printHLHexBin
-    ; call printNewLine
+    ; ld hl,0x0000
+    ; call softfloat16_unpack
+    ; call dumpFlags
+    ; call dumpRegistersHex
     ; ret
 
+
 ; --- Inputs / Outputs ---
-; f856 11111000 01010110 80 1e 0456 100 01010110 -35520.0 sigA
-; 008b 00000000 10001011 00 00 008b 000 10001011 8.285045623779297e-06 sigB
-; b4b5 10110100 10110101 80 0d 04b5 100 10110101 -0.294189453125 Expected Result
-; b0b5 10110000 10110101 80 0c 04b5 100 10110101 -0.1470947265625 Assembly Result
+; 0000 00000000 00000000 00 00 0000 000 00000000 0.0 sigA
+; 7c00 01111100 00000000 00 1f 0400 100 00000000 inf sigB
+; fe00 11111110 00000000 80 1f 0600 110 00000000 nan Expected Result
+; 7c00 01111100 00000000 00 1f 0400 100 00000000 inf Assembly Result
 
 ; --- Intermediate Results ---
-; 4560 01000101 01100000  sigA (<<4, normalized)
-; 8b00 10001011 00000000  sigB (<<5, normalized)
-; 25ab 00100101 10101011  sig32Z >> 16 (upper 16 bits of 32-bit product)
-; 2000 00100000 00000000  sig32Z & 0xFFFF (lower 16 bits of 32-bit product)
-; expA = 15, expB = -16, expA + expB = -1
+; 0000 00000000 00000000  sigA (<<4, normalized)
+; 8000 10000000 00000000  sigB (<<5, normalized)
+; 0000 00000000 00000000  sig32Z >> 16 (upper 16 bits of 32-bit product)
+; 0000 00000000 00000000  sig32Z & 0xFFFF (lower 16 bits of 32-bit product)
+; expA = -14, expB = 16, expA + expB = 2
 
 ; --- Generated Assembly Test Code ---
-    ld hl,0xF856
-    ld de,0x008B
-    ld bc,0xB4B5
-
-    jp test_manual
-
-; DEBUG
-    call dumpRegistersHex
-    ret
-; END DEBUG
+    ld hl,0x3555
+    ld de,0x0000
+    ld bc,0xFE00
 
 test_manual:
     push bc

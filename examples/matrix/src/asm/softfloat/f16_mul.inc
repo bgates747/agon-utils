@@ -71,6 +71,7 @@ f16_mul:
     push af ; stack sign
 ; unpack hl
     call softfloat16_unpack
+; if ( ! sigA ) goto zero;
     jp c,@hl_zero ; jr c,@hl_zero
     ld a,b ; get exponent
     push af ; save exponent
@@ -96,6 +97,7 @@ f16_mul:
     add hl,hl
     add hl,hl
     ; PRINT_HL_HEX_BIN "sigB <<5:"
+    ex de,hl ; not strictly necessary since multiplication is commutative, but it feels better this way
 
     ; sig32Z = (uint_fast32_t) sigA * sigB;
     pop af ; restore sign
@@ -168,10 +170,13 @@ f16_mul:
 ;     uZ.ui = uiZ;
 ;     return uZ.f;
 @de_zero:
-    pop de ; dummy pop to balance stack
+    pop af ; dummy pop to balance stack
 @hl_zero:
-    pop de ; dummy pop to balance stack
-    pop de ; dummy pop to balance stack
+    pop af ; dummy pop to balance stack
+
+    ; ld hl,0 ; zero result
+
+    call dumpRegistersHex
     ret 
 
 ; }

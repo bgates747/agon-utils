@@ -42,6 +42,7 @@ softfloat16_unpack:
     ld a,c ; get sign
     or a ; (re)set sign flag 
     scf ; set carry indicating zero result
+    ret
 ; end softfloat16_unpack
 
 
