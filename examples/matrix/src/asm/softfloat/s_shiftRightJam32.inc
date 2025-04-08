@@ -23,6 +23,8 @@
 ;          A = jam bit (0 or 1)
 
 softfloat_shiftRightJam32:
+    ; call dumpRegistersHex
+
     push bc ; preserve b
     ld b,a ; loop counter
     xor a ; zero jam bits and clear carry

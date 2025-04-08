@@ -54,6 +54,19 @@ exit:
         pop de
     ENDMACRO
 
+    MACRO DUMP_REGISTERS_HEX msg
+        push de
+        push af
+        push hl
+        call printInline
+        asciz "\r\n",msg,"\r\n"
+        pop hl
+        call dumpRegistersHex
+        call dumpFlags
+        pop af
+        pop de
+    ENDMACRO
+
 
 ; API INCLUDES
     include "mos_api.inc"
@@ -83,24 +96,56 @@ main:
     ; call dumpRegistersHex
     ; ret
 
+; passes
+    ld hl,0x7c00 ; +infinity
+    ld de,0xfc00 ; -infinity
+    ld bc,0xfc00 ; -infinity
 
-; --- Inputs / Outputs ---
-; 0000 00000000 00000000 00 00 0000 000 00000000 0.0 sigA
-; 7c00 01111100 00000000 00 1f 0400 100 00000000 inf sigB
-; fe00 11111110 00000000 80 1f 0600 110 00000000 nan Expected Result
-; 7c00 01111100 00000000 00 1f 0400 100 00000000 inf Assembly Result
+; passes
+    ld hl,0xfc00 ; -infinity
+    ld de,0x7c00 ; +infinity
+    ld bc,0xfc00 ; -infinity
 
-; --- Intermediate Results ---
-; 0000 00000000 00000000  sigA (<<4, normalized)
-; 8000 10000000 00000000  sigB (<<5, normalized)
-; 0000 00000000 00000000  sig32Z >> 16 (upper 16 bits of 32-bit product)
-; 0000 00000000 00000000  sig32Z & 0xFFFF (lower 16 bits of 32-bit product)
-; expA = -14, expB = 16, expA + expB = 2
+; passes
+    ld hl,0x7c00 ; +infinity
+    ld de,0x7c00 ; +infinity
+    ld bc,0x7c00 ; +infinity
 
-; --- Generated Assembly Test Code ---
-    ld hl,0x3555
-    ld de,0x0000
-    ld bc,0xFE00
+; passes
+    ld hl,0xfc00 ; -infinity
+    ld de,0xfc00 ; -infinity
+    ld bc,0x7c00 ; +infinity
+
+; passes
+    ld hl,0x0000 ; +zero
+    ld de,0x7c00 ; +infinity
+    ld bc,0x7E00 ; NaN
+
+; passes
+    ld hl,0x7c00 ; +infinity
+    ld de,0x0000 ; +zero
+    ld bc,0x7E00 ; NaN
+
+; passes
+    ld hl,0x0000 ; +zero
+    ld de,0x0000 ; +zero
+    ld bc,0x0000 ; +zero
+
+; passes
+    ld hl,0x0000 ; +0
+    ld de,0x8000 ; -0
+    ld bc,0x8000 ; expected: -0
+
+; passes
+    ld hl,0x8000 ; -0
+    ld de,0x0000 ; +0
+    ld bc,0x8000 ; expected: -0
+
+; passes
+    ld hl,0x8000 ; -0
+    ld de,0x8000 ; -0
+    ld bc,0x0000 ; +zero
+
 
 test_manual:
     push bc

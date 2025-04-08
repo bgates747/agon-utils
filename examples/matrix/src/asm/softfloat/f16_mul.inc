@@ -1,138 +1,67 @@
-
-
-; float16_t f16_mul( float16_t a, float16_t b )
-; {
-;     union ui16_f16 uA;
-;     uint_fast16_t uiA;
-;     bool signA;
-;     int_fast8_t expA;
-;     uint_fast16_t sigA;
-;     union ui16_f16 uB;
-;     uint_fast16_t uiB;
-;     bool signB;
-;     int_fast8_t expB;
-;     uint_fast16_t sigB;
-;     bool signZ;
-;     uint_fast16_t magBits;
-;     struct exp8_sig16 normExpSig;
-;     int_fast8_t expZ;
-;     uint_fast32_t sig32Z;
-;     uint_fast16_t sigZ, uiZ;
-;     union ui16_f16 uZ;
-
 ; multiply two signed fixed16 numbers and get a fixed16 result
 ; operation: 0hl * 0de -> 0hl
 ; destroys: af,af', bc, de
 f16_mul:
-;     /*------------------------------------------------------------------------
-;     *------------------------------------------------------------------------*/
-;     uA.f = a;
-;     uiA = uA.ui;
-;     signA = signF16UI( uiA );
-;     expA  = expF16UI( uiA );
-;     sigA  = fracF16UI( uiA );
-;     uB.f = b;
-;     uiB = uB.ui;
-;     signB = signF16UI( uiB );
-;     expB  = expF16UI( uiB );
-;     sigB  = fracF16UI( uiB );
-;     signZ = signA ^ signB;
-;     /*------------------------------------------------------------------------
-;     *------------------------------------------------------------------------*/
-;     if ( expA == 0x1F ) {
-;         if ( sigA || ((expB == 0x1F) && sigB) ) goto propagateNaN;
-;         magBits = expB | sigB;
-;         goto infArg;
-;     }
-;     if ( expB == 0x1F ) {
-;         if ( sigB ) goto propagateNaN;
-;         magBits = expA | sigA;
-;         goto infArg;
-;     }
-;     /*------------------------------------------------------------------------
-;     *------------------------------------------------------------------------*/
-    ; if ( ! expA ) {
-    ;     if ( ! sigA ) goto zero;
-    ;     normExpSig = softfloat_normSubnormalF16Sig( sigA );
-    ;     expA = normExpSig.exp;
-    ;     sigA = normExpSig.sig;
-    ; }
-;     if ( ! expB ) {
-;         if ( ! sigB ) goto zero;
-;         normExpSig = softfloat_normSubnormalF16Sig( sigB );
-;         expB = normExpSig.exp;
-;         sigB = normExpSig.sig;
-;     }
-; determine sign of result and stack it
-    ld a,h
-    and %10000000
-    xor d
-    and %10000000
-    push af ; stack sign
 ; unpack hl
     call softfloat16_unpack
-; if ( ! sigA ) goto zero;
+    push bc ; save sign and exponent of hl
+    push af ; save carry, masquerading here as zero flag
+; unpack de
+    ex de,hl
+    call softfloat16_unpack
+    ex de,hl
+    jp c,@de_zero ; jr c,@de_zero
+; check hl for zero
+    pop af ; restore hl's zero flag to carry
     jp c,@hl_zero ; jr c,@hl_zero
-    ld a,b ; get exponent
-    push af ; save exponent
-    ; sigA = (sigA | 0x0400)<<4; (softfloat16_unpack already OR'd in the implicit 1)
+; cleared to proceed with the multiplication
+    push bc ; stack sign and exponent of de
+; sigA = (sigA | 0x0400)<<4; (softfloat16_unpack already OR'd in the implicit 1)
     add hl,hl
     add hl,hl
     add hl,hl
     add hl,hl
     ; PRINT_HL_HEX_BIN "sigA <<4:"
-; unpack de
+; sigB = (sigB | 0x0400)<<5; (softfloat16_unpack already OR'd in the implicit 1)
     ex de,hl
-    call softfloat16_unpack
-    jp c,@de_zero ; jr c,@de_zero
-    pop af ; restore exponent of hl
-    ; expZ = expA + expB - 0xF;
-    add a,b ; expA + expB
-    sub 0x0F ; expA + expB - 0xF
-    ld b,a ; store exponent of hl
-    ; sigB = (sigB | 0x0400)<<5; (softfloat16_unpack already OR'd in the implicit 1)
     add hl,hl
     add hl,hl
     add hl,hl
     add hl,hl
     add hl,hl
     ; PRINT_HL_HEX_BIN "sigB <<5:"
-    ex de,hl ; not strictly necessary since multiplication is commutative, but it feels better this way
-
-    ; sig32Z = (uint_fast32_t) sigA * sigB;
-    pop af ; restore sign
-    ld c,a ; store sign of product
-    push bc ; save sign and exponent
+    ex de,hl
+; sig32Z = (uint_fast32_t) sigA * sigB;
     call mul_16_32 ; 32-bit product in hlde ...
-    pop bc ; restore sign and exponent
-
     ; PRINT_HL_HEX_BIN "sig32Z upper (hl):"
-    ; ex de,hl
+    ex de,hl
     ; PRINT_HL_HEX_BIN "sig32Z lower (de):"
-    ; ex de,hl
-
-    ; sigZ = sig32Z>>16;
-    ; if ( sig32Z & 0xFFFF ) sigZ |= 1; set sticky bit
+    ex de,hl
+; sigZ = sig32Z>>16; (we get this for free since HL contains the relevant bits)
+; if ( sig32Z & 0xFFFF ) sigZ |= 1; set sticky bit
     ld a,e
     and a
     jr nz,@need_sticky
     ld a,d
     and a
     jr nz,@need_sticky
-    jr @no_sticky
+    jr @do_sign_exp
 @need_sticky:
     set 0,l ; set sticky bit
-; ; DEBUG
-;     push hl
-;     call printInline
-;     asciz "Sticky set.\r\n"
-;     pop hl
-; ; END DEBUG
-@no_sticky:
-    ; if ( sigZ < 0x4000 ) {
-    ;     --expZ;
-    ;     sigZ <<= 1;
-    ; }
+@do_sign_exp:
+    pop de ; exp and sign of de
+    pop bc ; exp and sign of hl
+    ; DUMP_REGISTERS_HEX "Get back signs and exponents in de and bc:"
+; expZ = expA + expB - 0xF;
+    ld a,d ; expB
+    add a,b ; expA + expB
+    sub 0x0F ; expA + expB - 0xF
+    ld b,a ; expZ
+; compute sign of product
+    ld a,e ; sign de
+    xor c ; xor sign de with sign hl
+    ld c,a  ; signZ
+    ; DUMP_REGISTERS_HEX "Computed product exp in b, sign in c:"
 ; check for subnormal
     ld a,h
     and %11000000 ; sigZ - 0x4000
@@ -145,40 +74,31 @@ f16_mul:
     jr z,@normalise_loop
     ; PRINT_HL_HEX_BIN "sigZ normalised (hl):"
 @end_normalise: ; we land here if product was normal
-;     return softfloat_roundPackToF16( signZ, expZ, sigZ );
+; return softfloat_roundPackToF16( signZ, expZ, sigZ );
     jp softfloat_roundPackToF16
-;     /*------------------------------------------------------------------------
-;     *------------------------------------------------------------------------*/
-;  propagateNaN:
-;     uiZ = softfloat_propagateNaNF16UI( uiA, uiB );
-;     goto uiZ;
-;     /*------------------------------------------------------------------------
-;     *------------------------------------------------------------------------*/
-;  infArg:
-;     if ( ! magBits ) {
-;         softfloat_raiseFlags( softfloat_flag_invalid );
-;         uiZ = defaultNaNF16UI;
-;     } else {
-;         uiZ = packToF16UI( signZ, 0x1F, 0 );
-;     }
-;     goto uiZ;
-;     /*------------------------------------------------------------------------
-;     *------------------------------------------------------------------------*/
-;  zero:
-;     uiZ = packToF16UI( signZ, 0, 0 );
-;  uiZ:
-;     uZ.ui = uiZ;
-;     return uZ.f;
 @de_zero:
-    pop af ; dummy pop to balance stack
+    pop af ; contains hl's zero flag in carry
+    jr c,@hl_zero
+    pop af ; unstack hl's exponent to a (was b)
+    cp 0x1F ; check for inf
+    jr z,@ret_nan ; return NaN if exponent is 0x1F
+    ex de,hl ; put de into hl to return zero
+    ld a,c ; sign
+    or h ; (re)set sign bit
+    ld h,a
+    ret
 @hl_zero:
     pop af ; dummy pop to balance stack
-
-    ; ld hl,0 ; zero result
-
-    call dumpRegistersHex
-    ret 
-
+    ld a,b ; de's exponent
+    cp 0x1F ; check for inf
+    jr z,@ret_nan ; return NaN if exponent is 0x1F
+    ld a,c ; sign
+    or h ; (re)set sign bit
+    ld h,a
+    ret
+@ret_nan:
+    ld hl,0x7E00 ; NaN
+    ret
 ; }
 
 
