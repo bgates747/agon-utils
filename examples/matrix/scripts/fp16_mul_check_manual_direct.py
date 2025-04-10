@@ -129,5 +129,5 @@ def f16_mul_softfloat_cffi(input_string):
 # Main Execution
 # ----------------------------
 if __name__ == "__main__":
-    input_string = "0xFC00	0x7000	0xFC00	0xFE00"
+    input_string = "0x3830	0xF828	0xF45A	0xFC00"
     f16_mul_softfloat_cffi(input_string)

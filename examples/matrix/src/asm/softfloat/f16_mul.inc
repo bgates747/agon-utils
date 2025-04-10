@@ -9,31 +9,46 @@ f16_mul:
     and %10000000
     ld c,a  ; signZ
 
+; clear sign bits to make specials tests easier
+    res 7,h
+    res 7,d
+
 ; check operands for NaN
-    ld a,0xFE ; NaN upper byte is all we need
+    ld a,0x7E ; NaN upper byte is all we need
     cp h
     jp z,@ret_nan
     cp d
     jp z,@ret_nan
 
+; check hl for zero
+    SIGN_HL
+    jp z,@arg_is_zero
+
+; check hl for inf
+    ld a,h ; expA
+    and %01111100 ; stored exp of hl
+    cp %01111100 ; check for inf
+    jp z,@arg_is_inf
+
 ; check de for zero
     ex de,hl ; flip operands
-    res 7,h ; clear sign bit
     SIGN_HL
-    ; DUMP_REGISTERS_HEX "after de sign test:"
-    jp z,@de_zero
+    jp z,@arg_is_zero
 
-; get exponent of de
-    res 7,h ; clear sign bit (makes life easier on the zero-check later)
+; check de for inf
     ld a,h ; expB
     and %01111100 ; stored exp of de
+    cp %01111100 ; check for inf
+    jp z,@arg_is_inf
+
+; get exponent of de
+    or a ; clear carry
     rra ; shift exp
     rra ; down twice
-    cp  %00011111 ; test for inf
-    jp z,@de_inf
     ld b,a ; assume normal
     and a ; test for subnormal
     call z,softfloat_normSubnormalF16Sig
+    ; DUMP_REGISTERS_HEX "b=exp de:"
 
 ; get mantissa of de
     ld a,h
@@ -41,30 +56,22 @@ f16_mul:
     ld h,a
     ex de,hl ; flip operands back
 
-; check hl for zero
-    res 7,h ; clear sign bit
-    SIGN_HL
-    ; DUMP_REGISTERS_HEX "after hl sign test:"
-    jp z,@hl_zero
-
 ; get exponent of hl
-    ld a,h ; expB
+    ld a,h ; expA
     and %01111100 ; stored exp of hl
     rra ; shift exp
     rra ; down twice
-    cp  %00011111 ; test for inf
-    jp z,@hl_inf
     and a ; test for subnormal
     jr nz,@F ; skip if normal
     ld a,b ; a = expB
     call softfloat_normSubnormalF16Sig
 @@:
+    ; DUMP_REGISTERS_HEX "a=exp de, b=exp hl:"
 ; compute exponent of product
-    ; DUMP_REGISTERS_HEX "a=exp hl, b=exp de:"
     add a,b ; expA + expB
     sub 0x0F ; expA + expB - 0xF
     ld b,a ; expZ
-    ; DUMP_REGISTERS_HEX "b=exp product:"
+    ; DUMP_REGISTERS_HEX "a and b=exp product:"
 
 ; get mantissa of hl
     ld a,h
@@ -125,28 +132,18 @@ f16_mul:
 @end_normalise: ; we land here if product was normal
 ; return softfloat_roundPackToF16( signZ, expZ, sigZ );
     jp softfloat_roundPackToF16
-@de_zero:
-    ld a,d ; is really h because we're flipped
-    and %01111100 ; stored exp of hl
-    cp %01111100 ; check for inf
-    jp z,@ret_nan ; return NaN if exponent is 0x1F    
-    ld a,c ; sign
+@arg_is_zero:
+    ld a,d ; check other arg for inf
+    and %01111100
+    cp %01111100
+    jp z,@ret_nan ; return NaN if exponent is inf    
+    ld a,c ; otherwise, sign the zero
     or h ; (re)set sign bit
     ld h,a
     ret
-@hl_zero:
-    ld a,b ; de's exponent
-    cp 0x1F ; check for inf
-    jp z,@ret_nan ; return NaN if exponent is 0x1F
-    ld a,c ; sign
-    or h ; (re)set sign bit
-    ld h,a
-    ret
-@hl_inf:
-@de_inf:
-    ex de,hl          ; flip operands
-    res 7,h           ; clear sign bit just in case
-    SIGN_HL           ; test hl for zero
+@arg_is_inf:
+    ex de,hl          ; flip operands to get other arg in hl
+    SIGN_HL           ; test other arg for zero
     jr z,@ret_nan     ; zero * inf = NaN
     ld hl,0x7C00      ; Inf result
     ld a,c            ; get product sign
@@ -155,9 +152,6 @@ f16_mul:
     ret
 @ret_nan:
     ld hl,0xFE00      ; canonical NaN
-    ; ld a,c            ; get product sign
-    ; or h              ; reapply sign
-    ; ld h,a
     ret
 ; }
 
