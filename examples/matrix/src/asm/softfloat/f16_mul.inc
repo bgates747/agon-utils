@@ -2,28 +2,88 @@
 ; operation: 0hl * 0de -> 0hl
 ; destroys: af,af', bc, de
 f16_mul:
-; unpack hl
-    call softfloat16_unpack
-    push bc ; save sign and exponent of hl
-    push af ; save carry, masquerading here as zero flag
-; unpack de
-    ex de,hl
-    call softfloat16_unpack
-    ex de,hl
-    jp c,@de_zero ; jr c,@de_zero
+; compute sign of product
+    ld a,h ; sign hl
+    and %10000000
+    xor d ; xor sign hl with sign de
+    and %10000000
+    ld c,a  ; signZ
+
+; check operands for NaN
+    ld a,0xFE ; NaN upper byte is all we need
+    cp h
+    jp z,@ret_nan
+    cp d
+    jp z,@ret_nan
+
+; check de for zero
+    ex de,hl ; flip operands
+    res 7,h ; clear sign bit
+    SIGN_HL
+    ; DUMP_REGISTERS_HEX "after de sign test:"
+    jp z,@de_zero
+
+; get exponent of de
+    res 7,h ; clear sign bit (makes life easier on the zero-check later)
+    ld a,h ; expB
+    and %01111100 ; stored exp of de
+    rra ; shift exp
+    rra ; down twice
+    cp  %00011111 ; test for inf
+    jp z,@de_inf
+    ld b,a ; assume normal
+    and a ; test for subnormal
+    call z,softfloat_normSubnormalF16Sig
+
+; get mantissa of de
+    ld a,h
+    and %00000011 ; mask out sign and exponent
+    ld h,a
+    ex de,hl ; flip operands back
+
 ; check hl for zero
-    pop af ; restore hl's zero flag to carry
-    jp c,@hl_zero ; jr c,@hl_zero
+    res 7,h ; clear sign bit
+    SIGN_HL
+    ; DUMP_REGISTERS_HEX "after hl sign test:"
+    jp z,@hl_zero
+
+; get exponent of hl
+    ld a,h ; expB
+    and %01111100 ; stored exp of hl
+    rra ; shift exp
+    rra ; down twice
+    cp  %00011111 ; test for inf
+    jp z,@hl_inf
+    and a ; test for subnormal
+    jr nz,@F ; skip if normal
+    ld a,b ; a = expB
+    call softfloat_normSubnormalF16Sig
+@@:
+; compute exponent of product
+    ; DUMP_REGISTERS_HEX "a=exp hl, b=exp de:"
+    add a,b ; expA + expB
+    sub 0x0F ; expA + expB - 0xF
+    ld b,a ; expZ
+    ; DUMP_REGISTERS_HEX "b=exp product:"
+
+; get mantissa of hl
+    ld a,h
+    and %00000011 ; mask out sign and exponent
+    ld h,a
+
 ; cleared to proceed with the multiplication
-    push bc ; stack sign and exponent of de
-; sigA = (sigA | 0x0400)<<4; (softfloat16_unpack already OR'd in the implicit 1)
+    ; DUMP_REGISTERS_HEX "cleared to proceed with the multiplication:"
+    push bc ; stack sign and exponent of product
+; sigA = (sigA | 0x0400)<<4;
+    set 2,h ; set implicit 1
     add hl,hl
     add hl,hl
     add hl,hl
     add hl,hl
     ; PRINT_HL_HEX_BIN "sigA <<4:"
-; sigB = (sigB | 0x0400)<<5; (softfloat16_unpack already OR'd in the implicit 1)
+; sigB = (sigB | 0x0400)<<5;
     ex de,hl
+    set 2,h ; set implicit 1
     add hl,hl
     add hl,hl
     add hl,hl
@@ -41,63 +101,63 @@ f16_mul:
 ; if ( sig32Z & 0xFFFF ) sigZ |= 1; set sticky bit
     ld a,e
     and a
-    jr nz,@need_sticky
+    jp nz,@need_sticky
     ld a,d
     and a
-    jr nz,@need_sticky
-    jr @do_sign_exp
+    jp nz,@need_sticky
+    jp @do_sign_exp
 @need_sticky:
     set 0,l ; set sticky bit
 @do_sign_exp:
-    pop de ; exp and sign of de
-    pop bc ; exp and sign of hl
-    ; DUMP_REGISTERS_HEX "Get back signs and exponents in de and bc:"
-; expZ = expA + expB - 0xF;
-    ld a,d ; expB
-    add a,b ; expA + expB
-    sub 0x0F ; expA + expB - 0xF
-    ld b,a ; expZ
-; compute sign of product
-    ld a,e ; sign de
-    xor c ; xor sign de with sign hl
-    ld c,a  ; signZ
-    ; DUMP_REGISTERS_HEX "Computed product exp in b, sign in c:"
+    pop bc ; exp and sign of product
+    ; DUMP_REGISTERS_HEX "b = exp and c = sign of product:"
 ; check for subnormal
     ld a,h
     and %11000000 ; sigZ - 0x4000
-    jr nz,@end_normalise ; sigZ >= 0x4000
+    jp nz,@end_normalise ; sigZ >= 0x4000
     ; PRINT_HL_HEX_BIN "sigZ subnormal (hl):"
 @normalise_loop:
     dec b ; --expZ
     add hl,hl ; sigZ <<= 1
     bit 6,h ; test for carry into assumed 1 place
-    jr z,@normalise_loop
+    jp z,@normalise_loop
     ; PRINT_HL_HEX_BIN "sigZ normalised (hl):"
 @end_normalise: ; we land here if product was normal
 ; return softfloat_roundPackToF16( signZ, expZ, sigZ );
     jp softfloat_roundPackToF16
 @de_zero:
-    pop af ; contains hl's zero flag in carry
-    jr c,@hl_zero
-    pop af ; unstack hl's exponent to a (was b)
-    cp 0x1F ; check for inf
-    jr z,@ret_nan ; return NaN if exponent is 0x1F
-    ex de,hl ; put de into hl to return zero
+    ld a,d ; is really h because we're flipped
+    and %01111100 ; stored exp of hl
+    cp %01111100 ; check for inf
+    jp z,@ret_nan ; return NaN if exponent is 0x1F    
     ld a,c ; sign
     or h ; (re)set sign bit
     ld h,a
     ret
 @hl_zero:
-    pop af ; dummy pop to balance stack
     ld a,b ; de's exponent
     cp 0x1F ; check for inf
-    jr z,@ret_nan ; return NaN if exponent is 0x1F
+    jp z,@ret_nan ; return NaN if exponent is 0x1F
     ld a,c ; sign
     or h ; (re)set sign bit
     ld h,a
     ret
+@hl_inf:
+@de_inf:
+    ex de,hl          ; flip operands
+    res 7,h           ; clear sign bit just in case
+    SIGN_HL           ; test hl for zero
+    jr z,@ret_nan     ; zero * inf = NaN
+    ld hl,0x7C00      ; Inf result
+    ld a,c            ; get product sign
+    or h              ; reapply sign
+    ld h,a
+    ret
 @ret_nan:
-    ld hl,0x7E00 ; NaN
+    ld hl,0xFE00      ; canonical NaN
+    ; ld a,c            ; get product sign
+    ; or h              ; reapply sign
+    ; ld h,a
     ret
 ; }
 

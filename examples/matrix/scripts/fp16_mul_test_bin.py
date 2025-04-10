@@ -4,13 +4,17 @@ import numpy as np
 import os
 from SoftFloat import (float_to_f16_bits, float16_bits_to_float, f16_mul_python)
 
+SPECIALS = [-np.nan, np.inf, -np.inf, 0.0, -0.0]
+
 def generate_valid_fp16(min_val, max_val):
-    while True:
-        candidate = np.random.uniform(min_val, max_val)
-        if np.random.rand() < 0.5:
-            candidate = -candidate
-        candidate_f16 = float16_bits_to_float(float_to_f16_bits(candidate))
-        return candidate_f16
+    if np.random.rand() < FREQ_SPECIALS:
+        return np.random.choice(SPECIALS)
+    
+    candidate = np.random.uniform(min_val, max_val)
+    if np.random.rand() < 0.5:
+        candidate = -candidate
+    candidate_f16 = float16_bits_to_float(float_to_f16_bits(candidate))
+    return candidate_f16
 
 def generate_fp16_mul_test(N, op1_min, op1_max, op2_min, op2_max, outfile):
     data = bytearray()
@@ -47,9 +51,7 @@ if __name__ == "__main__":
     OP1_MAX = 2.0
     OP2_MIN = 0.0
     OP2_MAX = 65504.0
-
-
-
+    FREQ_SPECIALS = 0.5
 
     GENERATE_OUTFILE = '/home/smith/Agon/mystuff/agon-utils/examples/matrix/tgt/fp16_mul_test.bin'
 

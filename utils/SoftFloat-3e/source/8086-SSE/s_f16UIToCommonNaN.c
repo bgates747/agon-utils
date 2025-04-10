@@ -39,21 +39,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "specialize.h"
 #include "softfloat.h"
 
-/*----------------------------------------------------------------------------
-| Assuming `uiA' has the bit pattern of a 16-bit floating-point NaN, converts
-| this NaN to the common NaN form, and stores the resulting common NaN at the
-| location pointed to by `zPtr'.  If the NaN is a signaling NaN, the invalid
-| exception is raised.
-*----------------------------------------------------------------------------*/
-void softfloat_f16UIToCommonNaN( uint_fast16_t uiA, struct commonNaN *zPtr )
+// /*----------------------------------------------------------------------------
+// | Assuming `uiA' has the bit pattern of a 16-bit floating-point NaN, converts
+// | this NaN to the common NaN form, and stores the resulting common NaN at the
+// | location pointed to by `zPtr'.  If the NaN is a signaling NaN, the invalid
+// | exception is raised.
+// *----------------------------------------------------------------------------*/
+// void softfloat_f16UIToCommonNaN( uint_fast16_t uiA, struct commonNaN *zPtr )
+// {
+
+//     if ( softfloat_isSigNaNF16UI( uiA ) ) {
+//         softfloat_raiseFlags( softfloat_flag_invalid );
+//     }
+//     zPtr->sign = uiA>>15;
+//     zPtr->v64  = (uint_fast64_t) uiA<<54;
+//     zPtr->v0   = 0;
+
+// }
+
+void softfloat_f16UIToCommonNaN(uint_fast16_t uiA, struct commonNaN *zPtr)
 {
-
-    if ( softfloat_isSigNaNF16UI( uiA ) ) {
-        softfloat_raiseFlags( softfloat_flag_invalid );
+    if (softfloat_isSigNaNF16UI(uiA)) {
+        softfloat_raiseFlags(softfloat_flag_invalid);
     }
-    zPtr->sign = uiA>>15;
-    zPtr->v64  = (uint_fast64_t) uiA<<54;
-    zPtr->v0   = 0;
 
+    // Force canonical NaN: sign = 1, payload = 0xFE00 << 54
+    zPtr->sign = 1;
+    zPtr->v64  = (uint_fast64_t)defaultNaNF16UI << 54;
+    zPtr->v0   = 0;
 }
 

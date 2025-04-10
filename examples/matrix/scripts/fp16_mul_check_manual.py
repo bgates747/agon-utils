@@ -195,5 +195,5 @@ def main(input_string):
 # Main Execution
 # ----------------------------
 if __name__ == "__main__":
-    input_string = "0x8000	0x0000	0x0000	0x0000"
+    input_string = "0x8000	0xEF25	0x0000	0x8000"
     main(input_string)

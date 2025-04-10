@@ -38,14 +38,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.h"
 #include "specialize.h"
 
+// /*----------------------------------------------------------------------------
+// | Converts the common NaN pointed to by `aPtr' into a 16-bit floating-point
+// | NaN, and returns the bit pattern of this value as an unsigned integer.
+// *----------------------------------------------------------------------------*/
+// uint_fast16_t softfloat_commonNaNToF16UI( const struct commonNaN *aPtr )
+// {
+
+//     return (uint_fast16_t) aPtr->sign<<15 | 0x7E00 | aPtr->v64>>54;
+
+// }
+
 /*----------------------------------------------------------------------------
-| Converts the common NaN pointed to by `aPtr' into a 16-bit floating-point
+| Converts the common NaN pointed to by aPtr into a 16-bit floating-point
 | NaN, and returns the bit pattern of this value as an unsigned integer.
+| In our canonical version, it always returns defaultNaNF16UI.
 *----------------------------------------------------------------------------*/
-uint_fast16_t softfloat_commonNaNToF16UI( const struct commonNaN *aPtr )
+uint_fast16_t softfloat_commonNaNToF16UI(const struct commonNaN *aPtr)
 {
-
-    return (uint_fast16_t) aPtr->sign<<15 | 0x7E00 | aPtr->v64>>54;
-
+    (void)aPtr;  // Unused
+    return defaultNaNF16UI;
 }
 

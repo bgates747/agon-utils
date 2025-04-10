@@ -61,10 +61,10 @@ exit:
         call printInline
         asciz "\r\n",msg,"\r\n"
         pop hl
-        call dumpRegistersHex
-        call dumpFlags
         pop af
         pop de
+        call dumpRegistersHex
+        call dumpFlags
     ENDMACRO
 
 
@@ -90,61 +90,159 @@ exit:
 main:
     ; jp test_file
 
-    ; ld hl,0x0000
-    ; call softfloat16_unpack
-    ; call dumpFlags
-    ; call dumpRegistersHex
-    ; ret
+; --- Inputs / Outputs ---
+; fc00 11111100 00000000 80 1f 0400 100 00000000 -inf sigA
+; 7000 01110000 00000000 00 1c 0400 100 00000000 8192.0 sigB
+; fc00 11111100 00000000 80 1f 0400 100 00000000 -inf Expected Result
+; fe00 11111110 00000000 80 1f 0600 110 00000000 nan Assembly Result
+
+; --- Intermediate Results ---
+; 4000 01000000 00000000  sigA (<<4, normalized)
+; 8000 10000000 00000000  sigB (<<5, normalized)
+; 2000 00100000 00000000  sig32Z >> 16 (upper 16 bits of 32-bit product)
+; 0000 00000000 00000000  sig32Z & 0xFFFF (lower 16 bits of 32-bit product)
+; expA = 16, expB = 13, expA + expB = 29
+
+; --- Generated Assembly Test Code ---
+    ld hl,0xFC00
+    ld de,0x7000
+    ld bc,0xFC00
+
+    jp test_manual
 
 ; passes
     ld hl,0x7c00 ; +infinity
     ld de,0xfc00 ; -infinity
     ld bc,0xfc00 ; -infinity
+    call test_multiple
 
 ; passes
     ld hl,0xfc00 ; -infinity
     ld de,0x7c00 ; +infinity
     ld bc,0xfc00 ; -infinity
+    call test_multiple
 
 ; passes
     ld hl,0x7c00 ; +infinity
     ld de,0x7c00 ; +infinity
     ld bc,0x7c00 ; +infinity
+    call test_multiple
 
 ; passes
     ld hl,0xfc00 ; -infinity
     ld de,0xfc00 ; -infinity
     ld bc,0x7c00 ; +infinity
+    call test_multiple
 
 ; passes
     ld hl,0x0000 ; +zero
     ld de,0x7c00 ; +infinity
     ld bc,0x7E00 ; NaN
+    call test_multiple
 
 ; passes
     ld hl,0x7c00 ; +infinity
     ld de,0x0000 ; +zero
     ld bc,0x7E00 ; NaN
+    call test_multiple
 
 ; passes
     ld hl,0x0000 ; +zero
     ld de,0x0000 ; +zero
     ld bc,0x0000 ; +zero
+    call test_multiple
 
 ; passes
     ld hl,0x0000 ; +0
     ld de,0x8000 ; -0
     ld bc,0x8000 ; expected: -0
+    call test_multiple
 
 ; passes
     ld hl,0x8000 ; -0
     ld de,0x0000 ; +0
     ld bc,0x8000 ; expected: -0
+    call test_multiple
 
 ; passes
     ld hl,0x8000 ; -0
     ld de,0x8000 ; -0
     ld bc,0x0000 ; +zero
+    call test_multiple
+
+; passes
+    ld hl,0x7E01 ; NaN
+    ld de,0x3555 ; normal
+    ld bc,0x7E00 ; NaN
+    call test_multiple
+
+; passes
+    ld hl,0x7E01 ; NaN
+    ld de,0x3555 ; normal
+    ld bc,0x7E00 ; NaN
+    call test_multiple
+
+; passes
+    ld hl,0x7E01 ; NaN
+    ld de,0x0000 ; +zero
+    ld bc,0x7E00 ; NaN
+    call test_multiple
+
+; passes
+    ld hl,0x7E01 ; NaN
+    ld de,0x7C00 ; +Inf
+    ld bc,0x7E00 ; NaN
+    call test_multiple
+
+; passes
+    ld hl,0x3555 ; normal
+    ld de,0x7E01 ; NaN
+    ld bc,0x7E00 ; NaN
+    call test_multiple
+
+; passes
+    ld hl,0x0001 ; subnormal
+    ld de,0x7E01 ; NaN
+    ld bc,0x7E00 ; NaN
+    call test_multiple
+
+; passes
+    ld hl,0x0000 ; +zero
+    ld de,0x7E01 ; NaN
+    ld bc,0x7E00 ; NaN
+    call test_multiple
+
+; passes
+    ld hl,0x7C00 ; +Inf
+    ld de,0x7E01 ; NaN
+    ld bc,0x7E00 ; NaN
+    call test_multiple
+
+    ld hl,0x8000
+    ld de,0xEF25
+    ld bc,0x0000
+    call test_multiple
+
+
+    ret
+
+
+test_multiple:
+    push bc
+    call printHexHL
+    ex de,hl
+    call printHexHL
+    ex de,hl
+    call f16_mul
+    call printHexHL
+    ex de,hl
+    pop hl ; was bc
+    call printHexHL
+    or a ; clear carry
+    sbc hl,de
+    call printHexHL
+    call printNewLine
+    ret
 
 
 test_manual:
