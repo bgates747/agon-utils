@@ -44,7 +44,7 @@ def bin_to_csv(infile, outfile):
     print(f"All values formatted in hexadecimal with 0x prefix")
 
 if __name__ == "__main__":
-    CONVERT_INFILE = '/home/smith/Agon/mystuff/agon-utils/examples/matrix/tgt/mul_16_32_test_out.bin'
-    CONVERT_OUTFILE = '/home/smith/Agon/mystuff/agon-utils/examples/matrix/tgt/mul_16_32_test_out.csv'
+    CONVERT_INFILE = '/home/smith/Agon/mystuff/agon-utils/examples/matrix/tgt/mul_16_32_test.bin'
+    CONVERT_OUTFILE = '/home/smith/Agon/mystuff/agon-utils/examples/matrix/tgt/mul_16_32_test.csv'
     
     bin_to_csv(CONVERT_INFILE, CONVERT_OUTFILE)

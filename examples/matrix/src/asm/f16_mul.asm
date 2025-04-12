@@ -266,7 +266,37 @@ test_manual:
 
 ; TEST FILE
 ; -------------------------------------------
+test_mode: db 0 ; 0 = don't test, 1 = test
 test_file:
+    xor a ; clear test mode
+    ld (test_mode),a
+    call @test_file
+    push hl ; save elapsed time
+    call printDec
+    call printInline
+    asciz " time elapsed, read file only.\r\n"
+
+    ld a,1 ; set test mode
+    ld (test_mode),a
+    call @test_file
+    push hl ; save elapsed time
+    call printDec
+    call printInline
+    asciz " time elapsed, test multiply.\r\n"
+
+    pop hl ; time elapsed with multiply
+    pop de ; time elapsed read file only
+    or a ; clear carry
+    sbc hl,de ; subtract time elapsed read file only
+    call printDec
+    call printInline
+    asciz " time elapsed, read file less test multiply.\r\n"
+    ret
+
+@test_file:
+; set a stopwatch
+    call stopwatch_set
+
     ld hl,f16_fil
     ld de,mul_16_32_filename
     ld c,fa_read
@@ -301,7 +331,9 @@ test_file:
     jr z,@end
     ld hl,(ix+0) ; op1
     ld de,(ix+2) ; op2
-    call f16_mul
+    ld a,(test_mode)
+    or a 
+    call nz,f16_mul
     ld (ix+6),l ; assembly product low byte
     ld (ix+7),h ; assembly product high byte
 ; write to file
@@ -324,15 +356,22 @@ test_file:
     jr @loop
 @end:
     pop hl ; restore error counter
+    ld a,(test_mode)
+    or a
+    jr z,@F
     call printDec
     call printInline
     asciz " errors\r\n"
 
+@@:
     ld hl,f16_fil
     FFSCALL ffs_fclose
 
     ld hl,f16_fil_out
     FFSCALL ffs_fclose
+
+; get stopwatch time
+    call stopwatch_get
 
     ret
 

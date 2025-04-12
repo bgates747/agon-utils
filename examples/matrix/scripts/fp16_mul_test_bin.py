@@ -46,12 +46,12 @@ if __name__ == "__main__":
     # OP2_MIN = 0.0
     # OP2_MAX = 65504.0
 
-    NUM_TESTS = 1000000
+    NUM_TESTS = 100000
     OP1_MIN = 0.0
-    OP1_MAX = 1.0
+    OP1_MAX = 32768.0
     OP2_MIN = 0.0
     OP2_MAX = 2.0
-    FREQ_SPECIALS = 0.1
+    FREQ_SPECIALS = 0.2
 
     GENERATE_OUTFILE = '/home/smith/Agon/mystuff/agon-utils/examples/matrix/tgt/fp16_mul_test.bin'
 

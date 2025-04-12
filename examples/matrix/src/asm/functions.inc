@@ -176,6 +176,7 @@ printDec:
     pop af
     RET
 _printDecBuffer: blkb 16,0 ; a few bytes extra just to be sure
+_printDec168Buffer: blkb 16,0 ; a few bytes extra just to be sure
 
 ; same as printDec but signed
 printDecS:
@@ -396,9 +397,9 @@ s168_to_ascii:
 print_s168:
     push de
     push hl
-    ld de,_printDecBuffer
+    ld de,_printDec168Buffer
     call s168_to_ascii
-    ld hl,_printDecBuffer
+    ld hl,_printDec168Buffer
     call printString
     pop hl
     pop de
