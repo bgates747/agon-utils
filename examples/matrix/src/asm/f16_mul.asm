@@ -73,6 +73,7 @@ exit:
     include "macros.inc"
     include "functions.inc"
     include "arith24.inc"
+    include "fixed168.inc"
     include "maths.inc"
     include "timer.inc"
     include "vdu.inc"
@@ -266,117 +267,221 @@ test_manual:
 
 ; TEST FILE
 ; -------------------------------------------
-test_mode: db 0 ; 0 = don't test, 1 = test
+errors: dl 0
+records: dl 0
+counter: dl 0
+time: dl 0
 test_file:
-    xor a ; clear test mode
-    ld (test_mode),a
-    call @test_file
-    push hl ; save elapsed time
-    call printDec
     call printInline
-    asciz " time elapsed, read file only.\r\n"
+    asciz "\r\nTest Me:\r\n"
+    call test_me
 
-    ld a,1 ; set test mode
-    ld (test_mode),a
-    call @test_file
-    push hl ; save elapsed time
-    call printDec
     call printInline
-    asciz " time elapsed, test multiply.\r\n"
+    asciz "\r\nTest Calc84Maniac:\r\n"
+    call test_calc84maniac
 
-    pop hl ; time elapsed with multiply
-    pop de ; time elapsed read file only
-    or a ; clear carry
-    sbc hl,de ; subtract time elapsed read file only
-    call printDec
-    call printInline
-    asciz " time elapsed, read file less test multiply.\r\n"
     ret
 
-@test_file:
-; set a stopwatch
-    call stopwatch_set
-
+test_me:
+; set up counters
+    ld hl,0 ; error counter
+    ld (errors),hl ; error counter
+    ld (records),hl ; record counter
+    ld (time),hl ; time counter
+; open file for reading
     ld hl,f16_fil
-    ld de,mul_16_32_filename
+    ld de,mul_test_filename
     ld c,fa_read
     FFSCALL ffs_fopen
     or a
-    jr z,@F
+    jr z,@read_loop
     call printInline
     asciz "Error opening file for reading\r\n"
     ret
-@@:
-    ld hl,f16_fil_out
-    ld de,mul_16_32_filename_out
-    ld c,fa_write | fa_open_existing
-    FFSCALL ffs_fopen
-    or a
-    jr z,@start
-    call printInline
-    asciz "Error opening file for writing\r\n"
-    ret
-@start:    
-    ld hl,0 ; error counter
-    push hl ; save error counter
-    ld ix,filedata
-@loop:
+@read_loop:
+; read data from file
     ld hl,f16_fil
     ld de,filedata
-    ld bc,8 ; bytes per record
+    ld bc,480000 ; bytes to read
     FFSCALL ffs_fread
     push bc
     pop hl
     SIGN_HLU
-    jr z,@end
+    jp z,@read_end
+; compute number of records in batch
+    ld de,8 ; bytes per record
+    call udiv24
+    ld (counter),de ; record counter
+; start stopwatch
+    call stopwatch_set
+; reset data pointer
+    ld ix,filedata
+@loop:
     ld hl,(ix+0) ; op1
     ld de,(ix+2) ; op2
-    ld a,(test_mode)
-    or a 
-    call nz,f16_mul
+    call f16_mul
     ld (ix+6),l ; assembly product low byte
     ld (ix+7),h ; assembly product high byte
-; write to file
-    ld hl,f16_fil_out
-    ld de,filedata
-    ld bc,8 ; bytes per record
-    FFSCALL ffs_fwrite
 ; check for error
     ld l,(ix+6) ; assembly product low byte
     ld h,(ix+7) ; assembly product high byte
     ld e,(ix+4) ; python product low byte
     ld d,(ix+5) ; python product high byte
     sbc.s hl,de
-    jr nz,@error
-    jr @loop
+    jr z,@next_record
 @error:
-    pop hl ; restore error counter
+    ld hl,(errors)
     inc hl
-    push hl
-    jr @loop
-@end:
-    pop hl ; restore error counter
-    ld a,(test_mode)
-    or a
-    jr z,@F
+    ld (errors),hl
+@next_record:
+    lea ix,ix+8 ; bump data pointer
+    ld hl,(records)
+    inc hl
+    ld (records),hl
+    ld hl,(counter)
+    dec hl
+    ld (counter),hl
+    SIGN_HLU
+    jr nz,@loop
+; read next batch from file
+    call stopwatch_get
+    ld de,(time)
+    add hl,de
+    ld (time),hl    
+    jp @read_loop
+@read_end:
+; close file
+    ld hl,f16_fil
+    FFSCALL ffs_fclose
+; report elapsed time
+    ld hl,(time)
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    ld de,120*256 ; ticks per second in 16.8 fixed point
+    call udiv168
+    call print_s168_de
+    call printInline
+    asciz " seconds elapsed\r\n"
+; display error count
+    ld hl,(errors)
     call printDec
     call printInline
     asciz " errors\r\n"
+; display record count
+    ld hl,(records)
+    call printDec
+    call printInline
+    asciz " records\r\n"
+    ret
+; end test_me
 
-@@:
+test_calc84maniac:
+; set up counters
+    ld hl,0 ; error counter
+    ld (errors),hl ; error counter
+    ld (records),hl ; record counter
+    ld (time),hl ; time counter
+; open file for reading
+    ld hl,f16_fil
+    ld de,mul_test_filename
+    ld c,fa_read
+    FFSCALL ffs_fopen
+    or a
+    jr z,@read_loop
+    call printInline
+    asciz "Error opening file for reading\r\n"
+    ret
+@read_loop:
+; read data from file
+    ld hl,f16_fil
+    ld de,filedata
+    ld bc,480000 ; bytes to read
+    FFSCALL ffs_fread
+    push bc
+    pop hl
+    SIGN_HLU
+    jp z,@read_end
+; compute number of records in batch
+    ld de,8 ; bytes per record
+    call udiv24
+    ld (counter),de ; record counter
+; start stopwatch
+    call stopwatch_set
+; reset data pointer
+    ld ix,filedata
+@loop:
+    ld hl,(ix+0) ; op1
+    ld de,(ix+2) ; op2
+    call f16_mul_calc84maniac
+    ld (ix+6),l ; assembly product low byte
+    ld (ix+7),h ; assembly product high byte
+; check for error
+    ld l,(ix+6) ; assembly product low byte
+    ld h,(ix+7) ; assembly product high byte
+    ld e,(ix+4) ; python product low byte
+    ld d,(ix+5) ; python product high byte
+    sbc.s hl,de
+    jr z,@next_record
+@error:
+    ld hl,(errors)
+    inc hl
+    ld (errors),hl
+@next_record:
+    lea ix,ix+8 ; bump data pointer
+    ld hl,(records)
+    inc hl
+    ld (records),hl
+    ld hl,(counter)
+    dec hl
+    ld (counter),hl
+    SIGN_HLU
+    jr nz,@loop
+; read next batch from file
+    call stopwatch_get
+    ld de,(time)
+    add hl,de
+    ld (time),hl    
+    jp @read_loop
+@read_end:
+; close file
     ld hl,f16_fil
     FFSCALL ffs_fclose
-
-    ld hl,f16_fil_out
-    FFSCALL ffs_fclose
-
-; get stopwatch time
-    call stopwatch_get
-
+; report elapsed time
+    ld hl,(time)
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    ld de,120*256 ; ticks per second in 16.8 fixed point
+    call udiv168
+    call print_s168_de
+    call printInline
+    asciz " seconds elapsed\r\n"
+; display error count
+    ld hl,(errors)
+    call printDec
+    call printInline
+    asciz " errors\r\n"
+; display record count
+    ld hl,(records)
+    call printDec
+    call printInline
+    asciz " records\r\n"
     ret
+; end test_calc84maniac
 
-mul_16_32_filename: asciz "fp16_mul_test.bin"
-mul_16_32_filename_out: asciz "fp16_mul_test.bin"
+mul_test_filename: asciz "fp16_mul_test.bin"
+mul_test_filename_out: asciz "fp16_mul_test.bin"
 
 printUnpackF16:
     push af

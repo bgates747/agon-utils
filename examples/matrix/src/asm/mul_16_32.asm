@@ -118,7 +118,7 @@ test_me:
     ld (time),hl ; time counter
 ; open file for reading
     ld hl,f16_fil
-    ld de,mul_16_32_filename
+    ld de,mul_test_filename
     ld c,fa_read
     FFSCALL ffs_fopen
     or a
@@ -229,7 +229,7 @@ test_calc84maniac:
     ld (time),hl ; time counter
 ; open file for reading
     ld hl,f16_fil
-    ld de,mul_16_32_filename
+    ld de,mul_test_filename
     ld c,fa_read
     FFSCALL ffs_fopen
     or a
@@ -340,7 +340,7 @@ test_xeda:
     ld (time),hl ; time counter
 ; open file for reading
     ld hl,f16_fil
-    ld de,mul_16_32_filename
+    ld de,mul_test_filename
     ld c,fa_read
     FFSCALL ffs_fopen
     or a
@@ -447,7 +447,7 @@ test_xeda:
 
 ; TODO: WRITE FILE
     ld hl,f16_fil_out
-    ld de,mul_16_32_filename_out
+    ld de,mul_test_filename_out
     ld c,fa_write | fa_open_existing
     FFSCALL ffs_fopen
     or a
@@ -460,7 +460,7 @@ test_xeda:
 
     ret
 
-mul_16_32_filename: asciz "mul_16_32_test.bin"
-mul_16_32_filename_out: asciz "mul_16_32_test.bin"
+mul_test_filename: asciz "mul_16_32_test.bin"
+mul_test_filename_out: asciz "mul_16_32_test.bin"
 
     include "files.inc"

@@ -85,7 +85,7 @@ main:
 ; -------------------------------------------
 test_file:
     ld hl,f16_fil
-    ld de,mul_16_32_filename
+    ld de,mul_test_filename
     ld c,fa_read
     FFSCALL ffs_fopen
     or a
@@ -95,7 +95,7 @@ test_file:
     ret
 @@:
     ld hl,f16_fil_out
-    ld de,mul_16_32_filename_out
+    ld de,mul_test_filename_out
     ld c,fa_write | fa_open_existing
     FFSCALL ffs_fopen
     or a
@@ -170,8 +170,8 @@ test_file:
 
     ret
 
-mul_16_32_filename: asciz "softfloat_roundPackToF16.bin"
-mul_16_32_filename_out: asciz "softfloat_roundPackToF16.bin"
+mul_test_filename: asciz "softfloat_roundPackToF16.bin"
+mul_test_filename_out: asciz "softfloat_roundPackToF16.bin"
 
 printUnpackF16:
     push af
