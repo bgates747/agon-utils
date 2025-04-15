@@ -6,7 +6,7 @@ smul24x8:
 ; make hl positive and store sign flag
     call hlu_abs
     push af
-; do the division
+; do the multiplication
     call mul24x8 ; hl = product
 ; adjust sign of result
     pop af ; sign de

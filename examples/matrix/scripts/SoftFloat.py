@@ -125,7 +125,7 @@ def roundPackToF16(sign, exp, frac):
         if frac == 0:  # Infinity
             return 0x7C00 if not sign else 0xFC00
         else:  # NaN
-            return 0x7E00 if not sign else 0xFE00  # Quiet NaN
+            return 0xFE00
     
     # Normal case - call SoftFloat function
     return lib.softfloat_roundPackToF16(sign, adjusted_exp, sig)
@@ -182,7 +182,9 @@ def test_rounding(float16_hex, rounding_bits):
 
 # Example usage
 if __name__ == "__main__":
-    base_value = 0x3C00
-    rounding_bits = 0b1001
-    print(f"=== TEST WITH ROUNDING BITS 0b{rounding_bits:04b} ===")
-    test_rounding(base_value, rounding_bits)
+    opA = 10.0
+    print(f"float16 of {opA} = 0x{float_to_f16_bits(opA):04X}")
+    opB = 5.0
+    print(f"float16 of {opB} = 0x{float_to_f16_bits(opB):04X}")
+    quotient_f16 = lib.f16_mul(float_to_f16_bits(opA), float_to_f16_bits(1.0 / opB))
+    print(f"float16 of {opA} / {opB} = 0x{quotient_f16:04X} ({float16_bits_to_float(quotient_f16)})")

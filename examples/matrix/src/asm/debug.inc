@@ -41,6 +41,19 @@ printHexAUHL:
     pop af
     ret
 
+printHexAHL:
+    push af
+    push bc
+    call printHex8
+    ld a,'.'
+    rst.lil 10h
+    call printHex16
+    ld a,' '
+    rst.lil 10h
+    pop bc
+    pop af
+    ret
+
 printHexHLBC:
     push af
     push bc
