@@ -1,20 +1,19 @@
 ; r0 = softfloat_approxRecip_1k0s[index]-((softfloat_approxRecip_1k1s[index]*(sigB & 0x3F))>>10);
 
-; inputs: de = dividend, bc = divisor
+; inputs: hl = dividend, de = divisor
 ; outputs: hl = float16 result
 f16_div:
 ; compute sign of the quotient
-    ld a,d ; sign opA
+    ld a,h ; sign opA
     and %10000000
-    xor b ; xor sign opA with sign opB
+    xor d ; xor sign opA with sign opB
     and %10000000
     ld (@signZ),a
 
     ; PRINT_A_HEX "signZ" ; DEBUG
 
 ; unpack opB
-    ld l,c
-    ld h,b
+    ex de,hl
     call softfloat16_unpack
     ld (@sigB),hl ; store sigB
     ld a,b ; exponent
@@ -33,18 +32,10 @@ f16_div:
     jr nz,@check_expB_inf
 ;     if ( sigA ) goto propagateNaN;
         SIGN_HL
-
-    call dumpFlags ; DEBUG
-    call dumpRegistersHex ; DEBUG
-
         jp nz,@return_nan
 ;     if ( expB == 0x1F ) {
         ld a,(@expB)
         cp 0x1F ; check expB for inf
-
-    call dumpFlags ; DEBUG
-    call dumpRegistersHex ; DEBUG
-
         jp nz,@return_inf
 ;         if ( sigB ) goto propagateNaN;
             ld hl,(@sigB)

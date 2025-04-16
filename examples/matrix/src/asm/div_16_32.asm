@@ -186,8 +186,8 @@ main:
 ;     asciz "0.0 / 0.0 = nan\r\n"
 ;     call printInline
 ;     asciz "0x0000 / 0x0000 = 0xFE00\r\n"
+;     ld hl,0x0000 ; 0.0
 ;     ld de,0x0000 ; 0.0
-;     ld bc,0x0000 ; 0.0
 ;     call f16_div
 ;     PRINT_HL_HEX " assembly result"
 ;     call printNewLine
@@ -197,8 +197,8 @@ main:
 ;     asciz "1.0 / 0.0 = inf\r\n"
 ;     call printInline
 ;     asciz "0x3C00 / 0x0000 = 0x7C00\r\n"
-;     ld de,0x3C00 ; 1.0
-;     ld bc,0x0000 ; 0.0
+;     ld hl,0x3C00 ; 1.0
+;     ld de,0x0000 ; 0.0
 ;     call f16_div
 ;     PRINT_HL_HEX " assembly result"
 ;     call printNewLine
@@ -208,19 +208,19 @@ main:
 ;     asciz "5.9604645e-08 / 0.0 = inf\r\n"
 ;     call printInline
 ;     asciz "0x0001 / 0x0000 = 0x7C00\r\n"
-;     ld de,0x0001 ; 5.9604645e-08
-;     ld bc,0x0000 ; 0.0
+;     ld hl,0x0001 ; 5.9604645e-08
+;     ld de,0x0000 ; 0.0
 ;     call f16_div
 ;     PRINT_HL_HEX " assembly result"
 ;     call printNewLine
 
-; ; PASSES 
+; ; PASSES
 ;     call printInline
-;     asciz "inf / 0.0 = nan\r\n"
+;     asciz "inf / 0.0 = inf\r\n"
 ;     call printInline
-;     asciz "0x7C00 / 0x0000 = 0xFE00\r\n"
-;     ld de,0x7C00 ; inf
-;     ld bc,0x0000 ; 0.0
+;     asciz "0x7C00 / 0x0000 = 0x7C00\r\n"
+;     ld hl,0x7C00 ; inf
+;     ld de,0x0000 ; 0.0
 ;     call f16_div
 ;     PRINT_HL_HEX " assembly result"
 ;     call printNewLine
@@ -230,8 +230,8 @@ main:
 ;     asciz "nan / 0.0 = nan\r\n"
 ;     call printInline
 ;     asciz "0x7E00 / 0x0000 = 0xFE00\r\n"
-;     ld de,0x7E00 ; nan
-;     ld bc,0x0000 ; 0.0
+;     ld hl,0x7E00 ; nan
+;     ld de,0x0000 ; 0.0
 ;     call f16_div
 ;     PRINT_HL_HEX " assembly result"
 ;     call printNewLine
@@ -241,22 +241,22 @@ main:
 ;     asciz "1.0 / 5.9604645e-08 = inf\r\n"
 ;     call printInline
 ;     asciz "0x3C00 / 0x0001 = 0x7C00\r\n"
-;     ld de,0x3C00 ; 1.0
-;     ld bc,0x0001 ; 5.9604645e-08
+;     ld hl,0x3C00 ; 1.0
+;     ld de,0x0001 ; 5.9604645e-08
 ;     call f16_div
 ;     PRINT_HL_HEX " assembly result"
 ;     call printNewLine
 
-; FAILS FE00
-    call printInline
-    asciz "inf / 5.9604645e-08 = inf\r\n"
-    call printInline
-    asciz "0x7C00 / 0x0001 = 0x7C00\r\n"
-    ld de,0x7C00 ; inf
-    ld bc,0x0001 ; 5.9604645e-08
-    call f16_div
-    PRINT_HL_HEX " assembly result"
-    call printNewLine
+; ; PASSES
+;     call printInline
+;     asciz "inf / 5.9604645e-08 = inf\r\n"
+;     call printInline
+;     asciz "0x7C00 / 0x0001 = 0x7C00\r\n"
+;     ld hl,0x7C00 ; inf
+;     ld de,0x0001 ; 5.9604645e-08
+;     call f16_div
+;     PRINT_HL_HEX " assembly result"
+;     call printNewLine
 
     ret
 
