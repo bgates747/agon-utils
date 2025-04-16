@@ -3,9 +3,6 @@
 ; inputs: de = dividend, bc = divisor
 ; outputs: hl = float16 result
 f16_div:
-; ; back up operands
-;     ld (@opA),de
-;     ld (@opB),bc
 ; compute sign of the quotient
     ld a,d ; sign opA
     and %10000000
@@ -36,10 +33,18 @@ f16_div:
     jr nz,@check_expB_inf
 ;     if ( sigA ) goto propagateNaN;
         SIGN_HL
+
+    call dumpFlags ; DEBUG
+    call dumpRegistersHex ; DEBUG
+
         jp nz,@return_nan
 ;     if ( expB == 0x1F ) {
         ld a,(@expB)
         cp 0x1F ; check expB for inf
+
+    call dumpFlags ; DEBUG
+    call dumpRegistersHex ; DEBUG
+
         jp nz,@return_inf
 ;         if ( sigB ) goto propagateNaN;
             ld hl,(@sigB)
@@ -64,29 +69,31 @@ f16_div:
 ; }
 ; /*------------------------------------------------------------------------
 ; *------------------------------------------------------------------------*/
-@check_expB_zero::
+@check_expB_zero:
 ; if ( ! expB ) {
     or a ; check expB for zero
     jr nz,@check_expA_zero
-;     if ( ! sigB ) {
-        ld hl,(@sigB)
-        SIGN_HL
-        jr nz,@check_expA_zero
-;         if ( ! (expA | sigA) ) goto invalid; // if both expA and sigA are zero
-            ld a,(@expA)
-            or a ; check expA for zero
-            jr nz,@check_expA_zero
-            ld hl,(@sigA)
-            SIGN_HL
-            jr nz,@check_expA_zero
-;         softfloat_raiseFlags( softfloat_flag_infinity );
-;         goto infinity;
-            jp @return_inf
-;     }
-; // we already normalized subormals so this is not needed
-;    // normExpSig = softfloat_normSubnormalF16Sig( sigB );
-;    // expB = normExpSig.exp;
-;    // sigB = normExpSig.sig;
+; if ( ! sigB ) {
+    ld hl,(@sigB)
+    SIGN_HL
+    jr nz,@check_expA_zero
+; if ( ! (expA | sigA) ) goto invalid;
+    ld a,(@expA)
+    or a ; check expA for zero
+    jr nz,@b_zero_a_nonzero
+    ld hl,(@sigA)
+    SIGN_HL
+    jr nz,@b_zero_a_nonzero
+; 0/0 case
+    jp @return_invalid
+@b_zero_a_nonzero:
+; softfloat_raiseFlags( softfloat_flag_infinite );
+; goto infinity;
+    jp @return_inf
+; }
+; normExpSig = softfloat_normSubnormalF16Sig( sigB );
+; expB = normExpSig.exp;
+; sigB = normExpSig.sig;
 ; }
 @check_expA_zero:
 ; if ( ! expA ) {
@@ -304,8 +311,6 @@ f16_div:
 ; end @compute_sigZ_error
 
 ; scratch variables
-@opA: dl 0
-@opB: dl 0
 @expA: db 0
 @expB: db 0
 @sigA: dl 0

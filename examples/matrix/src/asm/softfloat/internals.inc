@@ -16,7 +16,8 @@ softfloat16_unpack:
     rrca
     and %00011111
     ld b,a ; biased exponent
-    jr nz,@is_nor ; non-zero exponent means normal number
+    or a ; check for zero
+    jr nz,@check_special ; non-zero exponent means normal number
 ; check for zero or -zero
     res 7,h ; clear sign bit
     SIGN_HL
@@ -26,16 +27,24 @@ softfloat16_unpack:
     ld a,c ; get sign
     or a ; (re)set sign flag and clear carry indicating non-zero result    
     ret
+@check_special:
+; Check for special values - infinity and NaN
+    cp 0x1F ; Is exponent 0x1F?
+    jr nz,@is_nor ; non-zero exponent means normal number
+; mask out everything but the top tw bits of hl's mantissa
+    ld a,h
+    and %00000011
+    ld h,a
+    or a ; reset carry indicating non-zero result
+    ret
 @is_nor: 
 ; put the explicit 1 into the mantissa and (re)set sign flag
     set 2,h
     SIGN_HL
-    push af ; stack sign the biased exponent
 ; mask out everything but the top three bits of hl's mantissa
     ld a,h
     and %00000111
     ld h,a
-    pop af ; restore the biased exponent
     or a ; reset carry indicating non-zero result
     ret
 @is_zero:
