@@ -204,72 +204,118 @@ def f16_div(opA, opB):
     Returns: the 16-bit integer representation of the quotient.
     """
 
+    # ----------------------------
     # Unpack opA
+    # ----------------------------
     uA = ui16_f16(opA)
     uiA = uA.ui
     signA = signF16UI(uiA)
     expA  = expF16UI(uiA)
     sigA  = fracF16UI(uiA)
 
+    # Normalize subnormal A if needed
+    if expA == 0 and sigA != 0:
+        raw_expA = expA
+        raw_sigA = sigA
+        normExpSig = softfloat_normSubnormalF16Sig(sigA)
+        expA = normExpSig.exp
+        sigA = normExpSig.sig
+        print(f'opA: sign=0x{int(signA):02X}, exp=0x{raw_expA:02X}, sig=0x{raw_sigA:04X}: after norm: exp=0x{expA & 0xFF:02X}, sig=0x{sigA:04X}')
+    else:
+        print(f'opA: sign=0x{int(signA):02X}, exp=0x{expA:02X}, sig=0x{sigA:04X}')
+
+    # ----------------------------
     # Unpack opB
+    # ----------------------------
     uB = ui16_f16(opB)
     uiB = uB.ui
     signB = signF16UI(uiB)
     expB  = expF16UI(uiB)
     sigB  = fracF16UI(uiB)
 
+    # Normalize subnormal B if needed
+    if expB == 0 and sigB != 0:
+        raw_expB = expB
+        raw_sigB = sigB
+        normExpSig = softfloat_normSubnormalF16Sig(sigB)
+        expB = normExpSig.exp
+        sigB = normExpSig.sig
+        print(f'opB: sign=0x{int(signB):02X}, exp=0x{raw_expB:02X}, sig=0x{raw_sigB:04X}: after norm: exp=0x{expB & 0xFF:02X}, sig=0x{sigB:04X}')
+    else:
+        print(f'opB: sign=0x{int(signB):02X}, exp=0x{expB:02X}, sig=0x{sigB:04X}')
+
+
+    # ----------------------------
+    # Proceed with division
+    # ----------------------------
     signZ = signA ^ signB
-    print(f'0x{int(signZ):02X}   signZ')
+    # print(f'0x{int(signZ):02X}   signZ')
 
     # Handle special cases where one operand is NaN or Infinity.
     if expA == 0x1F:
         if sigA != 0:
+            # A is NaN → return canonical NaN
             uiZ = softfloat_propagateNaNF16UI(uiA, uiB)
             return ui16_f16(uiZ).f
+# @1:
         else:
+            # A is Infinity
             if expB == 0x1F:
+                # B is Infinity or NaN
                 if sigB != 0:
+                    # B is NaN → return NaN
                     uiZ = softfloat_propagateNaNF16UI(uiA, uiB)
                     return ui16_f16(uiZ).f
                 else:
+                    # Inf / Inf → invalid → return NaN
                     softfloat_raiseFlags(softfloat_flag_invalid)
                     uiZ = defaultNaNF16UI
                     return ui16_f16(uiZ).f
-            else:
-                uiZ = packToF16UI(signZ, 0x1F, 0)
-                return ui16_f16(uiZ).f
 
-    if expB == 0x1F:
-        if sigB != 0:
-            uiZ = softfloat_propagateNaNF16UI(uiA, uiB)
-            return ui16_f16(uiZ).f
-        # If opB is infinity, result is zero.
-        uiZ = packToF16UI(signZ, 0, 0)
-        return ui16_f16(uiZ).f
-
-    if expB == 0:
-        if sigB == 0:
-            if expA == 0 and sigA == 0:
+            # Check if B == 0 → Infinity / 0.0 = NaN
+# @2:
+            if expB == 0 and sigB == 0:
                 softfloat_raiseFlags(softfloat_flag_invalid)
                 uiZ = defaultNaNF16UI
                 return ui16_f16(uiZ).f
-            softfloat_raiseFlags(softfloat_flag_infinite)
+
+            # Otherwise: Infinity / finite-nonzero → Infinity
             uiZ = packToF16UI(signZ, 0x1F, 0)
             return ui16_f16(uiZ).f
-        else:
-            normExpSig = softfloat_normSubnormalF16Sig(sigB)
-            expB = normExpSig.exp
-            sigB = normExpSig.sig
 
-    if expA == 0:
-        if sigA == 0:
-            uiZ = packToF16UI(signZ, 0, 0)
+# @3:
+    if expB == 0x1F:
+        if sigB != 0:
+            # B is NaN → return NaN
+            uiZ = softfloat_propagateNaNF16UI(uiA, uiB)
             return ui16_f16(uiZ).f
-        else:
-            normExpSig = softfloat_normSubnormalF16Sig(sigA)
-            expA = normExpSig.exp
-            sigA = normExpSig.sig
+        # B is Infinity → finite / Inf = 0
+        uiZ = packToF16UI(signZ, 0, 0)
+        return ui16_f16(uiZ).f
 
+# @4:
+    # B == 0 → handle zero divisor
+    if expB == 0 and sigB == 0:
+        # B is exactly zero
+        if expA == 0 and sigA == 0:
+            # 0 / 0 → NaN
+            softfloat_raiseFlags(softfloat_flag_invalid)
+            uiZ = defaultNaNF16UI
+            return ui16_f16(uiZ).f
+        # finite-nonzero / 0 → Infinity
+        softfloat_raiseFlags(softfloat_flag_infinite)
+        uiZ = packToF16UI(signZ, 0x1F, 0)
+        return ui16_f16(uiZ).f
+# @5:
+    # A == 0 → handle zero numerator
+    if expA == 0 and sigA == 0:
+        # 0 / non-zero → 0
+        uiZ = packToF16UI(signZ, 0, 0)
+        return ui16_f16(uiZ).f
+
+    # ----------------------------
+    # Now do the normal division path
+    # ----------------------------
     expZ = expA - expB + 0xE
     sigA |= 0x0400
     sigB |= 0x0400
@@ -280,34 +326,34 @@ def f16_div(opA, opB):
     else:
         numShifts = 4
 
-    print(f'0x{int(expZ):02X}   expZ')
+    # print(f'0x{int(expZ):02X}   expZ')
 
     sigA = u16(sigA << numShifts)
-    print(f'0x{int(sigA):04X} sigA shifted left {numShifts}')
-    print(f'0x{int(sigB):04X} sigB')
+    # print(f'0x{int(sigA):04X} sigA shifted left {numShifts}')
+    # print(f'0x{int(sigB):04X} sigB')
 
     index = (sigB >> 6) & 0xF
-    print(f'0x{int(index):02X}   index')
+    # print(f'0x{int(index):02X}   index')
 
     approx1k0s = softfloat_approxRecip_1k0s[index]
     approx1k1s = softfloat_approxRecip_1k1s[index]
-    print(f'0x{int(approx1k0s):04X} approx1k0s')
-    print(f'0x{int(approx1k1s):04X} approx1k1s')
+    # print(f'0x{int(approx1k0s):04X} approx1k0s')
+    # print(f'0x{int(approx1k1s):04X} approx1k1s')
 
     r0 = approx1k0s - (((approx1k1s * (sigB & 0x3F)) >> 10))
-    print(f'0x{int(r0):04X} r0')
+    # print(f'0x{int(r0):04X} r0')
 
     sigZ = u32((sigA * r0) >> 16)
-    print(f'0x{int(sigZ):08X} sigZ')
+    # print(f'0x{int(sigZ):08X} sigZ')
 
     rem  = u32((sigA << 10) - sigZ * sigB)
-    print(f'0x{int(rem):08X} rem')
+    # print(f'0x{int(rem):08X} rem')
 
     rem_r0 = (rem * r0) >> 26
-    print(f'0x{int(rem_r0):02X}   rem * r0 >> 26')
+    # print(f'0x{int(rem_r0):02X}   rem * r0 >> 26')
 
     sigZ += (rem_r0)
-    print(f'0x{int(sigZ):04X} sigZ + (rem * r0)>>26')
+    # print(f'0x{int(sigZ):04X} sigZ + (rem * r0)>>26')
 
     sigZ = sigZ + 1
     if (sigZ & 7) == 0:
@@ -321,17 +367,45 @@ def f16_div(opA, opB):
 
     return softfloat_roundPackToF16(signZ, expZ, sigZ)
 
+def parse_float16_input(x):
+    """
+    Converts input `x` (string, float, int, or hex) to a float16 bit pattern (uint16).
+    Accepts:
+        - Float literals: 65504.0
+        - Special strings: 'inf', '-inf', 'nan'
+        - Hex strings: '0x7BFF', 'FE00'
+        - Integers: 0x7BFF
+    Returns:
+        uint16 representing the float16 bit pattern
+    """
+    if isinstance(x, float):
+        return int(np.float16(x).view(np.uint16))
+    elif isinstance(x, int):
+        return x & 0xFFFF
+    elif isinstance(x, str):
+        x = x.strip().lower()
+        if x.startswith("0x"):
+            return int(x, 16) & 0xFFFF
+        try:
+            val = float(x)
+            return int(np.float16(val).view(np.uint16))
+        except ValueError:
+            raise ValueError(f"Invalid input: {x!r}")
+    else:
+        raise TypeError(f"Unsupported type for input: {type(x)}")
+
+
 
 if __name__ == "__main__":
     import numpy as np
 
     # Input as Python float literals
-    valA = 65504.0
-    valB = 1024.25
+    valA = 'inf'
+    valB = 0.000000059604645
 
     # Convert to float16 bit patterns using NumPy
-    opA = int(np.float16(valA).view(np.uint16))
-    opB = int(np.float16(valB).view(np.uint16))
+    opA = parse_float16_input(valA)
+    opB = parse_float16_input(valB)
 
     print('----- DEBUG OUTPUT -----')
 
@@ -343,13 +417,14 @@ if __name__ == "__main__":
     print(f'0x{opA:04X} / 0x{opB:04X} = 0x{result:04X}')
 
 
-    # # Output
-    # print(f'\r\n----- ASSEMBLY OUTPUT -----')
-    # print(f'    call printInline')
-    # print(f'    asciz "{valA} / {valB} = {valR}\\r\\n"')
-    # print(f'    call printInline')
-    # print(f'    asciz "0x{opA:04X} / 0x{opB:04X} = 0x{result:04X}\\r\\n"')
-    # print(f'    ld de,0x{opA:04X} ; {valA}')
-    # print(f'    ld bc,0x{opB:04X} ; {valB}')
-    # print(f'    call f16_div')
-    # print(f'    PRINT_DE_HEX " assembly result"')
+    # Output
+    print(f'\r\n----- ASSEMBLY OUTPUT -----')
+    print(f'    call printInline')
+    print(f'    asciz "{valA} / {valB} = {valR}\\r\\n"')
+    print(f'    call printInline')
+    print(f'    asciz "0x{opA:04X} / 0x{opB:04X} = 0x{result:04X}\\r\\n"')
+    print(f'    ld de,0x{opA:04X} ; {valA}')
+    print(f'    ld bc,0x{opB:04X} ; {valB}')
+    print(f'    call f16_div')
+    print(f'    PRINT_HL_HEX " assembly result"')
+    print(f'    call printNewLine')

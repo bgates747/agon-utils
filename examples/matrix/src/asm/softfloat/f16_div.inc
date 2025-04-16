@@ -22,13 +22,90 @@ f16_div:
     ld (@sigB),hl ; store sigB
     ld a,b ; exponent
     ld (@expB),a ; store exponent
+
 ; unpack opA
     ex de,hl
     call softfloat16_unpack
     ld a,b ; exponent
     ld (@expA),a
     ld (@sigA),hl ; store sigA
+
+; === HANDLE SPECIAL CASES ===
+; if ( expA == 0x1F ) {
+    cp 0x1F ; check expA for inf
+    jr nz,@check_expB_inf
+;     if ( sigA ) goto propagateNaN;
+        SIGN_HL
+        jp nz,@return_nan
+;     if ( expB == 0x1F ) {
+        ld a,(@expB)
+        cp 0x1F ; check expB for inf
+        jp nz,@return_inf
+;         if ( sigB ) goto propagateNaN;
+            ld hl,(@sigB)
+            SIGN_HL
+            jp nz,@return_nan ; non-signalling NaN
+;         goto invalid;
+            jp @return_invalid ; signalling NaN
+;     }
+;     goto infinity; // handled above
+; }
+@check_expB_inf:
+; if ( expB == 0x1F ) {
+    ld a,(@expB) 
+    cp 0x1F ; check expB for inf
+    jr nz,@check_expB_zero
+;     if ( sigB ) goto propagateNaN;
+        ld hl,(@sigB)
+        SIGN_HL
+        jp nz,@return_nan ; non-signalling NaN
+;     goto zero;
+        jp @return_zero
+; }
+; /*------------------------------------------------------------------------
+; *------------------------------------------------------------------------*/
+@check_expB_zero::
+; if ( ! expB ) {
+    or a ; check expB for zero
+    jr nz,@check_expA_zero
+;     if ( ! sigB ) {
+        ld hl,(@sigB)
+        SIGN_HL
+        jr nz,@check_expA_zero
+;         if ( ! (expA | sigA) ) goto invalid; // if both expA and sigA are zero
+            ld a,(@expA)
+            or a ; check expA for zero
+            jr nz,@check_expA_zero
+            ld hl,(@sigA)
+            SIGN_HL
+            jr nz,@check_expA_zero
+;         softfloat_raiseFlags( softfloat_flag_infinity );
+;         goto infinity;
+            jp @return_inf
+;     }
+; // we already normalized subormals so this is not needed
+;    // normExpSig = softfloat_normSubnormalF16Sig( sigB );
+;    // expB = normExpSig.exp;
+;    // sigB = normExpSig.sig;
+; }
+@check_expA_zero:
+; if ( ! expA ) {
+    ld a,(@expA)
+    or a ; check expA for zero
+    jr nz,@end_specials
+;     if ( ! sigA ) goto zero;
+        ld hl,(@sigA)
+        SIGN_HL
+        jp z,@return_zero
+; // we already normalized subormals so this is not needed
+;    // normExpSig = softfloat_normSubnormalF16Sig( sigA );
+;    // expA = normExpSig.exp;
+;    // sigA = normExpSig.sig;
+; }
+@end_specials:
+
 ; expZ = expA - expB + 0xE
+    ld a,(@expA)
     ld b,a
     ld a,(@expB)
     sub b
@@ -171,6 +248,21 @@ f16_div:
 ; hl must be set to sigZ at this point
     ld bc,(@signZ) ; b=expZ, c=signZ
     jp softfloat_roundPackToF16 ; assumes hl holds sig
+@return_invalid: ; fow now, we don't distinguish between signalling and non-signalling NaN
+@return_nan:
+    ld hl,0xFE00 ; canonical NaN
+    ret
+@return_inf:
+    ld l,0
+    ld a,(@signZ)
+    or 0x7C
+    ld h,a
+    ret
+@return_zero:
+    ld l,0
+    ld a,(@signZ)
+    ld h,a
+    ret
 ; compute the error of sigZ
 ; inputs: hl = sigZ, (@sigB), (@sigA), (@r0)
 ; returns: hlde = rem (only de should matter)
