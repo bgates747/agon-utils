@@ -31,12 +31,14 @@ printHexUHL:
 printHexAUHL:
     push af
     push bc
+    push hl
     call printHex8
-    ld a,'.'
-    rst.lil 10h
+    pop hl
+    push hl
     call printHex24
     ld a,' '
     rst.lil 10h
+    pop hl
     pop bc
     pop af
     ret
@@ -45,8 +47,6 @@ printHexAHL:
     push af
     push bc
     call printHex8
-    ld a,'.'
-    rst.lil 10h
     call printHex16
     ld a,' '
     rst.lil 10h

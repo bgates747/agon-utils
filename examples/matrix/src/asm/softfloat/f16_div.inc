@@ -149,6 +149,7 @@ f16_div:
     ld d,0
     dec de
     inc.s de ; zero deu
+    push ix ; preserve
     ld ix,softfloat_approxRecip_1k0s
     add ix,de
 
@@ -176,6 +177,7 @@ f16_div:
     dec de
     inc.s de ; zero deu
     ld hl,(ix) ; approx1k0s
+    pop ix ; send back how it came in
     or a ; clear carry
     sbc.s hl,de ; hl = r0 = approx1k0s - ((approx1k1s * (sigB & 0x3F)) >> 10)
     ld (@r0),hl ; store r0
@@ -210,38 +212,46 @@ f16_div:
 
     ; PRINT_HL_HEX "sigZ + (rem * r0)>>26" ; DEBUG
 
-; sigZ = sigZ + 1
+; ++sigZ;
     inc hl
-    ld (@sigZ),hl ; store sigZ
-; if (sigZ & 7) == 0:
+    
+    ; PRINT_HL_HEX "sigZ + 1" ; DEBUG
+
+; if ( ! (sigZ & 7) ) {
     ld a,l
-    and 0x07 ; sigZ & 7
-    jr z,@return
-;     sigZ = sigZ & ~1
-        res 0,l ; clear LSB
-;     rem = u32((sigA << 10) - sigZ * sigB)
-        call @compute_sigZ_error ; de = rem
+    and 0x07
+    jr nz,@return
+;     sigZ &= ~1;
+        res 0,l
+        ld (@sigZ),hl
+        ; PRINT_HL_HEX "sigZ &= ~1" ; DEBUG
+;     rem = (sigA<<10) - sigZ * sigB;
+        call @compute_sigZ_error
+        ; PRINT_DE_HEX "rem = (sigA<<10) - sigZ * sigB" ; DEBUG
+;     if ( rem & 0x8000 ) {
         ld hl,(@sigZ)
-;     if (rem & 0x8000) != 0:
-        bit 7,d 
+        ld a,d
+        and 0x80
         jr z,@F
-;         sigZ = sigZ - 2
+;         sigZ -= 2;
             dec hl
             dec hl
             jr @return
-;     else:
+;     } else {
 @@:
-;         if rem != 0:
+;         if ( rem ) sigZ |= 1;
             ld a,d
-            and a
+            or a
             jr nz,@F
-            jr @return
-@@:
             ld a,e
-            and a
+            or a
             jr z,@return
-;             sigZ = sigZ | 1
-                set 0,l ; set LSB
+@@:
+            set 0,l
+            ; PRINT_HL_HEX "sigZ |= 1" ; DEBUG
+;     }
+; }
+
 @return:
 ; hl must be set to sigZ at this point
     ld bc,(@signZ) ; b=expZ, c=signZ
@@ -267,7 +277,9 @@ f16_div:
 @compute_sigZ_error:
 ; rem = u32((sigA << 10) - sigZ * sigB)
     ld de,(@sigB)
+    ; PRINT_DE_HEX "sigB" ; DEBUG
     call mul_16_32_calc84maniac ; hlde = sigZ * sigB
+    ; PRINT_HLDE_HEX "sigZ * sigB"
     push hl ; stack upper word of product
     ld hl,(@sigA)
     add hl,hl
@@ -285,13 +297,13 @@ f16_div:
     ld a,l
     sbc a,d
     ld d,a
-; de should contain our answer, so we should not have to do the following
-    ld a,h
-    sbc a,c
-    ld c,a
-    ld a,(@scratch+2) ; hlu
-    sub b
-    ld b,a ; we assume no carry out
+; ; de should contain our answer, so we should not have to do the following
+;     ld a,h
+;     sbc a,c
+;     ld c,a
+;     ld a,(@scratch+2) ; hlu
+;     sub b
+;     ld b,a ; we assume no carry out
 
 ; ; DEBUG
 ;     push bc

@@ -31,6 +31,8 @@ ffi.cdef("""
     float16_t f32_to_f16(float32_t a);
     // Multiply two float16 values.
     float16_t f16_mul(float16_t a, float16_t b);
+    // Divide two float16 values.
+    float16_t f16_div(float16_t a, float16_t b);
     // Convert a float16 value to a float32 value.
     float32_t f16_to_f32(float16_t a);
     // Pack sign, exponent and sig to a float16.
@@ -64,6 +66,14 @@ def f16_mul_softfloat(a_f16, b_f16):
     """
     return lib.f16_mul(a_f16, b_f16)
 
+def f16_div_softfloat(a_f16, b_f16):
+    """
+    Divides two half-precision numbers (provided as 16-bit integers)
+    using SoftFloat's f16_div.
+    Returns the 16-bit integer result.
+    """
+    return lib.f16_div(a_f16, b_f16)
+
 def f16_to_f32_softfloat(a_f16):
     """
     Uses SoftFloat's f16_to_f32 to convert a half-precision number (given as a 16-bit integer)
@@ -88,103 +98,33 @@ def f16_mul_python(a, b):
     res_bits = lib.f16_mul(a_bits, b_bits)
     return float16_bits_to_float(res_bits)
 
+def f16_div_python(a, b):
+    """
+    Convenience function: divide two Python floats interpreted as float16,
+    using SoftFloat's f16_div, and return a Python float result.
+    """
+    a_bits = np.float16(a).view(np.uint16)
+    b_bits = np.float16(b).view(np.uint16)
+    res_bits = lib.f16_div(a_bits, b_bits)
+    return float16_bits_to_float(res_bits)
+
 def softfloat_roundPackToF16(sign, exp, sig):
     """
     Pack sign, exponent, and significand into a float16 representation.
     """
     return lib.softfloat_roundPackToF16(sign, exp, sig)
 
-def roundPackToF16(sign, exp, frac):
-    """
-    Pack sign, exponent, and fraction bits into a float16 value,
-    handling the hidden bit and exponent adjustments automatically.
-    
-    Args:
-        sign (bool): Sign bit (True for negative, False for positive)
-        exp (int): Biased exponent bits (0-31)
-        frac (int): Fraction bits (0-1023, the 10 LSBs of the significand)
-        
-    Returns:
-        int: The packed float16 value as an integer
-    """
-    # Determine if this is a normalized number
-    is_normalized = (exp != 0)
-    
-    # For normalized numbers, add hidden bit and adjust exponent
-    if is_normalized:
-        sig = ((0x0400 | frac) << 4)  # Include hidden bit and shift left 4 bits
-        adjusted_exp = exp - 1  # Adjust exponent for normalization
-    else:  # Subnormal number
-        sig = (frac << 4)  # No hidden bit, but still shift for rounding bits
-        adjusted_exp = exp  # No exponent adjustment needed
-    
-    # Special cases for zero, infinity, NaN
-    if exp == 0 and frac == 0:  # Zero
-        return 0 if not sign else 0x8000
-    elif exp == 31:  # Infinity or NaN
-        if frac == 0:  # Infinity
-            return 0x7C00 if not sign else 0xFC00
-        else:  # NaN
-            return 0xFE00
-    
-    # Normal case - call SoftFloat function
-    return lib.softfloat_roundPackToF16(sign, adjusted_exp, sig)
-
-def test_rounding(float16_hex, rounding_bits):
-    """
-    Three-line output format for rounding tests.
-    
-    Args:
-        float16_hex (int): Float16 value in hex (e.g., 0x3C00 for 1.0)
-        rounding_bits (int): 4-bit rounding value (0-15)
-    """
-    # Line 1: Extract components without shifting
-    sign = signF16UI(float16_hex)
-    exp = expF16UI(float16_hex)
-    frac = fracF16UI(float16_hex)
-    
-    # Display original components without shifting
-    print(f"Original:   0x{float16_hex:04x} Sign={sign}, Exp={exp}, Sig=0x{frac:04x} {format((float16_hex >> 8) & 0xFF, '08b')} {format(float16_hex & 0xFF, '08b')} ({float16_bits_to_float(float16_hex)})")
-    
-    # Line 2: Prepare significand with rounding bits
-    is_normalized = (exp != 0)
-    if is_normalized:
-        sig = ((0x0400 | frac) << 4) | (rounding_bits & 0xF)
-        adjusted_exp = exp - 1
-    else:
-        sig = (frac << 4) | (rounding_bits & 0xF)
-        adjusted_exp = exp
-    
-    # Calculate the pre-rounded value with full float32 precision
-    f16_value = float(np.float16(float16_bits_to_float(float16_hex)))  # Get as Python float
-    
-    if is_normalized:
-        # For normalized values: 1 ULP = 2^-10 * 2^(exp-15)
-        ulp_size = 2**(-10) * 2**(exp-15)
-        rounding_fraction = rounding_bits / 16.0
-        rounding_value = f16_value + (ulp_size * rounding_fraction)
-    else:
-        # For subnormal values
-        ulp_size = 2**(-14) * 2**(exp-25)  # Adjusted for subnormals
-        rounding_fraction = rounding_bits / 16.0
-        rounding_value = f16_value + (ulp_size * rounding_fraction)
-    
-    # Display significand with rounding bits
-    print(f"Prerounded:        Sign={sign}, Exp={adjusted_exp}, Sig=0x{sig:04x} {format((sig >> 8) & 0xFF, '08b')} {format(sig & 0xFF, '08b')} ({rounding_value:.10f})")
-    
-    # Line 3: Call rounding/packing function and display result
-    result = lib.softfloat_roundPackToF16(sign, adjusted_exp, sig)
-    
-    # Display final result
-    print(f"Rounded:    0x{result:04x} Sign={signF16UI(result)}, Exp={expF16UI(result)}, Sig=0x{fracF16UI(result):04x} {format((result >> 8) & 0xFF, '08b')} {format(result & 0xFF, '08b')} ({float16_bits_to_float(result)})")
-    
-    return result
-
 # Example usage
 if __name__ == "__main__":
-    opA = 10.0
-    print(f"float16 of {opA} = 0x{float_to_f16_bits(opA):04X}")
-    opB = 5.0
-    print(f"float16 of {opB} = 0x{float_to_f16_bits(opB):04X}")
-    quotient_f16 = lib.f16_mul(float_to_f16_bits(opA), float_to_f16_bits(1.0 / opB))
-    print(f"float16 of {opA} / {opB} = 0x{quotient_f16:04X} ({float16_bits_to_float(quotient_f16)})")
+    # opA = 10.0
+    # print(f"float16 of {opA} = 0x{float_to_f16_bits(opA):04X}")
+    # opB = 5.0
+    # print(f"float16 of {opB} = 0x{float_to_f16_bits(opB):04X}")
+    # quotient_f16 = f16_div_softfloat(float_to_f16_bits(opA), float_to_f16_bits(opB))
+    # print(f"float16 of {opA} / {opB} = 0x{quotient_f16:04X} ({float16_bits_to_float(quotient_f16)})")
+
+    sign = False
+    exp = 15
+    sig = 0x7e88
+    result = softfloat_roundPackToF16(sign, exp, sig)
+    print(f"Packed result: 0x{result:04X} ({float16_bits_to_float(result)})")

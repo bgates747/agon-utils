@@ -40,6 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "internals.h"
 #include "specialize.h"
 #include "softfloat.h"
+// #include <stdio.h>
 
 extern const uint16_t softfloat_approxRecip_1k0s[];
 extern const uint16_t softfloat_approxRecip_1k1s[];
@@ -83,6 +84,19 @@ float16_t f16_div( float16_t a, float16_t b )
     expB  = expF16UI( uiB );
     sigB  = fracF16UI( uiB );
     signZ = signA ^ signB;
+
+    // printf("f16_div - signA: %s, expA: 0x%02X, sigA: 0x%04X %%.%08b_%08b\n", 
+        // signA ? "true" : "false", 
+        // (unsigned int)(expA & 0xFF), 
+        // sigA,
+        // (unsigned int)((sigA >> 8) & 0xFF),
+        // (unsigned int)(sigA & 0xFF));
+    // printf("f16_div - signB: %s, expB: 0x%02X, sigB: 0x%04X %%.%08b_%08b\n",
+        // signB ? "true" : "false", 
+        // (unsigned int)(expB & 0xFF), 
+        // sigB,
+        // (unsigned int)((sigB >> 8) & 0xFF),
+        // (unsigned int)(sigB & 0xFF));
     /*------------------------------------------------------------------------
     *------------------------------------------------------------------------*/
     if ( expA == 0x1F ) {
@@ -147,13 +161,22 @@ float16_t f16_div( float16_t a, float16_t b )
     /*------------------------------------------------------------------------
     *------------------------------------------------------------------------*/
     ++sigZ;
+    // printf("0x%08X   sigA\n", sigA);
+    // printf("0x%08X   sigB\n", sigB);
+    // printf("0x%08X ++sigZ\n", sigZ);
     if ( ! (sigZ & 7) ) {
         sigZ &= ~1;
+        // printf("0x%08X sigZ &= ~1\n", sigZ);
         rem = (sigA<<10) - sigZ * sigB;
+        // printf("0x%08X sigA<<10\n", (sigA<<10));
+        // printf("0x%08X sigZ * sigB\n", sigZ * sigB);
+        // printf("0x%08X rem\n", rem);
         if ( rem & 0x8000 ) {
             sigZ -= 2;
+            // printf("0x%08X sigZ -= 2\n", sigZ);
         } else {
             if ( rem ) sigZ |= 1;
+            // printf("0x%08X sigZ |= 1\n", sigZ);
         }
     }
 #endif

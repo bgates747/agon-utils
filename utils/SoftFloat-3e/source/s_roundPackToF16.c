@@ -39,6 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.h"
 #include "internals.h"
 #include "softfloat.h"
+// #include <stdio.h>
 
 float16_t
  softfloat_roundPackToF16( bool sign, int_fast16_t exp, uint_fast16_t sig )
@@ -50,6 +51,12 @@ float16_t
     uint_fast16_t uiZ;
     union ui16_f16 uZ;
 
+    // printf("softfloat_roundPackToF16 input - sign: %s, exp: 0x%02X, sig: 0x%04X %%.%08b_%08b\n", 
+    //     sign ? "true" : "false", 
+    //     (unsigned int)(exp & 0xFF), 
+    //     sig,
+    //     (unsigned int)((sig >> 8) & 0xFF),
+    //     (unsigned int)(sig & 0xFF));
     /*------------------------------------------------------------------------
     *------------------------------------------------------------------------*/
     roundingMode = softfloat_roundingMode;

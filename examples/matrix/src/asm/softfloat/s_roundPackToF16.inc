@@ -34,95 +34,29 @@
 
 ; =============================================================================*/
 
-; #include <stdbool.h>
-; #include <stdint.h>
-; #include "platform.h"
-; #include "internals.h"
-; #include "softfloat.h"
-
-; float16_t softfloat_roundPackToF16( bool sign, int_fast16_t exp, uint_fast16_t sig )
-; {
-;     uint_fast8_t roundingMode;
-;     bool roundNearEven;
-;     uint_fast8_t roundIncrement, roundBits;
-;     bool isTiny;
-;     uint_fast16_t uiZ;
-;     union ui16_f16 uZ;
-
-;     /*------------------------------------------------------------------------
-;     *------------------------------------------------------------------------*/
-;     roundingMode = softfloat_roundingMode;
-;     roundNearEven = (roundingMode == softfloat_round_near_even);
-;     roundIncrement = 0x8;
-;     if ( ! roundNearEven && (roundingMode != softfloat_round_near_maxMag) ) {
-;         roundIncrement =
-;             (roundingMode
-;                  == (sign ? softfloat_round_min : softfloat_round_max))
-;                 ? 0xF
-;                 : 0;
-;     }
-;     roundBits = sig & 0xF;
-;     /*------------------------------------------------------------------------
-;     *------------------------------------------------------------------------*/
-;     if ( 0x1D <= (unsigned int) exp ) {
-;         if ( exp < 0 ) {
-;             /*----------------------------------------------------------------
-;             *----------------------------------------------------------------*/
-;             isTiny =
-;                 (softfloat_detectTininess == softfloat_tininess_beforeRounding)
-;                     || (exp < -1) || (sig + roundIncrement < 0x8000);
-;             sig = softfloat_shiftRightJam32( sig, -exp );
-;             exp = 0;
-;             roundBits = sig & 0xF;
-;             if ( isTiny && roundBits ) {
-;                 softfloat_raiseFlags( softfloat_flag_underflow );
-;             }
-;         } else if ( (0x1D < exp) || (0x8000 <= sig + roundIncrement) ) {
-;             /*----------------------------------------------------------------
-;             *----------------------------------------------------------------*/
-;             softfloat_raiseFlags(
-;                 softfloat_flag_overflow | softfloat_flag_inexact );
-;             uiZ = packToF16UI( sign, 0x1F, 0 ) - ! roundIncrement;
-;             goto uiZ;
-;         }
-;     }
-;     /*------------------------------------------------------------------------
-;     *------------------------------------------------------------------------*/
-;     sig = (sig + roundIncrement)>>4;
-;     if ( roundBits ) {
-;         softfloat_exceptionFlags |= softfloat_flag_inexact;
-; #ifdef SOFTFLOAT_ROUND_ODD
-;         if ( roundingMode == softfloat_round_odd ) {
-;             sig |= 1;
-;             goto packReturn;
-;         }
-; #endif
-;     }
-;     sig &= ~(uint_fast16_t) (! (roundBits ^ 8) & roundNearEven);
-;     if ( ! sig ) exp = 0;
-;     /*------------------------------------------------------------------------
-;     *------------------------------------------------------------------------*/
-;  packReturn:
-;     uiZ = packToF16UI( sign, exp, sig );
-;  uiZ:
-;     uZ.ui = uiZ;
-;     return uZ.f;
-; }
-
-
 ; ===============================================================================
 ; eZ80 Assembly Implementation
 ; Original C code has been simplified so that only the default rounding options 
 ; are used, and so branching tests are more ez80 friendly.
 ; ===============================================================================
-; inputs: c = sign (0=pos, 0x80=neg), b = biased exp, hl = sig (implied 1 place in bit 14)
+; inputs: c = sign (0=pos, 0x80=neg), b = biased exp, 
+;         hl = sig (implied 1 place in bit 14, rounding bits in bits 0-3)
 ; outputs: hl = packed float16, c = sign (0=pos, 0x80=neg), b = biased exp
 ; destroys: af, de
 softfloat_roundPackToF16:
 ; uint_fast8_t roundIncrement = 0x8;
 ; uint_fast8_t roundBits = sig & 0xF;
-    ld a,b ; get exponent
+
+; ; DEBUG
+;     ld a,c
+;     PRINT_A_HEX "sign"
+;     ld a,b
+;     PRINT_A_HEX "exp"
+;     PRINT_HL_HEX_BIN "sigZ prior to rounding"
+; ; END DEBUG
+
 ; if (exp < 0) {
+    ld a,b ; get exponent
     cp 0
     jp p,@check_overflow
 ;     // -----------------------------
