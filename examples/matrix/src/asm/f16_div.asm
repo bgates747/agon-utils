@@ -393,6 +393,53 @@ test_fp16_div:
     asciz " records\r\n"
     ret
 
+open_infile_read:
+; open file for reading
+    ld hl,f16_fil
+    ld de,test_filename
+    ld c,fa_read
+    FFSCALL ffs_fopen
+    or a
+    ret z
+    call printInline
+    asciz "Error opening file for reading\r\n"
+    ret
+
+open_outfile_write:
+; open file for writing
+    ld hl,f16_fil_out
+    ld de,test_filename_out
+    ld c,fa_read
+    FFSCALL ffs_fopen
+    or a
+    ret z
+    call printInline
+    asciz "Error opening file for writing\r\n"
+    ret
+
+open_outfile_write:
+; open file for writing
+    ld hl,f16_fil_out
+    ld de,test_filename_out
+    ld c,fa_write | fa_open_existing
+    ; ld c,fa_write | fa_create_always
+    FFSCALL ffs_fopen
+    or a
+    ret z
+    call printInline
+    asciz "Error opening file for writing\r\n"
+    ret
+
+close_infile:
+    ld hl,f16_fil
+    FFSCALL ffs_fclose
+    ret
+
+close_outfile:
+    ld hl,f16_fil_out
+    FFSCALL ffs_fclose
+    ret
+
 test_filename: asciz "fp16_div_test.bin"
 test_filename_out: asciz "fp16_div_test.bin"
 
