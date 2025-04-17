@@ -284,7 +284,7 @@ f16_div:
     ld hl,(@sigA)
     add hl,hl
     add hl,hl
-    ld (@scratch),hl ; pretend uhl has a phantom lower byte = 0
+    ; ld (@scratch),hl ; only need to do this if difference will occupy more than four bytes
     pop bc ; restore upper word of product (was hl)
     xor a ; a is our phantom zero register
 ; now we're set to do the subtraction:

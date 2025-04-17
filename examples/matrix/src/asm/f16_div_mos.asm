@@ -259,7 +259,7 @@ test_fp16_div:
 ; open file for reading
     call open_infile_read
     or a
-    jr z,@open_outfile
+    jr nz,@open_outfile
     call printInline
     asciz "Error opening file for reading\r\n"
     ret
@@ -267,19 +267,19 @@ test_fp16_div:
 ; open file for writing
     call open_outfile_write
     or a
-    jr z,@read_loop
+    jr nz,@read_loop
     call printInline
     asciz "Error opening file for writing\r\n"
     ret
 @read_loop:
 ; read data from file
-    ld hl,f16_fil
-    ld de,filedata
-    ld bc,480000 ; max bytes to read
-    FFSCALL ffs_fread
-    ld (bytes_read),bc
-    push bc
-    pop hl
+    ld a,(f16_file_in_handle)
+    ld c,a
+    ld hl,filedata
+    ld de,480000 ; max bytes to read
+    MOSCALL mos_fread
+    ld (bytes_read),de
+    ex de,hl
     SIGN_HLU
     jp z,@read_end
 ; compute number of records in batch
@@ -333,23 +333,16 @@ test_fp16_div:
     jr nz,@loop
 ; get elapsed time
     call stopwatch_get
-; ; DEBUG
-;     push hl
-;     call printDec
-;     call printInline
-;     asciz " ticks elapsed\r\n"
-;     pop hl
-; ; END DEBUG
     ld de,(time)
     add hl,de
     ld (time),hl
 ; write data to file
-    ld hl,f16_fil_out
-    ld de,filedata
-    ld bc,(bytes_read) ; bytes to write
-    FFSCALL ffs_fwrite
-    push bc
-    pop hl
+    ld a,(f16_file_out_write_handle)
+    ld c,a
+    ld hl,filedata
+    ld de,(bytes_read) ; bytes to write
+    MOSCALL mos_fwrite
+    ex de,hl
     call printDec
     call printInline
     asciz " bytes written\r\n"
@@ -357,10 +350,8 @@ test_fp16_div:
     jp @read_loop
 @read_end:
 ; close files
-    ld hl,f16_fil
-    FFSCALL ffs_fclose
-    ld hl,f16_fil_out
-    FFSCALL ffs_fclose
+    call close_infile
+    call close_outfile_write
 ; report elapsed time
     ld hl,(time)
     add hl,hl
@@ -390,39 +381,47 @@ test_fp16_div:
 
 open_infile_read:
 ; open file for reading
-    ld hl,f16_fil
-    ld de,test_filename
+    ld hl,test_filename
     ld c,fa_read
-    FFSCALL ffs_fopen
+    MOSCALL mos_fopen
+    ld (f16_file_in_handle),a
     ret
 
 open_outfile_read:
 ; open file for reading
-    ld hl,f16_fil_out
-    ld de,test_filename_out
+    ld hl,test_filename_out
     ld c,fa_read
-    FFSCALL ffs_fopen
+    MOSCALL mos_fopen
+    ld (f16_file_out_read_handle),a
     ret
 
 open_outfile_write:
 ; open file for writing
-    ld hl,f16_fil_out
-    ld de,test_filename_out
+    ld hl,test_filename_out
     ld c,fa_write | fa_open_existing
     ; ld c,fa_write | fa_create_always
-    FFSCALL ffs_fopen
+    MOSCALL mos_fopen
+    ld (f16_file_out_write_handle),a
     ret
 
 close_infile:
-    ld hl,f16_fil
-    FFSCALL ffs_fclose
+    ld a,(f16_file_in_handle)
+    MOSCALL mos_fclose
     ret
 
-close_outfile:
-    ld hl,f16_fil_out
-    FFSCALL ffs_fclose
+close_outfile_read:
+    ld a,(f16_file_out_read_handle)
+    MOSCALL mos_fclose
     ret
 
+close_outfile_write:
+    ld a,(f16_file_out_write_handle)
+    MOSCALL mos_fclose
+    ret
+
+f16_file_in_handle: db 0
+f16_file_out_read_handle: db 0
+f16_file_out_write_handle: db 0
 test_filename: asciz "fp16_div_test.bin"
 test_filename_out: asciz "fp16_div_test.bin"
 
