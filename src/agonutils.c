@@ -1,6 +1,5 @@
-#define PY_SSIZE_T_CLEAN
-
 #include "images.h"
+#include "simz.h"
 
 // Function: Simple hello world function
 PyObject* hello(PyObject* self, PyObject* args) {
@@ -24,6 +23,18 @@ static PyMethodDef MyMethods[] = {
     
     {"csv_to_palette", csv_to_palette, METH_VARARGS, 
      "csv_to_palette(csv_filepath: str) -> Palette"},
+
+    {"simz_encode", simz_encode, METH_VARARGS,
+     "simz_encode(input_file: str, output_file: str) -> None"},
+
+    {"simz_decode", simz_decode, METH_VARARGS,
+     "simz_decode(input_file: str, output_file: str) -> None"},
+
+    {"simz_encode_bytes", simz_encode_bytes, METH_VARARGS,
+     "simz_encode_bytes(data: bytes) -> bytes"},
+
+    {"simz_decode_bytes", simz_decode_bytes, METH_VARARGS,
+     "simz_decode_bytes(data: bytes) -> bytes"},
     
     {"hello", hello, METH_NOARGS, 
      "hello() -> None"},
