@@ -149,3 +149,9 @@ Icon?
 # jukebox project
 !examples/jukebox/build/
 !examples/jukebox/tgt/
+
+# AGNB generated and working directories
+examples/agnb/.emulator/
+examples/agnb/assets/processed/
+examples/agnb/build/
+examples/agnb/tgt/
