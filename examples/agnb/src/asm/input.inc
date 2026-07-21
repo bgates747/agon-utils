@@ -84,7 +84,7 @@ do_input:
 
 ; slideshow timer routines
 tmr_slideshow: ds 6 ; buffer to hold slideshow timer
-tmr_slideshow_reset: dl 10*120
+tmr_slideshow_reset: dl 1; 10*120
 
 ; set a countdown timer for the slideshow using the timestamp timer
 ; returns: hl = current time

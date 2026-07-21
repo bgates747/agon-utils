@@ -42,8 +42,8 @@ init:
 ; set screen mode
     ; ld a,0 ; 640x480x16 single-buffered
     ; ld a,19 ; 1024x768x4 single-buffered
-    ; ld a,8 ; 320x240x64 single-buffered
-    ld a,20 ; 512x384x64 single-buffered
+    ld a,8 ; 320x240x64 single-buffered
+    ; ld a,20 ; 512x384x64 single-buffered
     ; ld a,23 ; 512x384x2 single-buffered
     call vdu_set_screen_mode
 
