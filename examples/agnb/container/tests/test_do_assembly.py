@@ -2,6 +2,7 @@
 
 import importlib.util
 import struct
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -30,6 +31,33 @@ def read_chunk(data: bytes, offset: int, boundary: int):
 
 
 class ContainerWriterTests(unittest.TestCase):
+    def test_images_include_contains_application_metadata_without_filenames(self):
+        records = WRITER.load_image_records()
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            original_output = WRITER.ASM_IMAGES_FILE
+            try:
+                WRITER.ASM_IMAGES_FILE = Path(temporary_directory) / "images.inc"
+                WRITER.write_images_include(records)
+                generated = WRITER.ASM_IMAGES_FILE.read_text()
+            finally:
+                WRITER.ASM_IMAGES_FILE = original_output
+
+        first = records[0]
+        self.assertIn("image_width: equ image_type+3", generated)
+        self.assertIn("image_height: equ image_width+3", generated)
+        self.assertIn("image_filesize: equ image_height+3", generated)
+        self.assertIn("image_ex_filename: equ image_filesize+3", generated)
+        self.assertIn("image_record_size: equ image_ex_filename+3", generated)
+        self.assertIn(f"buf_{first.name}: equ {first.bufferId}", generated)
+        self.assertIn(
+            f"\tdl 1, {first.width}, {first.height}, {first.dataSize}, "
+            "0xFFFFFF\n",
+            generated,
+        )
+        self.assertNotIn("image_filename", generated)
+        self.assertNotIn("fn_", generated)
+        self.assertNotIn(".rgba2", generated)
+
     def test_full_container_matches_shared_assets(self):
         records = WRITER.load_image_records()
         container = WRITER.build_container(records)
@@ -82,7 +110,8 @@ class ContainerWriterTests(unittest.TestCase):
 
         self.assertEqual(offset, len(container))
         self.assertEqual(record_index, len(records))
-        self.assertEqual(len(records), 408)
+        self.assertEqual(len(records), 249)
+        self.assertLessEqual(len(records), 256)
 
         for record in records:
             png_file = WRITER.SHARED_PROCESSED_DIR / f"{record.name}.png"
