@@ -3,6 +3,7 @@
 
 import argparse
 import struct
+import sys
 import tempfile
 import tkinter as tk
 from dataclasses import dataclass
@@ -14,7 +15,16 @@ import agonutils
 from PIL import Image, ImageTk
 
 
-DEFAULT_CONTAINER = Path(__file__).resolve().parents[1] / "tgt" / "images.agnb"
+CONTAINER_DIR = Path(__file__).resolve().parents[1]
+PROJECT_DIR = CONTAINER_DIR.parent
+SHARED_PROCESSED_DIR = PROJECT_DIR / "shared" / "assets" / "processed"
+SHARED_SCRIPTS_DIR = PROJECT_DIR / "shared" / "scripts"
+sys.path.insert(0, str(SHARED_SCRIPTS_DIR))
+
+from image_manifest import MANIFEST_FILENAME, load_manifest  # noqa: E402
+
+DEFAULT_CONTAINER = CONTAINER_DIR / "tgt" / "images.agnb"
+DEFAULT_MANIFEST = SHARED_PROCESSED_DIR / MANIFEST_FILENAME
 MIN_SCALE = 1
 MAX_SCALE = 32
 
@@ -22,13 +32,13 @@ MAX_SCALE = 32
 @dataclass(frozen=True)
 class ImageRecord:
     index: int
-    buffer_id: int
+    bufferId: int
     width: int
     height: int
-    image_format: int
-    data_offset: int
-    data_size: int
-    list_offset: int
+    imageFormat: int
+    dataOffset: int
+    dataSize: int
+    listOffset: int
 
 
 def read_chunk(data: bytes, offset: int, boundary: int):
@@ -101,20 +111,20 @@ def parse_container(path: Path) -> tuple[bytes, list[ImageRecord]]:
         _id, start, end, _next = nested[0]
         if end - start != 2:
             raise ValueError(f"Invalid BHDR size at file offset {chunk_offset}")
-        buffer_id = struct.unpack_from("<H", data, start)[0]
-        if buffer_id == 0xFFFF:
-            raise ValueError(f"Reserved buffer ID at file offset {chunk_offset}")
+        bufferId = struct.unpack_from("<H", data, start)[0]
+        if bufferId == 0xFFFF:
+            raise ValueError(f"Reserved bufferId at file offset {chunk_offset}")
 
         _id, start, end, _next = nested[1]
         if end - start != 5:
             raise ValueError(f"Invalid IMAG size at file offset {chunk_offset}")
-        width, height, image_format = struct.unpack_from("<HHB", data, start)
-        if image_format != 1:
-            raise ValueError(f"Unsupported image format {image_format}")
+        width, height, imageFormat = struct.unpack_from("<HHB", data, start)
+        if imageFormat != 1:
+            raise ValueError(f"Unsupported image format {imageFormat}")
 
         _id, data_start, data_end, _next = nested[2]
-        data_size = data_end - data_start
-        if not width or not height or data_size != width * height:
+        dataSize = data_end - data_start
+        if not width or not height or dataSize != width * height:
             raise ValueError(
                 f"Invalid RGBA2222 dimensions or DATA size at {chunk_offset}"
             )
@@ -122,13 +132,13 @@ def parse_container(path: Path) -> tuple[bytes, list[ImageRecord]]:
         records.append(
             ImageRecord(
                 index=len(records),
-                buffer_id=buffer_id,
+                bufferId=bufferId,
                 width=width,
                 height=height,
-                image_format=image_format,
-                data_offset=data_start,
-                data_size=data_size,
-                list_offset=chunk_offset,
+                imageFormat=imageFormat,
+                dataOffset=data_start,
+                dataSize=dataSize,
+                listOffset=chunk_offset,
             )
         )
 
@@ -136,16 +146,20 @@ def parse_container(path: Path) -> tuple[bytes, list[ImageRecord]]:
         raise ValueError("Missing VERS chunk")
     if not records:
         raise ValueError("Container contains no supported image records")
-    if len({record.buffer_id for record in records}) != len(records):
-        raise ValueError("Container contains duplicate buffer IDs")
+    if len({record.bufferId for record in records}) != len(records):
+        raise ValueError("Container contains duplicate bufferIds")
     return data, records
 
 
 class ContainerViewer(tk.Tk):
-    def __init__(self, container_path: Path):
+    def __init__(self, container_path: Path, manifest_path: Path):
         super().__init__()
         self.container_path = container_path
         self.container_data, self.records = parse_container(container_path)
+        manifest_entries = load_manifest(manifest_path)
+        self.manifestByBufferId = {
+            entry.bufferId: entry for entry in manifest_entries
+        }
         self.record_index = 0
         self.scale = 1
         self.current_payload = b""
@@ -284,7 +298,7 @@ class ContainerViewer(tk.Tk):
 
     def decode_current_record(self, record: ImageRecord) -> Image.Image:
         payload = self.container_data[
-            record.data_offset : record.data_offset + record.data_size
+            record.dataOffset : record.dataOffset + record.dataSize
         ]
         self.current_payload = payload
 
@@ -301,15 +315,18 @@ class ContainerViewer(tk.Tk):
     def show_record(self, index: int):
         self.record_index = max(0, min(index, len(self.records) - 1))
         record = self.records[self.record_index]
+        manifest_entry = self.manifestByBufferId.get(record.bufferId)
+        source_name = manifest_entry.source if manifest_entry else "<not in manifest>"
         self.source_image = self.decode_current_record(record)
         self.jump_var.set(str(self.record_index + 1))
         self.metadata_var.set(
             f"Record: {self.record_index + 1}/{len(self.records)}    "
-            f"Buffer ID: {record.buffer_id} (0x{record.buffer_id:04X})\n"
-            f"Image: {record.width}×{record.height}    Format: {record.image_format} "
-            f"(RGBA2222)    DATA: {record.data_size} bytes\n"
-            f"LIST offset: 0x{record.list_offset:08X}    "
-            f"DATA offset: 0x{record.data_offset:08X}"
+            f"bufferId: {record.bufferId} (0x{record.bufferId:04X})    "
+            f"Source: {source_name}\n"
+            f"Image: {record.width}×{record.height}    Format: {record.imageFormat} "
+            f"(RGBA2222)    DATA: {record.dataSize} bytes\n"
+            f"LIST offset: 0x{record.listOffset:08X}    "
+            f"DATA offset: 0x{record.dataOffset:08X}"
         )
         self.render_image()
 
@@ -384,9 +401,15 @@ def main():
         default=DEFAULT_CONTAINER,
         help=f"AGNB file to inspect (default: {DEFAULT_CONTAINER})",
     )
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=DEFAULT_MANIFEST,
+        help=f"Image manifest used for source filenames (default: {DEFAULT_MANIFEST})",
+    )
     args = parser.parse_args()
 
-    viewer = ContainerViewer(args.container.resolve())
+    viewer = ContainerViewer(args.container.resolve(), args.manifest.resolve())
     viewer.mainloop()
 
 

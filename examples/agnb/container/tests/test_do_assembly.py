@@ -31,7 +31,7 @@ def read_chunk(data: bytes, offset: int, boundary: int):
 
 class ContainerWriterTests(unittest.TestCase):
     def test_full_container_matches_shared_assets(self):
-        records = WRITER.scan_image_records()
+        records = WRITER.load_image_records()
         container = WRITER.build_container(records)
 
         self.assertEqual(container[:4], b"RIFF")
@@ -65,7 +65,7 @@ class ContainerWriterTests(unittest.TestCase):
             self.assertEqual(payload_end - payload_start, 2)
             self.assertEqual(
                 struct.unpack_from("<H", container, payload_start)[0],
-                record.buffer_id,
+                record.bufferId,
             )
 
             _id, payload_start, payload_end, _next = nested[1]
@@ -77,7 +77,7 @@ class ContainerWriterTests(unittest.TestCase):
 
             _id, payload_start, payload_end, _next = nested[2]
             self.assertEqual(payload_end - payload_start, record.width * record.height)
-            self.assertEqual(container[payload_start:payload_end], record.rgba_file.read_bytes())
+            self.assertEqual(container[payload_start:payload_end], record.rgbaFile.read_bytes())
             record_index += 1
 
         self.assertEqual(offset, len(container))

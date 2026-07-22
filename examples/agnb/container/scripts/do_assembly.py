@@ -15,7 +15,7 @@ a four-byte boundary. Chunk sizes exclude the header and padding.
         u8 minor=1
       LIST  type=BUFR
         BHDR  size=2
-          u16 buffer_id
+          u16 bufferId
         IMAG  size=5
           u16 width
           u16 height
@@ -45,37 +45,45 @@ and any size that cannot be represented by the required u32 field.
 
 import argparse
 import struct
+import sys
 from dataclasses import dataclass
 from pathlib import Path
-
-from PIL import Image
-
 
 CONTAINER_DIR = Path(__file__).resolve().parents[1]
 PROJECT_DIR = CONTAINER_DIR.parent
 SHARED_PROCESSED_DIR = PROJECT_DIR / "shared" / "assets" / "processed"
+SHARED_SCRIPTS_DIR = PROJECT_DIR / "shared" / "scripts"
+sys.path.insert(0, str(SHARED_SCRIPTS_DIR))
+
+from image_manifest import (  # noqa: E402
+    MANIFEST_FILENAME,
+    included_entries,
+    load_manifest,
+    validate_asset_files,
+)
+
+MANIFEST_FILE = SHARED_PROCESSED_DIR / MANIFEST_FILENAME
 TARGET_DIR = CONTAINER_DIR / "tgt"
 CONTAINER_FILE = TARGET_DIR / "images.agnb"
+ASM_IMAGES_FILE = CONTAINER_DIR / "src" / "asm" / "images.inc"
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 1
 IMAGE_FORMAT_RGBA2222 = 1
-FIRST_BUFFER_ID = 256
-MAX_U16 = 0xFFFF
 MAX_U32 = 0xFFFFFFFF
-INVALID_BUFFER_ID = 0xFFFF
 
 
 @dataclass(frozen=True)
 class ImageRecord:
     """Validated inputs for one LIST BUFR image record."""
 
+    source: str
     name: str
-    buffer_id: int
+    bufferId: int
     width: int
     height: int
-    rgba_file: Path
-    data_size: int
+    rgbaFile: Path
+    dataSize: int
 
 
 def align4(size: int) -> int:
@@ -93,78 +101,35 @@ def make_chunk(chunk_id: bytes, payload: bytes) -> bytes:
     return chunk_id + struct.pack("<I", len(payload)) + payload + padding
 
 
-def scan_image_records() -> list[ImageRecord]:
-    """Validate shared PNG/RGBA2222 pairs and assign explicit buffer IDs."""
-    png_files = sorted(SHARED_PROCESSED_DIR.glob("*.png"))
-    if not png_files:
-        raise RuntimeError(
-            f"No shared PNG files found in {SHARED_PROCESSED_DIR}; "
-            "run shared/scripts/prepare_images.py first"
+def load_image_records() -> list[ImageRecord]:
+    """Load the selected, ordered image catalog from the shared manifest."""
+    entries = included_entries(load_manifest(MANIFEST_FILE))
+    validate_asset_files(entries, SHARED_PROCESSED_DIR)
+    return [
+        ImageRecord(
+            source=entry.source,
+            name=entry.name,
+            bufferId=entry.bufferId,
+            width=entry.width,
+            height=entry.height,
+            rgbaFile=SHARED_PROCESSED_DIR / entry.rgba2,
+            dataSize=entry.dataSize,
         )
-
-    png_stems = {path.stem for path in png_files}
-    rgba_files = sorted(SHARED_PROCESSED_DIR.glob("*.rgba2"))
-    orphaned_rgba = [path for path in rgba_files if path.stem not in png_stems]
-    if orphaned_rgba:
-        names = ", ".join(path.name for path in orphaned_rgba[:5])
-        raise ValueError(f"RGBA2222 files without matching PNGs: {names}")
-
-    records = []
-    used_buffer_ids = set()
-    for index, png_file in enumerate(png_files):
-        buffer_id = FIRST_BUFFER_ID + index
-        if buffer_id >= INVALID_BUFFER_ID:
-            raise ValueError(f"Invalid buffer ID for {png_file.name}: {buffer_id}")
-        if buffer_id in used_buffer_ids:
-            raise ValueError(f"Duplicate buffer ID: {buffer_id}")
-
-        rgba_file = png_file.with_suffix(".rgba2")
-        if not rgba_file.is_file():
-            raise FileNotFoundError(f"Missing shared RGBA2222 file: {rgba_file}")
-
-        with Image.open(png_file) as image:
-            width, height = image.size
-        if not 1 <= width <= MAX_U16 or not 1 <= height <= MAX_U16:
-            raise ValueError(
-                f"Invalid image dimensions for {png_file.name}: {width}x{height}"
-            )
-
-        data_size = rgba_file.stat().st_size
-        expected_size = width * height
-        if data_size != expected_size:
-            raise ValueError(
-                f"RGBA2222 size mismatch for {rgba_file}: "
-                f"expected {expected_size}, found {data_size}"
-            )
-        if data_size > MAX_U32:
-            raise ValueError(f"RGBA2222 payload is too large: {rgba_file}")
-
-        records.append(
-            ImageRecord(
-                name=png_file.stem,
-                buffer_id=buffer_id,
-                width=width,
-                height=height,
-                rgba_file=rgba_file,
-                data_size=data_size,
-            )
-        )
-        used_buffer_ids.add(buffer_id)
-
-    return records
+        for entry in entries
+    ]
 
 
 def make_buffer_record(record: ImageRecord) -> bytes:
     """Return one aligned LIST BUFR record."""
-    pixels = record.rgba_file.read_bytes()
-    if len(pixels) != record.data_size:
+    pixels = record.rgbaFile.read_bytes()
+    if len(pixels) != record.dataSize:
         raise RuntimeError(
-            f"RGBA2222 file changed while building: {record.rgba_file}"
+            f"RGBA2222 file changed while building: {record.rgbaFile}"
         )
 
     nested_chunks = b"".join(
         (
-            make_chunk(b"BHDR", struct.pack("<H", record.buffer_id)),
+            make_chunk(b"BHDR", struct.pack("<H", record.bufferId)),
             make_chunk(
                 b"IMAG",
                 struct.pack(
@@ -196,14 +161,35 @@ def build_container(records: list[ImageRecord]) -> bytes:
 
 
 def write_container() -> None:
-    records = scan_image_records()
+    records = load_image_records()
     container = build_container(records)
     TARGET_DIR.mkdir(parents=True, exist_ok=True)
     CONTAINER_FILE.write_bytes(container)
+    write_images_include(records)
     print(
         f"Generated {CONTAINER_FILE} with {len(records)} image records "
         f"({len(container)} bytes)"
     )
+
+
+def write_images_include(records: list[ImageRecord]) -> None:
+    lines = [
+        "; Generated by container/scripts/do_assembly.py\n\n",
+        f"num_images: equ {len(records)}\n\n",
+        "; Explicit writer-specified bufferIds:\n",
+    ]
+    for record in records:
+        lines.append(
+            f"buf_{record.name}: equ {record.bufferId} ; {record.source}\n"
+        )
+
+    lines.append("\nimage_bufferIds:\n")
+    for record in records:
+        lines.append(f"\tdw buf_{record.name}\n")
+
+    ASM_IMAGES_FILE.parent.mkdir(parents=True, exist_ok=True)
+    ASM_IMAGES_FILE.write_text("".join(lines))
+    print(f"Generated {ASM_IMAGES_FILE} from {len(records)} manifest entries")
 
 
 def main() -> None:

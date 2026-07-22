@@ -8,11 +8,14 @@ from pathlib import Path
 import agonutils as au
 from PIL import Image
 
+from image_manifest import ImageManifestEntry, MANIFEST_FILENAME, write_manifest
+
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 SHARED_DIR = PROJECT_DIR / "shared"
 ORIGINALS_DIR = SHARED_DIR / "assets" / "orig"
 PROCESSED_DIR = SHARED_DIR / "assets" / "processed"
+MANIFEST_FILE = PROCESSED_DIR / MANIFEST_FILENAME
 PALETTE_FILE = PROJECT_DIR.parent / "slideshow" / "palettes" / "Agon64.gpl"
 
 SUPPORTED_EXTENSIONS = {".png", ".jpeg", ".jpg", ".gif"}
@@ -79,10 +82,31 @@ def main() -> None:
         shutil.rmtree(PROCESSED_DIR)
     PROCESSED_DIR.mkdir(parents=True)
 
-    for source in sources:
+    manifest_entries = []
+    for index, source in enumerate(sources):
         destination = PROCESSED_DIR / f"{source.stem}.png"
         prepare_image(source, destination, not args.scaled)
-        print(f"Prepared {destination.name} and {destination.with_suffix('.rgba2').name}")
+        rgba2_file = destination.with_suffix(".rgba2")
+        with Image.open(destination) as image:
+            width, height = image.size
+        manifest_entries.append(
+            ImageManifestEntry(
+                include=True,
+                source=source.name,
+                name=source.stem,
+                bufferId=256 + index,
+                width=width,
+                height=height,
+                format=1,
+                png=destination.name,
+                rgba2=rgba2_file.name,
+                dataSize=rgba2_file.stat().st_size,
+            )
+        )
+        print(f"Prepared {destination.name} and {rgba2_file.name}")
+
+    write_manifest(MANIFEST_FILE, manifest_entries)
+    print(f"Generated {MANIFEST_FILE} with {len(manifest_entries)} entries")
 
 
 if __name__ == "__main__":

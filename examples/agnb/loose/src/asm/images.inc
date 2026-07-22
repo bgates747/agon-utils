@@ -9,7 +9,7 @@ image_record_size: equ image_filename+3
 
 num_images: equ 408
 
-; buffer_ids:
+; bufferIds:
 buf_10_000: equ 256
 buf_10_001: equ 257
 buf_10_002: equ 258

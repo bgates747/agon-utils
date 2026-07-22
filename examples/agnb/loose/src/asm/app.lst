@@ -3170,7 +3170,7 @@ PC     Output      Line
 040D31             0009*   
 040D31             0010*   num_images: equ 408
 040D31             0011*   
-040D31             0012*   ; buffer_ids:
+040D31             0012*   ; bufferIds:
 040D31             0013*   buf_10_000: equ 256
 040D31             0014*   buf_10_001: equ 257
 040D31             0015*   buf_10_002: equ 258
