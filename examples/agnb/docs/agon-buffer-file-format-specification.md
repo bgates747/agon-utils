@@ -205,15 +205,20 @@ The version 0.1 `IMAG` payload is exactly five bytes:
 
 | Relative offset | Size | Field | Meaning |
 | ---: | ---: | --- | --- |
-| 0 | 1 | Image format | Agon VDP bitmap format identifier |
-| 1 | 2 | Width | Image width in pixels |
-| 3 | 2 | Height | Image height in pixels |
+| 0 | 2 | Width | Image width in pixels |
+| 2 | 2 | Height | Image height in pixels |
+| 4 | 1 | Image format | Agon VDP bitmap format identifier |
 
 There are no flags or reserved fields.
 
-The fields are ordered as image form type, width, and height. The buffer ID is
-supplied separately by `BHDR`. Together these values provide the metadata
-needed to create the VDP bitmap after its pixel bytes have been transferred.
+The fields are ordered as width, height, and image format. This is the exact
+argument order and byte width expected after the Agon VDP bitmap-create command
+prefix (`23, 27, 21`). A loader can therefore retain the five-byte payload in
+RAM and transmit it directly to the VDP without extracting or reordering its
+fields. The buffer ID is supplied separately by `BHDR`; its two little-endian
+bytes likewise match the buffer-ID argument used by the VDP buffer commands.
+Together these values provide all metadata needed to load the buffer and create
+the VDP bitmap after its pixel bytes have been transferred.
 
 Image format `1` is RGBA2222 at one byte per pixel. Its `DATA` payload is in
 row-major order: rows proceed from top to bottom and pixels within each row
