@@ -56,6 +56,28 @@ Avoid repeating the same explanation in several documents. A log should note
 that a durable decision was made and point to the authoritative specification
 instead of copying the entire decision.
 
+## Python environment
+
+- Before running Python in an open project, look for a project-local `.venv`
+  and invoke its interpreter explicitly, even when the user's interactive
+  terminal appears to have activated it. Tool shells may not inherit
+  `VIRTUAL_ENV` or the same `PATH`.
+- If no project `.venv` is found, ask the user before trying a system Python.
+  Do not silently fall back to `/usr/bin/python`, `python3`, or another global
+  interpreter.
+- This is especially important when the project contains or imports the custom
+  `agonutils` extension, because its compiled Python ABI and its Python-package
+  dependencies must come from the matching virtual environment.
+- For the `agon-utils` repository, verify the environment at the beginning of
+  each new session with:
+
+  ```text
+  .venv/bin/python tests/test_agonutils.py
+  ```
+
+  Treat an import, ABI, dependency, or round-trip failure as an environment
+  problem to resolve before running project scripts.
+
 ## Keeping context economical
 
 - As requirements stabilize, distill exploratory prose into short,
@@ -78,12 +100,16 @@ instead of copying the entire decision.
 At the start of a fresh session:
 
 1. Read this notebook.
-2. Read the current project specification or task document relevant to the
+2. Find and select the open project's `.venv`. For `agon-utils`, run
+   `.venv/bin/python tests/test_agonutils.py` and confirm that the custom
+   extension works before using other Python scripts. If `.venv` is absent,
+   ask the user before using system Python.
+3. Read the current project specification or task document relevant to the
    requested work.
-3. Read only the pertinent technical precis and latest development-log entry.
-4. Inspect repository status and the relevant source files before changing
+4. Read only the pertinent technical precis and latest development-log entry.
+5. Inspect repository status and the relevant source files before changing
    anything.
-5. Treat current documents and code as authoritative; consult Git history only
+6. Treat current documents and code as authoritative; consult Git history only
    when the reason for a current decision matters.
 
 Do not reconstruct the entire project from old chat transcripts when the
