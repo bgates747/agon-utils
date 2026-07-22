@@ -96,6 +96,7 @@ def run_ez80asm():
         asm_directory = os.path.join(AGNB_DIR, "src", "asm")
         asm_file = "app.asm"
         output_file = os.path.join(AGNB_DIR, "tgt", "app.bin")
+        output_asm_path = os.path.join("..", "..", "tgt", "app.bin")
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
         # Change working directory to the directory containing the .asm file
@@ -106,7 +107,7 @@ def run_ez80asm():
             "ez80asm",
             "-l",              # Option to generate listing file
             asm_file,          # Input assembly file
-            output_file        # Output binary file (relative path from the new directory)
+            output_asm_path    # Short path relative to the assembly directory
         ]
 
         # Execute the command
@@ -116,8 +117,11 @@ def run_ez80asm():
         print(result.stdout.decode())
         
     except subprocess.CalledProcessError as e:
-        # Print the error message if the command fails
-        print(f"Command failed with error: {e.stderr.decode()}")
+        # ez80asm may report diagnostics on either output stream.
+        if e.stdout:
+            print(e.stdout.decode(), end="")
+        if e.stderr:
+            print(e.stderr.decode(), end="", file=sys.stderr)
         sys.exit(1)
     except Exception as e:
         # Handle other exceptions (e.g., if directory change fails)

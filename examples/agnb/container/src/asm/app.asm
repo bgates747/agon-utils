@@ -67,6 +67,8 @@ main_loop_timer_reset: equ 60 ; 120ths of a second
 
     call tmr_slideshow_set
 
+; TODO: read container file and load all images
+
     ret ; init
 
 main:
@@ -108,11 +110,11 @@ rendbmp:
     ld bc,(iy+image_width) ; get image width
     ld de,(iy+image_height) ; get image height
     ld ix,(iy+image_filesize) ; get image file size
-    ld hl,(iy+image_filename) ; get image filename
-    push hl
-    pop iy 
-    ld hl,256 ; set image bufferId
-    call vdu_load_img
+
+; TODO: implement here everything that vdu_load_img does,
+; except loading the image buffers from disk since that is already done in the container loader
+
+
 ; plot image
     call vdu_cls
     ld bc,0 ; x

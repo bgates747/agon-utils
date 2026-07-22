@@ -1,0 +1,194 @@
+AGNB loose assembly routine manifest
+====================================
+
+Purpose
+-------
+Quickly answer "which file defines ROUTINE?" for the loose test harness.
+Search this file for the exact label followed by a space or colon.
+
+Scope and conventions
+---------------------
+- Source snapshot: app.asm and all *.inc files in this directory.
+- app.lst is excluded because it is generated from the same source.
+- Local labels beginning with @ are excluded.
+- Constants, macros, buffers, strings, and other data labels are excluded.
+- Named internal flow-entry labels in app.asm are retained and marked [flow].
+- Line numbers describe the source at the time this manifest was generated.
+
+app.asm
+-------
+start                    line 11   program entry
+exit                     line 22   program exit/return to MOS
+init                     line 41   initialize the application
+main                     line 75   enter the main application flow
+mainloop                 line 79   [flow] begin main loop
+waitloop                 line 82   [flow] input/timer wait loop
+rendbmp                  line 89   render the selected bitmap
+no_move                  line 125  [flow] reset main-loop timer
+main_end                 line 130  [flow] restore display and exit
+
+functions.inc
+-------------
+A_TO_HLU                 line 50
+printInline              line 111
+printString              line 120
+sendVDUsequence          line 129
+printNewLine             line 137
+printHex24               line 148
+printHex16               line 153
+printHex8                line 159
+printHexA                line 176
+printHexHL               line 186
+printHexUHL              line 196
+printHexAUHL             line 206
+printHexABHL             line 219
+printHexBHL              line 235
+printHexCDE              line 249
+printHexUIX              line 265
+DisplayHexPrefix         line 291
+printDec                 line 338
+u24_to_ascii             line 380
+print_u24                line 407
+u168_to_ascii            line 423
+print_u168               line 472
+s168_to_ascii            line 484
+print_s168               line 496
+print_s168_hl            line 507
+print_s168_bc            line 517
+print_s168_de            line 531
+print_s168_hl_bc_de      line 544
+print_s168_bc_de         line 567
+print_s168_a             line 586
+printBin8                line 602
+printBin8Rev             line 627
+stepRegistersHex         line 654
+dumpRegistersHex         line 737
+dumpRegistersHexPrime    line 803
+dumpRegistersHexAll      line 815
+print_hex_hl             line 827
+print_hex_bc             line 844
+print_hex_de             line 863
+dumpUDEUHLHex            line 890
+dumpFlags                line 938
+setAllFlags              line 979
+resetAllFlags            line 992
+waitKeypress             line 1003
+dumpMemoryHex            line 1011
+dumpMemoryBin            line 1054
+dumpMemoryBinRev         line 1095
+
+images.inc
+----------
+No subroutines. This generated file contains image metadata, bufferId
+constants, filename strings, and data tables.
+
+includes.inc
+------------
+This curated dependency closure duplicates selected routines from the original
+support files below while preserving their within-file order.
+
+printString              line 4    originally functions.inc:120
+printDec                 line 14   originally functions.inc:338
+u24_to_ascii             line 57   originally functions.inc:380
+cursor_on                line 91   originally vdu.inc:12
+cursor_off               line 100  originally vdu.inc:21
+vdu_move_cursor          line 111  originally vdu.inc:38
+vdu_cls                  line 124  originally vdu.inc:50
+vdu_set_screen_mode      line 129  originally vdu.inc:144
+vdu_set_scaling          line 143  originally vdu.inc:157
+vdu_buff_select          line 156  originally vdu.inc:169
+vdu_bmp_create           line 175  originally vdu.inc:187
+vdu_plot_bmp             line 195  originally vdu.inc:206
+vdu_load_buffer          line 215  originally vdu.inc:308
+vdu_clear_buffer         line 241  originally vdu.inc:333
+vdu_consolidate_buffer   line 257  originally vdu.inc:348
+vdu_load_img             line 276  originally vdu.inc:366
+vdu_load_buffer_from_file line 296 originally vdu.inc:385
+
+input.inc
+---------
+set_keys                 line 11
+reset_keys               line 28
+do_input                 line 39
+tmr_slideshow_set        line 92
+tmr_slideshow_get        line 105
+
+maths.inc
+---------
+hlu_abs                  line 24
+neg_hlu                  line 43
+hlu_div2                 line 55
+hlu_div16                line 69
+hlu_sdiv256              line 88
+hlu_udiv256              line 103
+set_bcd                  line 129
+get_bcd                  line 143
+add_bcd                  line 158
+adcec                    line 161   internal named helper for add_bcd
+sub_bcd                  line 176
+subdec                   line 179   internal named helper for sub_bcd
+rand_8                   line 190
+
+mos_api.inc
+-----------
+mos_api_flseek_rel       line 257
+
+temp.inc
+--------
+temp                     line 1
+
+timer.inc
+---------
+prt_set                  line 130
+prt_irq_init             line 148
+prt_irq_handler          line 170
+prt_loop_reset           line 188
+prt_loop_start           line 198
+prt_loop_stop            line 205
+prt_loop_print           line 222
+tmr_set                  line 256
+tmr_get                  line 267
+timestamp_tick           line 289
+timestamp_tmr_set        line 305
+timestamp_tmr_get        line 317
+tmr_main_loop_set        line 335
+tmr_main_loop_get        line 347
+stopwatch_set            line 356
+stopwatch_get            line 365
+multiPurposeDelay        line 383
+waitLoop                 line 391
+
+vdu.inc
+-------
+vdu_home_cursor          line 7
+cursor_on                line 12
+cursor_off               line 21
+vdu_cursor_forward       line 31
+vdu_move_cursor          line 38
+vdu_cls                  line 50
+vdu_flip                 line 55
+vdu_clg                  line 64
+vdu_vblank               line 70
+vdu_set_gfx_viewport     line 86
+vdu_set_screen_mode      line 144
+vdu_set_scaling          line 157
+vdu_buff_select          line 169
+vdu_bmp_create           line 187
+vdu_plot_bmp             line 206
+vdu_load_img_rgba2_to_8  line 221
+vdu_rgba2_to_8           line 247
+vdu_load_buffer          line 308
+vdu_clear_buffer         line 333
+vdu_consolidate_buffer   line 348
+vdu_load_img             line 366
+vdu_load_buffer_from_file line 385
+
+Fast reverse lookup
+-------------------
+The entries above use one routine name per line. From the repository root:
+
+    rg -n '^ROUTINE_NAME[[:space:]]' examples/agnb/loose/src/asm/routine-manifest.txt
+
+To verify or locate the definition directly in source:
+
+    rg -n '^ROUTINE_NAME:' examples/agnb/loose/src/asm --glob '*.asm' --glob '*.inc'

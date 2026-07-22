@@ -1,0 +1,2743 @@
+PC     Output      Line
+040000             0001        .assume adl=1
+040000             0002        .org 0x040000
+040000             0003    
+040000 C3 45 00 04 0004        jp start
+040004             0005    
+040004             0006        .align 64
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+040040 4D 4F 53    0007        .db "MOS"
+040043 00          0008        .db 00h
+040044 01          0009        .db 01h
+040045             0010    
+040045             0011    start:
+040045 F5          0012        push af
+040046 C5          0013        push bc
+040047 D5          0014        push de
+040048 DD E5       0015        push ix
+04004A FD E5       0016        push iy
+04004C             0017    
+04004C             0018        ; jp temp
+04004C CD 71 12 04 0019        call init
+040050 CD A3 12 04 0020        call main
+040054             0021    
+040054             0022    exit:
+040054 FD E1       0023        pop iy
+040056 DD E1       0024        pop ix
+040058 D1          0025        pop de
+040059 C1          0026        pop bc
+04005A F1          0027        pop af
+04005B 21 00 00 00 0028        ld hl,0
+04005F             0029    
+04005F C9          0030        ret
+040060             0031    
+040060             0032        include "mos_api.inc"
+040060             0001*   ; https://github.com/envenomator/Agon/blob/master/ez80asm%20examples%20(annotated)/mos_api.inc
+040060             0002*   ;
+040060             0003*   ; Title:	AGON MOS - API for user projects
+040060             0004*   ; Author:	Dean Belfield
+040060             0005*   ;			Adapted for agon-ez80asm by Jeroen Venema
+040060             0006*   ;			Added MOS error codes for return in HL
+040060             0007*   ; Created:	03/08/2022
+040060             0008*   ; Last Updated:	10/08/2023
+040060             0009*   ;
+040060             0010*   ; Modinfo:
+040060             0011*   ; 05/08/2022:	Added mos_feof
+040060             0012*   ; 09/08/2022:	Added system variables: cursorX, cursorY
+040060             0013*   ; 18/08/2022:	Added system variables: scrchar, scrpixel, audioChannel, audioSuccess, vpd_pflags
+040060             0014*   ; 05/09/2022:	Added mos_ren, vdp_pflag_mode
+040060             0015*   ; 24/09/2022:	Added mos_getError, mos_mkdir
+040060             0016*   ; 13/10/2022:	Added mos_oscli
+040060             0017*   ; 23/02/2023:	Added more sysvars, fixed typo in sysvar_audioSuccess, offsets for sysvar_scrCols, sysvar_scrRows
+040060             0018*   ; 04/03/2023:	Added sysvar_scrpixelIndex
+040060             0019*   ; 08/03/2023:	Renamed sysvar_keycode to sysvar_keyascii, added sysvar_vkeycode
+040060             0020*   ; 15/03/2023:	Added mos_copy, mos_getrtc, mos_setrtc, rtc, vdp_pflag_rtc
+040060             0021*   ; 21/03/2023:	Added mos_setintvector, sysvars for keyboard status, vdu codes for vdp
+040060             0022*   ; 22/03/2023:	The VDP commands are now indexed from 0x80
+040060             0023*   ; 29/03/2023:	Added mos_uopen, mos_uclose, mos_ugetc, mos_uputc
+040060             0024*   ; 13/04/2023:	Added FatFS file structures (FFOBJID, FIL, DIR, FILINFO)
+040060             0025*   ; 15/04/2023:	Added mos_getfil, mos_fread, mos_fwrite and mos_flseek
+040060             0026*   ; 19/05/2023:	Added sysvar_scrMode
+040060             0027*   ; 05/06/2023:	Added sysvar_rtcEnable
+040060             0028*   ; 03/08/2023:	Added mos_setkbvector
+040060             0029*   ; 10/08/2023:	Added mos_getkbmap
+040060             0030*   
+040060             0031*   ; VDP control (VDU 23, 0, n)
+040060             0032*   ;
+040060             0033*   vdp_gp:				EQU 80h
+040060             0034*   vdp_keycode:		EQU 81h
+040060             0035*   vdp_cursor:			EQU	82h
+040060             0036*   vdp_scrchar:		EQU	83h
+040060             0037*   vdp_scrpixel:		EQU	84h
+040060             0038*   vdp_audio:			EQU	85h
+040060             0039*   vdp_mode:			EQU	86h
+040060             0040*   vdp_rtc:			EQU	87h
+040060             0041*   vdp_keystate:		EQU	88h
+040060             0042*   vdp_logicalcoords:	EQU	C0h
+040060             0043*   vdp_terminalmode:	EQU	FFh
+040060             0044*   
+040060             0045*   ;
+040060             0046*   ; Macro for calling the API
+040060             0047*   ; Parameters:
+040060             0048*   ; - function: One of the function numbers listed below
+040060             0049*   ;
+040060             0050*   	MACRO	MOSCALL	function
+040060             0051*   			LD	A, function
+040060             0052*   			RST.LIL	08h
+040060             0053*   	ENDMACRO
+040060             0054*   
+040060             0055*   ; MOS high level functions
+040060             0056*   ;
+040060             0057*   ; Get keycode
+040060             0058*   ; Returns:
+040060             0059*   ;  A: ASCII code of key pressed, or 0 if no key pressed
+040060             0060*   mos_getkey:			EQU	00h
+040060             0061*   
+040060             0062*   ; Load an area of memory from a file.
+040060             0063*   ; HLU: Address of filename (zero terminated)
+040060             0064*   ; DEU: Address at which to load
+040060             0065*   ; BCU: Maximum allowed size (bytes)
+040060             0066*   ; Returns:
+040060             0067*   ; - A: File error, or 0 if OK
+040060             0068*   ; - F: Carry reset indicates no room for file.
+040060             0069*   mos_load:			EQU	01h
+040060             0070*   
+040060             0071*   ; Save a file to the SD card from RAM
+040060             0072*   ; HLU: Address of filename (zero terminated)
+040060             0073*   ; DEU: Address to save from
+040060             0074*   ; BCU: Number of bytes to save
+040060             0075*   ; Returns:
+040060             0076*   ; - A: File error, or 0 if OK
+040060             0077*   ; - F: Carry reset indicates no room for file
+040060             0078*   mos_save:			EQU	02h
+040060             0079*   
+040060             0080*   ; Change directory
+040060             0081*   ; HLU: Address of path (zero terminated)
+040060             0082*   ; Returns:
+040060             0083*   ; - A: File error, or 0 if OK
+040060             0084*   mos_cd:				EQU	03h
+040060             0085*   
+040060             0086*   ; Directory listing
+040060             0087*   ; HLU: Address of path (zero terminated)
+040060             0088*   ; Returns:
+040060             0089*   ; - A: File error, or 0 if OK
+040060             0090*   mos_dir:			EQU	04h
+040060             0091*   
+040060             0092*   ; Delete a file from the SD card
+040060             0093*   ; HLU: Address of filename (zero terminated)
+040060             0094*   ; Returns:
+040060             0095*   ; - A: File error, or 0 if OK
+040060             0096*   mos_del:			EQU	05h
+040060             0097*   
+040060             0098*   ; Rename a file on the SD card
+040060             0099*   ; HLU: Address of filename1 (zero terminated)
+040060             0100*   ; DEU: Address of filename2 (zero terminated)
+040060             0101*   ; Returns:
+040060             0102*   ; - A: File error, or 0 if OK
+040060             0103*   mos_ren:			EQU	06h
+040060             0104*   
+040060             0105*   ; Make a folder on the SD card
+040060             0106*   ; HLU: Address of filename (zero terminated)
+040060             0107*   ; Returns:
+040060             0108*   ; - A: File error, or 0 if OK
+040060             0109*   mos_mkdir:			EQU	07h
+040060             0110*   
+040060             0111*   ; Get a pointer to a system variable
+040060             0112*   ; Returns:
+040060             0113*   ; IXU: Pointer to system variables (see mos_api.asm for more details)
+040060             0114*   mos_sysvars:		EQU	08h
+040060             0115*   
+040060             0116*   ; Invoke the line editor
+040060             0117*   ; HLU: Address of the buffer
+040060             0118*   ; BCU: Buffer length
+040060             0119*   ;   E: 0 to not clear buffer, 1 to clear
+040060             0120*   ; Returns:
+040060             0121*   ;   A: Key that was used to exit the input loop (CR=13, ESC=27)
+040060             0122*   mos_editline:		EQU	09h
+040060             0123*   
+040060             0124*   ; Open a file
+040060             0125*   ; HLU: Filename
+040060             0126*   ;   C: Mode
+040060             0127*   ; Returns:
+040060             0128*   ;   A: Filehandle, or 0 if couldn't open
+040060             0129*   mos_fopen:			EQU	0Ah
+040060             0130*   
+040060             0131*   ; Close a file
+040060             0132*   ;   C: Filehandle
+040060             0133*   ; Returns
+040060             0134*   ;   A: Number of files still open
+040060             0135*   mos_fclose:			EQU	0Bh
+040060             0136*   
+040060             0137*   ; Get a character from a file
+040060             0138*   ;   C: Filehandle
+040060             0139*   ; Returns:
+040060             0140*   ;   A: Character read
+040060             0141*   ;   F: C set if last character in file, otherwise NC
+040060             0142*   mos_fgetc:			EQU	0Ch
+040060             0143*   
+040060             0144*   ; Write a character to a file
+040060             0145*   ;   C: Filehandle
+040060             0146*   ;   B: Character to write
+040060             0147*   mos_fputc:			EQU	0Dh
+040060             0148*   
+040060             0149*   ; Check whether we're at the end of the file
+040060             0150*   ;   C: Filehandle
+040060             0151*   ; Returns:
+040060             0152*   ;   A: 1 if at end of file, otherwise 0
+040060             0153*   mos_feof:			EQU	0Eh
+040060             0154*   
+040060             0155*   ; Copy an error message
+040060             0156*   ;   E: The error code
+040060             0157*   ; HLU: Address of buffer to copy message into
+040060             0158*   ; BCU: Size of buffer
+040060             0159*   mos_getError:		EQU	0Fh
+040060             0160*   
+040060             0161*   ; Execute a MOS command
+040060             0162*   ; HLU: Pointer the the MOS command string
+040060             0163*   ; DEU: Pointer to additional command structure
+040060             0164*   ; BCU: Number of additional commands
+040060             0165*   ; Returns:
+040060             0166*   ;   A: MOS error code
+040060             0167*   mos_oscli:			EQU	10h
+040060             0168*   
+040060             0169*   ; Copy a file on the SD card
+040060             0170*   ; HLU: Address of filename1 (zero terminated)
+040060             0171*   ; DEU: Address of filename2 (zero terminated)
+040060             0172*   ; Returns:
+040060             0173*   ; - A: File error, or 0 if OK
+040060             0174*   mos_copy:			EQU	11h
+040060             0175*   
+040060             0176*   ; Fetch a RTC string
+040060             0177*   ; HLU: Pointer to a buffer to copy the string to
+040060             0178*   ; Returns:
+040060             0179*   ;   A: Length of time
+040060             0180*   mos_getrtc:			EQU	12h
+040060             0181*   
+040060             0182*   ; Set the RTC
+040060             0183*   ; HLU: Pointer to a buffer with the time data in
+040060             0184*   mos_setrtc:			EQU	13h
+040060             0185*   
+040060             0186*   ; Set an interrupt vector
+040060             0187*   ; HLU: Pointer to the interrupt vector (24-bit pointer)
+040060             0188*   ;   E: Vector # to set
+040060             0189*   ; Returns:
+040060             0190*   ; HLU: Pointer to the previous vector
+040060             0191*   mos_setintvector:	EQU	14h
+040060             0192*   
+040060             0193*   ; Open UART1
+040060             0194*   ; IXU: Pointer to UART struct
+040060             0195*   ;	+0: Baud rate (24-bit, little endian)
+040060             0196*   ;	+3: Data bits
+040060             0197*   ;	+4: Stop bits
+040060             0198*   ;	+5: Parity bits
+040060             0199*   ;	+6: Flow control (0: None, 1: Hardware)
+040060             0200*   ;	+7: Enabled interrupts
+040060             0201*   ; Returns:
+040060             0202*   ;   A: Error code (0 = no error)
+040060             0203*   mos_uopen:			EQU	15h
+040060             0204*   
+040060             0205*   ; Close UART1
+040060             0206*   mos_uclose:			EQU	16h
+040060             0207*   
+040060             0208*   ; Get a character from UART1
+040060             0209*   ; Returns:
+040060             0210*   ;   A: Character read
+040060             0211*   ;   F: C if successful
+040060             0212*   ;   F: NC if the UART is not open
+040060             0213*   mos_ugetc:			EQU	17h
+040060             0214*   
+040060             0215*   ; Write a character to UART1
+040060             0216*   ;   C: Character to write
+040060             0217*   ; Returns:
+040060             0218*   ;   F: C if successful
+040060             0219*   ;   F: NC if the UART is not open
+040060             0220*   mos_uputc:			EQU	18h
+040060             0221*   
+040060             0222*   ; Convert a file handle to a FIL structure pointer
+040060             0223*   ;   C: Filehandle
+040060             0224*   ; Returns:
+040060             0225*   ; HLU: Pointer to a FIL struct
+040060             0226*   mos_getfil:			EQU	19h
+040060             0227*   
+040060             0228*   ; Read a block of data from a file
+040060             0229*   ;   C: Filehandle
+040060             0230*   ; HLU: Pointer to where to write the data to
+040060             0231*   ; DEU: Number of bytes to read
+040060             0232*   ; Returns:
+040060             0233*   ; DEU: Number of bytes read
+040060             0234*   mos_fread:			EQU	1Ah
+040060             0235*   
+040060             0236*   ; Write a block of data to a file
+040060             0237*   ;  C: Filehandle
+040060             0238*   ; HLU: Pointer to where the data is
+040060             0239*   ; DEU: Number of bytes to write
+040060             0240*   ; Returns:
+040060             0241*   ; DEU: Number of bytes read
+040060             0242*   mos_fwrite:			EQU	1Bh
+040060             0243*   
+040060             0244*   ; Move the read/write pointer in a file
+040060             0245*   ;   C: Filehandle
+040060             0246*   ; HLU: Least significant 3 bytes of the offset from the start of the file (DWORD)
+040060             0247*   ;   E: Most significant byte of the offset
+040060             0248*   ; Returns:
+040060             0249*   ;   A: FRESULT
+040060             0250*   mos_flseek:			EQU	1Ch
+040060             0251*   
+040060             0252*   ; Move the read/write pointer in a file relative to the current position
+040060             0253*   ;   C: Filehandle
+040060             0254*   ; DEU: Signed 24-bit offset
+040060             0255*   ; Returns:
+040060             0256*   ;   A: FRESULT
+040060             0257*   mos_api_flseek_rel:
+040060 C5          0258*   	push bc ; back up file handle in c
+040061 D5          0259*   	push de ; save offset
+040062             0260*   	MOSCALL mos_getfil
+                       M1 Args: function=mos_getfil 
+040062 3E 19       0001*M1 			LD	A, function
+040064 5B CF       0002*M1 			RST.LIL	08h
+040066 E5          0261*   	push hl
+040067 FD E1       0262*   	pop iy ; iy points to FIL struct
+040069 FD 27 11    0263*   	ld hl,(iy+fil_fptr) ; get lowest 3 bytes of current position
+04006C AF          0264*   	xor a ; clear carry
+04006D D1          0265*   	pop de ; restore offset
+04006E ED 5A       0266*   	adc hl,de ; adc the offset because we need sign flag
+040070 F2 78 00 04 0267*   	jp p,@not_neg
+040074 21 00 00 00 0268*   	ld hl,0 ; seek to beginning of file
+040078             0269*   @not_neg:
+040078 C1          0270*   	pop bc ; restore file handle to c
+040079 1E 00       0271*   	ld e,0 ; highest byte of offset
+04007B             0272*   	MOSCALL mos_flseek
+                       M1 Args: function=mos_flseek 
+04007B 3E 1C       0001*M1 			LD	A, function
+04007D 5B CF       0002*M1 			RST.LIL	08h
+04007F C9          0273*   	ret
+040080             0274*   
+040080             0275*   ; Set a VDP keyboard packet receiver callback
+040080             0276*   ;   C: If non-zero then set the top byte of HLU(callback address)  to MB (for ADL=0 callers)
+040080             0277*   ; HLU: Pointer to callback
+040080             0278*   mos_setkbvector:	EQU	1Dh
+040080             0279*   
+040080             0280*   ; Get the address of the keyboard map
+040080             0281*   ; Returns:
+040080             0282*   ; IXU: Base address of the keymap
+040080             0283*   mos_getkbmap:		EQU	1Eh
+040080             0284*   
+040080             0285*   ; MOS program exit codes
+040080             0286*   ;
+040080             0287*   EXIT_OK:				EQU  0;	"OK",
+040080             0288*   EXIT_ERROR_SD_ACCESS:	EQU	 1;	"Error accessing SD card",
+040080             0289*   EXIT_ERROR_ASSERTION:	EQU  2;	"Assertion failed",
+040080             0290*   EXIT_SD_CARDFAILURE:	EQU  3;	"SD card failure",
+040080             0291*   EXIT_FILENOTFOUND:		EQU  4;	"Could not find file",
+040080             0292*   EXIT_PATHNOTFOUND:		EQU  5;	"Could not find path",
+040080             0293*   EXIT_INVALIDPATHNAME:	EQU  6;	"Invalid path name",
+040080             0294*   EXIT_ACCESSDENIED_FULL:	EQU  7;	"Access denied or directory full",
+040080             0295*   EXIT_ACCESSDENIED:		EQU  8;	"Access denied",
+040080             0296*   EXIT_INVALIDOBJECT:		EQU  9;	"Invalid file/directory object",
+040080             0297*   EXIT_SD_WRITEPROTECTED:	EQU 10;	"SD card is write protected",
+040080             0298*   EXIT_INVALIDDRIVENUMBER:EQU 11;	"Logical drive number is invalid",
+040080             0299*   EXIT_NOVOLUMEWORKAREA:	EQU 12;	"Volume has no work area",
+040080             0300*   EXIT_NOVALIDFATVOLUME:	EQU 13;	"No valid FAT volume",
+040080             0301*   EXIT_ERRORMKFS:			EQU 14;	"Error occurred during mkfs",
+040080             0302*   EXIT_VOLUMETIMEOUT:		EQU 15;	"Volume timeout",
+040080             0303*   EXIT_VOLUMELOCKED:		EQU 16;	"Volume locked",
+040080             0304*   EXIT_LFNALLOCATION:		EQU 17;	"LFN working buffer could not be allocated",
+040080             0305*   EXIT_MAXOPENFILES:		EQU 18;	"Too many open files",
+040080             0306*   EXIT_INVALIDPARAMETER:	EQU 19;	"Invalid parameter",
+040080             0307*   EXIT_INVALIDCOMMAND:	EQU 20;	"Invalid command",
+040080             0308*   EXIT_INVALIDEXECUTABLE:	EQU 21;	"Invalid executable",
+040080             0309*   
+040080             0310*   ; FatFS file access functions
+040080             0311*   ;
+040080             0312*   ; Open a file
+040080             0313*   ; HLU: Pointer to a blank FIL struct
+040080             0314*   ; DEU: Pointer to the filename (0 terminated)
+040080             0315*   ;   C: File mode
+040080             0316*   ; Returns:
+040080             0317*   ;   A: FRESULT
+040080             0318*   ffs_fopen:			EQU	80h
+040080             0319*   
+040080             0320*   ; Close a file
+040080             0321*   ; HLU: Pointer to a blank FIL struct
+040080             0322*   ; Returns:
+040080             0323*   ;   A: FRESULT
+040080             0324*   ffs_fclose:			EQU	81h
+040080             0325*   
+040080             0326*   ; Read data from a file
+040080             0327*   ; HLU: Pointer to a FIL struct
+040080             0328*   ; DEU: Pointer to where to write the file out
+040080             0329*   ; BCU: Number of bytes to read
+040080             0330*   ; Returns:
+040080             0331*   ;   A: FRESULT
+040080             0332*   ; BCU: Number of bytes read
+040080             0333*   ffs_fread:			EQU	82h
+040080             0334*   
+040080             0335*   ; Write data to a file
+040080             0336*   ; HLU: Pointer to a FIL struct
+040080             0337*   ; DEU: Pointer to the data to write out
+040080             0338*   ; BCU: Number of bytes to write
+040080             0339*   ; Returns:
+040080             0340*   ;   A: FRESULT
+040080             0341*   ; BCU: Number of bytes written
+040080             0342*   ffs_fwrite:			EQU	83h
+040080             0343*   
+040080             0344*   ; Move the read/write pointer in a file
+040080             0345*   ; HLU: Pointer to a FIL struct
+040080             0346*   ; DEU: Least significant 3 bytes of the offset from the start of the file (DWORD)
+040080             0347*   ;   C: Most significant byte of the offset
+040080             0348*   ; Returns:
+040080             0349*   ;   A: FRESULT
+040080             0350*   ffs_flseek:			EQU	84h
+040080             0351*   
+040080             0352*   ; not implemented
+040080             0353*   ffs_ftruncate:		EQU	85h
+040080             0354*   
+040080             0355*   ; not implemented
+040080             0356*   ffs_fsync:			EQU	86h
+040080             0357*   
+040080             0358*   ; not implemented
+040080             0359*   ffs_fforward:		EQU	87h
+040080             0360*   
+040080             0361*   ; not implemented
+040080             0362*   ffs_fexpand:		EQU	88h
+040080             0363*   
+040080             0364*   ; not implemented
+040080             0365*   ffs_fgets:			EQU	89h
+040080             0366*   
+040080             0367*   ; not implemented
+040080             0368*   ffs_fputc:			EQU	8Ah
+040080             0369*   
+040080             0370*   ; not implemented
+040080             0371*   ffs_fputs:			EQU	8Bh
+040080             0372*   
+040080             0373*   ; not implemented
+040080             0374*   ffs_fprintf:		EQU	8Ch
+040080             0375*   
+040080             0376*   ; not implemented
+040080             0377*   ffs_ftell:			EQU	8Dh
+040080             0378*   
+040080             0379*   ; Check for EOF
+040080             0380*   ; HLU: Pointer to a FILINFO struct
+040080             0381*   ; Returns:
+040080             0382*   ;   A: 1 if end of file, otherwise 0
+040080             0383*   ffs_feof:			EQU	8Eh
+040080             0384*   
+040080             0385*   ; not implemented
+040080             0386*   ffs_fsize:			EQU	8Fh
+040080             0387*   
+040080             0388*   ; not implemented
+040080             0389*   ffs_ferror:			EQU	90h
+040080             0390*   
+040080             0391*   ; FatFS directory access functions
+040080             0392*   ;
+040080             0393*   ; Open a directory
+040080             0394*   ; HLU: Pointer to a blank DIR struct
+040080             0395*   ; DEU: Pointer to the directory path
+040080             0396*   ; Returns:
+040080             0397*   ; A: FRESULT
+040080             0398*   ffs_dopen:			EQU	91h
+040080             0399*   
+040080             0400*   ; Close a directory
+040080             0401*   ; HLU: Pointer to an open DIR struct
+040080             0402*   ; Returns:
+040080             0403*   ; A: FRESULT
+040080             0404*   ffs_dclose:			EQU	92h
+040080             0405*   
+040080             0406*   ; Read the next FILINFO from an open DIR
+040080             0407*   ; HLU: Pointer to an open DIR struct
+040080             0408*   ; DEU: Pointer to an empty FILINFO struct
+040080             0409*   ; Returns:
+040080             0410*   ; A: FRESULT
+040080             0411*   ffs_dread:			EQU	93h
+040080             0412*   
+040080             0413*   ; not implemented
+040080             0414*   ffs_dfindfirst:		EQU	94h
+040080             0415*   
+040080             0416*   ; not implemented
+040080             0417*   ffs_dfindnext:		EQU	95h
+040080             0418*   
+040080             0419*   ; FatFS file and directory management functions
+040080             0420*   ;
+040080             0421*   ; Check file exists
+040080             0422*   ; HLU: Pointer to a FILINFO struct
+040080             0423*   ; DEU: Pointer to the filename (0 terminated)
+040080             0424*   ; Returns:
+040080             0425*   ;   A: FRESULT
+040080             0426*   ffs_stat:			EQU	96h
+040080             0427*   
+040080             0428*   ; not implemented
+040080             0429*   ffs_unlink:			EQU	97h
+040080             0430*   
+040080             0431*   ; not implemented
+040080             0432*   ffs_rename:			EQU	98h
+040080             0433*   
+040080             0434*   ; not implemented
+040080             0435*   ffs_chmod:			EQU	99h
+040080             0436*   
+040080             0437*   ; not implemented
+040080             0438*   ffs_utime:			EQU	9Ah
+040080             0439*   
+040080             0440*   ; not implemented
+040080             0441*   ffs_mkdir:			EQU	9Bh
+040080             0442*   
+040080             0443*   ; not implemented
+040080             0444*   ffs_chdir:			EQU	9Ch
+040080             0445*   
+040080             0446*   ; not implemented
+040080             0447*   ffs_chdrive:		EQU	9Dh
+040080             0448*   
+040080             0449*   ; Copy the current directory (string) into buffer (hl)
+040080             0450*   ; HLU: Pointer to a buffer
+040080             0451*   ; BCU: Maximum length of buffer
+040080             0452*   ; Returns:
+040080             0453*   ; A: FRESULT
+040080             0454*   ffs_getcwd:			EQU	9Eh
+040080             0455*   
+040080             0456*   ; FatFS volume management and system configuration functions
+040080             0457*   ;
+040080             0458*   ; not implemented
+040080             0459*   ffs_mount:			EQU	9Fh
+040080             0460*   
+040080             0461*   ; not implemented
+040080             0462*   ffs_mkfs:			EQU	A0h
+040080             0463*   
+040080             0464*   ; not implemented
+040080             0465*   ffs_fdisk:			EQU	A1h
+040080             0466*   
+040080             0467*   ; not implemented
+040080             0468*   ffs_getfree:		EQU	A2h
+040080             0469*   
+040080             0470*   ; not implemented
+040080             0471*   ffs_getlabel:		EQU	A3h
+040080             0472*   
+040080             0473*   ; not implemented
+040080             0474*   ffs_setlabel:		EQU	A4h
+040080             0475*   
+040080             0476*   ; not implemented
+040080             0477*   ffs_setcp:			EQU	A5h
+040080             0478*   
+040080             0479*   ; File access modes
+040080             0480*   ;
+040080             0481*   fa_read:			EQU	01h
+040080             0482*   fa_write:			EQU	02h
+040080             0483*   fa_open_existing:	EQU	00h
+040080             0484*   fa_create_new:		EQU	04h
+040080             0485*   fa_create_always:	EQU	08h
+040080             0486*   fa_open_always:		EQU	10h
+040080             0487*   fa_open_append:		EQU	30h
+040080             0488*   
+040080             0489*   ; System variable indexes for api_sysvars
+040080             0490*   ; Index into _sysvars in globals.asm
+040080             0491*   ;
+040080             0492*   sysvar_time:			EQU	00h	; 4: Clock timer in centiseconds (incremented by 2 every VBLANK)
+040080             0493*   sysvar_vpd_pflags:		EQU	04h	; 1: Flags to indicate completion of VDP commands
+040080             0494*   sysvar_keyascii:		EQU	05h	; 1: ASCII keycode, or 0 if no key is pressed
+040080             0495*   sysvar_keymods:			EQU	06h	; 1: Keycode modifiers
+040080             0496*   sysvar_cursorX:			EQU	07h	; 1: Cursor X position
+040080             0497*   sysvar_cursorY:			EQU	08h	; 1: Cursor Y position
+040080             0498*   sysvar_scrchar:			EQU	09h	; 1: Character read from screen
+040080             0499*   sysvar_scrpixel:		EQU	0Ah	; 3: Pixel data read from screen (R,B,G)
+040080             0500*   sysvar_audioChannel:	EQU	0Dh	; 1: Audio channel
+040080             0501*   sysvar_audioSuccess:	EQU	0Eh	; 1: Audio channel note queued (0 = no, 1 = yes)
+040080             0502*   sysvar_scrWidth:		EQU	0Fh	; 2: Screen width in pixels
+040080             0503*   sysvar_scrHeight:		EQU	11h	; 2: Screen height in pixels
+040080             0504*   sysvar_scrCols:			EQU	13h	; 1: Screen columns in characters
+040080             0505*   sysvar_scrRows:			EQU	14h	; 1: Screen rows in characters
+040080             0506*   sysvar_scrColours:		EQU	15h	; 1: Number of colours displayed
+040080             0507*   sysvar_scrpixelIndex:	EQU	16h	; 1: Index of pixel data read from screen
+040080             0508*   sysvar_vkeycode:		EQU	17h	; 1: Virtual key code from FabGL
+040080             0509*   sysvar_vkeydown:		EQU	18h	; 1: Virtual key state from FabGL (0=up, 1=down)
+040080             0510*   sysvar_vkeycount:		EQU	19h	; 1: Incremented every time a key packet is received
+040080             0511*   sysvar_rtc:				EQU	1Ah	; 6: Real time clock data
+040080             0512*   sysvar_spare:			EQU	20h	; 2: Spare, previously used by rtc
+040080             0513*   sysvar_keydelay:		EQU	22h	; 2: Keyboard repeat delay
+040080             0514*   sysvar_keyrate:			EQU	24h	; 2: Keyboard repeat reat
+040080             0515*   sysvar_keyled:			EQU	26h	; 1: Keyboard LED status
+040080             0516*   sysvar_scrMode:			EQU	27h	; 1: Screen mode
+040080             0517*   sysvar_rtcEnable:		EQU	28h	; 1: RTC enable flag (0: disabled, 1: use ESP32 RTC)
+040080             0518*   
+040080             0519*   ; Flags for the VPD protocol
+040080             0520*   ;
+040080             0521*   vdp_pflag_cursor:		EQU	00000001b
+040080             0522*   vdp_pflag_scrchar:		EQU	00000010b
+040080             0523*   vdp_pflag_point:		EQU	00000100b
+040080             0524*   vdp_pflag_audio:		EQU	00001000b
+040080             0525*   vdp_pflag_mode:			EQU	00010000b
+040080             0526*   vdp_pflag_rtc:			EQU	00100000b
+040080             0527*   
+040080             0528*   ;
+040080             0529*   ; FatFS structures
+040080             0530*   ; These mirror the structures contained in src_fatfs/ff.h in the MOS project
+040080             0531*   ;
+040080             0532*   ; Object ID and allocation information (FFOBJID)
+040080             0533*   ;
+040080             0534*   ; Indexes into FFOBJID structure
+040080             0535*   ffobjid_fs:			EQU	0	; 3: Pointer to the hosting volume of this object
+040080             0536*   ffobjid_id:			EQU	3	; 2: Hosting volume mount ID
+040080             0537*   ffobjid_attr:		EQU	5	; 1: Object attribute
+040080             0538*   ffobjid_stat:		EQU	6	; 1: Object chain status (b1-0: =0:not contiguous, =2:contiguous, =3:fragmented in this session, b2:sub-directory stretched)
+040080             0539*   ffobjid_sclust:		EQU	7	; 4: Object data start cluster (0:no cluster or root directory)
+040080             0540*   ffobjid_objsize:	EQU	11	; 4: Object size (valid when sclust != 0)
+040080             0541*   ;
+040080             0542*   ; File object structure (FIL)
+040080             0543*   ;
+040080             0544*   ; Indexes into FIL structure
+040080             0545*   fil_obj:		EQU 0	; 15: Object identifier
+040080             0546*   fil_flag:		EQU	15 	;  1: File status flags
+040080             0547*   fil_err:		EQU	16	;  1: Abort flag (error code)
+040080             0548*   fil_fptr:		EQU	17	;  4: File read/write pointer (Zeroed on file open)
+040080             0549*   fil_clust:		EQU	21	;  4: Current cluster of fpter (invalid when fptr is 0)
+040080             0550*   fil_sect:		EQU	25	;  4: Sector number appearing in buf[] (0:invalid)
+040080             0551*   fil_dir_sect:	EQU	29	;  4: Sector number containing the directory entry
+040080             0552*   fil_dir_ptr:	EQU	33	;  3: Pointer to the directory entry in the win[]
+040080             0553*   ;
+040080             0554*   ; Directory object structure (DIR)
+040080             0555*   ; Indexes into DIR structure
+040080             0556*   dir_obj:		EQU  0	; 15: Object identifier
+040080             0557*   dir_dptr:		EQU	15	;  4: Current read/write offset
+040080             0558*   dir_clust:		EQU	19	;  4: Current cluster
+040080             0559*   dir_sect:		EQU	23	;  4: Current sector (0:Read operation has terminated)
+040080             0560*   dir_dir:		EQU	27	;  3: Pointer to the directory item in the win[]
+040080             0561*   dir_fn:			EQU	30	; 12: SFN (in/out) {body[8],ext[3],status[1]}
+040080             0562*   dir_blk_ofs:	EQU	42	;  4: Offset of current entry block being processed (0xFFFFFFFF:Invalid)
+040080             0563*   ;
+040080             0564*   ; File information structure (FILINFO)
+040080             0565*   ;
+040080             0566*   ; Indexes into FILINFO structure
+040080             0567*   filinfo_fsize:		EQU 0	;   4: File size
+040080             0568*   filinfo_fdate:		EQU	4	;   2: Modified date
+040080             0569*   filinfo_ftime:		EQU	6	;   2: Modified time
+040080             0570*   filinfo_fattrib:	EQU	8	;   1: File attribute
+040080             0571*   filinfo_altname:	EQU	9	;  13: Alternative file name
+040080             0572*   filinfo_fname:		EQU	22	; 256: Primary file name
+040080             0033        include "input.inc"
+040080 00          0001*   dithering_type: db 0x00 ; 0=none, 1=bayer ordered matrix, 2=floyd-steinberg
+040081 00 01 00    0002*   current_image_id: dl 256 ; buffer_id of the current image
+040084 00 00 00    0003*   current_image_index: dl 0 ; index of the current image
+040087             0004*   
+040087             0005*   keyboard_masks: ds 16 ; 16 bytes for the keyboard masks
+040097             0006*   
+040097             0007*   ; check system virtual keyboard map for keys down and or them with local keyboard masks
+040097             0008*   ; inputs: none
+040097             0009*   ; outputs: none
+040097             0010*   ; clobbers: a, b, ix, iy
+040097             0011*   set_keys:
+040097             0012*       MOSCALL mos_getkbmap ; ix points to the virtual keyboard map
+                       M1 Args: function=mos_getkbmap 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+       FF FF FF FF 
+040097 3E 1E       0001*M1 			LD	A, function
+040099 5B CF       0002*M1 			RST.LIL	08h
+04009B FD 21 87 00 0013*       ld iy,keyboard_masks
+       04          
+0400A0 06 10       0014*       ld b,16 ; loop counter
+0400A2             0015*   @loop:
+0400A2 DD 7E 00    0016*       ld a,(ix)
+0400A5 FD B6 00    0017*       or (iy)
+0400A8 FD 77 00    0018*       ld (iy),a
+0400AB DD 23       0019*       inc ix
+0400AD FD 23       0020*       inc iy
+0400AF 10 F1       0021*       djnz @loop
+0400B1 C9          0022*       ret
+0400B2             0023*   
+0400B2             0024*   ; reset the local keyboard masks to zero
+0400B2             0025*   ; inputs: none
+0400B2             0026*   ; outputs: none
+0400B2             0027*   ; clobbers: a, b, iy
+0400B2             0028*   reset_keys:
+0400B2 FD 21 87 00 0029*       ld iy,keyboard_masks
+       04          
+0400B7 AF          0030*       xor a
+0400B8 06 10       0031*       ld b,16 ; loop counter
+0400BA             0032*   @loop:
+0400BA FD 77 00    0033*       ld (iy),a
+0400BD FD 23       0034*       inc iy
+0400BF 10 F9       0035*       djnz @loop
+0400C1 C9          0036*       ret
+0400C2             0037*   
+0400C2             0038*   ; ============ KEYBOARD INPUT ============
+0400C2             0039*   do_input:
+0400C2             0040*   ; get user keyboard input
+0400C2 DD 21 87 00 0041*       ld ix,keyboard_masks
+       04          
+0400C7 3E FF       0042*       ld a,-1 ; anything non-zero to indicates no key pressed
+0400C9             0043*   
+0400C9             0044*   ; ------ QUIT ------
+0400C9             0045*   ; 113 Escape
+0400C9 DD CB 0E 46 0046*       bit 0,(ix+14)
+0400CD C2 21 13 04 0047*   	jp nz,main_end
+0400D1             0048*   
+0400D1             0049*   ; ------ RENDERING OPTIONS ------
+0400D1             0050*   ; ; 99 Space cycle through dithering types
+0400D1             0051*   ;     bit 2,(ix+12)
+0400D1             0052*   ;     call nz,cycle_dithering
+0400D1             0053*   ;     xor a
+0400D1             0054*   
+0400D1             0055*   ; 26 Left
+0400D1 DD CB 03 4E 0056*       bit 1,(ix+3)
+0400D5 CA E5 00 04 0057*       jp z,@Left
+0400D9 ED 5B 84 00 0058*       ld de,(current_image_index)
+       04          
+0400DE 1B          0059*       dec de
+0400DF ED 53 84 00 0060*       ld (current_image_index),de
+       04          
+0400E4 AF          0061*       xor a
+0400E5             0062*   @Left:
+0400E5             0063*   
+0400E5             0064*   ; 122 Right
+0400E5 DD CB 0F 4E 0065*       bit 1,(ix+15)
+0400E9 CA F9 00 04 0066*       jp z,@Right
+0400ED ED 5B 84 00 0067*       ld de,(current_image_index)
+       04          
+0400F2 13          0068*       inc de
+0400F3 ED 53 84 00 0069*       ld (current_image_index),de
+       04          
+0400F8 AF          0070*       xor a
+0400F9             0071*   @Right:
+0400F9             0072*   ; check keypress flag and branch accordingly
+0400F9 A7          0073*       and a
+0400FA CA C3 12 04 0074*       jp z,rendbmp
+0400FE             0075*   
+0400FE             0076*   ; check slideshow timer and branch accordingly
+0400FE CD 3A 01 04 0077*       call tmr_slideshow_get
+040102 F2 15 13 04 0078*       jp p,no_move
+040106 CD 22 01 04 0079*       call tmr_slideshow_set
+04010A ED 5B 84 00 0080*       ld de,(current_image_index)
+       04          
+04010F 13          0081*       inc de
+040110 ED 53 84 00 0082*       ld (current_image_index),de
+       04          
+040115 C3 C3 12 04 0083*       jp rendbmp
+040119             0084*   
+040119             0085*   ; slideshow timer routines
+040119             0086*   tmr_slideshow: ds 6 ; buffer to hold slideshow timer
+       FF FF FF FF 
+       FF FF 
+04011F 01 00 00    0087*   tmr_slideshow_reset: dl 1; 1*120
+040122             0088*   
+040122             0089*   ; set a countdown timer for the slideshow using the timestamp timer
+040122             0090*   ; returns: hl = current time
+040122             0091*   ; destroys: af,hl,de,ix,iy
+040122             0092*   tmr_slideshow_set:
+040122 FD 21 19 01 0093*       ld iy,tmr_slideshow
+       04          
+040127 2A 1F 01 04 0094*       ld hl,(tmr_slideshow_reset)
+04012B FD 2F 03    0095*       ld (iy+3),hl ; set time remaining
+04012E CD D2 10 04 0096*       call timestamp_tick
+040132 2A C9 10 04 0097*       ld hl,(timestamp_now)   ; get current timestamp
+040136 FD 2F 00    0098*       ld (iy+0),hl ; set start time
+040139 C9          0099*       ret
+04013A             0100*   
+04013A             0101*   ; gets time remaining on the slideshow countdown timer following the global timestamp
+04013A             0102*   ; returns: hl pos = time remaining in 1/120ths of a second,hl neg = time past expiration
+04013A             0103*   ;          sign flags: pos = time not expired,zero or neg = time expired
+04013A             0104*   ; destroys: af,hl,de,ix,iy
+04013A             0105*   tmr_slideshow_get:
+04013A CD D2 10 04 0106*       call timestamp_tick
+04013E FD 21 19 01 0107*       ld iy,tmr_slideshow
+       04          
+040143 CD FA 10 04 0108*       call timestamp_tmr_get
+040147 C9          0109*       ret
+040148             0034        include "images.inc"
+040148             0001*   ; Generated by container/scripts/do_assembly.py
+040148             0002*   
+040148             0003*   image_type: equ 0
+040148             0004*   image_width: equ image_type+3
+040148             0005*   image_height: equ image_width+3
+040148             0006*   image_filesize: equ image_height+3
+040148             0007*   image_ex_filename: equ image_filesize+3 ; former filename pointer
+040148             0008*   image_record_size: equ image_ex_filename+3
+040148             0009*   
+040148             0010*   num_images: equ 249
+040148             0011*   
+040148             0012*   ; bufferIds:
+040148             0013*   buf_10_000: equ 256
+040148             0014*   buf_10_001: equ 257
+040148             0015*   buf_10_002: equ 258
+040148             0016*   buf_10_007: equ 259
+040148             0017*   buf_10_012: equ 260
+040148             0018*   buf_10_013: equ 261
+040148             0019*   buf_10_014: equ 262
+040148             0020*   buf_10_015: equ 263
+040148             0021*   buf_10_016: equ 264
+040148             0022*   buf_10_017: equ 265
+040148             0023*   buf_10_018: equ 266
+040148             0024*   buf_10_019: equ 267
+040148             0025*   buf_10_023: equ 268
+040148             0026*   buf_10_027: equ 269
+040148             0027*   buf_10_028: equ 270
+040148             0028*   buf_10_029: equ 271
+040148             0029*   buf_10_030: equ 272
+040148             0030*   buf_10_031: equ 273
+040148             0031*   buf_10_032: equ 274
+040148             0032*   buf_10_035: equ 275
+040148             0033*   buf_10_038: equ 276
+040148             0034*   buf_10_039: equ 277
+040148             0035*   buf_10_040: equ 278
+040148             0036*   buf_10_041: equ 279
+040148             0037*   buf_10_043: equ 280
+040148             0038*   buf_10_045: equ 281
+040148             0039*   buf_10_046: equ 282
+040148             0040*   buf_10_047: equ 283
+040148             0041*   buf_11_000: equ 284
+040148             0042*   buf_11_001: equ 285
+040148             0043*   buf_11_002: equ 286
+040148             0044*   buf_11_007: equ 287
+040148             0045*   buf_11_012: equ 288
+040148             0046*   buf_11_013: equ 289
+040148             0047*   buf_11_014: equ 290
+040148             0048*   buf_11_015: equ 291
+040148             0049*   buf_11_016: equ 292
+040148             0050*   buf_11_017: equ 293
+040148             0051*   buf_11_018: equ 294
+040148             0052*   buf_11_019: equ 295
+040148             0053*   buf_11_023: equ 296
+040148             0054*   buf_11_027: equ 297
+040148             0055*   buf_11_028: equ 298
+040148             0056*   buf_11_029: equ 299
+040148             0057*   buf_11_030: equ 300
+040148             0058*   buf_11_031: equ 301
+040148             0059*   buf_11_032: equ 302
+040148             0060*   buf_11_035: equ 303
+040148             0061*   buf_11_038: equ 304
+040148             0062*   buf_11_039: equ 305
+040148             0063*   buf_11_040: equ 306
+040148             0064*   buf_11_041: equ 307
+040148             0065*   buf_11_043: equ 308
+040148             0066*   buf_11_045: equ 309
+040148             0067*   buf_11_046: equ 310
+040148             0068*   buf_11_047: equ 311
+040148             0069*   buf_12_000: equ 312
+040148             0070*   buf_12_001: equ 313
+040148             0071*   buf_12_002: equ 314
+040148             0072*   buf_12_007: equ 315
+040148             0073*   buf_12_012: equ 316
+040148             0074*   buf_12_013: equ 317
+040148             0075*   buf_12_014: equ 318
+040148             0076*   buf_12_015: equ 319
+040148             0077*   buf_12_016: equ 320
+040148             0078*   buf_12_017: equ 321
+040148             0079*   buf_12_018: equ 322
+040148             0080*   buf_12_019: equ 323
+040148             0081*   buf_12_023: equ 324
+040148             0082*   buf_12_027: equ 325
+040148             0083*   buf_12_028: equ 326
+040148             0084*   buf_12_029: equ 327
+040148             0085*   buf_12_030: equ 328
+040148             0086*   buf_12_031: equ 329
+040148             0087*   buf_12_032: equ 330
+040148             0088*   buf_12_035: equ 331
+040148             0089*   buf_12_038: equ 332
+040148             0090*   buf_12_039: equ 333
+040148             0091*   buf_12_040: equ 334
+040148             0092*   buf_12_041: equ 335
+040148             0093*   buf_12_043: equ 336
+040148             0094*   buf_12_045: equ 337
+040148             0095*   buf_12_046: equ 338
+040148             0096*   buf_12_047: equ 339
+040148             0097*   buf_13_000: equ 340
+040148             0098*   buf_13_001: equ 341
+040148             0099*   buf_13_002: equ 342
+040148             0100*   buf_13_007: equ 343
+040148             0101*   buf_13_012: equ 344
+040148             0102*   buf_13_013: equ 345
+040148             0103*   buf_13_014: equ 346
+040148             0104*   buf_13_015: equ 347
+040148             0105*   buf_13_016: equ 348
+040148             0106*   buf_13_017: equ 349
+040148             0107*   buf_13_018: equ 350
+040148             0108*   buf_13_019: equ 351
+040148             0109*   buf_13_023: equ 352
+040148             0110*   buf_13_027: equ 353
+040148             0111*   buf_13_028: equ 354
+040148             0112*   buf_13_029: equ 355
+040148             0113*   buf_13_030: equ 356
+040148             0114*   buf_13_031: equ 357
+040148             0115*   buf_13_032: equ 358
+040148             0116*   buf_13_035: equ 359
+040148             0117*   buf_13_038: equ 360
+040148             0118*   buf_13_039: equ 361
+040148             0119*   buf_13_040: equ 362
+040148             0120*   buf_13_041: equ 363
+040148             0121*   buf_13_043: equ 364
+040148             0122*   buf_13_045: equ 365
+040148             0123*   buf_13_046: equ 366
+040148             0124*   buf_13_047: equ 367
+040148             0125*   buf_14_000: equ 368
+040148             0126*   buf_14_001: equ 369
+040148             0127*   buf_14_002: equ 370
+040148             0128*   buf_14_007: equ 371
+040148             0129*   buf_14_012: equ 372
+040148             0130*   buf_14_013: equ 373
+040148             0131*   buf_14_014: equ 374
+040148             0132*   buf_14_015: equ 375
+040148             0133*   buf_14_016: equ 376
+040148             0134*   buf_14_017: equ 377
+040148             0135*   buf_14_018: equ 378
+040148             0136*   buf_14_019: equ 379
+040148             0137*   buf_14_023: equ 380
+040148             0138*   buf_14_027: equ 381
+040148             0139*   buf_14_028: equ 382
+040148             0140*   buf_14_029: equ 383
+040148             0141*   buf_14_030: equ 384
+040148             0142*   buf_14_031: equ 385
+040148             0143*   buf_14_032: equ 386
+040148             0144*   buf_14_035: equ 387
+040148             0145*   buf_14_038: equ 388
+040148             0146*   buf_14_039: equ 389
+040148             0147*   buf_14_040: equ 390
+040148             0148*   buf_14_041: equ 391
+040148             0149*   buf_14_043: equ 392
+040148             0150*   buf_14_045: equ 393
+040148             0151*   buf_14_046: equ 394
+040148             0152*   buf_14_047: equ 395
+040148             0153*   buf_15_000: equ 396
+040148             0154*   buf_15_001: equ 397
+040148             0155*   buf_15_002: equ 398
+040148             0156*   buf_15_007: equ 399
+040148             0157*   buf_15_012: equ 400
+040148             0158*   buf_15_013: equ 401
+040148             0159*   buf_15_014: equ 402
+040148             0160*   buf_15_015: equ 403
+040148             0161*   buf_15_016: equ 404
+040148             0162*   buf_15_017: equ 405
+040148             0163*   buf_15_018: equ 406
+040148             0164*   buf_15_019: equ 407
+040148             0165*   buf_15_023: equ 408
+040148             0166*   buf_15_027: equ 409
+040148             0167*   buf_15_028: equ 410
+040148             0168*   buf_15_029: equ 411
+040148             0169*   buf_15_030: equ 412
+040148             0170*   buf_15_031: equ 413
+040148             0171*   buf_15_032: equ 414
+040148             0172*   buf_15_035: equ 415
+040148             0173*   buf_15_038: equ 416
+040148             0174*   buf_15_039: equ 417
+040148             0175*   buf_15_040: equ 418
+040148             0176*   buf_15_041: equ 419
+040148             0177*   buf_15_043: equ 420
+040148             0178*   buf_15_045: equ 421
+040148             0179*   buf_15_046: equ 422
+040148             0180*   buf_15_047: equ 423
+040148             0181*   buf_16_000: equ 424
+040148             0182*   buf_16_001: equ 425
+040148             0183*   buf_16_002: equ 426
+040148             0184*   buf_16_007: equ 427
+040148             0185*   buf_16_012: equ 428
+040148             0186*   buf_16_013: equ 429
+040148             0187*   buf_16_014: equ 430
+040148             0188*   buf_16_015: equ 431
+040148             0189*   buf_16_016: equ 432
+040148             0190*   buf_16_017: equ 433
+040148             0191*   buf_16_018: equ 434
+040148             0192*   buf_16_019: equ 435
+040148             0193*   buf_16_023: equ 436
+040148             0194*   buf_16_027: equ 437
+040148             0195*   buf_16_028: equ 438
+040148             0196*   buf_16_029: equ 439
+040148             0197*   buf_16_030: equ 440
+040148             0198*   buf_16_031: equ 441
+040148             0199*   buf_16_032: equ 442
+040148             0200*   buf_16_035: equ 443
+040148             0201*   buf_16_038: equ 444
+040148             0202*   buf_16_039: equ 445
+040148             0203*   buf_16_040: equ 446
+040148             0204*   buf_16_041: equ 447
+040148             0205*   buf_16_043: equ 448
+040148             0206*   buf_16_045: equ 449
+040148             0207*   buf_16_046: equ 450
+040148             0208*   buf_16_047: equ 451
+040148             0209*   buf_17_000: equ 452
+040148             0210*   buf_17_001: equ 453
+040148             0211*   buf_17_002: equ 454
+040148             0212*   buf_17_007: equ 455
+040148             0213*   buf_17_012: equ 456
+040148             0214*   buf_17_013: equ 457
+040148             0215*   buf_17_014: equ 458
+040148             0216*   buf_17_015: equ 459
+040148             0217*   buf_17_016: equ 460
+040148             0218*   buf_17_017: equ 461
+040148             0219*   buf_17_018: equ 462
+040148             0220*   buf_17_019: equ 463
+040148             0221*   buf_17_023: equ 464
+040148             0222*   buf_17_027: equ 465
+040148             0223*   buf_17_028: equ 466
+040148             0224*   buf_17_029: equ 467
+040148             0225*   buf_17_030: equ 468
+040148             0226*   buf_17_031: equ 469
+040148             0227*   buf_17_032: equ 470
+040148             0228*   buf_17_035: equ 471
+040148             0229*   buf_17_038: equ 472
+040148             0230*   buf_17_039: equ 473
+040148             0231*   buf_17_040: equ 474
+040148             0232*   buf_17_041: equ 475
+040148             0233*   buf_17_043: equ 476
+040148             0234*   buf_17_045: equ 477
+040148             0235*   buf_17_046: equ 478
+040148             0236*   buf_17_047: equ 479
+040148             0237*   buf_20_007: equ 480
+040148             0238*   buf_20_023: equ 481
+040148             0239*   buf_20_035: equ 482
+040148             0240*   buf_20_043: equ 483
+040148             0241*   buf_20_047: equ 484
+040148             0242*   buf_21_007: equ 485
+040148             0243*   buf_21_023: equ 486
+040148             0244*   buf_21_035: equ 487
+040148             0245*   buf_21_043: equ 488
+040148             0246*   buf_21_047: equ 489
+040148             0247*   buf_22_007: equ 490
+040148             0248*   buf_22_023: equ 491
+040148             0249*   buf_22_035: equ 492
+040148             0250*   buf_22_043: equ 493
+040148             0251*   buf_22_047: equ 494
+040148             0252*   buf_23_007: equ 495
+040148             0253*   buf_23_023: equ 496
+040148             0254*   buf_23_035: equ 497
+040148             0255*   buf_23_043: equ 498
+040148             0256*   buf_23_047: equ 499
+040148             0257*   buf_24_007: equ 500
+040148             0258*   buf_24_023: equ 501
+040148             0259*   buf_24_035: equ 502
+040148             0260*   buf_24_043: equ 503
+040148             0261*   buf_24_047: equ 504
+040148             0262*   
+040148             0263*   image_list: ; type; width; height; filesize; ex filename pointer:
+040148 01 00 00 10 0264*   	dl 1, 16, 35, 560, 0xFFFFFF
+       00 00 23 00 
+       00 30 02 00 
+       FF FF FF    
+040157 01 00 00 0A 0265*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+040166 01 00 00 0A 0266*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+040175 01 00 00 24 0267*   	dl 1, 36, 35, 1260, 0xFFFFFF
+       00 00 23 00 
+       00 EC 04 00 
+       FF FF FF    
+040184 01 00 00 23 0268*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+040193 01 00 00 1A 0269*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+0401A2 01 00 00 0F 0270*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+0401B1 01 00 00 05 0271*   	dl 1, 5, 45, 225, 0xFFFFFF
+       00 00 2D 00 
+       00 E1 00 00 
+       FF FF FF    
+0401C0 01 00 00 05 0272*   	dl 1, 5, 43, 215, 0xFFFFFF
+       00 00 2B 00 
+       00 D7 00 00 
+       FF FF FF    
+0401CF 01 00 00 0F 0273*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+0401DE 01 00 00 1A 0274*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+0401ED 01 00 00 23 0275*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+0401FC 01 00 00 2E 0276*   	dl 1, 46, 45, 2070, 0xFFFFFF
+       00 00 2D 00 
+       00 16 08 00 
+       FF FF FF    
+04020B 01 00 00 2D 0277*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+04021A 01 00 00 1B 0278*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+040229 01 00 00 09 0279*   	dl 1, 9, 63, 567, 0xFFFFFF
+       00 00 3F 00 
+       00 37 02 00 
+       FF FF FF    
+040238 01 00 00 09 0280*   	dl 1, 9, 61, 549, 0xFFFFFF
+       00 00 3D 00 
+       00 25 02 00 
+       FF FF FF    
+040247 01 00 00 1B 0281*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+040256 01 00 00 2D 0282*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+040265 01 00 00 40 0283*   	dl 1, 64, 63, 4032, 0xFFFFFF
+       00 00 3F 00 
+       00 C0 0F 00 
+       FF FF FF    
+040274 01 00 00 40 0284*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+040283 01 00 00 16 0285*   	dl 1, 22, 107, 2354, 0xFFFFFF
+       00 00 6B 00 
+       00 32 09 00 
+       FF FF FF    
+040292 01 00 00 16 0286*   	dl 1, 22, 105, 2310, 0xFFFFFF
+       00 00 69 00 
+       00 06 09 00 
+       FF FF FF    
+0402A1 01 00 00 40 0287*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+0402B0 01 00 00 6C 0288*   	dl 1, 108, 107, 11556, 0xFFFFFF
+       00 00 6B 00 
+       00 24 2D 00 
+       FF FF FF    
+0402BF 01 00 00 6A 0289*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+0402CE 01 00 00 6A 0290*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+0402DD 01 00 00 40 0291*   	dl 1, 320, 160, 51200, 0xFFFFFF
+       01 00 A0 00 
+       00 00 C8 00 
+       FF FF FF    
+0402EC 01 00 00 10 0292*   	dl 1, 16, 35, 560, 0xFFFFFF
+       00 00 23 00 
+       00 30 02 00 
+       FF FF FF    
+0402FB 01 00 00 0A 0293*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+04030A 01 00 00 0A 0294*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+040319 01 00 00 24 0295*   	dl 1, 36, 35, 1260, 0xFFFFFF
+       00 00 23 00 
+       00 EC 04 00 
+       FF FF FF    
+040328 01 00 00 23 0296*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+040337 01 00 00 1A 0297*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+040346 01 00 00 0F 0298*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+040355 01 00 00 05 0299*   	dl 1, 5, 45, 225, 0xFFFFFF
+       00 00 2D 00 
+       00 E1 00 00 
+       FF FF FF    
+040364 01 00 00 05 0300*   	dl 1, 5, 43, 215, 0xFFFFFF
+       00 00 2B 00 
+       00 D7 00 00 
+       FF FF FF    
+040373 01 00 00 0F 0301*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+040382 01 00 00 1A 0302*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+040391 01 00 00 23 0303*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+0403A0 01 00 00 2E 0304*   	dl 1, 46, 45, 2070, 0xFFFFFF
+       00 00 2D 00 
+       00 16 08 00 
+       FF FF FF    
+0403AF 01 00 00 2D 0305*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+0403BE 01 00 00 1B 0306*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+0403CD 01 00 00 09 0307*   	dl 1, 9, 63, 567, 0xFFFFFF
+       00 00 3F 00 
+       00 37 02 00 
+       FF FF FF    
+0403DC 01 00 00 09 0308*   	dl 1, 9, 61, 549, 0xFFFFFF
+       00 00 3D 00 
+       00 25 02 00 
+       FF FF FF    
+0403EB 01 00 00 1B 0309*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+0403FA 01 00 00 2D 0310*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+040409 01 00 00 40 0311*   	dl 1, 64, 63, 4032, 0xFFFFFF
+       00 00 3F 00 
+       00 C0 0F 00 
+       FF FF FF    
+040418 01 00 00 40 0312*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+040427 01 00 00 16 0313*   	dl 1, 22, 107, 2354, 0xFFFFFF
+       00 00 6B 00 
+       00 32 09 00 
+       FF FF FF    
+040436 01 00 00 16 0314*   	dl 1, 22, 105, 2310, 0xFFFFFF
+       00 00 69 00 
+       00 06 09 00 
+       FF FF FF    
+040445 01 00 00 40 0315*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+040454 01 00 00 6C 0316*   	dl 1, 108, 107, 11556, 0xFFFFFF
+       00 00 6B 00 
+       00 24 2D 00 
+       FF FF FF    
+040463 01 00 00 6A 0317*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+040472 01 00 00 6A 0318*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+040481 01 00 00 40 0319*   	dl 1, 320, 160, 51200, 0xFFFFFF
+       01 00 A0 00 
+       00 00 C8 00 
+       FF FF FF    
+040490 01 00 00 10 0320*   	dl 1, 16, 35, 560, 0xFFFFFF
+       00 00 23 00 
+       00 30 02 00 
+       FF FF FF    
+04049F 01 00 00 0A 0321*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+0404AE 01 00 00 0A 0322*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+0404BD 01 00 00 24 0323*   	dl 1, 36, 35, 1260, 0xFFFFFF
+       00 00 23 00 
+       00 EC 04 00 
+       FF FF FF    
+0404CC 01 00 00 23 0324*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+0404DB 01 00 00 1A 0325*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+0404EA 01 00 00 0F 0326*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+0404F9 01 00 00 05 0327*   	dl 1, 5, 45, 225, 0xFFFFFF
+       00 00 2D 00 
+       00 E1 00 00 
+       FF FF FF    
+040508 01 00 00 05 0328*   	dl 1, 5, 43, 215, 0xFFFFFF
+       00 00 2B 00 
+       00 D7 00 00 
+       FF FF FF    
+040517 01 00 00 0F 0329*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+040526 01 00 00 1A 0330*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+040535 01 00 00 23 0331*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+040544 01 00 00 2E 0332*   	dl 1, 46, 45, 2070, 0xFFFFFF
+       00 00 2D 00 
+       00 16 08 00 
+       FF FF FF    
+040553 01 00 00 2D 0333*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+040562 01 00 00 1B 0334*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+040571 01 00 00 09 0335*   	dl 1, 9, 63, 567, 0xFFFFFF
+       00 00 3F 00 
+       00 37 02 00 
+       FF FF FF    
+040580 01 00 00 09 0336*   	dl 1, 9, 61, 549, 0xFFFFFF
+       00 00 3D 00 
+       00 25 02 00 
+       FF FF FF    
+04058F 01 00 00 1B 0337*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+04059E 01 00 00 2D 0338*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+0405AD 01 00 00 40 0339*   	dl 1, 64, 63, 4032, 0xFFFFFF
+       00 00 3F 00 
+       00 C0 0F 00 
+       FF FF FF    
+0405BC 01 00 00 40 0340*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+0405CB 01 00 00 16 0341*   	dl 1, 22, 107, 2354, 0xFFFFFF
+       00 00 6B 00 
+       00 32 09 00 
+       FF FF FF    
+0405DA 01 00 00 16 0342*   	dl 1, 22, 105, 2310, 0xFFFFFF
+       00 00 69 00 
+       00 06 09 00 
+       FF FF FF    
+0405E9 01 00 00 40 0343*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+0405F8 01 00 00 6C 0344*   	dl 1, 108, 107, 11556, 0xFFFFFF
+       00 00 6B 00 
+       00 24 2D 00 
+       FF FF FF    
+040607 01 00 00 6A 0345*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+040616 01 00 00 6A 0346*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+040625 01 00 00 40 0347*   	dl 1, 320, 160, 51200, 0xFFFFFF
+       01 00 A0 00 
+       00 00 C8 00 
+       FF FF FF    
+040634 01 00 00 10 0348*   	dl 1, 16, 35, 560, 0xFFFFFF
+       00 00 23 00 
+       00 30 02 00 
+       FF FF FF    
+040643 01 00 00 0A 0349*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+040652 01 00 00 0A 0350*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+040661 01 00 00 24 0351*   	dl 1, 36, 35, 1260, 0xFFFFFF
+       00 00 23 00 
+       00 EC 04 00 
+       FF FF FF    
+040670 01 00 00 23 0352*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+04067F 01 00 00 1A 0353*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+04068E 01 00 00 0F 0354*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+04069D 01 00 00 05 0355*   	dl 1, 5, 45, 225, 0xFFFFFF
+       00 00 2D 00 
+       00 E1 00 00 
+       FF FF FF    
+0406AC 01 00 00 05 0356*   	dl 1, 5, 43, 215, 0xFFFFFF
+       00 00 2B 00 
+       00 D7 00 00 
+       FF FF FF    
+0406BB 01 00 00 0F 0357*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+0406CA 01 00 00 1A 0358*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+0406D9 01 00 00 23 0359*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+0406E8 01 00 00 2E 0360*   	dl 1, 46, 45, 2070, 0xFFFFFF
+       00 00 2D 00 
+       00 16 08 00 
+       FF FF FF    
+0406F7 01 00 00 2D 0361*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+040706 01 00 00 1B 0362*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+040715 01 00 00 09 0363*   	dl 1, 9, 63, 567, 0xFFFFFF
+       00 00 3F 00 
+       00 37 02 00 
+       FF FF FF    
+040724 01 00 00 09 0364*   	dl 1, 9, 61, 549, 0xFFFFFF
+       00 00 3D 00 
+       00 25 02 00 
+       FF FF FF    
+040733 01 00 00 1B 0365*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+040742 01 00 00 2D 0366*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+040751 01 00 00 40 0367*   	dl 1, 64, 63, 4032, 0xFFFFFF
+       00 00 3F 00 
+       00 C0 0F 00 
+       FF FF FF    
+040760 01 00 00 40 0368*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+04076F 01 00 00 16 0369*   	dl 1, 22, 107, 2354, 0xFFFFFF
+       00 00 6B 00 
+       00 32 09 00 
+       FF FF FF    
+04077E 01 00 00 16 0370*   	dl 1, 22, 105, 2310, 0xFFFFFF
+       00 00 69 00 
+       00 06 09 00 
+       FF FF FF    
+04078D 01 00 00 40 0371*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+04079C 01 00 00 6C 0372*   	dl 1, 108, 107, 11556, 0xFFFFFF
+       00 00 6B 00 
+       00 24 2D 00 
+       FF FF FF    
+0407AB 01 00 00 6A 0373*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+0407BA 01 00 00 6A 0374*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+0407C9 01 00 00 40 0375*   	dl 1, 320, 160, 51200, 0xFFFFFF
+       01 00 A0 00 
+       00 00 C8 00 
+       FF FF FF    
+0407D8 01 00 00 10 0376*   	dl 1, 16, 35, 560, 0xFFFFFF
+       00 00 23 00 
+       00 30 02 00 
+       FF FF FF    
+0407E7 01 00 00 0A 0377*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+0407F6 01 00 00 0A 0378*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+040805 01 00 00 24 0379*   	dl 1, 36, 35, 1260, 0xFFFFFF
+       00 00 23 00 
+       00 EC 04 00 
+       FF FF FF    
+040814 01 00 00 23 0380*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+040823 01 00 00 1A 0381*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+040832 01 00 00 0F 0382*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+040841 01 00 00 05 0383*   	dl 1, 5, 45, 225, 0xFFFFFF
+       00 00 2D 00 
+       00 E1 00 00 
+       FF FF FF    
+040850 01 00 00 05 0384*   	dl 1, 5, 43, 215, 0xFFFFFF
+       00 00 2B 00 
+       00 D7 00 00 
+       FF FF FF    
+04085F 01 00 00 0F 0385*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+04086E 01 00 00 1A 0386*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+04087D 01 00 00 23 0387*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+04088C 01 00 00 2E 0388*   	dl 1, 46, 45, 2070, 0xFFFFFF
+       00 00 2D 00 
+       00 16 08 00 
+       FF FF FF    
+04089B 01 00 00 2D 0389*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+0408AA 01 00 00 1B 0390*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+0408B9 01 00 00 09 0391*   	dl 1, 9, 63, 567, 0xFFFFFF
+       00 00 3F 00 
+       00 37 02 00 
+       FF FF FF    
+0408C8 01 00 00 09 0392*   	dl 1, 9, 61, 549, 0xFFFFFF
+       00 00 3D 00 
+       00 25 02 00 
+       FF FF FF    
+0408D7 01 00 00 1B 0393*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+0408E6 01 00 00 2D 0394*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+0408F5 01 00 00 40 0395*   	dl 1, 64, 63, 4032, 0xFFFFFF
+       00 00 3F 00 
+       00 C0 0F 00 
+       FF FF FF    
+040904 01 00 00 40 0396*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+040913 01 00 00 16 0397*   	dl 1, 22, 107, 2354, 0xFFFFFF
+       00 00 6B 00 
+       00 32 09 00 
+       FF FF FF    
+040922 01 00 00 16 0398*   	dl 1, 22, 105, 2310, 0xFFFFFF
+       00 00 69 00 
+       00 06 09 00 
+       FF FF FF    
+040931 01 00 00 40 0399*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+040940 01 00 00 6C 0400*   	dl 1, 108, 107, 11556, 0xFFFFFF
+       00 00 6B 00 
+       00 24 2D 00 
+       FF FF FF    
+04094F 01 00 00 6A 0401*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+04095E 01 00 00 6A 0402*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+04096D 01 00 00 40 0403*   	dl 1, 320, 160, 51200, 0xFFFFFF
+       01 00 A0 00 
+       00 00 C8 00 
+       FF FF FF    
+04097C 01 00 00 10 0404*   	dl 1, 16, 35, 560, 0xFFFFFF
+       00 00 23 00 
+       00 30 02 00 
+       FF FF FF    
+04098B 01 00 00 0A 0405*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+04099A 01 00 00 0A 0406*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+0409A9 01 00 00 24 0407*   	dl 1, 36, 35, 1260, 0xFFFFFF
+       00 00 23 00 
+       00 EC 04 00 
+       FF FF FF    
+0409B8 01 00 00 23 0408*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+0409C7 01 00 00 1A 0409*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+0409D6 01 00 00 0F 0410*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+0409E5 01 00 00 05 0411*   	dl 1, 5, 45, 225, 0xFFFFFF
+       00 00 2D 00 
+       00 E1 00 00 
+       FF FF FF    
+0409F4 01 00 00 05 0412*   	dl 1, 5, 43, 215, 0xFFFFFF
+       00 00 2B 00 
+       00 D7 00 00 
+       FF FF FF    
+040A03 01 00 00 0F 0413*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+040A12 01 00 00 1A 0414*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+040A21 01 00 00 23 0415*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+040A30 01 00 00 2E 0416*   	dl 1, 46, 45, 2070, 0xFFFFFF
+       00 00 2D 00 
+       00 16 08 00 
+       FF FF FF    
+040A3F 01 00 00 2D 0417*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+040A4E 01 00 00 1B 0418*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+040A5D 01 00 00 09 0419*   	dl 1, 9, 63, 567, 0xFFFFFF
+       00 00 3F 00 
+       00 37 02 00 
+       FF FF FF    
+040A6C 01 00 00 09 0420*   	dl 1, 9, 61, 549, 0xFFFFFF
+       00 00 3D 00 
+       00 25 02 00 
+       FF FF FF    
+040A7B 01 00 00 1B 0421*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+040A8A 01 00 00 2D 0422*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+040A99 01 00 00 40 0423*   	dl 1, 64, 63, 4032, 0xFFFFFF
+       00 00 3F 00 
+       00 C0 0F 00 
+       FF FF FF    
+040AA8 01 00 00 40 0424*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+040AB7 01 00 00 16 0425*   	dl 1, 22, 107, 2354, 0xFFFFFF
+       00 00 6B 00 
+       00 32 09 00 
+       FF FF FF    
+040AC6 01 00 00 16 0426*   	dl 1, 22, 105, 2310, 0xFFFFFF
+       00 00 69 00 
+       00 06 09 00 
+       FF FF FF    
+040AD5 01 00 00 40 0427*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+040AE4 01 00 00 6C 0428*   	dl 1, 108, 107, 11556, 0xFFFFFF
+       00 00 6B 00 
+       00 24 2D 00 
+       FF FF FF    
+040AF3 01 00 00 6A 0429*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+040B02 01 00 00 6A 0430*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+040B11 01 00 00 40 0431*   	dl 1, 320, 160, 51200, 0xFFFFFF
+       01 00 A0 00 
+       00 00 C8 00 
+       FF FF FF    
+040B20 01 00 00 10 0432*   	dl 1, 16, 35, 560, 0xFFFFFF
+       00 00 23 00 
+       00 30 02 00 
+       FF FF FF    
+040B2F 01 00 00 0A 0433*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+040B3E 01 00 00 0A 0434*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+040B4D 01 00 00 24 0435*   	dl 1, 36, 35, 1260, 0xFFFFFF
+       00 00 23 00 
+       00 EC 04 00 
+       FF FF FF    
+040B5C 01 00 00 23 0436*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+040B6B 01 00 00 1A 0437*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+040B7A 01 00 00 0F 0438*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+040B89 01 00 00 05 0439*   	dl 1, 5, 45, 225, 0xFFFFFF
+       00 00 2D 00 
+       00 E1 00 00 
+       FF FF FF    
+040B98 01 00 00 05 0440*   	dl 1, 5, 43, 215, 0xFFFFFF
+       00 00 2B 00 
+       00 D7 00 00 
+       FF FF FF    
+040BA7 01 00 00 0F 0441*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+040BB6 01 00 00 1A 0442*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+040BC5 01 00 00 23 0443*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+040BD4 01 00 00 2E 0444*   	dl 1, 46, 45, 2070, 0xFFFFFF
+       00 00 2D 00 
+       00 16 08 00 
+       FF FF FF    
+040BE3 01 00 00 2D 0445*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+040BF2 01 00 00 1B 0446*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+040C01 01 00 00 09 0447*   	dl 1, 9, 63, 567, 0xFFFFFF
+       00 00 3F 00 
+       00 37 02 00 
+       FF FF FF    
+040C10 01 00 00 09 0448*   	dl 1, 9, 61, 549, 0xFFFFFF
+       00 00 3D 00 
+       00 25 02 00 
+       FF FF FF    
+040C1F 01 00 00 1B 0449*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+040C2E 01 00 00 2D 0450*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+040C3D 01 00 00 40 0451*   	dl 1, 64, 63, 4032, 0xFFFFFF
+       00 00 3F 00 
+       00 C0 0F 00 
+       FF FF FF    
+040C4C 01 00 00 40 0452*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+040C5B 01 00 00 16 0453*   	dl 1, 22, 107, 2354, 0xFFFFFF
+       00 00 6B 00 
+       00 32 09 00 
+       FF FF FF    
+040C6A 01 00 00 16 0454*   	dl 1, 22, 105, 2310, 0xFFFFFF
+       00 00 69 00 
+       00 06 09 00 
+       FF FF FF    
+040C79 01 00 00 40 0455*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+040C88 01 00 00 6C 0456*   	dl 1, 108, 107, 11556, 0xFFFFFF
+       00 00 6B 00 
+       00 24 2D 00 
+       FF FF FF    
+040C97 01 00 00 6A 0457*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+040CA6 01 00 00 6A 0458*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+040CB5 01 00 00 40 0459*   	dl 1, 320, 160, 51200, 0xFFFFFF
+       01 00 A0 00 
+       00 00 C8 00 
+       FF FF FF    
+040CC4 01 00 00 10 0460*   	dl 1, 16, 35, 560, 0xFFFFFF
+       00 00 23 00 
+       00 30 02 00 
+       FF FF FF    
+040CD3 01 00 00 0A 0461*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+040CE2 01 00 00 0A 0462*   	dl 1, 10, 35, 350, 0xFFFFFF
+       00 00 23 00 
+       00 5E 01 00 
+       FF FF FF    
+040CF1 01 00 00 24 0463*   	dl 1, 36, 35, 1260, 0xFFFFFF
+       00 00 23 00 
+       00 EC 04 00 
+       FF FF FF    
+040D00 01 00 00 23 0464*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+040D0F 01 00 00 1A 0465*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+040D1E 01 00 00 0F 0466*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+040D2D 01 00 00 05 0467*   	dl 1, 5, 45, 225, 0xFFFFFF
+       00 00 2D 00 
+       00 E1 00 00 
+       FF FF FF    
+040D3C 01 00 00 05 0468*   	dl 1, 5, 43, 215, 0xFFFFFF
+       00 00 2B 00 
+       00 D7 00 00 
+       FF FF FF    
+040D4B 01 00 00 0F 0469*   	dl 1, 15, 45, 675, 0xFFFFFF
+       00 00 2D 00 
+       00 A3 02 00 
+       FF FF FF    
+040D5A 01 00 00 1A 0470*   	dl 1, 26, 45, 1170, 0xFFFFFF
+       00 00 2D 00 
+       00 92 04 00 
+       FF FF FF    
+040D69 01 00 00 23 0471*   	dl 1, 35, 45, 1575, 0xFFFFFF
+       00 00 2D 00 
+       00 27 06 00 
+       FF FF FF    
+040D78 01 00 00 2E 0472*   	dl 1, 46, 45, 2070, 0xFFFFFF
+       00 00 2D 00 
+       00 16 08 00 
+       FF FF FF    
+040D87 01 00 00 2D 0473*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+040D96 01 00 00 1B 0474*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+040DA5 01 00 00 09 0475*   	dl 1, 9, 63, 567, 0xFFFFFF
+       00 00 3F 00 
+       00 37 02 00 
+       FF FF FF    
+040DB4 01 00 00 09 0476*   	dl 1, 9, 61, 549, 0xFFFFFF
+       00 00 3D 00 
+       00 25 02 00 
+       FF FF FF    
+040DC3 01 00 00 1B 0477*   	dl 1, 27, 63, 1701, 0xFFFFFF
+       00 00 3F 00 
+       00 A5 06 00 
+       FF FF FF    
+040DD2 01 00 00 2D 0478*   	dl 1, 45, 63, 2835, 0xFFFFFF
+       00 00 3F 00 
+       00 13 0B 00 
+       FF FF FF    
+040DE1 01 00 00 40 0479*   	dl 1, 64, 63, 4032, 0xFFFFFF
+       00 00 3F 00 
+       00 C0 0F 00 
+       FF FF FF    
+040DF0 01 00 00 40 0480*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+040DFF 01 00 00 16 0481*   	dl 1, 22, 107, 2354, 0xFFFFFF
+       00 00 6B 00 
+       00 32 09 00 
+       FF FF FF    
+040E0E 01 00 00 16 0482*   	dl 1, 22, 105, 2310, 0xFFFFFF
+       00 00 69 00 
+       00 06 09 00 
+       FF FF FF    
+040E1D 01 00 00 40 0483*   	dl 1, 64, 107, 6848, 0xFFFFFF
+       00 00 6B 00 
+       00 C0 1A 00 
+       FF FF FF    
+040E2C 01 00 00 6C 0484*   	dl 1, 108, 107, 11556, 0xFFFFFF
+       00 00 6B 00 
+       00 24 2D 00 
+       FF FF FF    
+040E3B 01 00 00 6A 0485*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+040E4A 01 00 00 6A 0486*   	dl 1, 106, 160, 16960, 0xFFFFFF
+       00 00 A0 00 
+       00 40 42 00 
+       FF FF FF    
+040E59 01 00 00 40 0487*   	dl 1, 320, 160, 51200, 0xFFFFFF
+       01 00 A0 00 
+       00 00 C8 00 
+       FF FF FF    
+040E68 01 00 00 13 0488*   	dl 1, 19, 18, 342, 0xFFFFFF
+       00 00 12 00 
+       00 56 01 00 
+       FF FF FF    
+040E77 01 00 00 17 0489*   	dl 1, 23, 23, 529, 0xFFFFFF
+       00 00 17 00 
+       00 11 02 00 
+       FF FF FF    
+040E86 01 00 00 1F 0490*   	dl 1, 31, 33, 1023, 0xFFFFFF
+       00 00 21 00 
+       00 FF 03 00 
+       FF FF FF    
+040E95 01 00 00 36 0491*   	dl 1, 54, 56, 3024, 0xFFFFFF
+       00 00 38 00 
+       00 D0 0B 00 
+       FF FF FF    
+040EA4 01 00 00 6A 0492*   	dl 1, 106, 90, 9540, 0xFFFFFF
+       00 00 5A 00 
+       00 44 25 00 
+       FF FF FF    
+040EB3 01 00 00 0B 0493*   	dl 1, 11, 11, 121, 0xFFFFFF
+       00 00 0B 00 
+       00 79 00 00 
+       FF FF FF    
+040EC2 01 00 00 0E 0494*   	dl 1, 14, 14, 196, 0xFFFFFF
+       00 00 0E 00 
+       00 C4 00 00 
+       FF FF FF    
+040ED1 01 00 00 14 0495*   	dl 1, 20, 21, 420, 0xFFFFFF
+       00 00 15 00 
+       00 A4 01 00 
+       FF FF FF    
+040EE0 01 00 00 21 0496*   	dl 1, 33, 36, 1188, 0xFFFFFF
+       00 00 24 00 
+       00 A4 04 00 
+       FF FF FF    
+040EEF 01 00 00 64 0497*   	dl 1, 100, 30, 3000, 0xFFFFFF
+       00 00 1E 00 
+       00 B8 0B 00 
+       FF FF FF    
+040EFE 01 00 00 11 0498*   	dl 1, 17, 11, 187, 0xFFFFFF
+       00 00 0B 00 
+       00 BB 00 00 
+       FF FF FF    
+040F0D 01 00 00 16 0499*   	dl 1, 22, 14, 308, 0xFFFFFF
+       00 00 0E 00 
+       00 34 01 00 
+       FF FF FF    
+040F1C 01 00 00 1E 0500*   	dl 1, 30, 21, 630, 0xFFFFFF
+       00 00 15 00 
+       00 76 02 00 
+       FF FF FF    
+040F2B 01 00 00 33 0501*   	dl 1, 51, 36, 1836, 0xFFFFFF
+       00 00 24 00 
+       00 2C 07 00 
+       FF FF FF    
+040F3A 01 00 00 96 0502*   	dl 1, 150, 30, 4500, 0xFFFFFF
+       00 00 1E 00 
+       00 94 11 00 
+       FF FF FF    
+040F49 01 00 00 0E 0503*   	dl 1, 14, 6, 84, 0xFFFFFF
+       00 00 06 00 
+       00 54 00 00 
+       FF FF FF    
+040F58 01 00 00 11 0504*   	dl 1, 17, 8, 136, 0xFFFFFF
+       00 00 08 00 
+       00 88 00 00 
+       FF FF FF    
+040F67 01 00 00 18 0505*   	dl 1, 24, 11, 264, 0xFFFFFF
+       00 00 0B 00 
+       00 08 01 00 
+       FF FF FF    
+040F76 01 00 00 28 0506*   	dl 1, 40, 18, 720, 0xFFFFFF
+       00 00 12 00 
+       00 D0 02 00 
+       FF FF FF    
+040F85 01 00 00 01 0507*   	dl 1, 1, 1, 1, 0xFFFFFF
+       00 00 01 00 
+       00 01 00 00 
+       FF FF FF    
+040F94 01 00 00 0B 0508*   	dl 1, 11, 11, 121, 0xFFFFFF
+       00 00 0B 00 
+       00 79 00 00 
+       FF FF FF    
+040FA3 01 00 00 0E 0509*   	dl 1, 14, 14, 196, 0xFFFFFF
+       00 00 0E 00 
+       00 C4 00 00 
+       FF FF FF    
+040FB2 01 00 00 14 0510*   	dl 1, 20, 21, 420, 0xFFFFFF
+       00 00 15 00 
+       00 A4 01 00 
+       FF FF FF    
+040FC1 01 00 00 21 0511*   	dl 1, 33, 36, 1188, 0xFFFFFF
+       00 00 24 00 
+       00 A4 04 00 
+       FF FF FF    
+040FD0 01 00 00 64 0512*   	dl 1, 100, 30, 3000, 0xFFFFFF
+       00 00 1E 00 
+       00 B8 0B 00 
+       FF FF FF    
+040FDF             0035        include "timer.inc"
+040FDF             0001*   ; Table 32. Timer Control Registers
+040FDF             0002*   ; this constant is the base address of the timer control registers
+040FDF             0003*   ; each timer takes three bytes:
+040FDF             0004*   ;   0: control register
+040FDF             0005*   ;   1: low byte of timer reset value
+040FDF             0006*   ;   2: high byte of timer reset value
+040FDF             0007*   ; note that the value is only 8-bits,so we use in0/out0 i/o calls,
+040FDF             0008*   ; which correctly force the high and upper bytes of the address bus to zero
+040FDF             0009*   TMR_CTL:     equ 80h
+040FDF             0010*   
+040FDF             0011*   ; Timer Control Register Bit Definitions
+040FDF             0012*   PRT_IRQ_0:    equ %00000000 ; The timer does not reach its end-of-count value.
+040FDF             0013*                               ; This bit is reset to 0 every time the TMRx_CTL register is read.
+040FDF             0014*   PRT_IRQ_1:    equ %10000000 ; The timer reaches its end-of-count value. If IRQ_EN is set to 1,
+040FDF             0015*                               ; an interrupt signal is sent to the CPU. This bit remains 1 until
+040FDF             0016*                               ; the TMRx_CTL register is read.
+040FDF             0017*   
+040FDF             0018*   IRQ_EN_0:     equ %00000000 ; Timer interrupt requests are disabled.
+040FDF             0019*   IRQ_EN_1:     equ %01000000 ; Timer interrupt requests are enabled.
+040FDF             0020*   
+040FDF             0021*   PRT_MODE_0:   equ %00000000 ; The timer operates in SINGLE PASS mode. PRT_EN (bit 0) is reset to
+040FDF             0022*                               ;  0,and counting stops when the end-of-count value is reached.
+040FDF             0023*   PRT_MODE_1:   equ %00010000 ; The timer operates in CONTINUOUS mode. The timer reload value is
+040FDF             0024*                               ; written to the counter when the end-of-count value is reached.
+040FDF             0025*   
+040FDF             0026*   ; CLK_DIV is a 2-bit mask that sets the timer input source clock divider
+040FDF             0027*   CLK_DIV_256:  equ %00001100 ;
+040FDF             0028*   CLK_DIV_64:   equ %00001000 ;
+040FDF             0029*   CLK_DIV_16:   equ %00000100 ;
+040FDF             0030*   CLK_DIV_4:    equ %00000000 ;
+040FDF             0031*   
+040FDF             0032*   RST_EN_0:     equ %00000000 ; The reload and restart function is disabled.
+040FDF             0033*   RST_EN_1:     equ %00000010 ; The reload and restart function is enabled.
+040FDF             0034*                               ; When a 1 is written to this bit,the values in the reload registers
+040FDF             0035*                               ;  are loaded into the downcounter when the timer restarts. The
+040FDF             0036*                               ; programmer must ensure that this bit is set to 1 each time
+040FDF             0037*                               ; SINGLE-PASS mode is used.
+040FDF             0038*   
+040FDF             0039*   ; disable/enable the programmable reload timer
+040FDF             0040*   PRT_EN_0:     equ %00000000 ;
+040FDF             0041*   PRT_EN_1:     equ %00000001 ;
+040FDF             0042*   
+040FDF             0043*   ; Table 37. Timer Input Source Select Register
+040FDF             0044*   ; Each of the 4 timers are allocated two bits of the 8-bit register
+040FDF             0045*   ; in little-endian order,with TMR0 using bits 0 and 1,TMR1 using bits 2 and 3,etc.
+040FDF             0046*   ;   00: System clock / CLK_DIV
+040FDF             0047*   ;   01: RTC / CLK_DIV
+040FDF             0048*   ;   NOTE: these are the values given in the manual,but it may be a typo
+040FDF             0049*   ;   10: GPIO port B pin 1.
+040FDF             0050*   ;   11: GPIO port B pin 1.
+040FDF             0051*   TMR_ISS:   equ 92h ; register address
+040FDF             0052*   
+040FDF             0053*   ; Table 51. Real-Time Clock Control Register
+040FDF             0054*   RTC_CTRL: equ EDh ; register address
+040FDF             0055*   
+040FDF             0056*   ; alarm interrupt disable/enable
+040FDF             0057*   RTC_ALARM_0:    equ %00000000
+040FDF             0058*   RTC_ALARM_1:    equ %10000000
+040FDF             0059*   
+040FDF             0060*   ; interrupt on alarm disable/enable
+040FDF             0061*   RTC_INT_ENT_0:  equ %00000000
+040FDF             0062*   RTC_INT_ENT_1:  equ %01000000
+040FDF             0063*   
+040FDF             0064*   RTC_BCD_EN_0:   equ %00000000   ; RTC count and alarm registers are binary
+040FDF             0065*   RTC_BCD_EN_1:   equ %00100000   ; RTC count and alarm registers are BCD
+040FDF             0066*   
+040FDF             0067*   RTC_CLK_SEL_0:  equ %00000000   ; RTC clock source is crystal oscillator output (32768 Hz).
+040FDF             0068*                                   ; On-chip 32768 Hz oscillator is enabled.
+040FDF             0069*   RTC_CLK_SEL_1:  equ %00010000   ; RTC clock source is power line frequency input as set by FREQ_SEL.
+040FDF             0070*                                   ; On-chip 32768 Hz oscillator is disabled.
+040FDF             0071*   
+040FDF             0072*   RTC_FREQ_SEL_0: equ %00000000   ; 60 Hz power line frequency.
+040FDF             0073*   RTC_FREQ_SEL_1: equ %00001000   ; 50 Hz power line frequency.
+040FDF             0074*   
+040FDF             0075*   RTC_SLP_WAKE_0: equ %00000000   ; RTC does not generate a sleep-mode recovery reset.
+040FDF             0076*   RTC_SLP_WAKE_1: equ %00000010   ; RTC generates a sleep-mode recovery reset.
+040FDF             0077*   
+040FDF             0078*   RTC_UNLOCK_0:   equ %00000000   ; RTC count registers are locked to prevent Write access.
+040FDF             0079*                                   ; RTC counter is enabled.
+040FDF             0080*   RTC_UNLOCK_1:   equ %00000001   ; RTC count registers are unlocked to allow Write access.
+040FDF             0081*                                   ; RTC counter is disabled.
+040FDF             0082*   
+040FDF             0083*   ; prt_reload_emulator: equ 11234 ; 1/102.4 seconds on emulator with 16 clock divider
+040FDF             0084*   
+040FDF             0085*   prt_reload_emulator: equ 11519 ; 1 centisecond on emulator with 16 clock divider
+040FDF             0086*   prt_reload_hardware: equ 11532 ; 1 centisecond on hardware with 16 clock divider
+040FDF 00 00 00    0087*   prt_reload: dl 0x000000
+040FE2             0088*   
+040FE2             0089*   ; ; returns: a = 0 if running on hardware,1 if running on emulator
+040FE2             0090*   ; ;          de = number PRT interrupts during test interval
+040FE2             0091*   ; prt_calibrate:
+040FE2             0092*   ;     call vdu_vblank
+040FE2             0093*   ; ; set a MOS timer
+040FE2             0094*   ;     ld hl,120*1 ; 1 second
+040FE2             0095*   ;     ld iy,tmr_test
+040FE2             0096*   ;     call tmr_set
+040FE2             0097*   ; ; set a PRT timer
+040FE2             0098*   ;     ; ld hl,prt_reload_hardware
+040FE2             0099*   ;     ; ld hl,prt_reload_emulator
+040FE2             0100*   ;     ld hl,prt_reload_emulator + prt_reload_hardware / 2
+040FE2             0101*   ;     ld (prt_reload),hl
+040FE2             0102*   ;     call prt_set
+040FE2             0103*   ; @loop:
+040FE2             0104*   ; ; check time remaining on MOS timer
+040FE2             0105*   ;     call tmr_get
+040FE2             0106*   ;     jp z,@done ; time expired,so quit
+040FE2             0107*   ;     jp m,@done ; time past expiration (negative),so quit
+040FE2             0108*   ;     jr @loop
+040FE2             0109*   ; @done:
+040FE2             0110*   ;     ld de,(prt_irq_counter)
+040FE2             0111*   ;     ld bc,prt_reload_hardware ; default value for running on hardware
+040FE2             0112*   ;     ld (prt_reload),bc
+040FE2             0113*   ;     ld hl,100 ; halfway between 101 for real hardware and 99 for emulator
+040FE2             0114*   ;     xor a ; clear carry,zero is default value for running on hardware
+040FE2             0115*   ;     ld (is_emulator),a
+040FE2             0116*   ;     sbc hl,de
+040FE2             0117*   ;     ld hl,on_hardware ; default message for running on hardware
+040FE2             0118*   ;     jp z,prt_calibrate ; zero result is indeterminate so we try again
+040FE2             0119*   ;     ret m ; negative result means we're on hardware
+040FE2             0120*   ;     inc a ; we're on emulator
+040FE2             0121*   ;     ld (is_emulator),a
+040FE2             0122*   ;     ld bc,prt_reload_emulator
+040FE2             0123*   ;     ld (prt_reload),bc
+040FE2             0124*   ;     ld hl,on_emulator
+040FE2             0125*   ;     ret
+040FE2             0126*   
+040FE2             0127*   ; calibrating_timer: defb "Calibrating timer\r\n",0
+040FE2             0128*   
+040FE2             0129*   ; set PRT timer
+040FE2             0130*   prt_set:
+040FE2 21 00 00 00 0131*       ld hl,0
+040FE6 22 30 10 04 0132*       ld (prt_irq_counter),hl
+040FEA 2A DF 0F 04 0133*       ld hl,(prt_reload)
+040FEE ED 29 84    0134*       out0 ($84),l
+040FF1 ED 21 85    0135*   	out0 ($85),h
+040FF4             0136*   ; disable timer
+040FF4 3E 06       0137*       ld a,PRT_IRQ_0 | IRQ_EN_0 | PRT_MODE_0 | CLK_DIV_16 | RST_EN_1 | PRT_EN_0
+040FF6 ED 39 83    0138*   	out0 ($83),a
+040FF9             0139*   ; enable timer,with interrupt and CONTINUOUS mode,clock divider 16
+040FF9 3E 57       0140*       ld a,PRT_IRQ_0 | IRQ_EN_1 | PRT_MODE_1 | CLK_DIV_16 | RST_EN_1 | PRT_EN_1
+040FFB ED 39 83    0141*   	out0 ($83),a
+040FFE C9          0142*       ret
+040FFF             0143*   
+040FFF             0144*   ; ===============================================
+040FFF             0145*   ; PRT Timer Interrupt Handling
+040FFF             0146*   ; https://github.com/tomm/agon-cpu-emulator/blob/main/sdcard/regression_suite/timerirq.inc
+040FFF             0147*   ; -----------------------------------------------
+040FFF             0148*   prt_irq_init:
+040FFF             0149*       ; set up interrupt vector table 2
+040FFF 21 00 00 00 0150*   	ld hl,0
+041003 3A 0C 01 00 0151*   	ld a,($10c)
+041007 6F          0152*   	ld l,a
+041008 3A 0D 01 00 0153*   	ld a,($10d)
+04100C 67          0154*   	ld h,a
+04100D             0155*   
+04100D             0156*   	; skip over CALL ($c3)
+04100D 23          0157*   	inc hl
+04100E             0158*   	; load address of jump into vector table 2 (in ram)
+04100E ED 27       0159*   	ld hl,(hl)
+041010             0160*   
+041010             0161*   	; write CALL prt_irq_handler to vector table 2
+041010 3E C3       0162*   	ld a,$c3
+041012 77          0163*   	ld (hl),a
+041013 23          0164*   	inc hl
+041014 11 1B 10 04 0165*   	ld de,prt_irq_handler
+041018 ED 1F       0166*   	ld (hl),de
+04101A             0167*   
+04101A C9          0168*       ret
+04101B             0169*   
+04101B             0170*   prt_irq_handler:
+04101B F3          0171*   	di
+04101C F5          0172*   	push af
+04101D E5          0173*       push hl
+04101E ED 38 83    0174*   	in0 a,($83)
+041021 2A 30 10 04 0175*   	ld hl,(prt_irq_counter)
+041025 23          0176*   	inc hl
+041026 22 30 10 04 0177*   	ld (prt_irq_counter),hl
+04102A E1          0178*       pop hl
+04102B F1          0179*   	pop af
+04102C FB          0180*   	ei
+04102D 5B ED 4D    0181*   	reti.l
+041030             0182*   
+041030             0183*   prt_irq_counter:
+041030 00 00 00    0184*   	.dl 0
+041033             0185*   prt_irq_counter_saved:
+041033 00 00 00    0186*       .dl 0
+041036             0187*   
+041036             0188*   prt_loop_reset:
+041036 E5          0189*       push hl
+041037 21 00 00 00 0190*   	ld hl,0
+04103B 22 30 10 04 0191*   	ld (prt_irq_counter),hl
+04103F 22 A1 10 04 0192*       ld (prt_loop_counter),hl
+041043 22 A4 10 04 0193*       ld (prt_loops),hl
+041047 CD E2 0F 04 0194*       call prt_set
+04104B E1          0195*       pop hl
+04104C C9          0196*       ret
+04104D             0197*   
+04104D             0198*   prt_loop_start:
+04104D E5          0199*       push hl
+04104E 21 00 00 00 0200*   	ld hl,0
+041052 22 30 10 04 0201*   	ld (prt_irq_counter),hl
+041056 E1          0202*       pop hl
+041057 C9          0203*       ret
+041058             0204*   
+041058             0205*   prt_loop_stop:
+041058 E5          0206*       push hl
+041059 D5          0207*       push de
+04105A 2A 30 10 04 0208*       ld hl,(prt_irq_counter)
+04105E ED 5B A1 10 0209*       ld de,(prt_loop_counter)
+       04          
+041063 19          0210*       add hl,de
+041064 22 A1 10 04 0211*       ld (prt_loop_counter),hl
+041068 21 00 00 00 0212*       ld hl,0
+04106C 22 30 10 04 0213*       ld (prt_irq_counter),hl
+041070 2A A4 10 04 0214*       ld hl,(prt_loops)
+041074 23          0215*       inc hl
+041075 22 A4 10 04 0216*       ld (prt_loops),hl
+041079 D1          0217*       pop de
+04107A E1          0218*       pop hl
+04107B C9          0219*       ret
+04107C             0220*   
+04107C             0221*   ; inputs: bc = y,x text coordinates to print
+04107C             0222*   prt_loop_print:
+04107C F5          0223*       push af
+04107D E5          0224*       push hl
+04107E C5          0225*       push bc
+04107F D5          0226*       push de
+041080 DD E5       0227*       push ix
+041082 FD E5       0228*       push iy
+041084 CD 18 12 04 0229*       call vdu_move_cursor
+041088             0230*   
+041088 2A A1 10 04 0231*       ld hl,(prt_loop_counter)
+04108C CD 7E 11 04 0232*       call printDec
+041090             0233*   
+041090 2A A4 10 04 0234*       ld hl,(prt_loops)
+041094 CD 7E 11 04 0235*       call printDec
+041098             0236*   
+041098 FD E1       0237*       pop iy
+04109A DD E1       0238*       pop ix
+04109C D1          0239*       pop de
+04109D C1          0240*       pop bc
+04109E E1          0241*       pop hl
+04109F F1          0242*       pop af
+0410A0 C9          0243*       ret
+0410A1             0244*   
+0410A1             0245*   prt_loop_counter:
+0410A1 00 00 00    0246*       .dl 0
+0410A4             0247*   prt_loops:
+0410A4 00 00 00    0248*       .dl 0
+0410A7             0249*   
+0410A7             0250*   ; ===============================================
+0410A7             0251*   ; Timer functions
+0410A7             0252*   ; -----------------------------------------------
+0410A7             0253*   ; set a countdown timer
+0410A7             0254*   ; inputs: hl = time to set in 1/120ths of a second; iy = pointer to 3-byte buffer holding start time,iy+3 = pointer to 3-byte buffer holding timer set value
+0410A7             0255*   ; returns: hl = current time
+0410A7             0256*   tmr_set:
+0410A7 FD 2F 03    0257*       ld (iy+3),hl            ; set time remaining
+0410AA             0258*       MOSCALL mos_sysvars     ; ix points to syvars table
+                       M1 Args: function=mos_sysvars 
+0410AA 3E 08       0001*M1 			LD	A, function
+0410AC 5B CF       0002*M1 			RST.LIL	08h
+0410AE DD 27 00    0259*       ld hl,(ix+sysvar_time)  ; get current time
+0410B1 FD 2F 00    0260*       ld (iy+0),hl            ; set start time
+0410B4 C9          0261*       ret
+0410B5             0262*   
+0410B5             0263*   ; gets time remaining on a countdown timer
+0410B5             0264*   ; inputs: iy = pointer to 3-byte buffer holding start time,iy+3 = pointer to 3-byte buffer holding timer set value
+0410B5             0265*   ; returns: hl pos = time remaining in 1/120ths of a second,hl neg = time past expiration
+0410B5             0266*   ;          sign flags: pos = time not expired,zero or neg = time expired
+0410B5             0267*   tmr_get:
+0410B5             0268*       MOSCALL mos_sysvars     ; ix points to syvars table
+                       M1 Args: function=mos_sysvars 
+0410B5 3E 08       0001*M1 			LD	A, function
+0410B7 5B CF       0002*M1 			RST.LIL	08h
+0410B9 DD 17 00    0269*       ld de,(ix+sysvar_time)  ; get current time
+0410BC FD 27 00    0270*       ld hl,(iy+0)            ; get start time
+0410BF AF          0271*       xor a                   ; clear carry
+0410C0 ED 52       0272*       sbc hl,de               ; hl = time elapsed (will always be zero or negative)
+0410C2 FD 17 03    0273*       ld de,(iy+3)            ; get timer set value
+0410C5 AF          0274*       xor a                   ; clear carry
+0410C6 ED 5A       0275*       adc hl,de               ; hl = time remaining
+0410C8             0276*                               ; (we do adc because add hl,rr doesn't set sign or zero flags)
+0410C8 C9          0277*       ret
+0410C9             0278*   
+0410C9 00 00 00    0279*   timestamp_now: dl 0
+0410CC 00 00 00    0280*   timestamp_old: dl 0
+0410CF 00 00 00    0281*   timestamp_chg: dl 0
+0410D2             0282*   
+0410D2             0283*   ; update the global timestamp from the system clock
+0410D2             0284*   ; inputs: none
+0410D2             0285*   ; returns: hl = time elapsed in 1/120ths of a second
+0410D2             0286*   ;          de = current time
+0410D2             0287*   ;          ix = pointer to syvars table
+0410D2             0288*   ; destroys: af,hl,de,ix
+0410D2             0289*   timestamp_tick:
+0410D2 ED 5B C9 10 0290*       ld de,(timestamp_now)   ; get previous time
+       04          
+0410D7 ED 53 CC 10 0291*       ld (timestamp_old),de   ; save previous time
+       04          
+0410DC             0292*       MOSCALL mos_sysvars     ; ix points to syvars table
+                       M1 Args: function=mos_sysvars 
+0410DC 3E 08       0001*M1 			LD	A, function
+0410DE 5B CF       0002*M1 			RST.LIL	08h
+0410E0 DD 27 00    0293*       ld hl,(ix+sysvar_time)  ; get current time
+0410E3 22 C9 10 04 0294*       ld (timestamp_now),hl   ; save current time
+0410E7 AF          0295*       xor a                   ; clear carry
+0410E8 ED 52       0296*       sbc hl,de               ; hl = time elapsed
+0410EA 22 CF 10 04 0297*       ld (timestamp_chg),hl   ; save elapsed time
+0410EE C9          0298*       ret
+0410EF             0299*   
+0410EF             0300*   ; set a countdown timer
+0410EF             0301*   ; inputs: hl = time to set in 1/120ths of a second; iy = pointer to 3-byte buffer holding start time,iy+3 = pointer to 3-byte buffer holding timer set value
+0410EF             0302*   ; requires: timestamp_tick to be called at least once before this function
+0410EF             0303*   ; returns: hl = current time
+0410EF             0304*   ; destroys: hl
+0410EF             0305*   timestamp_tmr_set:
+0410EF FD 2F 03    0306*       ld (iy+3),hl            ; set time remaining
+0410F2 2A C9 10 04 0307*       ld hl,(timestamp_now)   ; get current timestamp
+0410F6 FD 2F 00    0308*       ld (iy+0),hl            ; set start time
+0410F9 C9          0309*       ret
+0410FA             0310*   
+0410FA             0311*   ; gets time remaining on a countdown timer following the global timestamp
+0410FA             0312*   ; inputs: iy = pointer to 3-byte buffer holding start time,iy+3 = pointer to 3-byte buffer holding timer set value
+0410FA             0313*   ; requires: timestamp_tick to be called at least once before this function
+0410FA             0314*   ; returns: hl pos = time remaining in 1/120ths of a second,hl neg = time past expiration
+0410FA             0315*   ;          sign flags: pos = time not expired,zero or neg = time expired
+0410FA             0316*   ; destroys: af,hl,de
+0410FA             0317*   timestamp_tmr_get:
+0410FA ED 5B C9 10 0318*       ld de,(timestamp_now)   ; get current timestamp
+       04          
+0410FF FD 27 00    0319*       ld hl,(iy+0)            ; get start time
+041102 AF          0320*       xor a                   ; clear carry
+041103 ED 52       0321*       sbc hl,de               ; hl = time elapsed (will always be zero or negative)
+041105 FD 17 03    0322*       ld de,(iy+3)            ; get timer set value
+041108 AF          0323*       xor a                   ; clear carry
+041109 ED 5A       0324*       adc hl,de               ; hl = time remaining
+04110B             0325*                               ; (we do adc because add hl,rr doesn't set sign or zero flags)
+04110B C9          0326*       ret
+04110C             0327*   
+04110C             0328*   ; main loop timer functions
+04110C             0329*   tmr_main_loop: ds 6 ; buffer to hold main loop timer
+041112             0330*   
+041112             0331*   ; set a countdown timer for the main loop using the timestamp timer
+041112             0332*   ; inputs: hl = time to set in 1/120ths of a second
+041112             0333*   ; returns: hl = current time
+041112             0334*   ; destroys: af,hl,de,ix,iy
+041112             0335*   tmr_main_loop_set:
+       FF FF FF FF 
+       FF FF 
+041112 FD 21 0C 11 0336*       ld iy,tmr_main_loop
+       04          
+041117 FD 2F 03    0337*       ld (iy+3),hl ; set time remaining
+04111A CD D2 10 04 0338*       call timestamp_tick
+04111E 2A C9 10 04 0339*       ld hl,(timestamp_now)   ; get current timestamp
+041122 FD 2F 00    0340*       ld (iy+0),hl ; set start time
+041125 C9          0341*       ret
+041126             0342*   
+041126             0343*   ; gets time remaining on the main loop countdown timer following the global timestamp
+041126             0344*   ; returns: hl pos = time remaining in 1/120ths of a second,hl neg = time past expiration
+041126             0345*   ;          sign flags: pos = time not expired,zero or neg = time expired
+041126             0346*   ; destroys: af,hl,de,ix,iy
+041126             0347*   tmr_main_loop_get:
+041126 CD D2 10 04 0348*       call timestamp_tick
+04112A FD 21 0C 11 0349*       ld iy,tmr_main_loop
+       04          
+04112F CD FA 10 04 0350*       call timestamp_tmr_get
+041133 C9          0351*       ret
+041134             0352*   
+041134             0353*   ; set a stopwatch
+041134             0354*   ; returns: hl = start time
+041134             0355*   ; destroys: hl,ix
+041134             0356*   stopwatch_set:
+041134             0357*       MOSCALL mos_sysvars     ; ix points to syvars table
+                       M1 Args: function=mos_sysvars 
+041134 3E 08       0001*M1 			LD	A, function
+041136 5B CF       0002*M1 			RST.LIL	08h
+041138 DD 27 00    0358*       ld hl,(ix+sysvar_time)  ; get current time
+04113B 22 50 11 04 0359*       ld (stopwatch_started),hl            ; set start time
+04113F C9          0360*       ret
+041140             0361*   
+041140             0362*   ; gets time elapsed on a stopwatch
+041140             0363*   ; returns: hl = time elapsed in 1/120ths of a second
+041140             0364*   ; destroys: af,hl,de,ix
+041140             0365*   stopwatch_get:
+041140             0366*       MOSCALL mos_sysvars     ; ix points to syvars table
+                       M1 Args: function=mos_sysvars 
+041140 3E 08       0001*M1 			LD	A, function
+041142 5B CF       0002*M1 			RST.LIL	08h
+041144 DD 27 00    0367*       ld hl,(ix+sysvar_time)  ; get current time
+041147 ED 5B 50 11 0368*       ld de,(stopwatch_started)            ; get start time
+       04          
+04114C AF          0369*       xor a                   ; clear carry
+04114D ED 52       0370*       sbc hl,de               ; hl = time elapsed (will always be zero or positive)
+04114F C9          0371*       ret
+041150             0372*   
+041150             0373*   stopwatch_started: ds 3 ; buffer to hold stopwatch start time
+041153             0374*   
+041153             0375*   ; ------------------
+041153             0376*   ; delay routine
+041153             0377*   ; Author: Richard Turrnidge
+041153             0378*   ; https://github.com/richardturnnidge/lessons/blob/main/slowdown.inc
+041153             0379*   ; routine waits a fixed time,then returns
+041153             0380*   ; arrive with A =  the delay byte. One bit to be set only.
+041153             0381*   ; eg. ld A,00000100b
+041153             0382*   
+041153             0383*   multiPurposeDelay:
+       FF FF FF 
+041153 F5          0384*       push af
+041154 C5          0385*       push bc
+041155 DD E5       0386*       push ix
+041157 47          0387*       ld b,a
+041158 3E 08       0388*       ld a,$08
+04115A 5B CF       0389*       RST.LIL	08h                 ; get IX pointer to sysvars
+04115C             0390*   
+04115C             0391*   waitLoop:
+04115C             0392*   
+04115C DD 7E 00    0393*       ld a,(ix + 0)              ; ix+0h is lowest byte of clock timer
+04115F             0394*   
+04115F             0395*                                   ;   we check if bit set is same as last time we checked.
+04115F             0396*                                   ;   bit 0 - don't use
+04115F             0397*                                   ;   bit 1 - changes 64 times per second
+04115F             0398*                                   ;   bit 2 - changes 32 times per second
+04115F             0399*                                   ;   bit 3 - changes 16 times per second
+04115F             0400*   
+04115F             0401*                                   ;   bit 4 - changes 8 times per second
+04115F             0402*                                   ;   bit 5 - changes 4 times per second
+04115F             0403*                                   ;   bit 6 - changes 2 times per second
+04115F             0404*                                   ;   bit 7 - changes 1 times per second
+04115F A0          0405*       and b
+041160 4F          0406*       ld c,a
+041161 3A 72 11 04 0407*       ld a,(oldTimeStamp)
+041165 B9          0408*       cp c                        ; is A same as last value?
+041166 28 F4       0409*       jr z,waitLoop              ; loop here if it is
+041168 79          0410*       ld a,c
+041169 32 72 11 04 0411*       ld (oldTimeStamp),a        ; set new value
+04116D             0412*   
+04116D DD E1       0413*       pop ix
+04116F C1          0414*       pop bc
+041170 F1          0415*       pop af
+041171 C9          0416*       ret
+041172             0417*   
+041172 00          0418*   oldTimeStamp:   .db 00h
+041173             0036        include "includes.inc"
+041173             0001*   ; Routines selected from loose/src/asm/functions.inc
+041173             0002*   ; Retained in their original source-file order.
+041173             0003*   
+041173             0004*   ; Print a zero-terminated string
+041173             0005*   ; HL: Pointer to string
+041173             0006*   printString:
+041173 C5          0007*       PUSH BC
+041174 01 00 00 00 0008*       LD BC,0
+041178 3E 00       0009*       LD A,0
+04117A 5B DF       0010*       RST.LIL 18h
+04117C C1          0011*       POP BC
+04117D C9          0012*       RET
+04117E             0013*   
+04117E             0014*   ; Prints the right justified decimal value in HL without leading zeroes
+04117E             0015*   ; HL : Value to print
+04117E             0016*   ; preserves all registers and flags
+04117E             0017*   printDec:
+04117E             0018*   ; BEGIN MY CODE
+04117E             0019*   ; back up all the things
+04117E F5          0020*       push af
+04117F C5          0021*       push bc
+041180 D5          0022*       push de
+041181 E5          0023*       push hl
+041182             0024*   ; END MY CODE
+041182 11 AA 11 04 0025*       LD DE, _printDecBuffer
+041186 CD BA 11 04 0026*       CALL u24_to_ascii
+04118A             0027*   ; BEGIN MY CODE
+04118A             0028*   ; replace leading zeroes with spaces
+04118A 21 AA 11 04 0029*       LD HL, _printDecBuffer
+04118E 06 07       0030*       ld B, 7 ; if HL was 0, we want to keep the final zero
+041190             0031*   @loop:
+041190 7E          0032*       LD A, (HL)
+041191 FE 30       0033*       CP '0'
+041193 C2 9D 11 04 0034*       JP NZ, @done
+041197 3E 20       0035*       LD A, ' '
+041199 77          0036*       LD (HL), A
+04119A 23          0037*       INC HL
+04119B             0038*       ; CALL vdu_cursor_forward
+04119B 10 F3       0039*       DJNZ @loop
+04119D             0040*   @done:
+04119D             0041*   ; END MY CODE
+04119D 21 AA 11 04 0042*       LD HL, _printDecBuffer
+0411A1 CD 73 11 04 0043*       CALL printString
+0411A5             0044*   ; BEGIN MY CODE
+0411A5             0045*   ; restore all the things
+0411A5 E1          0046*       pop hl
+0411A6 D1          0047*       pop de
+0411A7 C1          0048*       pop bc
+0411A8 F1          0049*       pop af
+0411A9             0050*   ; END MY CODE
+0411A9 C9          0051*       RET
+0411AA 00 00 00 00 0052*   _printDecBuffer: blkb 16,0 ; a few bytes extra just to be sure
+       00 00 00 00 
+       00 00 00 00 
+       00 00 00 00 
+0411BA             0053*   
+0411BA             0054*   ; This routine converts the unsigned 24-bit value in HLU into it's ASCII representation,
+0411BA             0055*   ; starting to memory location pointing by DE, in decimal form and with leading zeroes
+0411BA             0056*   ; so it will allways be 8 characters length
+0411BA             0057*   ; HL : Value to convert to string
+0411BA             0058*   ; DE : pointer to buffer, at least 8 byte + 0
+0411BA             0059*   u24_to_ascii:
+0411BA 01 80 69 67 0060*       LD BC,-10000000
+0411BE CD F1 11 04 0061*       CALL @one_digit
+0411C2 01 C0 BD F0 0062*       LD BC,-1000000
+0411C6 CD F1 11 04 0063*       CALL @one_digit
+0411CA 01 60 79 FE 0064*       LD BC,-100000
+0411CE CD F1 11 04 0065*       CALL @one_digit
+0411D2 01 F0 D8 FF 0066*       LD BC,-10000
+0411D6 CD F1 11 04 0067*       CALL @one_digit
+0411DA 01 18 FC FF 0068*       LD BC,-1000
+0411DE CD F1 11 04 0069*       CALL @one_digit
+0411E2 01 9C FF FF 0070*       LD BC,-100
+0411E6 CD F1 11 04 0071*       CALL @one_digit
+0411EA 0E F6       0072*       LD C,-10
+0411EC CD F1 11 04 0073*       CALL @one_digit
+0411F0 48          0074*       LD C,B
+0411F1             0075*   @one_digit:
+0411F1 3E 2F       0076*       LD A,'0'-1
+0411F3             0077*   @divide_me:
+0411F3 3C          0078*       INC A
+0411F4 09          0079*       ADD HL,BC
+0411F5 38 FC       0080*       JR C,@divide_me
+0411F7 ED 42       0081*       SBC HL,BC
+0411F9 12          0082*       LD (DE),A
+0411FA 13          0083*       INC DE
+0411FB C9          0084*       RET
+0411FC             0085*   
+0411FC             0086*   
+0411FC             0087*   ; Routines and constants selected from loose/src/asm/vdu.inc
+0411FC             0088*   ; Retained in their original source-file order.
+0411FC             0089*   
+0411FC             0090*   ; &E8-&EF 	232-239 	Bitmap plot §
+0411FC             0091*   plot_bmp: equ 0xE8
+0411FC             0092*   ; 5 	Plot absolute in current foreground colour
+0411FC             0093*   dr_abs_fg: equ 5
+0411FC             0094*   
+0411FC             0095*   cursor_on:
+0411FC 21 07 12 04 0096*   	ld hl,@cmd
+041200 01 03 00 00 0097*   	ld bc,@end-@cmd
+041204 5B DF       0098*   	rst.lil $18
+041206 C9          0099*   	ret
+041207             0100*   @cmd:
+041207 17 01 01    0101*   	db 23,1,1
+04120A             0102*   @end:
+04120A             0103*   
+04120A             0104*   cursor_off:
+04120A 21 15 12 04 0105*   	ld hl,@cmd
+04120E 01 03 00 00 0106*   	ld bc,@end-@cmd
+041212 5B DF       0107*   	rst.lil $18
+041214 C9          0108*   	ret
+041215             0109*   @cmd:
+041215 17 01 00    0110*   	db 23,1,0
+041218             0111*   @end:
+041218             0112*   
+041218             0113*   ; VDU 31, x, y: Move text cursor to x, y text position (TAB(x, y))
+041218             0114*   ; inputs: c=x, b=y 8-bit unsigned integers
+041218             0115*   vdu_move_cursor:
+041218 ED 43 29 12 0116*       ld (@x0),bc
+       04          
+04121D 21 28 12 04 0117*   	ld hl,@cmd
+041221 01 03 00 00 0118*   	ld bc,@end-@cmd
+041225 5B DF       0119*   	rst.lil $18
+041227 C9          0120*   	ret
+041228 1F          0121*   @cmd: 	db 31
+041229 00          0122*   @x0:	db 0
+04122A 00          0123*   @y0: 	db 0
+04122B 00          0124*   @end: 	db 0 ; padding
+04122C             0125*   
+04122C             0126*   ; VDU 12: Clear text area (CLS)
+04122C             0127*   vdu_cls:
+04122C 3E 0C       0128*       ld a,12
+04122E 5B D7       0129*   	rst.lil $10
+041230 C9          0130*   	ret
+041231             0131*   
+041231             0132*   vdu_set_screen_mode:
+041231 32 41 12 04 0133*   	ld (@arg),a
+041235 21 40 12 04 0134*   	ld hl,@cmd
+041239 01 02 00 00 0135*   	ld bc,@end-@cmd
+04123D 5B DF       0136*   	rst.lil $18
+04123F C9          0137*   	ret
+041240 16          0138*   @cmd: db 22 ; set screen mode
+041241 00          0139*   @arg: db 0  ; screen mode parameter
+041242             0140*   @end:
+041242             0141*   
+041242             0142*   ; VDU 23, 0, &C0, n: Turn logical screen scaling on and off *
+041242             0143*   ; inputs: a is scaling mode, 1=on, 0=off
+041242             0144*   ; note: default setting on boot is scaling ON
+041242             0145*   vdu_set_scaling:
+041242 32 54 12 04 0146*   	ld (@arg),a
+041246 21 51 12 04 0147*   	ld hl,@cmd
+04124A 01 04 00 00 0148*   	ld bc,@end-@cmd
+04124E 5B DF       0149*   	rst.lil $18
+041250 C9          0150*   	ret
+041251 17 00 C0    0151*   @cmd: db 23,0,0xC0
+041254 00          0152*   @arg: db 0  ; scaling on/off
+041255             0153*   @end:
+041255             0154*   
+041255             0155*   ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
+041255             0156*   ; &E8-&EF 	232-239 	Bitmap plot §
+041255             0157*   ; VDU 25, mode, x; y;: PLOT command
+041255             0158*   ; inputs: bc=x0, de=y0
+041255             0159*   ; prerequisites: vdu_buff_select
+041255             0160*   vdu_plot_bmp:
+041255 ED 43 6C 12 0161*       ld (@x0),bc
+       04          
+04125A ED 53 6E 12 0162*       ld (@y0),de
+       04          
+04125F 21 6A 12 04 0163*   	ld hl,@cmd
+041263 01 06 00 00 0164*   	ld bc,@end-@cmd
+041267 5B DF       0165*   	rst.lil $18
+041269 C9          0166*   	ret
+04126A 19          0167*   @cmd:   db 25
+04126B ED          0168*   @mode:  db plot_bmp+dr_abs_fg ; 0xED
+04126C 00 00       0169*   @x0: 	dw 0x0000
+04126E 00 00       0170*   @y0: 	dw 0x0000
+041270 00          0171*   @end:   db 0x00 ; padding
+041271             0037    
+041271             0038    init:
+041271             0039    ; set screen mode
+041271             0040        ; ld a,0 ; 640x480x16 single-buffered
+041271             0041        ; ld a,19 ; 1024x768x4 single-buffered
+041271 3E 08       0042        ld a,8 ; 320x240x64 single-buffered
+041273             0043        ; ld a,20 ; 512x384x64 single-buffered
+041273             0044        ; ld a,23 ; 512x384x2 single-buffered
+041273 CD 31 12 04 0045        call vdu_set_screen_mode
+041277             0046    
+041277             0047    ; set screen scaling and background colors
+041277 21 85 12 04 0048        ld hl,@beg
+04127B 01 09 00 00 0049        ld bc,@end-@beg
+04127F 5B DF       0050        rst.lil $18
+041281 C3 8E 12 04 0051        jp @end
+041285             0052    @beg:
+041285             0053    ;   VDU 23, 0, &C0, 0: Normal coordinates
+041285 17 00 C0 00 0054        db 23,0,$C0,0
+041289             0055    ;   VDU 17, color : set text background color
+041289 11 8C       0056        db 17,12+128 ; blue
+04128B             0057    ;   VDU 18, color : set gfx background color
+04128B 12 00 8C    0058        db 18,0,12+128 ; blue
+04128E             0059    @end:
+04128E CD 0A 12 04 0060        call cursor_off
+041292 CD 2C 12 04 0061        call vdu_cls
+041296             0062    
+041296             0063    ; initialize main loop timer
+041296             0064    main_loop_timer_reset: equ 60 ; 120ths of a second
+041296 21 3C 00 00 0065        ld hl,main_loop_timer_reset
+04129A CD 12 11 04 0066        call tmr_main_loop_set
+04129E             0067    
+04129E CD 22 01 04 0068        call tmr_slideshow_set
+0412A2             0069    
+0412A2             0070    ; TODO: read container file and load all images
+0412A2             0071    
+0412A2 C9          0072        ret ; init
+0412A3             0073    
+0412A3             0074    main:
+0412A3 11 00 00 00 0075        ld de, 0
+0412A7 C3 C3 12 04 0076        jp rendbmp
+0412AB             0077    
+0412AB             0078    mainloop:
+0412AB CD B2 00 04 0079        call reset_keys
+0412AF             0080    
+0412AF             0081    waitloop:
+0412AF CD 97 00 04 0082        call set_keys
+0412B3 CD 26 11 04 0083        call tmr_main_loop_get
+0412B7 CA C2 00 04 0084        jp z, do_input
+0412BB FA C2 00 04 0085        jp m, do_input
+0412BF C3 AF 12 04 0086        jp waitloop
+0412C3             0087    
+0412C3             0088    rendbmp:
+0412C3             0089    ; test de for wraparound
+0412C3 21 00 00 00 0090        ld hl,0
+0412C7 AF          0091        xor a ; clear carry
+0412C8 ED 52       0092        sbc hl,de
+0412CA CA DA 12 04 0093        jp z,@not_neg
+0412CE FA DA 12 04 0094        jp m,@not_neg
+0412D2 11 F8 00 00 0095        ld de,num_images-1
+0412D6 C3 E9 12 04 0096        jp @load_image
+0412DA             0097    @not_neg:
+0412DA 21 F8 00 00 0098        ld hl,num_images-1
+0412DE AF          0099        xor a ; clear carry
+0412DF ED 52       0100        sbc hl,de
+0412E1 F2 E9 12 04 0101        jp p,@load_image
+0412E5 11 00 00 00 0102        ld de,0
+0412E9             0103    @load_image:
+0412E9 ED 53 84 00 0104        ld (current_image_index),de
+       04          
+0412EE 16 0F       0105        ld d,image_record_size
+0412F0 ED 5C       0106        mlt de
+0412F2 FD 21 48 01 0107        ld iy,image_list
+       04          
+0412F7 FD 19       0108        add iy,de
+0412F9 FD 7E 00    0109        ld a,(iy+image_type) ; get image type
+0412FC FD 07 03    0110        ld bc,(iy+image_width) ; get image width
+0412FF FD 17 06    0111        ld de,(iy+image_height) ; get image height
+041302 FD 31 09    0112        ld ix,(iy+image_filesize) ; get image file size
+041305             0113    
+041305             0114    ; TODO: implement here everything that vdu_load_img does,
+041305             0115    ; except loading the image buffers from disk since that is already done in the container loader
+041305             0116    
+041305             0117    
+041305             0118    ; plot image
+041305 CD 2C 12 04 0119        call vdu_cls
+041309 01 00 00 00 0120        ld bc,0 ; x
+04130D 11 00 00 00 0121        ld de,0 ; y
+041311 CD 55 12 04 0122        call vdu_plot_bmp
+041315             0123    
+041315             0124    no_move:
+041315 21 3C 00 00 0125        ld hl,main_loop_timer_reset
+041319 CD 12 11 04 0126        call tmr_main_loop_set
+04131D C3 AB 12 04 0127        jp mainloop
+041321             0128    
+041321             0129    main_end:
+041321             0130    ; exit program gracefully
+041321 AF          0131        xor a ; 640x480x16 single-buffered
+041322 CD 31 12 04 0132        call vdu_set_screen_mode
+041326 3E 01       0133        ld a,1 ; scaling on
+041328 CD 42 12 04 0134        call vdu_set_scaling
+04132C CD FC 11 04 0135        call cursor_on
+041330 C9          0136        ret
+041331             0137    
+041331             0138    ; load to onboard 8k sram
+041331             0139    filedata: equ 0xB7E000

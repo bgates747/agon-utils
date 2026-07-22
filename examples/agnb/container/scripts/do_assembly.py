@@ -45,6 +45,7 @@ and any size that cannot be represented by the required u32 field.
 
 import argparse
 import struct
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -66,6 +67,10 @@ MANIFEST_FILE = SHARED_PROCESSED_DIR / MANIFEST_FILENAME
 TARGET_DIR = CONTAINER_DIR / "tgt"
 CONTAINER_FILE = TARGET_DIR / "images.agnb"
 ASM_IMAGES_FILE = CONTAINER_DIR / "src" / "asm" / "images.inc"
+ASM_DIR = CONTAINER_DIR / "src" / "asm"
+ASM_APP_FILE = ASM_DIR / "app.asm"
+APP_BINARY_FILE = TARGET_DIR / "app.bin"
+APP_BINARY_ASM_PATH = Path("../../tgt/app.bin")
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 1
@@ -201,6 +206,34 @@ def write_images_include(records: list[ImageRecord]) -> None:
     print(f"Generated {ASM_IMAGES_FILE} from {len(records)} manifest entries")
 
 
+def run_ez80asm() -> None:
+    """Generate application metadata and assemble the container test app."""
+    records = load_image_records()
+    write_images_include(records)
+    TARGET_DIR.mkdir(parents=True, exist_ok=True)
+
+    try:
+        result = subprocess.run(
+            ["ez80asm", "-l", ASM_APP_FILE.name, str(APP_BINARY_ASM_PATH)],
+            cwd=ASM_DIR,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError as error:
+        if error.stdout:
+            print(error.stdout, end="")
+        if error.stderr:
+            print(error.stderr, end="", file=sys.stderr)
+        raise SystemExit(error.returncode) from error
+
+    if result.stdout:
+        print(result.stdout, end="")
+    if result.stderr:
+        print(result.stderr, end="", file=sys.stderr)
+    print(f"Generated {APP_BINARY_FILE}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Build the container-based AGNB test harness."
@@ -211,10 +244,22 @@ def main() -> None:
         action="store_true",
         help="Compile the shared image assets into images.agnb.",
     )
-    parser.parse_args()
+    parser.add_argument(
+        "-a",
+        "--assemble",
+        action="store_true",
+        help="Generate images.inc and assemble app.asm into app.bin.",
+    )
+    args = parser.parse_args()
 
-    # With only one implemented step, no options and -b intentionally agree.
-    write_container()
+    if not args.build_container and not args.assemble:
+        write_container()
+        run_ez80asm()
+    else:
+        if args.build_container:
+            write_container()
+        if args.assemble:
+            run_ez80asm()
 
 
 if __name__ == "__main__":
