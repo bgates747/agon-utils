@@ -45,11 +45,12 @@ The principal local sources are:
 
 Relevant implementation sources under `examples/agnb` are:
 
-- `src/asm/app.asm`
-- `src/asm/vdu.inc`
-- `src/asm/mos_api.inc`
-- generated `src/asm/images.inc`
-- `src/asm/input.inc` and `src/asm/timer.inc` for the slideshow test harness
+- `loose/src/asm/app.asm`
+- `loose/src/asm/vdu.inc`
+- `loose/src/asm/mos_api.inc`
+- generated `loose/src/asm/images.inc`
+- `loose/src/asm/input.inc` and `loose/src/asm/timer.inc` for the slideshow
+  test harness
 - `docs/agon-buffer-file-format-specification.md`
 - `docs/image-load-flow-and-metadata-layout.md`
 
@@ -124,7 +125,7 @@ has additional costs:
 - FatFS filenames must already be fully resolved; and
 - MOS 3 path variables are not interpreted by direct FatFS calls.
 
-The harness's `mos_api.inc` contains field offsets for a `FIL` layout but no
+The loose harness's `mos_api.inc` contains field offsets for a `FIL` layout but no
 complete `FIL_SIZE`. Letting MOS own the `FIL` avoids binding the loader to that
 structure layout.
 
@@ -138,7 +139,7 @@ are possible:
 - on MOS 3, use the preferred pointer-based `mos_flseek_p` with an absolute
   32-bit offset.
 
-The current `mos_api.inc` predates MOS 3 and does not define `mos_flseek_p`
+The loose harness's `mos_api.inc` predates MOS 3 and does not define `mos_flseek_p`
 (`0x24`) or the newer path APIs. A clean implementation should refresh the MOS
 equates from the current official include before relying on MOS 3 calls.
 
@@ -265,8 +266,8 @@ VDU 23, 27, &20, bufferId;
 VDU 23, 27, &21, width; height; format
 ```
 
-The harness already implements these as `vdu_buff_select` and
-`vdu_bmp_create` in `src/asm/vdu.inc`. Their calling convention is suitable for
+The loose harness already implements these as `vdu_buff_select` and
+`vdu_bmp_create` in `loose/src/asm/vdu.inc`. Their calling convention is suitable for
 an `.agnb` image finalizer:
 
 - `HL` = buffer ID for `vdu_buff_select`;
@@ -286,15 +287,25 @@ project's converter: alpha in bits 7–6, blue 5–4, green 3–2, red 1–0.
 
 The VDP validates the dimensions against available data. The `.agnb` parser
 should validate first so malformed files fail deterministically on the eZ80.
-For RGBA2222, `DATA size = width × height`. RGBA8888 uses four times that size.
-Mono/mask uses `ceil(width / 8) × height`.
+The initial loader supports only RGBA2222 and must reject other format IDs
+before reading or uploading their `DATA`. For RGBA2222,
+`DATA size = width × height`.
+
+Future format support should reuse the same raw-byte transport and
+finalization path where possible, adding only format-specific metadata and size
+validation. RGBA8888 would use `width × height × 4`; its multi-byte pixels do
+not otherwise change streaming. Mono/mask would use
+`ceil(width / 8) × height`, because every bit-packed row occupies a whole
+number of bytes.
 
 ### Contiguity and consolidation
 
 Unlike audio, a bitmap cannot be used while its bytes remain in multiple VDP
 blocks. If the image fits in one command-0 block (at most 65,535 bytes), the
-loader should normally declare one block and feed it through repeated scratch
-transfers. No consolidation is then needed.
+loader could declare one block and feed it through repeated scratch transfers,
+in which case no consolidation would be needed. The adopted `.agnb` loader
+does not use that optimization: it creates one VDP block per scratch-window
+read and consolidates every completed image.
 
 An image of exactly 65,536 bytes—such as a 256×256 RGBA2222 bitmap—does not fit
 in one command-0 block. It must be uploaded as two or more blocks, followed by:
@@ -307,6 +318,12 @@ Command 14 consolidates all blocks into one. It can fail if the VDP lacks
 memory and provides no status response; the documentation says the original
 buffer is left unchanged on insufficient memory. Consolidation may also impose
 temporary memory pressure, so keeping small images in one block is preferable.
+
+For this loader, the universal one-block-per-read path is preferred despite
+that possible cost. It is already proven by the loose-file harness, works for
+images on either side of the 65,535-byte block limit, avoids a size-dependent
+transport branch, and requires less assembly code. Consolidation is therefore
+an unconditional image-finalization step after a successful upload.
 
 Creating the bitmap must be the final operation after all writes and any
 consolidation. Later operations that create new blocks, including further
@@ -339,10 +356,13 @@ response; zero is a reasonable loader convention. The format byte is:
 - bit `0x10`: the sample is tuneable.
 
 Without an explicit rate, the documented VDP default is approximately 16.384
-kHz. This establishes a concrete initial `AUDI` form for the `.agnb`
-specification: at minimum it needs the VDP format byte and, when bit `0x08` is
-set, a 16-bit sample rate. Tuneable samples may later also need an explicit base
-frequency operation depending on application requirements.
+kHz. Together with the audio conventions already described by the production
+AgonJuekbox application specification, this provides implementation precedent
+for a future `AUDI` design. It does not yet establish a normative generic
+`.agnb` form. The later format work is expected to consider at least the VDP
+format byte and, when bit `0x08` is set, a 16-bit sample rate. Tuneable samples
+may also need an explicit base-frequency operation depending on application
+requirements.
 
 The focused AGNB slideshow harness does not currently contain audio routines.
 Audio support should therefore be added only after the image container path is
@@ -391,8 +411,8 @@ The current loose-file metadata table uses five 24-bit fields per image even
 though the VDP needs only a 16-bit buffer ID plus five image-description bytes.
 The current `MLT DE` index calculation also uses only the 8-bit `E` half of the
 image index, so it cannot uniquely address all 408 records. Container preload
-removes that path: each record carries its compile-time buffer ID and image
-metadata, and slideshow selection can use sequential buffer IDs directly.
+removes that load-time path: each record carries the exact buffer ID supplied
+by the writer, and the reader validates and uses it unchanged.
 
 The current `IX` file-size field is passed to `vdu_load_img` but is not consumed
 by the loose-file reader. In `.agnb`, the `DATA` chunk size becomes the
@@ -430,8 +450,11 @@ The first implementation should remain deliberately layered.
 
 - require one `BHDR` before a form descriptor and `DATA`;
 - reject buffer ID `0xFFFF`;
-- parse `IMAG`, `AUDI`, or skip an unsupported record;
-- validate metadata before beginning a VDP payload command;
+- parse and validate `IMAG`, or skip an unsupported record in a conforming
+  reader;
+- read the `DATA` header and validate its declared size and enclosing bounds;
+- do not read any `DATA` payload bytes or begin any VDP command until all
+  record metadata has passed validation;
 - clear the destination buffer;
 - stream exactly the declared `DATA` bytes; and
 - perform form-specific finalization only after a complete transfer.
@@ -441,16 +464,18 @@ The first implementation should remain deliberately layered.
 - `vdu_buffer_clear`: emit buffered command 2 for one ID;
 - reuse `vdu_load_buffer` for each scratch-buffer piece, creating one VDP block
   per `mos_fread` result;
-- reuse `vdu_consolidate_buffer` after the complete image `DATA` payload;
+- always reuse `vdu_consolidate_buffer` after the complete image `DATA`
+  payload;
 - reuse `vdu_buff_select` for the stored `BHDR` buffer ID;
 - either reuse `vdu_bmp_create` or send the retained five-byte `IMAG` payload
   directly after the `23,27,&21` prefix; and
 - add audio transport/finalization separately when `AUDI` is implemented.
 
-The existing approach—one VDP block per 8 KiB read followed by consolidation—is
-already proven by the loose-file harness and is the safest first implementation.
-Separating “begin VDP block” from “send bytes” remains a possible optimization
-if later benchmarks show value in creating larger VDP blocks.
+The existing approach—one VDP block per bounded read followed by unconditional
+consolidation—is the adopted implementation. It is already proven by the
+loose-file harness and gives one transport path for every supported image size,
+avoiding block-limit checks and the additional assembly needed for two upload
+strategies.
 
 ## Scratch memory
 
@@ -522,15 +547,16 @@ for a valid asset. A form must not be finalized after a short or failed upload.
    preferred 32-bit seek and flag helpers.
 2. Minimum VDP version. Buffer-based bitmaps and enhanced sample features have
    version-specific availability.
-3. Whether the first loader supports only `IMAG`/RGBA2222 or implements `AUDI`
-   immediately.
-4. Whether the first container loader keeps the proven one-VDP-block-per-read
-   strategy or introduces a larger logical block optimization.
+3. The first loader supports only `IMAG`/RGBA2222. Other image formats and
+   `AUDI` are possible later extensions.
+4. The loader uses the proven one-VDP-block-per-read strategy and always
+   consolidates an image after upload; it does not implement a larger logical
+   block optimization.
 5. Whether unsupported records are skipped or make the whole application pack
    invalid.
 6. Whether audio creation responses are required or merely diagnostic.
-7. Whether the initial implementation supports arbitrary buffer IDs at display
-   time or relies on the packer's sequential IDs from a known base.
+7. The writer specifies every buffer ID. The reader validates and uses each ID
+   unchanged; it does not allocate, derive, auto-increment, or remap IDs.
 
 ## Suggested first vertical slice
 
@@ -541,7 +567,10 @@ compile-time buffer IDs.
 Implement only:
 
 - one `mos_fopen`/repeated `mos_fread`/`mos_fclose` stream;
-- RIFF, `VERS`, `LIST BUFR`, `BHDR`, `IMAG`, and `DATA` parsing;
+- strict parsing of the expected RIFF, `VERS`, and `LIST BUFR` structure with
+  `BHDR`, `IMAG`, and `DATA` in the required order;
+- complete validation of each record's metadata and declared `DATA` size before
+  reading any of its payload or issuing any VDP command;
 - clear, repeated scratch-capacity-bounded VDP blocks, consolidate, select, and create;
   and
 - strict status/size cleanup paths.
@@ -550,3 +579,9 @@ Once those two images render correctly on hardware, expand the pack to the full
 408-image benchmark, then add unknown-chunk seeking and `AUDI` in separate
 steps. This keeps container parsing, SD throughput, VDP block construction, and
 form finalization independently testable.
+
+Because this first slice recognizes only the exact expected chunk set and does
+not yet skip unknown optional chunks or unsupported record forms, it is a
+restricted implementation prototype, not a fully conforming version 0.1
+reader. Conformance requires the skip behavior in the format specification;
+read-and-discard is sufficient and does not require MOS 3 seeking.

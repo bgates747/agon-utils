@@ -151,8 +151,9 @@ Icon?
 !examples/jukebox/tgt/
 
 # AGNB generated and working directories
-examples/agnb/.emulator/
-examples/agnb/assets/orig/
-examples/agnb/assets/processed/
-examples/agnb/build/
-examples/agnb/tgt/
+examples/agnb/loose/.emulator/
+examples/agnb/loose/assets/orig/
+examples/agnb/loose/assets/processed/
+examples/agnb/loose/build/
+examples/agnb/loose/tgt/
+examples/agnb/container/tgt/

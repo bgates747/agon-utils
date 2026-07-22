@@ -30,14 +30,10 @@ intermediates and are outside this specification.
 
 ### 2.1 Buffer IDs are explicit
 
-Every buffer record stores the exact 16-bit VDP buffer ID expected by the
-assembly program. Buffer IDs are compile-time application specifications; the
-loader does not allocate them dynamically and does not construct a runtime
-logical-ID-to-buffer-ID mapping.
-
-Consequently, record order has no effect on application semantics. A packer may
-reorder records for build or loading convenience without requiring the program
-to be reassembled.
+The writer must specify the exact 16-bit VDP buffer ID in every buffer record.
+The reader validates that ID and uses it unchanged. It must not allocate,
+derive, auto-increment, or remap buffer IDs. Record order has no effect on a
+record's destination.
 
 ### 2.2 The container is form-independent
 
@@ -172,6 +168,11 @@ A version 0.1 buffer record contains, in this order:
 Optional ancillary chunks may be defined later. A record's metadata must occur
 before its `DATA` chunk so that the data can be streamed in one pass.
 
+A reader must validate `BHDR`, the form descriptor, the `DATA` chunk header,
+the declared payload size, and the enclosing boundaries before it reads or
+uploads any `DATA` payload bytes. Invalid or unsupported metadata therefore
+fails or skips the record without beginning a partial VDP upload.
+
 Records may appear in any order. A conforming version 0.1 file must not contain
 two records with the same VDP buffer ID. Duplicate IDs are an error rather than
 an implicit overwrite operation.
@@ -192,6 +193,11 @@ There is no separate logical record ID, runtime allocation marker, flag byte,
 or reserved field. A future optional name or source identifier would be stored
 in a separate ancillary chunk and would not replace the buffer ID used by the
 program.
+
+Buffer ID `0xFFFF` is reserved by the VDP and is not a valid asset-buffer
+destination. A loader must reject any buffer record whose `BHDR` specifies
+`0xFFFF`; it must fail the load before issuing a clear, upload, or other VDP
+command for that record.
 
 ## 9. Form Descriptors
 
@@ -220,9 +226,11 @@ bytes likewise match the buffer-ID argument used by the VDP buffer commands.
 Together these values provide all metadata needed to load the buffer and create
 the VDP bitmap after its pixel bytes have been transferred.
 
-Image format `1` is RGBA2222 at one byte per pixel. Its `DATA` payload is in
-row-major order: rows proceed from top to bottom and pixels within each row
-from left to right. Rows contain no padding.
+Version 0.1 supports only image format `1`, RGBA2222 at one byte per pixel. A
+version 0.1 writer must not emit another image format, and a reader must reject
+an unsupported `IMAG` format before it reads or uploads any `DATA` payload
+bytes. Its `DATA` payload is in row-major order: rows proceed from top to bottom
+and pixels within each row from left to right. Rows contain no padding.
 
 For format `1`, the `DATA` payload size must equal:
 
@@ -241,6 +249,12 @@ Each RGBA2222 pixel byte uses the Agon VDP layout:
 
 Each component ranges from 0 through 3.
 
+Other VDP bitmap formats may be specified later. They need not change the
+container's raw-byte transport or bitmap-finalization sequence, but each format
+must define its exact stored layout and `DATA`-size validation. In particular,
+multi-byte pixels require the appropriate bytes-per-pixel factor, while
+bit-packed formats may require each row to round up to a whole-byte boundary.
+
 After loading `DATA` into the buffer named by `BHDR`, the loader creates the VDP
 bitmap using that same buffer ID and the `IMAG` format, width, and height.
 
@@ -250,6 +264,12 @@ bitmap using that same buffer ID and the `IMAG` format, width, and height.
 payload layout is not yet specified. Its design must be based on the metadata
 actually required by the intended VDP audio-buffer calls rather than on
 speculative reserved fields.
+
+The production AgonJuekbox application specification already describes the
+audio conventions that will inform this work. They are an implementation
+precedent, not yet the normative generic `.agnb` `AUDI` contract. A later
+revision will translate the applicable conventions into formal container
+fields, validation rules, and loader behavior.
 
 Until an `AUDI` payload is defined by a later revision, a version 0.1 writer
 must not emit `AUDI` records and a reader must treat them as unsupported form
@@ -288,9 +308,12 @@ A single-pass loader can process a version 0.1 file as follows:
 3. Read each top-level chunk in sequence.
 4. For a `LIST BUFR`, read and validate `BHDR` and its form descriptor.
 5. Reject a duplicate buffer ID.
-6. Select and clear the buffer specified by `BHDR`.
-7. Stream `DATA` into that buffer in bounded transfer blocks.
-8. Validate the transferred byte count against the form descriptor.
+6. Read and validate the `DATA` chunk header, its declared size against the
+   form descriptor, and its bounds within the enclosing `LIST` and `RIFF`.
+7. Only after all record metadata passes validation, select and clear the
+   buffer specified by `BHDR`.
+8. Stream exactly the declared `DATA` bytes into that buffer in bounded
+   transfer blocks.
 9. Perform the form-specific VDP finalization operation; for `IMAG`, create the
    bitmap using its format, width, and height.
 10. Continue to the next record without closing or reopening the file.
@@ -322,11 +345,14 @@ A conforming version 0.1 reader must:
 - reject truncated headers, lists, chunks, and payloads;
 - reject missing or duplicate required chunks;
 - reject invalid record ordering;
+- reject a `BHDR` buffer ID of `0xFFFF` before issuing any VDP command for that
+  record;
 - reject unsupported required forms or safely skip their complete records;
 - skip unknown optional chunks using their declared sizes;
 - observe four-byte chunk alignment;
 - prevent chunk sizes from escaping their enclosing `LIST` or `RIFF` boundary;
 - validate known form metadata and `DATA` sizes; and
+- reject an unsupported `IMAG` format before reading or uploading its `DATA`;
 - never silently assign a different VDP buffer ID.
 
 ## 14. Compile-Time Contract
@@ -343,6 +369,9 @@ BUF_SHOT:    equ 64000
 the corresponding `.agnb` records carry exactly those numeric IDs. Reordering
 the records does not change their identities. Changing an ID requires updating
 the authoritative compile-time data used by both the assembly and the packer.
+
+The onus is entirely on the writer to emit the intended ID for every record.
+The reader only validates and uses that explicit value.
 
 How that shared build data is generated is outside the on-disk specification.
 

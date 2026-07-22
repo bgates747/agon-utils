@@ -20,8 +20,27 @@ session log or duplicate project specifications here.
   issue.
 - The user may manually move, rename, edit, build, or test files between
   prompts. Reinspect current state rather than assuming it is unchanged.
+- Present design work in small, sequential, implementation-sized decisions.
+  Do not assume the user has absorbed a complete design document before coding;
+  introduce the next relevant constraint when it becomes actionable and work
+  through it collaboratively.
+- The user may intentionally discover or decide behavior while coding and let
+  the code serve as the working specification. Treat that behavior as
+  provisional until it is tested and agreed, then distill the durable contract
+  into the authoritative specification instead of requiring an up-front,
+  exhaustive design pass.
 
 ## Documentation roles
+
+The local checkout of the official Agon platform documentation is rooted at:
+
+```text
+/home/smith/Agon/agon-docs/docs
+```
+
+Use this as the first source for MOS, VDP, API, and platform behavior when
+working on Agon projects. Project-specific technical precis documents should
+record the exact files consulted and the conclusions relevant to that project.
 
 - **Specification:** the authoritative, normative description of a format or
   interface. Keep it compact and current.

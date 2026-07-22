@@ -7,22 +7,22 @@ reordering by the eZ80.
 
 ## Current loose-file path
 
-The application entry point is `start` in `src/asm/app.asm`.
+The application entry point is `start` in `loose/src/asm/app.asm`.
 
 1. `start` calls `init`, both in `app.asm`.
 2. `init` performs the display and timer setup:
-   - `vdu_set_screen_mode` in `src/asm/vdu.inc`
-   - `cursor_off` in `vdu.inc`
-   - `vdu_cls` in `vdu.inc`
-   - `tmr_main_loop_set` in `src/asm/timer.inc`
-   - `tmr_slideshow_set` in `src/asm/input.inc`
+   - `vdu_set_screen_mode` in `loose/src/asm/vdu.inc`
+   - `cursor_off` in `loose/src/asm/vdu.inc`
+   - `vdu_cls` in `loose/src/asm/vdu.inc`
+   - `tmr_main_loop_set` in `loose/src/asm/timer.inc`
+   - `tmr_slideshow_set` in `loose/src/asm/input.inc`
 3. `start` calls `main` in `app.asm`.
 4. `main` sets the image index in `DE` to zero and jumps to `rendbmp`, also in
    `app.asm`.
 5. `rendbmp` bounds-checks the index against `num_images`, then enters
    `@load_image`.
 6. `@load_image` locates one 15-byte record in `image_list`, defined in
-   `src/asm/images.inc`, and loads its fields into registers.
+`loose/src/asm/images.inc`, and loads its fields into registers.
 7. `@load_image` sets the destination VDP buffer ID to 256 and calls
    `vdu_load_img` in `vdu.inc`.
 8. After the load and bitmap creation complete, `@load_image` calls `vdu_cls`
@@ -58,7 +58,7 @@ VDP data contract. The VDP needs an 8-bit format and 16-bit width and height.
 The filename pointer is meaningful only inside the assembled program, and the
 file size is already available in a container's `DATA` chunk header.
 
-There is also an indexing limitation in the current calculation:
+There is also an indexing limitation in the current loose-file calculation:
 
 ```asm
 ld d,image_record_size
@@ -67,9 +67,9 @@ mlt de
 
 `MLT DE` multiplies the 8-bit `D` and `E` halves. Setting `D` to 15 therefore
 discards the high byte of the image index. With 408 records, indices above 255
-cannot address their unique records through this calculation. A preloaded
-container player can avoid this multiply entirely if buffer IDs are sequential:
-the selected buffer ID is simply the base ID plus the full image index.
+cannot address their unique records through this calculation. Container
+loading removes this table calculation from the load path because every record
+contains the exact buffer ID supplied by the writer.
 
 ## `vdu_load_img` call chain
 
@@ -194,6 +194,12 @@ A first implementation should reject a chunk whose size exceeds the loader's
 supported 24-bit range and must never read beyond its enclosing RIFF/LIST
 boundary.
 
+The initial implementation accepts only `IMAG` format 1/RGBA2222 and validates
+`DATA size = width × height` before reading the payload. Other image formats
+are deferred. If added later, they should retain this same transport flow and
+add only the necessary layout and size validation: for example, RGBA8888 has
+four bytes per pixel, while mono/mask rows must round up to whole bytes.
+
 The five-byte `IMAG` payload receives three RIFF padding bytes because chunks
 are four-byte aligned. Those bytes are not part of the payload. A loader may
 consume the known padding efficiently, but it should continue to derive padding
@@ -211,15 +217,31 @@ image_desc: 5 bytes, width + height + format copied directly from IMAG
 The processing sequence is then:
 
 1. Read and retain the two `BHDR` bytes.
-2. Read and retain the five reordered `IMAG` bytes.
-3. On reaching `DATA`, send a clear-buffer command using the retained `BHDR`.
-4. Stream `DATA` in bounded blocks. For every block, send the upload prefix,
+2. Read and retain the five `IMAG` bytes.
+3. Read the `DATA` chunk header and validate the retained `BHDR`, `IMAG`,
+   declared `DATA` size, and enclosing chunk boundaries as one metadata set.
+4. Only if all metadata tests pass, send a clear-buffer command using the
+   retained `BHDR`. Do not read payload bytes or alter the VDP buffer before
+   this point.
+5. Stream exactly the declared `DATA` bytes in bounded blocks. For every block,
+   send the upload prefix,
    retained `BHDR`, upload opcode, calculated 16-bit block length, and the raw
    block bytes.
-5. Send consolidate and select commands using the retained `BHDR`.
-6. Send the bitmap-create prefix followed directly by the retained `IMAG`
+6. Always send consolidate and select commands using the retained `BHDR`.
+7. Send the bitmap-create prefix followed directly by the retained `IMAG`
    bytes.
-7. Continue to the next `LIST BUFR` without closing or reopening the container.
+8. Continue to the next `LIST BUFR` without closing or reopening the container.
+
+The first two-image vertical slice may reject any structure other than this
+exact required sequence. It is therefore a restricted parser prototype until
+unknown optional chunks and unsupported record forms can be skipped safely as
+required by the container specification.
+
+Unconditional consolidation is an adopted loader simplification. Each bounded
+file read becomes one VDP block, and every successfully uploaded image is then
+consolidated before bitmap creation. This single path is already known to work,
+handles images both below and above the VDP's 65,535-byte per-block limit, and
+avoids size-dependent transport logic and its additional code.
 
 After all images are loaded, changing slides needs no file access and no bitmap
 creation. The display path becomes:
@@ -229,11 +251,9 @@ creation. The display path becomes:
 3. Optionally call `vdu_cls`.
 4. Call `vdu_plot_bmp`.
 
-If buffer IDs are guaranteed to be sequential from a known base, no per-image
-runtime metadata table is required for this slideshow. The full image index can
-simply be added to the base ID. If arbitrary IDs must be supported later, the
-display table need contain only one 16-bit buffer ID per image; width, height,
-format, filename pointers, and file sizes are not needed after bitmap creation.
+Buffer IDs are always supplied explicitly by the container writer. The reader
+validates and uses each value unchanged; it never derives an ID from record
+order or an image index.
 
 ## Adopted specification layout
 
