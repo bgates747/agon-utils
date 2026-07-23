@@ -32,8 +32,8 @@ PC     Output      Line
 04004A FD E5       0016        push iy
 04004C             0017    
 04004C             0018        ; jp temp
-04004C CD 0E 28 04 0019        call init
-040050 CD 40 28 04 0020        call main
+04004C CD F8 26 04 0019        call init
+040050 CD 2A 27 04 0020        call main
 040054             0021    
 040054             0022    exit:
 040054 FD E1       0023        pop iy
@@ -100,530 +100,541 @@ PC     Output      Line
 040060             0052*   			RST.LIL	08h
 040060             0053*   	ENDMACRO
 040060             0054*   
-040060             0055*   ; MOS high level functions
-040060             0056*   ;
-040060             0057*   ; Get keycode
-040060             0058*   ; Returns:
-040060             0059*   ;  A: ASCII code of key pressed, or 0 if no key pressed
-040060             0060*   mos_getkey:			EQU	00h
-040060             0061*   
-040060             0062*   ; Load an area of memory from a file.
-040060             0063*   ; HLU: Address of filename (zero terminated)
-040060             0064*   ; DEU: Address at which to load
-040060             0065*   ; BCU: Maximum allowed size (bytes)
-040060             0066*   ; Returns:
-040060             0067*   ; - A: File error, or 0 if OK
-040060             0068*   ; - F: Carry reset indicates no room for file.
-040060             0069*   mos_load:			EQU	01h
-040060             0070*   
-040060             0071*   ; Save a file to the SD card from RAM
-040060             0072*   ; HLU: Address of filename (zero terminated)
-040060             0073*   ; DEU: Address to save from
-040060             0074*   ; BCU: Number of bytes to save
-040060             0075*   ; Returns:
-040060             0076*   ; - A: File error, or 0 if OK
-040060             0077*   ; - F: Carry reset indicates no room for file
-040060             0078*   mos_save:			EQU	02h
-040060             0079*   
-040060             0080*   ; Change directory
-040060             0081*   ; HLU: Address of path (zero terminated)
-040060             0082*   ; Returns:
-040060             0083*   ; - A: File error, or 0 if OK
-040060             0084*   mos_cd:				EQU	03h
-040060             0085*   
-040060             0086*   ; Directory listing
-040060             0087*   ; HLU: Address of path (zero terminated)
-040060             0088*   ; Returns:
-040060             0089*   ; - A: File error, or 0 if OK
-040060             0090*   mos_dir:			EQU	04h
-040060             0091*   
-040060             0092*   ; Delete a file from the SD card
-040060             0093*   ; HLU: Address of filename (zero terminated)
-040060             0094*   ; Returns:
-040060             0095*   ; - A: File error, or 0 if OK
-040060             0096*   mos_del:			EQU	05h
-040060             0097*   
-040060             0098*   ; Rename a file on the SD card
-040060             0099*   ; HLU: Address of filename1 (zero terminated)
-040060             0100*   ; DEU: Address of filename2 (zero terminated)
-040060             0101*   ; Returns:
-040060             0102*   ; - A: File error, or 0 if OK
-040060             0103*   mos_ren:			EQU	06h
-040060             0104*   
-040060             0105*   ; Make a folder on the SD card
-040060             0106*   ; HLU: Address of filename (zero terminated)
-040060             0107*   ; Returns:
-040060             0108*   ; - A: File error, or 0 if OK
-040060             0109*   mos_mkdir:			EQU	07h
-040060             0110*   
-040060             0111*   ; Get a pointer to a system variable
+040060             0055*   ;
+040060             0056*   ; Same as above but keeps IY safe on FFS calls
+040060             0057*   ; (can be use for regular MOS calls as well)
+040060             0058*   ;
+040060             0059*   	MACRO	FFSCALL	function
+040060             0060*   			PUSH IY
+040060             0061*   			LD	A, function
+040060             0062*   			RST.LIL	08h
+040060             0063*   			POP IY
+040060             0064*   	ENDMACRO
+040060             0065*   
+040060             0066*   ; MOS high level functions
+040060             0067*   ;
+040060             0068*   ; Get keycode
+040060             0069*   ; Returns:
+040060             0070*   ;  A: ASCII code of key pressed, or 0 if no key pressed
+040060             0071*   mos_getkey:			EQU	00h
+040060             0072*   
+040060             0073*   ; Load an area of memory from a file.
+040060             0074*   ; HLU: Address of filename (zero terminated)
+040060             0075*   ; DEU: Address at which to load
+040060             0076*   ; BCU: Maximum allowed size (bytes)
+040060             0077*   ; Returns:
+040060             0078*   ; - A: File error, or 0 if OK
+040060             0079*   ; - F: Carry reset indicates no room for file.
+040060             0080*   mos_load:			EQU	01h
+040060             0081*   
+040060             0082*   ; Save a file to the SD card from RAM
+040060             0083*   ; HLU: Address of filename (zero terminated)
+040060             0084*   ; DEU: Address to save from
+040060             0085*   ; BCU: Number of bytes to save
+040060             0086*   ; Returns:
+040060             0087*   ; - A: File error, or 0 if OK
+040060             0088*   ; - F: Carry reset indicates no room for file
+040060             0089*   mos_save:			EQU	02h
+040060             0090*   
+040060             0091*   ; Change directory
+040060             0092*   ; HLU: Address of path (zero terminated)
+040060             0093*   ; Returns:
+040060             0094*   ; - A: File error, or 0 if OK
+040060             0095*   mos_cd:				EQU	03h
+040060             0096*   
+040060             0097*   ; Directory listing
+040060             0098*   ; HLU: Address of path (zero terminated)
+040060             0099*   ; Returns:
+040060             0100*   ; - A: File error, or 0 if OK
+040060             0101*   mos_dir:			EQU	04h
+040060             0102*   
+040060             0103*   ; Delete a file from the SD card
+040060             0104*   ; HLU: Address of filename (zero terminated)
+040060             0105*   ; Returns:
+040060             0106*   ; - A: File error, or 0 if OK
+040060             0107*   mos_del:			EQU	05h
+040060             0108*   
+040060             0109*   ; Rename a file on the SD card
+040060             0110*   ; HLU: Address of filename1 (zero terminated)
+040060             0111*   ; DEU: Address of filename2 (zero terminated)
 040060             0112*   ; Returns:
-040060             0113*   ; IXU: Pointer to system variables (see mos_api.asm for more details)
-040060             0114*   mos_sysvars:		EQU	08h
+040060             0113*   ; - A: File error, or 0 if OK
+040060             0114*   mos_ren:			EQU	06h
 040060             0115*   
-040060             0116*   ; Invoke the line editor
-040060             0117*   ; HLU: Address of the buffer
-040060             0118*   ; BCU: Buffer length
-040060             0119*   ;   E: 0 to not clear buffer, 1 to clear
-040060             0120*   ; Returns:
-040060             0121*   ;   A: Key that was used to exit the input loop (CR=13, ESC=27)
-040060             0122*   mos_editline:		EQU	09h
-040060             0123*   
-040060             0124*   ; Open a file
-040060             0125*   ; HLU: Filename
-040060             0126*   ;   C: Mode
-040060             0127*   ; Returns:
-040060             0128*   ;   A: Filehandle, or 0 if couldn't open
-040060             0129*   mos_fopen:			EQU	0Ah
-040060             0130*   
-040060             0131*   ; Close a file
-040060             0132*   ;   C: Filehandle
-040060             0133*   ; Returns
-040060             0134*   ;   A: Number of files still open
-040060             0135*   mos_fclose:			EQU	0Bh
-040060             0136*   
-040060             0137*   ; Get a character from a file
-040060             0138*   ;   C: Filehandle
-040060             0139*   ; Returns:
-040060             0140*   ;   A: Character read
-040060             0141*   ;   F: C set if last character in file, otherwise NC
-040060             0142*   mos_fgetc:			EQU	0Ch
-040060             0143*   
-040060             0144*   ; Write a character to a file
-040060             0145*   ;   C: Filehandle
-040060             0146*   ;   B: Character to write
-040060             0147*   mos_fputc:			EQU	0Dh
-040060             0148*   
-040060             0149*   ; Check whether we're at the end of the file
-040060             0150*   ;   C: Filehandle
-040060             0151*   ; Returns:
-040060             0152*   ;   A: 1 if at end of file, otherwise 0
-040060             0153*   mos_feof:			EQU	0Eh
+040060             0116*   ; Make a folder on the SD card
+040060             0117*   ; HLU: Address of filename (zero terminated)
+040060             0118*   ; Returns:
+040060             0119*   ; - A: File error, or 0 if OK
+040060             0120*   mos_mkdir:			EQU	07h
+040060             0121*   
+040060             0122*   ; Get a pointer to a system variable
+040060             0123*   ; Returns:
+040060             0124*   ; IXU: Pointer to system variables (see mos_api.asm for more details)
+040060             0125*   mos_sysvars:		EQU	08h
+040060             0126*   
+040060             0127*   ; Invoke the line editor
+040060             0128*   ; HLU: Address of the buffer
+040060             0129*   ; BCU: Buffer length
+040060             0130*   ;   E: 0 to not clear buffer, 1 to clear
+040060             0131*   ; Returns:
+040060             0132*   ;   A: Key that was used to exit the input loop (CR=13, ESC=27)
+040060             0133*   mos_editline:		EQU	09h
+040060             0134*   
+040060             0135*   ; Open a file
+040060             0136*   ; HLU: Filename
+040060             0137*   ;   C: Mode
+040060             0138*   ; Returns:
+040060             0139*   ;   A: Filehandle, or 0 if couldn't open
+040060             0140*   mos_fopen:			EQU	0Ah
+040060             0141*   
+040060             0142*   ; Close a file
+040060             0143*   ;   C: Filehandle
+040060             0144*   ; Returns
+040060             0145*   ;   A: Number of files still open
+040060             0146*   mos_fclose:			EQU	0Bh
+040060             0147*   
+040060             0148*   ; Get a character from a file
+040060             0149*   ;   C: Filehandle
+040060             0150*   ; Returns:
+040060             0151*   ;   A: Character read
+040060             0152*   ;   F: C set if last character in file, otherwise NC
+040060             0153*   mos_fgetc:			EQU	0Ch
 040060             0154*   
-040060             0155*   ; Copy an error message
-040060             0156*   ;   E: The error code
-040060             0157*   ; HLU: Address of buffer to copy message into
-040060             0158*   ; BCU: Size of buffer
-040060             0159*   mos_getError:		EQU	0Fh
-040060             0160*   
-040060             0161*   ; Execute a MOS command
-040060             0162*   ; HLU: Pointer the the MOS command string
-040060             0163*   ; DEU: Pointer to additional command structure
-040060             0164*   ; BCU: Number of additional commands
-040060             0165*   ; Returns:
-040060             0166*   ;   A: MOS error code
-040060             0167*   mos_oscli:			EQU	10h
-040060             0168*   
-040060             0169*   ; Copy a file on the SD card
-040060             0170*   ; HLU: Address of filename1 (zero terminated)
-040060             0171*   ; DEU: Address of filename2 (zero terminated)
-040060             0172*   ; Returns:
-040060             0173*   ; - A: File error, or 0 if OK
-040060             0174*   mos_copy:			EQU	11h
-040060             0175*   
-040060             0176*   ; Fetch a RTC string
-040060             0177*   ; HLU: Pointer to a buffer to copy the string to
-040060             0178*   ; Returns:
-040060             0179*   ;   A: Length of time
-040060             0180*   mos_getrtc:			EQU	12h
-040060             0181*   
-040060             0182*   ; Set the RTC
-040060             0183*   ; HLU: Pointer to a buffer with the time data in
-040060             0184*   mos_setrtc:			EQU	13h
-040060             0185*   
-040060             0186*   ; Set an interrupt vector
-040060             0187*   ; HLU: Pointer to the interrupt vector (24-bit pointer)
-040060             0188*   ;   E: Vector # to set
+040060             0155*   ; Write a character to a file
+040060             0156*   ;   C: Filehandle
+040060             0157*   ;   B: Character to write
+040060             0158*   mos_fputc:			EQU	0Dh
+040060             0159*   
+040060             0160*   ; Check whether we're at the end of the file
+040060             0161*   ;   C: Filehandle
+040060             0162*   ; Returns:
+040060             0163*   ;   A: 1 if at end of file, otherwise 0
+040060             0164*   mos_feof:			EQU	0Eh
+040060             0165*   
+040060             0166*   ; Copy an error message
+040060             0167*   ;   E: The error code
+040060             0168*   ; HLU: Address of buffer to copy message into
+040060             0169*   ; BCU: Size of buffer
+040060             0170*   mos_getError:		EQU	0Fh
+040060             0171*   
+040060             0172*   ; Execute a MOS command
+040060             0173*   ; HLU: Pointer the the MOS command string
+040060             0174*   ; DEU: Pointer to additional command structure
+040060             0175*   ; BCU: Number of additional commands
+040060             0176*   ; Returns:
+040060             0177*   ;   A: MOS error code
+040060             0178*   mos_oscli:			EQU	10h
+040060             0179*   
+040060             0180*   ; Copy a file on the SD card
+040060             0181*   ; HLU: Address of filename1 (zero terminated)
+040060             0182*   ; DEU: Address of filename2 (zero terminated)
+040060             0183*   ; Returns:
+040060             0184*   ; - A: File error, or 0 if OK
+040060             0185*   mos_copy:			EQU	11h
+040060             0186*   
+040060             0187*   ; Fetch a RTC string
+040060             0188*   ; HLU: Pointer to a buffer to copy the string to
 040060             0189*   ; Returns:
-040060             0190*   ; HLU: Pointer to the previous vector
-040060             0191*   mos_setintvector:	EQU	14h
+040060             0190*   ;   A: Length of time
+040060             0191*   mos_getrtc:			EQU	12h
 040060             0192*   
-040060             0193*   ; Open UART1
-040060             0194*   ; IXU: Pointer to UART struct
-040060             0195*   ;	+0: Baud rate (24-bit, little endian)
-040060             0196*   ;	+3: Data bits
-040060             0197*   ;	+4: Stop bits
-040060             0198*   ;	+5: Parity bits
-040060             0199*   ;	+6: Flow control (0: None, 1: Hardware)
-040060             0200*   ;	+7: Enabled interrupts
-040060             0201*   ; Returns:
-040060             0202*   ;   A: Error code (0 = no error)
-040060             0203*   mos_uopen:			EQU	15h
-040060             0204*   
-040060             0205*   ; Close UART1
-040060             0206*   mos_uclose:			EQU	16h
-040060             0207*   
-040060             0208*   ; Get a character from UART1
-040060             0209*   ; Returns:
-040060             0210*   ;   A: Character read
-040060             0211*   ;   F: C if successful
-040060             0212*   ;   F: NC if the UART is not open
-040060             0213*   mos_ugetc:			EQU	17h
-040060             0214*   
-040060             0215*   ; Write a character to UART1
-040060             0216*   ;   C: Character to write
-040060             0217*   ; Returns:
-040060             0218*   ;   F: C if successful
-040060             0219*   ;   F: NC if the UART is not open
-040060             0220*   mos_uputc:			EQU	18h
-040060             0221*   
-040060             0222*   ; Convert a file handle to a FIL structure pointer
-040060             0223*   ;   C: Filehandle
-040060             0224*   ; Returns:
-040060             0225*   ; HLU: Pointer to a FIL struct
-040060             0226*   mos_getfil:			EQU	19h
-040060             0227*   
-040060             0228*   ; Read a block of data from a file
-040060             0229*   ;   C: Filehandle
-040060             0230*   ; HLU: Pointer to where to write the data to
-040060             0231*   ; DEU: Number of bytes to read
-040060             0232*   ; Returns:
-040060             0233*   ; DEU: Number of bytes read
-040060             0234*   mos_fread:			EQU	1Ah
-040060             0235*   
-040060             0236*   ; Write a block of data to a file
-040060             0237*   ;  C: Filehandle
-040060             0238*   ; HLU: Pointer to where the data is
-040060             0239*   ; DEU: Number of bytes to write
-040060             0240*   ; Returns:
-040060             0241*   ; DEU: Number of bytes read
-040060             0242*   mos_fwrite:			EQU	1Bh
-040060             0243*   
-040060             0244*   ; Move the read/write pointer in a file
-040060             0245*   ;   C: Filehandle
-040060             0246*   ; HLU: Least significant 3 bytes of the offset from the start of the file (DWORD)
-040060             0247*   ;   E: Most significant byte of the offset
-040060             0248*   ; Returns:
-040060             0249*   ;   A: FRESULT
-040060             0250*   mos_flseek:			EQU	1Ch
-040060             0251*   
-040060             0252*   ; Move the read/write pointer in a file relative to the current position
-040060             0253*   ;   C: Filehandle
-040060             0254*   ; DEU: Signed 24-bit offset
-040060             0255*   ; Returns:
-040060             0256*   ;   A: FRESULT
-040060             0257*   mos_api_flseek_rel:
-040060 C5          0258*   	push bc ; back up file handle in c
-040061 D5          0259*   	push de ; save offset
-040062             0260*   	MOSCALL mos_getfil
+040060             0193*   ; Set the RTC
+040060             0194*   ; HLU: Pointer to a buffer with the time data in
+040060             0195*   mos_setrtc:			EQU	13h
+040060             0196*   
+040060             0197*   ; Set an interrupt vector
+040060             0198*   ; HLU: Pointer to the interrupt vector (24-bit pointer)
+040060             0199*   ;   E: Vector # to set
+040060             0200*   ; Returns:
+040060             0201*   ; HLU: Pointer to the previous vector
+040060             0202*   mos_setintvector:	EQU	14h
+040060             0203*   
+040060             0204*   ; Open UART1
+040060             0205*   ; IXU: Pointer to UART struct
+040060             0206*   ;	+0: Baud rate (24-bit, little endian)
+040060             0207*   ;	+3: Data bits
+040060             0208*   ;	+4: Stop bits
+040060             0209*   ;	+5: Parity bits
+040060             0210*   ;	+6: Flow control (0: None, 1: Hardware)
+040060             0211*   ;	+7: Enabled interrupts
+040060             0212*   ; Returns:
+040060             0213*   ;   A: Error code (0 = no error)
+040060             0214*   mos_uopen:			EQU	15h
+040060             0215*   
+040060             0216*   ; Close UART1
+040060             0217*   mos_uclose:			EQU	16h
+040060             0218*   
+040060             0219*   ; Get a character from UART1
+040060             0220*   ; Returns:
+040060             0221*   ;   A: Character read
+040060             0222*   ;   F: C if successful
+040060             0223*   ;   F: NC if the UART is not open
+040060             0224*   mos_ugetc:			EQU	17h
+040060             0225*   
+040060             0226*   ; Write a character to UART1
+040060             0227*   ;   C: Character to write
+040060             0228*   ; Returns:
+040060             0229*   ;   F: C if successful
+040060             0230*   ;   F: NC if the UART is not open
+040060             0231*   mos_uputc:			EQU	18h
+040060             0232*   
+040060             0233*   ; Convert a file handle to a FIL structure pointer
+040060             0234*   ;   C: Filehandle
+040060             0235*   ; Returns:
+040060             0236*   ; HLU: Pointer to a FIL struct
+040060             0237*   mos_getfil:			EQU	19h
+040060             0238*   
+040060             0239*   ; Read a block of data from a file
+040060             0240*   ;   C: Filehandle
+040060             0241*   ; HLU: Pointer to where to write the data to
+040060             0242*   ; DEU: Number of bytes to read
+040060             0243*   ; Returns:
+040060             0244*   ; DEU: Number of bytes read
+040060             0245*   mos_fread:			EQU	1Ah
+040060             0246*   
+040060             0247*   ; Write a block of data to a file
+040060             0248*   ;  C: Filehandle
+040060             0249*   ; HLU: Pointer to where the data is
+040060             0250*   ; DEU: Number of bytes to write
+040060             0251*   ; Returns:
+040060             0252*   ; DEU: Number of bytes read
+040060             0253*   mos_fwrite:			EQU	1Bh
+040060             0254*   
+040060             0255*   ; Move the read/write pointer in a file
+040060             0256*   ;   C: Filehandle
+040060             0257*   ; HLU: Least significant 3 bytes of the offset from the start of the file (DWORD)
+040060             0258*   ;   E: Most significant byte of the offset
+040060             0259*   ; Returns:
+040060             0260*   ;   A: FRESULT
+040060             0261*   mos_flseek:			EQU	1Ch
+040060             0262*   
+040060             0263*   ; Move the read/write pointer in a file relative to the current position
+040060             0264*   ;   C: Filehandle
+040060             0265*   ; DEU: Signed 24-bit offset
+040060             0266*   ; Returns:
+040060             0267*   ;   A: FRESULT
+040060             0268*   mos_api_flseek_rel:
+040060 C5          0269*   	push bc ; back up file handle in c
+040061 D5          0270*   	push de ; save offset
+040062             0271*   	MOSCALL mos_getfil
                        M1 Args: function=mos_getfil 
 040062 3E 19       0001*M1 			LD	A, function
 040064 5B CF       0002*M1 			RST.LIL	08h
-040066 E5          0261*   	push hl
-040067 FD E1       0262*   	pop iy ; iy points to FIL struct
-040069 FD 27 11    0263*   	ld hl,(iy+fil_fptr) ; get lowest 3 bytes of current position
-04006C AF          0264*   	xor a ; clear carry
-04006D D1          0265*   	pop de ; restore offset
-04006E ED 5A       0266*   	adc hl,de ; adc the offset because we need sign flag
-040070 F2 78 00 04 0267*   	jp p,@not_neg
-040074 21 00 00 00 0268*   	ld hl,0 ; seek to beginning of file
-040078             0269*   @not_neg:
-040078 C1          0270*   	pop bc ; restore file handle to c
-040079 1E 00       0271*   	ld e,0 ; highest byte of offset
-04007B             0272*   	MOSCALL mos_flseek
+040066 E5          0272*   	push hl
+040067 FD E1       0273*   	pop iy ; iy points to FIL struct
+040069 FD 27 11    0274*   	ld hl,(iy+fil_fptr) ; get lowest 3 bytes of current position
+04006C AF          0275*   	xor a ; clear carry
+04006D D1          0276*   	pop de ; restore offset
+04006E ED 5A       0277*   	adc hl,de ; adc the offset because we need sign flag
+040070 F2 78 00 04 0278*   	jp p,@not_neg
+040074 21 00 00 00 0279*   	ld hl,0 ; seek to beginning of file
+040078             0280*   @not_neg:
+040078 C1          0281*   	pop bc ; restore file handle to c
+040079 1E 00       0282*   	ld e,0 ; highest byte of offset
+04007B             0283*   	MOSCALL mos_flseek
                        M1 Args: function=mos_flseek 
 04007B 3E 1C       0001*M1 			LD	A, function
 04007D 5B CF       0002*M1 			RST.LIL	08h
-04007F C9          0273*   	ret
-040080             0274*   
-040080             0275*   ; Set a VDP keyboard packet receiver callback
-040080             0276*   ;   C: If non-zero then set the top byte of HLU(callback address)  to MB (for ADL=0 callers)
-040080             0277*   ; HLU: Pointer to callback
-040080             0278*   mos_setkbvector:	EQU	1Dh
-040080             0279*   
-040080             0280*   ; Get the address of the keyboard map
-040080             0281*   ; Returns:
-040080             0282*   ; IXU: Base address of the keymap
-040080             0283*   mos_getkbmap:		EQU	1Eh
-040080             0284*   
-040080             0285*   ; MOS program exit codes
-040080             0286*   ;
-040080             0287*   EXIT_OK:				EQU  0;	"OK",
-040080             0288*   EXIT_ERROR_SD_ACCESS:	EQU	 1;	"Error accessing SD card",
-040080             0289*   EXIT_ERROR_ASSERTION:	EQU  2;	"Assertion failed",
-040080             0290*   EXIT_SD_CARDFAILURE:	EQU  3;	"SD card failure",
-040080             0291*   EXIT_FILENOTFOUND:		EQU  4;	"Could not find file",
-040080             0292*   EXIT_PATHNOTFOUND:		EQU  5;	"Could not find path",
-040080             0293*   EXIT_INVALIDPATHNAME:	EQU  6;	"Invalid path name",
-040080             0294*   EXIT_ACCESSDENIED_FULL:	EQU  7;	"Access denied or directory full",
-040080             0295*   EXIT_ACCESSDENIED:		EQU  8;	"Access denied",
-040080             0296*   EXIT_INVALIDOBJECT:		EQU  9;	"Invalid file/directory object",
-040080             0297*   EXIT_SD_WRITEPROTECTED:	EQU 10;	"SD card is write protected",
-040080             0298*   EXIT_INVALIDDRIVENUMBER:EQU 11;	"Logical drive number is invalid",
-040080             0299*   EXIT_NOVOLUMEWORKAREA:	EQU 12;	"Volume has no work area",
-040080             0300*   EXIT_NOVALIDFATVOLUME:	EQU 13;	"No valid FAT volume",
-040080             0301*   EXIT_ERRORMKFS:			EQU 14;	"Error occurred during mkfs",
-040080             0302*   EXIT_VOLUMETIMEOUT:		EQU 15;	"Volume timeout",
-040080             0303*   EXIT_VOLUMELOCKED:		EQU 16;	"Volume locked",
-040080             0304*   EXIT_LFNALLOCATION:		EQU 17;	"LFN working buffer could not be allocated",
-040080             0305*   EXIT_MAXOPENFILES:		EQU 18;	"Too many open files",
-040080             0306*   EXIT_INVALIDPARAMETER:	EQU 19;	"Invalid parameter",
-040080             0307*   EXIT_INVALIDCOMMAND:	EQU 20;	"Invalid command",
-040080             0308*   EXIT_INVALIDEXECUTABLE:	EQU 21;	"Invalid executable",
-040080             0309*   
-040080             0310*   ; FatFS file access functions
-040080             0311*   ;
-040080             0312*   ; Open a file
-040080             0313*   ; HLU: Pointer to a blank FIL struct
-040080             0314*   ; DEU: Pointer to the filename (0 terminated)
-040080             0315*   ;   C: File mode
-040080             0316*   ; Returns:
-040080             0317*   ;   A: FRESULT
-040080             0318*   ffs_fopen:			EQU	80h
-040080             0319*   
-040080             0320*   ; Close a file
-040080             0321*   ; HLU: Pointer to a blank FIL struct
-040080             0322*   ; Returns:
-040080             0323*   ;   A: FRESULT
-040080             0324*   ffs_fclose:			EQU	81h
-040080             0325*   
-040080             0326*   ; Read data from a file
-040080             0327*   ; HLU: Pointer to a FIL struct
-040080             0328*   ; DEU: Pointer to where to write the file out
-040080             0329*   ; BCU: Number of bytes to read
-040080             0330*   ; Returns:
-040080             0331*   ;   A: FRESULT
-040080             0332*   ; BCU: Number of bytes read
-040080             0333*   ffs_fread:			EQU	82h
-040080             0334*   
-040080             0335*   ; Write data to a file
-040080             0336*   ; HLU: Pointer to a FIL struct
-040080             0337*   ; DEU: Pointer to the data to write out
-040080             0338*   ; BCU: Number of bytes to write
-040080             0339*   ; Returns:
-040080             0340*   ;   A: FRESULT
-040080             0341*   ; BCU: Number of bytes written
-040080             0342*   ffs_fwrite:			EQU	83h
-040080             0343*   
-040080             0344*   ; Move the read/write pointer in a file
-040080             0345*   ; HLU: Pointer to a FIL struct
-040080             0346*   ; DEU: Least significant 3 bytes of the offset from the start of the file (DWORD)
-040080             0347*   ;   C: Most significant byte of the offset
-040080             0348*   ; Returns:
-040080             0349*   ;   A: FRESULT
-040080             0350*   ffs_flseek:			EQU	84h
-040080             0351*   
-040080             0352*   ; not implemented
-040080             0353*   ffs_ftruncate:		EQU	85h
+04007F C9          0284*   	ret
+040080             0285*   
+040080             0286*   ; Set a VDP keyboard packet receiver callback
+040080             0287*   ;   C: If non-zero then set the top byte of HLU(callback address)  to MB (for ADL=0 callers)
+040080             0288*   ; HLU: Pointer to callback
+040080             0289*   mos_setkbvector:	EQU	1Dh
+040080             0290*   
+040080             0291*   ; Get the address of the keyboard map
+040080             0292*   ; Returns:
+040080             0293*   ; IXU: Base address of the keymap
+040080             0294*   mos_getkbmap:		EQU	1Eh
+040080             0295*   
+040080             0296*   ; MOS program exit codes
+040080             0297*   ;
+040080             0298*   EXIT_OK:				EQU  0;	"OK",
+040080             0299*   EXIT_ERROR_SD_ACCESS:	EQU	 1;	"Error accessing SD card",
+040080             0300*   EXIT_ERROR_ASSERTION:	EQU  2;	"Assertion failed",
+040080             0301*   EXIT_SD_CARDFAILURE:	EQU  3;	"SD card failure",
+040080             0302*   EXIT_FILENOTFOUND:		EQU  4;	"Could not find file",
+040080             0303*   EXIT_PATHNOTFOUND:		EQU  5;	"Could not find path",
+040080             0304*   EXIT_INVALIDPATHNAME:	EQU  6;	"Invalid path name",
+040080             0305*   EXIT_ACCESSDENIED_FULL:	EQU  7;	"Access denied or directory full",
+040080             0306*   EXIT_ACCESSDENIED:		EQU  8;	"Access denied",
+040080             0307*   EXIT_INVALIDOBJECT:		EQU  9;	"Invalid file/directory object",
+040080             0308*   EXIT_SD_WRITEPROTECTED:	EQU 10;	"SD card is write protected",
+040080             0309*   EXIT_INVALIDDRIVENUMBER:EQU 11;	"Logical drive number is invalid",
+040080             0310*   EXIT_NOVOLUMEWORKAREA:	EQU 12;	"Volume has no work area",
+040080             0311*   EXIT_NOVALIDFATVOLUME:	EQU 13;	"No valid FAT volume",
+040080             0312*   EXIT_ERRORMKFS:			EQU 14;	"Error occurred during mkfs",
+040080             0313*   EXIT_VOLUMETIMEOUT:		EQU 15;	"Volume timeout",
+040080             0314*   EXIT_VOLUMELOCKED:		EQU 16;	"Volume locked",
+040080             0315*   EXIT_LFNALLOCATION:		EQU 17;	"LFN working buffer could not be allocated",
+040080             0316*   EXIT_MAXOPENFILES:		EQU 18;	"Too many open files",
+040080             0317*   EXIT_INVALIDPARAMETER:	EQU 19;	"Invalid parameter",
+040080             0318*   EXIT_INVALIDCOMMAND:	EQU 20;	"Invalid command",
+040080             0319*   EXIT_INVALIDEXECUTABLE:	EQU 21;	"Invalid executable",
+040080             0320*   
+040080             0321*   ; FatFS file access functions
+040080             0322*   ;
+040080             0323*   ; Open a file
+040080             0324*   ; HLU: Pointer to a blank FIL struct
+040080             0325*   ; DEU: Pointer to the filename (0 terminated)
+040080             0326*   ;   C: File mode
+040080             0327*   ; Returns:
+040080             0328*   ;   A: FRESULT
+040080             0329*   ffs_fopen:			EQU	80h
+040080             0330*   
+040080             0331*   ; Close a file
+040080             0332*   ; HLU: Pointer to a blank FIL struct
+040080             0333*   ; Returns:
+040080             0334*   ;   A: FRESULT
+040080             0335*   ffs_fclose:			EQU	81h
+040080             0336*   
+040080             0337*   ; Read data from a file
+040080             0338*   ; HLU: Pointer to a FIL struct
+040080             0339*   ; DEU: Pointer to where to write the file out
+040080             0340*   ; BCU: Number of bytes to read
+040080             0341*   ; Returns:
+040080             0342*   ;   A: FRESULT
+040080             0343*   ; BCU: Number of bytes read
+040080             0344*   ffs_fread:			EQU	82h
+040080             0345*   
+040080             0346*   ; Write data to a file
+040080             0347*   ; HLU: Pointer to a FIL struct
+040080             0348*   ; DEU: Pointer to the data to write out
+040080             0349*   ; BCU: Number of bytes to write
+040080             0350*   ; Returns:
+040080             0351*   ;   A: FRESULT
+040080             0352*   ; BCU: Number of bytes written
+040080             0353*   ffs_fwrite:			EQU	83h
 040080             0354*   
-040080             0355*   ; not implemented
-040080             0356*   ffs_fsync:			EQU	86h
-040080             0357*   
-040080             0358*   ; not implemented
-040080             0359*   ffs_fforward:		EQU	87h
-040080             0360*   
-040080             0361*   ; not implemented
-040080             0362*   ffs_fexpand:		EQU	88h
-040080             0363*   
-040080             0364*   ; not implemented
-040080             0365*   ffs_fgets:			EQU	89h
-040080             0366*   
-040080             0367*   ; not implemented
-040080             0368*   ffs_fputc:			EQU	8Ah
-040080             0369*   
-040080             0370*   ; not implemented
-040080             0371*   ffs_fputs:			EQU	8Bh
-040080             0372*   
-040080             0373*   ; not implemented
-040080             0374*   ffs_fprintf:		EQU	8Ch
-040080             0375*   
-040080             0376*   ; not implemented
-040080             0377*   ffs_ftell:			EQU	8Dh
-040080             0378*   
-040080             0379*   ; Check for EOF
-040080             0380*   ; HLU: Pointer to a FILINFO struct
-040080             0381*   ; Returns:
-040080             0382*   ;   A: 1 if end of file, otherwise 0
-040080             0383*   ffs_feof:			EQU	8Eh
-040080             0384*   
-040080             0385*   ; not implemented
-040080             0386*   ffs_fsize:			EQU	8Fh
-040080             0387*   
-040080             0388*   ; not implemented
-040080             0389*   ffs_ferror:			EQU	90h
-040080             0390*   
-040080             0391*   ; FatFS directory access functions
-040080             0392*   ;
-040080             0393*   ; Open a directory
-040080             0394*   ; HLU: Pointer to a blank DIR struct
-040080             0395*   ; DEU: Pointer to the directory path
-040080             0396*   ; Returns:
-040080             0397*   ; A: FRESULT
-040080             0398*   ffs_dopen:			EQU	91h
-040080             0399*   
-040080             0400*   ; Close a directory
-040080             0401*   ; HLU: Pointer to an open DIR struct
-040080             0402*   ; Returns:
-040080             0403*   ; A: FRESULT
-040080             0404*   ffs_dclose:			EQU	92h
-040080             0405*   
-040080             0406*   ; Read the next FILINFO from an open DIR
-040080             0407*   ; HLU: Pointer to an open DIR struct
-040080             0408*   ; DEU: Pointer to an empty FILINFO struct
-040080             0409*   ; Returns:
-040080             0410*   ; A: FRESULT
-040080             0411*   ffs_dread:			EQU	93h
-040080             0412*   
-040080             0413*   ; not implemented
-040080             0414*   ffs_dfindfirst:		EQU	94h
-040080             0415*   
-040080             0416*   ; not implemented
-040080             0417*   ffs_dfindnext:		EQU	95h
-040080             0418*   
-040080             0419*   ; FatFS file and directory management functions
-040080             0420*   ;
-040080             0421*   ; Check file exists
-040080             0422*   ; HLU: Pointer to a FILINFO struct
-040080             0423*   ; DEU: Pointer to the filename (0 terminated)
-040080             0424*   ; Returns:
-040080             0425*   ;   A: FRESULT
-040080             0426*   ffs_stat:			EQU	96h
-040080             0427*   
-040080             0428*   ; not implemented
-040080             0429*   ffs_unlink:			EQU	97h
-040080             0430*   
-040080             0431*   ; not implemented
-040080             0432*   ffs_rename:			EQU	98h
-040080             0433*   
-040080             0434*   ; not implemented
-040080             0435*   ffs_chmod:			EQU	99h
-040080             0436*   
-040080             0437*   ; not implemented
-040080             0438*   ffs_utime:			EQU	9Ah
-040080             0439*   
-040080             0440*   ; not implemented
-040080             0441*   ffs_mkdir:			EQU	9Bh
-040080             0442*   
-040080             0443*   ; not implemented
-040080             0444*   ffs_chdir:			EQU	9Ch
-040080             0445*   
-040080             0446*   ; not implemented
-040080             0447*   ffs_chdrive:		EQU	9Dh
-040080             0448*   
-040080             0449*   ; Copy the current directory (string) into buffer (hl)
-040080             0450*   ; HLU: Pointer to a buffer
-040080             0451*   ; BCU: Maximum length of buffer
-040080             0452*   ; Returns:
-040080             0453*   ; A: FRESULT
-040080             0454*   ffs_getcwd:			EQU	9Eh
-040080             0455*   
-040080             0456*   ; FatFS volume management and system configuration functions
-040080             0457*   ;
-040080             0458*   ; not implemented
-040080             0459*   ffs_mount:			EQU	9Fh
-040080             0460*   
-040080             0461*   ; not implemented
-040080             0462*   ffs_mkfs:			EQU	A0h
-040080             0463*   
-040080             0464*   ; not implemented
-040080             0465*   ffs_fdisk:			EQU	A1h
+040080             0355*   ; Move the read/write pointer in a file
+040080             0356*   ; HLU: Pointer to a FIL struct
+040080             0357*   ; DEU: Least significant 3 bytes of the offset from the start of the file (DWORD)
+040080             0358*   ;   C: Most significant byte of the offset
+040080             0359*   ; Returns:
+040080             0360*   ;   A: FRESULT
+040080             0361*   ffs_flseek:			EQU	84h
+040080             0362*   
+040080             0363*   ; not implemented
+040080             0364*   ffs_ftruncate:		EQU	85h
+040080             0365*   
+040080             0366*   ; not implemented
+040080             0367*   ffs_fsync:			EQU	86h
+040080             0368*   
+040080             0369*   ; not implemented
+040080             0370*   ffs_fforward:		EQU	87h
+040080             0371*   
+040080             0372*   ; not implemented
+040080             0373*   ffs_fexpand:		EQU	88h
+040080             0374*   
+040080             0375*   ; not implemented
+040080             0376*   ffs_fgets:			EQU	89h
+040080             0377*   
+040080             0378*   ; not implemented
+040080             0379*   ffs_fputc:			EQU	8Ah
+040080             0380*   
+040080             0381*   ; not implemented
+040080             0382*   ffs_fputs:			EQU	8Bh
+040080             0383*   
+040080             0384*   ; not implemented
+040080             0385*   ffs_fprintf:		EQU	8Ch
+040080             0386*   
+040080             0387*   ; not implemented
+040080             0388*   ffs_ftell:			EQU	8Dh
+040080             0389*   
+040080             0390*   ; Check for EOF
+040080             0391*   ; HLU: Pointer to a FILINFO struct
+040080             0392*   ; Returns:
+040080             0393*   ;   A: 1 if end of file, otherwise 0
+040080             0394*   ffs_feof:			EQU	8Eh
+040080             0395*   
+040080             0396*   ; not implemented
+040080             0397*   ffs_fsize:			EQU	8Fh
+040080             0398*   
+040080             0399*   ; not implemented
+040080             0400*   ffs_ferror:			EQU	90h
+040080             0401*   
+040080             0402*   ; FatFS directory access functions
+040080             0403*   ;
+040080             0404*   ; Open a directory
+040080             0405*   ; HLU: Pointer to a blank DIR struct
+040080             0406*   ; DEU: Pointer to the directory path
+040080             0407*   ; Returns:
+040080             0408*   ; A: FRESULT
+040080             0409*   ffs_dopen:			EQU	91h
+040080             0410*   
+040080             0411*   ; Close a directory
+040080             0412*   ; HLU: Pointer to an open DIR struct
+040080             0413*   ; Returns:
+040080             0414*   ; A: FRESULT
+040080             0415*   ffs_dclose:			EQU	92h
+040080             0416*   
+040080             0417*   ; Read the next FILINFO from an open DIR
+040080             0418*   ; HLU: Pointer to an open DIR struct
+040080             0419*   ; DEU: Pointer to an empty FILINFO struct
+040080             0420*   ; Returns:
+040080             0421*   ; A: FRESULT
+040080             0422*   ffs_dread:			EQU	93h
+040080             0423*   
+040080             0424*   ; not implemented
+040080             0425*   ffs_dfindfirst:		EQU	94h
+040080             0426*   
+040080             0427*   ; not implemented
+040080             0428*   ffs_dfindnext:		EQU	95h
+040080             0429*   
+040080             0430*   ; FatFS file and directory management functions
+040080             0431*   ;
+040080             0432*   ; Check file exists
+040080             0433*   ; HLU: Pointer to a FILINFO struct
+040080             0434*   ; DEU: Pointer to the filename (0 terminated)
+040080             0435*   ; Returns:
+040080             0436*   ;   A: FRESULT
+040080             0437*   ffs_stat:			EQU	96h
+040080             0438*   
+040080             0439*   ; not implemented
+040080             0440*   ffs_unlink:			EQU	97h
+040080             0441*   
+040080             0442*   ; not implemented
+040080             0443*   ffs_rename:			EQU	98h
+040080             0444*   
+040080             0445*   ; not implemented
+040080             0446*   ffs_chmod:			EQU	99h
+040080             0447*   
+040080             0448*   ; not implemented
+040080             0449*   ffs_utime:			EQU	9Ah
+040080             0450*   
+040080             0451*   ; not implemented
+040080             0452*   ffs_mkdir:			EQU	9Bh
+040080             0453*   
+040080             0454*   ; not implemented
+040080             0455*   ffs_chdir:			EQU	9Ch
+040080             0456*   
+040080             0457*   ; not implemented
+040080             0458*   ffs_chdrive:		EQU	9Dh
+040080             0459*   
+040080             0460*   ; Copy the current directory (string) into buffer (hl)
+040080             0461*   ; HLU: Pointer to a buffer
+040080             0462*   ; BCU: Maximum length of buffer
+040080             0463*   ; Returns:
+040080             0464*   ; A: FRESULT
+040080             0465*   ffs_getcwd:			EQU	9Eh
 040080             0466*   
-040080             0467*   ; not implemented
-040080             0468*   ffs_getfree:		EQU	A2h
-040080             0469*   
-040080             0470*   ; not implemented
-040080             0471*   ffs_getlabel:		EQU	A3h
-040080             0472*   
-040080             0473*   ; not implemented
-040080             0474*   ffs_setlabel:		EQU	A4h
-040080             0475*   
-040080             0476*   ; not implemented
-040080             0477*   ffs_setcp:			EQU	A5h
-040080             0478*   
-040080             0479*   ; File access modes
-040080             0480*   ;
-040080             0481*   fa_read:			EQU	01h
-040080             0482*   fa_write:			EQU	02h
-040080             0483*   fa_open_existing:	EQU	00h
-040080             0484*   fa_create_new:		EQU	04h
-040080             0485*   fa_create_always:	EQU	08h
-040080             0486*   fa_open_always:		EQU	10h
-040080             0487*   fa_open_append:		EQU	30h
-040080             0488*   
-040080             0489*   ; System variable indexes for api_sysvars
-040080             0490*   ; Index into _sysvars in globals.asm
+040080             0467*   ; FatFS volume management and system configuration functions
+040080             0468*   ;
+040080             0469*   ; not implemented
+040080             0470*   ffs_mount:			EQU	9Fh
+040080             0471*   
+040080             0472*   ; not implemented
+040080             0473*   ffs_mkfs:			EQU	A0h
+040080             0474*   
+040080             0475*   ; not implemented
+040080             0476*   ffs_fdisk:			EQU	A1h
+040080             0477*   
+040080             0478*   ; not implemented
+040080             0479*   ffs_getfree:		EQU	A2h
+040080             0480*   
+040080             0481*   ; not implemented
+040080             0482*   ffs_getlabel:		EQU	A3h
+040080             0483*   
+040080             0484*   ; not implemented
+040080             0485*   ffs_setlabel:		EQU	A4h
+040080             0486*   
+040080             0487*   ; not implemented
+040080             0488*   ffs_setcp:			EQU	A5h
+040080             0489*   
+040080             0490*   ; File access modes
 040080             0491*   ;
-040080             0492*   sysvar_time:			EQU	00h	; 4: Clock timer in centiseconds (incremented by 2 every VBLANK)
-040080             0493*   sysvar_vpd_pflags:		EQU	04h	; 1: Flags to indicate completion of VDP commands
-040080             0494*   sysvar_keyascii:		EQU	05h	; 1: ASCII keycode, or 0 if no key is pressed
-040080             0495*   sysvar_keymods:			EQU	06h	; 1: Keycode modifiers
-040080             0496*   sysvar_cursorX:			EQU	07h	; 1: Cursor X position
-040080             0497*   sysvar_cursorY:			EQU	08h	; 1: Cursor Y position
-040080             0498*   sysvar_scrchar:			EQU	09h	; 1: Character read from screen
-040080             0499*   sysvar_scrpixel:		EQU	0Ah	; 3: Pixel data read from screen (R,B,G)
-040080             0500*   sysvar_audioChannel:	EQU	0Dh	; 1: Audio channel
-040080             0501*   sysvar_audioSuccess:	EQU	0Eh	; 1: Audio channel note queued (0 = no, 1 = yes)
-040080             0502*   sysvar_scrWidth:		EQU	0Fh	; 2: Screen width in pixels
-040080             0503*   sysvar_scrHeight:		EQU	11h	; 2: Screen height in pixels
-040080             0504*   sysvar_scrCols:			EQU	13h	; 1: Screen columns in characters
-040080             0505*   sysvar_scrRows:			EQU	14h	; 1: Screen rows in characters
-040080             0506*   sysvar_scrColours:		EQU	15h	; 1: Number of colours displayed
-040080             0507*   sysvar_scrpixelIndex:	EQU	16h	; 1: Index of pixel data read from screen
-040080             0508*   sysvar_vkeycode:		EQU	17h	; 1: Virtual key code from FabGL
-040080             0509*   sysvar_vkeydown:		EQU	18h	; 1: Virtual key state from FabGL (0=up, 1=down)
-040080             0510*   sysvar_vkeycount:		EQU	19h	; 1: Incremented every time a key packet is received
-040080             0511*   sysvar_rtc:				EQU	1Ah	; 6: Real time clock data
-040080             0512*   sysvar_spare:			EQU	20h	; 2: Spare, previously used by rtc
-040080             0513*   sysvar_keydelay:		EQU	22h	; 2: Keyboard repeat delay
-040080             0514*   sysvar_keyrate:			EQU	24h	; 2: Keyboard repeat reat
-040080             0515*   sysvar_keyled:			EQU	26h	; 1: Keyboard LED status
-040080             0516*   sysvar_scrMode:			EQU	27h	; 1: Screen mode
-040080             0517*   sysvar_rtcEnable:		EQU	28h	; 1: RTC enable flag (0: disabled, 1: use ESP32 RTC)
-040080             0518*   
-040080             0519*   ; Flags for the VPD protocol
-040080             0520*   ;
-040080             0521*   vdp_pflag_cursor:		EQU	00000001b
-040080             0522*   vdp_pflag_scrchar:		EQU	00000010b
-040080             0523*   vdp_pflag_point:		EQU	00000100b
-040080             0524*   vdp_pflag_audio:		EQU	00001000b
-040080             0525*   vdp_pflag_mode:			EQU	00010000b
-040080             0526*   vdp_pflag_rtc:			EQU	00100000b
-040080             0527*   
-040080             0528*   ;
-040080             0529*   ; FatFS structures
-040080             0530*   ; These mirror the structures contained in src_fatfs/ff.h in the MOS project
+040080             0492*   fa_read:			EQU	01h
+040080             0493*   fa_write:			EQU	02h
+040080             0494*   fa_open_existing:	EQU	00h
+040080             0495*   fa_create_new:		EQU	04h
+040080             0496*   fa_create_always:	EQU	08h
+040080             0497*   fa_open_always:		EQU	10h
+040080             0498*   fa_open_append:		EQU	30h
+040080             0499*   
+040080             0500*   ; System variable indexes for api_sysvars
+040080             0501*   ; Index into _sysvars in globals.asm
+040080             0502*   ;
+040080             0503*   sysvar_time:			EQU	00h	; 4: Clock timer in centiseconds (incremented by 2 every VBLANK)
+040080             0504*   sysvar_vpd_pflags:		EQU	04h	; 1: Flags to indicate completion of VDP commands
+040080             0505*   sysvar_keyascii:		EQU	05h	; 1: ASCII keycode, or 0 if no key is pressed
+040080             0506*   sysvar_keymods:			EQU	06h	; 1: Keycode modifiers
+040080             0507*   sysvar_cursorX:			EQU	07h	; 1: Cursor X position
+040080             0508*   sysvar_cursorY:			EQU	08h	; 1: Cursor Y position
+040080             0509*   sysvar_scrchar:			EQU	09h	; 1: Character read from screen
+040080             0510*   sysvar_scrpixel:		EQU	0Ah	; 3: Pixel data read from screen (R,B,G)
+040080             0511*   sysvar_audioChannel:	EQU	0Dh	; 1: Audio channel
+040080             0512*   sysvar_audioSuccess:	EQU	0Eh	; 1: Audio channel note queued (0 = no, 1 = yes)
+040080             0513*   sysvar_scrWidth:		EQU	0Fh	; 2: Screen width in pixels
+040080             0514*   sysvar_scrHeight:		EQU	11h	; 2: Screen height in pixels
+040080             0515*   sysvar_scrCols:			EQU	13h	; 1: Screen columns in characters
+040080             0516*   sysvar_scrRows:			EQU	14h	; 1: Screen rows in characters
+040080             0517*   sysvar_scrColours:		EQU	15h	; 1: Number of colours displayed
+040080             0518*   sysvar_scrpixelIndex:	EQU	16h	; 1: Index of pixel data read from screen
+040080             0519*   sysvar_vkeycode:		EQU	17h	; 1: Virtual key code from FabGL
+040080             0520*   sysvar_vkeydown:		EQU	18h	; 1: Virtual key state from FabGL (0=up, 1=down)
+040080             0521*   sysvar_vkeycount:		EQU	19h	; 1: Incremented every time a key packet is received
+040080             0522*   sysvar_rtc:				EQU	1Ah	; 6: Real time clock data
+040080             0523*   sysvar_spare:			EQU	20h	; 2: Spare, previously used by rtc
+040080             0524*   sysvar_keydelay:		EQU	22h	; 2: Keyboard repeat delay
+040080             0525*   sysvar_keyrate:			EQU	24h	; 2: Keyboard repeat reat
+040080             0526*   sysvar_keyled:			EQU	26h	; 1: Keyboard LED status
+040080             0527*   sysvar_scrMode:			EQU	27h	; 1: Screen mode
+040080             0528*   sysvar_rtcEnable:		EQU	28h	; 1: RTC enable flag (0: disabled, 1: use ESP32 RTC)
+040080             0529*   
+040080             0530*   ; Flags for the VPD protocol
 040080             0531*   ;
-040080             0532*   ; Object ID and allocation information (FFOBJID)
-040080             0533*   ;
-040080             0534*   ; Indexes into FFOBJID structure
-040080             0535*   ffobjid_fs:			EQU	0	; 3: Pointer to the hosting volume of this object
-040080             0536*   ffobjid_id:			EQU	3	; 2: Hosting volume mount ID
-040080             0537*   ffobjid_attr:		EQU	5	; 1: Object attribute
-040080             0538*   ffobjid_stat:		EQU	6	; 1: Object chain status (b1-0: =0:not contiguous, =2:contiguous, =3:fragmented in this session, b2:sub-directory stretched)
-040080             0539*   ffobjid_sclust:		EQU	7	; 4: Object data start cluster (0:no cluster or root directory)
-040080             0540*   ffobjid_objsize:	EQU	11	; 4: Object size (valid when sclust != 0)
-040080             0541*   ;
-040080             0542*   ; File object structure (FIL)
-040080             0543*   ;
-040080             0544*   ; Indexes into FIL structure
-040080             0545*   fil_obj:		EQU 0	; 15: Object identifier
-040080             0546*   fil_flag:		EQU	15 	;  1: File status flags
-040080             0547*   fil_err:		EQU	16	;  1: Abort flag (error code)
-040080             0548*   fil_fptr:		EQU	17	;  4: File read/write pointer (Zeroed on file open)
-040080             0549*   fil_clust:		EQU	21	;  4: Current cluster of fpter (invalid when fptr is 0)
-040080             0550*   fil_sect:		EQU	25	;  4: Sector number appearing in buf[] (0:invalid)
-040080             0551*   fil_dir_sect:	EQU	29	;  4: Sector number containing the directory entry
-040080             0552*   fil_dir_ptr:	EQU	33	;  3: Pointer to the directory entry in the win[]
-040080             0553*   ;
-040080             0554*   ; Directory object structure (DIR)
-040080             0555*   ; Indexes into DIR structure
-040080             0556*   dir_obj:		EQU  0	; 15: Object identifier
-040080             0557*   dir_dptr:		EQU	15	;  4: Current read/write offset
-040080             0558*   dir_clust:		EQU	19	;  4: Current cluster
-040080             0559*   dir_sect:		EQU	23	;  4: Current sector (0:Read operation has terminated)
-040080             0560*   dir_dir:		EQU	27	;  3: Pointer to the directory item in the win[]
-040080             0561*   dir_fn:			EQU	30	; 12: SFN (in/out) {body[8],ext[3],status[1]}
-040080             0562*   dir_blk_ofs:	EQU	42	;  4: Offset of current entry block being processed (0xFFFFFFFF:Invalid)
-040080             0563*   ;
-040080             0564*   ; File information structure (FILINFO)
-040080             0565*   ;
-040080             0566*   ; Indexes into FILINFO structure
-040080             0567*   filinfo_fsize:		EQU 0	;   4: File size
-040080             0568*   filinfo_fdate:		EQU	4	;   2: Modified date
-040080             0569*   filinfo_ftime:		EQU	6	;   2: Modified time
-040080             0570*   filinfo_fattrib:	EQU	8	;   1: File attribute
-040080             0571*   filinfo_altname:	EQU	9	;  13: Alternative file name
-040080             0572*   filinfo_fname:		EQU	22	; 256: Primary file name
+040080             0532*   vdp_pflag_cursor:		EQU	00000001b
+040080             0533*   vdp_pflag_scrchar:		EQU	00000010b
+040080             0534*   vdp_pflag_point:		EQU	00000100b
+040080             0535*   vdp_pflag_audio:		EQU	00001000b
+040080             0536*   vdp_pflag_mode:			EQU	00010000b
+040080             0537*   vdp_pflag_rtc:			EQU	00100000b
+040080             0538*   
+040080             0539*   ;
+040080             0540*   ; FatFS structures
+040080             0541*   ; These mirror the structures contained in src_fatfs/ff.h in the MOS project
+040080             0542*   ;
+040080             0543*   ; Object ID and allocation information (FFOBJID)
+040080             0544*   ;
+040080             0545*   ; Indexes into FFOBJID structure
+040080             0546*   ffobjid_fs:			EQU	0	; 3: Pointer to the hosting volume of this object
+040080             0547*   ffobjid_id:			EQU	3	; 2: Hosting volume mount ID
+040080             0548*   ffobjid_attr:		EQU	5	; 1: Object attribute
+040080             0549*   ffobjid_stat:		EQU	6	; 1: Object chain status (b1-0: =0:not contiguous, =2:contiguous, =3:fragmented in this session, b2:sub-directory stretched)
+040080             0550*   ffobjid_sclust:		EQU	7	; 4: Object data start cluster (0:no cluster or root directory)
+040080             0551*   ffobjid_objsize:	EQU	11	; 4: Object size (valid when sclust != 0)
+040080             0552*   ;
+040080             0553*   ; File object structure (FIL)
+040080             0554*   ;
+040080             0555*   ; Indexes into FIL structure
+040080             0556*   fil_obj:		EQU 0	; 15: Object identifier
+040080             0557*   fil_flag:		EQU	15 	;  1: File status flags
+040080             0558*   fil_err:		EQU	16	;  1: Abort flag (error code)
+040080             0559*   fil_fptr:		EQU	17	;  4: File read/write pointer (Zeroed on file open)
+040080             0560*   fil_clust:		EQU	21	;  4: Current cluster of fpter (invalid when fptr is 0)
+040080             0561*   fil_sect:		EQU	25	;  4: Sector number appearing in buf[] (0:invalid)
+040080             0562*   fil_dir_sect:	EQU	29	;  4: Sector number containing the directory entry
+040080             0563*   fil_dir_ptr:	EQU	33	;  3: Pointer to the directory entry in the win[]
+040080             0564*   ;
+040080             0565*   ; Directory object structure (DIR)
+040080             0566*   ; Indexes into DIR structure
+040080             0567*   dir_obj:		EQU  0	; 15: Object identifier
+040080             0568*   dir_dptr:		EQU	15	;  4: Current read/write offset
+040080             0569*   dir_clust:		EQU	19	;  4: Current cluster
+040080             0570*   dir_sect:		EQU	23	;  4: Current sector (0:Read operation has terminated)
+040080             0571*   dir_dir:		EQU	27	;  3: Pointer to the directory item in the win[]
+040080             0572*   dir_fn:			EQU	30	; 12: SFN (in/out) {body[8],ext[3],status[1]}
+040080             0573*   dir_blk_ofs:	EQU	42	;  4: Offset of current entry block being processed (0xFFFFFFFF:Invalid)
+040080             0574*   ;
+040080             0575*   ; File information structure (FILINFO)
+040080             0576*   ;
+040080             0577*   ; Indexes into FILINFO structure
+040080             0578*   filinfo_fsize:		EQU 0	;   4: File size
+040080             0579*   filinfo_fdate:		EQU	4	;   2: Modified date
+040080             0580*   filinfo_ftime:		EQU	6	;   2: Modified time
+040080             0581*   filinfo_fattrib:	EQU	8	;   1: File attribute
+040080             0582*   filinfo_altname:	EQU	9	;  13: Alternative file name
+040080             0583*   filinfo_fname:		EQU	22	; 256: Primary file name
 040080             0033        include "input.inc"
 040080 00          0001*   dithering_type: db 0x00 ; 0=none, 1=bayer ordered matrix, 2=floyd-steinberg
 040081 00 01 00    0002*   current_image_id: dl 256 ; buffer_id of the current image
@@ -681,7 +692,7 @@ PC     Output      Line
 0400C9             0044*   ; ------ QUIT ------
 0400C9             0045*   ; 113 Escape
 0400C9 DD CB 0E 46 0046*       bit 0,(ix+14)
-0400CD C2 CC 28 04 0047*   	jp nz,main_end
+0400CD C2 B6 27 04 0047*   	jp nz,main_end
 0400D1             0048*   
 0400D1             0049*   ; ------ RENDERING OPTIONS ------
 0400D1             0050*   ; ; 99 Space cycle through dithering types
@@ -712,18 +723,18 @@ PC     Output      Line
 0400F9             0071*   @Right:
 0400F9             0072*   ; check keypress flag and branch accordingly
 0400F9 A7          0073*       and a
-0400FA CA 60 28 04 0074*       jp z,rendbmp
+0400FA CA 4A 27 04 0074*       jp z,rendbmp
 0400FE             0075*   
 0400FE             0076*   ; check slideshow timer and branch accordingly
 0400FE CD 3A 01 04 0077*       call tmr_slideshow_get
-040102 F2 C0 28 04 0078*       jp p,no_move
+040102 F2 AA 27 04 0078*       jp p,no_move
 040106 CD 22 01 04 0079*       call tmr_slideshow_set
 04010A ED 5B 84 00 0080*       ld de,(current_image_index)
        04          
 04010F 13          0081*       inc de
 040110 ED 53 84 00 0082*       ld (current_image_index),de
        04          
-040115 C3 60 28 04 0083*       jp rendbmp
+040115 C3 4A 27 04 0083*       jp rendbmp
 040119             0084*   
 040119             0085*   ; slideshow timer routines
 040119             0086*   tmr_slideshow: ds 6 ; buffer to hold slideshow timer
@@ -4082,181 +4093,106 @@ PC     Output      Line
 0426F2 00 00 00    0355*   @fil: dl 0 ; pointer to FIL struct
 0426F5             0356*   
 0426F5 00 00 00    0357*   @chunkpointer: dl 0 ; pointer to current chunk
-0426F8             0358*   
-0426F8             0359*   ; File information structure (FILINFO)
-0426F8             0360*   @filinfo:
-0426F8 00 00 00 00 0361*   @filinfo_fsize:    blkb 4, 0   ; File size (4 bytes)
-0426FC 00 00       0362*   @filinfo_fdate:    blkb 2, 0   ; Modified date (2 bytes)
-0426FE 00 00       0363*   @filinfo_ftime:    blkb 2, 0   ; Modified time (2 bytes)
-042700 00          0364*   @filinfo_fattrib:  blkb 1, 0   ; File attribute (1 byte)
-042701 00 00 00 00 0365*   @filinfo_altname:  blkb 13, 0  ; Alternative file name (13 bytes)
-       00 00 00 00 
-       00 00 00 00 
-       00          
-04270E 00 00 00 00 0366*   @filinfo_fname:    blkb 256, 0 ; Primary file name (256 bytes)
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-       00 00 00 00 
-04280E             0037    
-04280E             0038    init:
-04280E             0039    ; set screen mode
-04280E             0040        ; ld a,0 ; 640x480x16 single-buffered
-04280E             0041        ; ld a,19 ; 1024x768x4 single-buffered
-04280E 3E 08       0042        ld a,8 ; 320x240x64 single-buffered
-042810             0043        ; ld a,20 ; 512x384x64 single-buffered
-042810             0044        ; ld a,23 ; 512x384x2 single-buffered
-042810 CD A5 25 04 0045        call vdu_set_screen_mode
-042814             0046    
-042814             0047    ; set screen scaling and background colors
-042814 21 22 28 04 0048        ld hl,@beg
-042818 01 09 00 00 0049        ld bc,@end-@beg
-04281C 5B DF       0050        rst.lil $18
-04281E C3 2B 28 04 0051        jp @end
-042822             0052    @beg:
-042822             0053    ;   VDU 23, 0, &C0, 0: Normal coordinates
-042822 17 00 C0 00 0054        db 23,0,$C0,0
-042826             0055    ;   VDU 17, color : set text background color
-042826 11 8C       0056        db 17,12+128 ; blue
-042828             0057    ;   VDU 18, color : set gfx background color
-042828 12 00 8C    0058        db 18,0,12+128 ; blue
-04282B             0059    @end:
-04282B CD 7E 25 04 0060        call cursor_off
-04282F CD A0 25 04 0061        call vdu_cls
-042833             0062    
-042833             0063    ; initialize main loop timer
-042833             0064    main_loop_timer_reset: equ 60 ; 120ths of a second
-042833 21 3C 00 00 0065        ld hl,main_loop_timer_reset
-042837 CD 86 24 04 0066        call tmr_main_loop_set
-04283B             0067    
-04283B CD 22 01 04 0068        call tmr_slideshow_set
-04283F             0069    
-04283F C9          0070        ret ; init
-042840             0071    
-042840             0072    main:
-042840 11 00 00 00 0073        ld de, 0
-042844 C3 60 28 04 0074        jp rendbmp
-042848             0075    
-042848             0076    mainloop:
-042848 CD B2 00 04 0077        call reset_keys
-04284C             0078    
-04284C             0079    waitloop:
-04284C CD 97 00 04 0080        call set_keys
-042850 CD 9A 24 04 0081        call tmr_main_loop_get
-042854 CA C2 00 04 0082        jp z, do_input
-042858 FA C2 00 04 0083        jp m, do_input
-04285C C3 4C 28 04 0084        jp waitloop
-042860             0085    
-042860             0086    rendbmp:
-042860             0087    ; test de for wraparound
-042860 21 00 00 00 0088        ld hl,0
-042864 AF          0089        xor a ; clear carry
-042865 ED 52       0090        sbc hl,de
-042867 CA 77 28 04 0091        jp z,@not_neg
-04286B FA 77 28 04 0092        jp m,@not_neg
-04286F 11 F8 00 00 0093        ld de,num_images-1
-042873 C3 86 28 04 0094        jp @load_image
-042877             0095    @not_neg:
-042877 21 F8 00 00 0096        ld hl,num_images-1
-04287B AF          0097        xor a ; clear carry
-04287C ED 52       0098        sbc hl,de
-04287E F2 86 28 04 0099        jp p,@load_image
-042882 11 00 00 00 0100        ld de,0
-042886             0101    @load_image:
-042886 ED 53 84 00 0102        ld (current_image_index),de
+0426F8             0037    
+0426F8             0038    init:
+0426F8             0039    ; set screen mode
+0426F8             0040        ; ld a,0 ; 640x480x16 single-buffered
+0426F8             0041        ; ld a,19 ; 1024x768x4 single-buffered
+0426F8 3E 08       0042        ld a,8 ; 320x240x64 single-buffered
+0426FA             0043        ; ld a,20 ; 512x384x64 single-buffered
+0426FA             0044        ; ld a,23 ; 512x384x2 single-buffered
+0426FA CD A5 25 04 0045        call vdu_set_screen_mode
+0426FE             0046    
+0426FE             0047    ; set screen scaling and background colors
+0426FE 21 0C 27 04 0048        ld hl,@beg
+042702 01 09 00 00 0049        ld bc,@end-@beg
+042706 5B DF       0050        rst.lil $18
+042708 C3 15 27 04 0051        jp @end
+04270C             0052    @beg:
+04270C             0053    ;   VDU 23, 0, &C0, 0: Normal coordinates
+04270C 17 00 C0 00 0054        db 23,0,$C0,0
+042710             0055    ;   VDU 17, color : set text background color
+042710 11 8C       0056        db 17,12+128 ; blue
+042712             0057    ;   VDU 18, color : set gfx background color
+042712 12 00 8C    0058        db 18,0,12+128 ; blue
+042715             0059    @end:
+042715 CD 7E 25 04 0060        call cursor_off
+042719 CD A0 25 04 0061        call vdu_cls
+04271D             0062    
+04271D             0063    ; initialize main loop timer
+04271D             0064    main_loop_timer_reset: equ 60 ; 120ths of a second
+04271D 21 3C 00 00 0065        ld hl,main_loop_timer_reset
+042721 CD 86 24 04 0066        call tmr_main_loop_set
+042725             0067    
+042725 CD 22 01 04 0068        call tmr_slideshow_set
+042729             0069    
+042729 C9          0070        ret ; init
+04272A             0071    
+04272A             0072    main:
+04272A 11 00 00 00 0073        ld de, 0
+04272E C3 4A 27 04 0074        jp rendbmp
+042732             0075    
+042732             0076    mainloop:
+042732 CD B2 00 04 0077        call reset_keys
+042736             0078    
+042736             0079    waitloop:
+042736 CD 97 00 04 0080        call set_keys
+04273A CD 9A 24 04 0081        call tmr_main_loop_get
+04273E CA C2 00 04 0082        jp z, do_input
+042742 FA C2 00 04 0083        jp m, do_input
+042746 C3 36 27 04 0084        jp waitloop
+04274A             0085    
+04274A             0086    rendbmp:
+04274A             0087    ; test de for wraparound
+04274A 21 00 00 00 0088        ld hl,0
+04274E AF          0089        xor a ; clear carry
+04274F ED 52       0090        sbc hl,de
+042751 CA 61 27 04 0091        jp z,@not_neg
+042755 FA 61 27 04 0092        jp m,@not_neg
+042759 11 F8 00 00 0093        ld de,num_images-1
+04275D C3 70 27 04 0094        jp @load_image
+042761             0095    @not_neg:
+042761 21 F8 00 00 0096        ld hl,num_images-1
+042765 AF          0097        xor a ; clear carry
+042766 ED 52       0098        sbc hl,de
+042768 F2 70 27 04 0099        jp p,@load_image
+04276C 11 00 00 00 0100        ld de,0
+042770             0101    @load_image:
+042770 ED 53 84 00 0102        ld (current_image_index),de
        04          
-04288B 16 0F       0103        ld d,image_record_size
-04288D ED 5C       0104        mlt de
-04288F FD 21 48 01 0105        ld iy,image_list
+042775 16 0F       0103        ld d,image_record_size
+042777 ED 5C       0104        mlt de
+042779 FD 21 48 01 0105        ld iy,image_list
        04          
-042894 FD 19       0106        add iy,de
-042896 FD 7E 00    0107        ld a,(iy+image_type) ; get image type
-042899 FD 07 03    0108        ld bc,(iy+image_width) ; get image width
-04289C FD 17 06    0109        ld de,(iy+image_height) ; get image height
-04289F FD 31 09    0110        ld ix,(iy+image_filesize) ; get image file size
-0428A2 FD 27 0C    0111        ld hl,(iy+image_filename) ; get image filename
-0428A5 E5          0112        push hl
-0428A6 FD E1       0113        pop iy
-0428A8 21 00 01 00 0114        ld hl,256 ; set image bufferId
-0428AC CD 83 26 04 0115        call vdu_load_img
-0428B0             0116    ; plot image
-0428B0 CD A0 25 04 0117        call vdu_cls
-0428B4 01 00 00 00 0118        ld bc,0 ; x
-0428B8 11 00 00 00 0119        ld de,0 ; y
-0428BC CD FF 25 04 0120        call vdu_plot_bmp
-0428C0             0121    
-0428C0             0122    no_move:
-0428C0 21 3C 00 00 0123        ld hl,main_loop_timer_reset
-0428C4 CD 86 24 04 0124        call tmr_main_loop_set
-0428C8 C3 48 28 04 0125        jp mainloop
-0428CC             0126    
-0428CC             0127    main_end:
-0428CC             0128    ; exit program gracefully
-0428CC AF          0129        xor a ; 640x480x16 single-buffered
-0428CD CD A5 25 04 0130        call vdu_set_screen_mode
-0428D1 3E 01       0131        ld a,1 ; scaling on
-0428D3 CD B6 25 04 0132        call vdu_set_scaling
-0428D7 CD 70 25 04 0133        call cursor_on
-0428DB C9          0134        ret
-0428DC             0135    
-0428DC             0136    ; load to onboard 8k sram
-0428DC             0137    filedata: equ 0xB7E000
+04277E FD 19       0106        add iy,de
+042780 FD 7E 00    0107        ld a,(iy+image_type) ; get image type
+042783 FD 07 03    0108        ld bc,(iy+image_width) ; get image width
+042786 FD 17 06    0109        ld de,(iy+image_height) ; get image height
+042789 FD 31 09    0110        ld ix,(iy+image_filesize) ; get image file size
+04278C FD 27 0C    0111        ld hl,(iy+image_filename) ; get image filename
+04278F E5          0112        push hl
+042790 FD E1       0113        pop iy
+042792 21 00 01 00 0114        ld hl,256 ; set image bufferId
+042796 CD 83 26 04 0115        call vdu_load_img
+04279A             0116    ; plot image
+04279A CD A0 25 04 0117        call vdu_cls
+04279E 01 00 00 00 0118        ld bc,0 ; x
+0427A2 11 00 00 00 0119        ld de,0 ; y
+0427A6 CD FF 25 04 0120        call vdu_plot_bmp
+0427AA             0121    
+0427AA             0122    no_move:
+0427AA 21 3C 00 00 0123        ld hl,main_loop_timer_reset
+0427AE CD 86 24 04 0124        call tmr_main_loop_set
+0427B2 C3 32 27 04 0125        jp mainloop
+0427B6             0126    
+0427B6             0127    main_end:
+0427B6             0128    ; exit program gracefully
+0427B6 AF          0129        xor a ; 640x480x16 single-buffered
+0427B7 CD A5 25 04 0130        call vdu_set_screen_mode
+0427BB 3E 01       0131        ld a,1 ; scaling on
+0427BD CD B6 25 04 0132        call vdu_set_scaling
+0427C1 CD 70 25 04 0133        call cursor_on
+0427C5 C9          0134        ret
+0427C6             0135    
+0427C6             0136    ; load to onboard 8k sram
+0427C6             0137    filedata: equ 0xB7E000

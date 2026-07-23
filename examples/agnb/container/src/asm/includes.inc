@@ -56,32 +56,32 @@ _printDecBuffer: blkb 16,0 ; a few bytes extra just to be sure
 ; so it will allways be 8 characters length
 ; HL : Value to convert to string
 ; DE : pointer to buffer, at least 8 byte + 0
-u24_to_ascii:
-    LD BC,-10000000
-    CALL @one_digit
-    LD BC,-1000000
-    CALL @one_digit
-    LD BC,-100000
-    CALL @one_digit
-    LD BC,-10000
-    CALL @one_digit
-    LD BC,-1000
-    CALL @one_digit
-    LD BC,-100
-    CALL @one_digit
-    LD C,-10
-    CALL @one_digit
-    LD C,B
-@one_digit:
-    LD A,'0'-1
-@divide_me:
-    INC A
-    ADD HL,BC
-    JR C,@divide_me
-    SBC HL,BC
-    LD (DE),A
-    INC DE
-    RET
+; u24_to_ascii:
+;     LD BC,-10000000
+;     CALL @one_digit
+;     LD BC,-1000000
+;     CALL @one_digit
+;     LD BC,-100000
+;     CALL @one_digit
+;     LD BC,-10000
+;     CALL @one_digit
+;     LD BC,-1000
+;     CALL @one_digit
+;     LD BC,-100
+;     CALL @one_digit
+;     LD C,-10
+;     CALL @one_digit
+;     LD C,B
+; @one_digit:
+;     LD A,'0'-1
+; @divide_me:
+;     INC A
+;     ADD HL,BC
+;     JR C,@divide_me
+;     SBC HL,BC
+;     LD (DE),A
+;     INC DE
+;     RET
 
 
 ; Routines and constants selected from loose/src/asm/vdu.inc

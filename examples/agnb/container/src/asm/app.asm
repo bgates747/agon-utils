@@ -30,10 +30,15 @@ exit:
     ret 
 
     include "mos_api.inc"
+    include "macros.inc" ; needs to be above any other includes that use these macros
+    include "agnb.inc"
     include "input.inc"
     include "images.inc"
     include "timer.inc"
     include "includes.inc"
+    include "debug.inc" ; TODO: for application testing only, remove for production
+    include "functions.inc" ; TODO: contains dependencies of debug.inc. may not be required for production
+    include "maths.inc" ; TODO: contains dependencies of functions.inc. may not be required for production
 
 init:
 ; set screen mode
@@ -64,14 +69,30 @@ init:
 main_loop_timer_reset: equ 60 ; 120ths of a second
     ld hl,main_loop_timer_reset
     call tmr_main_loop_set
-
     call tmr_slideshow_set
-
-; TODO: read container file and load all images
-
     ret ; init
 
 main:
+; begin temporary testing code
+; Open the container, read and validate its RIFF header, then close it.
+    ld de,agnb_filename
+    call agnb_open
+    call dumpFlags ; DEBUG
+    jr nz,@agnb_done
+    call agnb_read_riff_header
+    CALL dumpFlags ; DEBUG
+    call agnb_close
+    CALL dumpFlags ; DEBUG
+@agnb_done:
+; Dump the complete on-disk RIFF header:
+;     52 49 46 46  <u32 size>  41 47 4E 42
+;     R  I  F  F               A  G  N  B
+    ld hl,agnb_header
+    ld a,agnb_riff_header_size
+    call dumpMemoryHex
+    ret
+; end temporary testing code
+
     ld de, 0
     jp rendbmp
 

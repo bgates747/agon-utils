@@ -355,12 +355,3 @@ vdu_load_buffer_from_file:
 @fil: dl 0 ; pointer to FIL struct
 
 @chunkpointer: dl 0 ; pointer to current chunk
-
-; File information structure (FILINFO)
-@filinfo:
-@filinfo_fsize:    blkb 4, 0   ; File size (4 bytes)
-@filinfo_fdate:    blkb 2, 0   ; Modified date (2 bytes)
-@filinfo_ftime:    blkb 2, 0   ; Modified time (2 bytes)
-@filinfo_fattrib:  blkb 1, 0   ; File attribute (1 byte)
-@filinfo_altname:  blkb 13, 0  ; Alternative file name (13 bytes)
-@filinfo_fname:    blkb 256, 0 ; Primary file name (256 bytes)

@@ -52,6 +52,21 @@ vdp_terminalmode:	EQU	FFh
 			RST.LIL	08h
 	ENDMACRO 	
 
+;
+; Same as above but keeps IY safe on FFS calls. This was added after some FFS
+; functions unexpectedly destroyed IY in the emulator; that behavior may since
+; have been fixed. TODO: test current emulator and hardware MOS builds, then
+; remove this wrapper if unnecessary: PUSH/POP IY adds avoidable cycles and
+; index-register stack operations are costlier than their GP-register forms.
+; (Can be used for regular MOS calls as well.)
+;
+	MACRO	FFSCALL	function
+			PUSH IY
+			LD	A, function
+			RST.LIL	08h
+			POP IY
+	ENDMACRO 	
+
 ; MOS high level functions
 ;
 ; Get keycode

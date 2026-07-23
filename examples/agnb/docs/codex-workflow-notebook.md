@@ -20,6 +20,10 @@ session log or duplicate project specifications here.
   issue.
 - The user may manually move, rename, edit, build, or test files between
   prompts. Reinspect current state rather than assuming it is unchanged.
+- Treat explanation, review, design discussion, and agreement in principle as
+  read-only. Never modify code or project files until the user explicitly asks
+  for the change. A statement describing how code should work is not by itself
+  authorization to implement it; wait for a direct instruction to edit.
 - Present design work in small, sequential, implementation-sized decisions.
   Do not assume the user has absorbed a complete design document before coding;
   introduce the next relevant constraint when it becomes actionable and work
@@ -77,6 +81,18 @@ instead of copying the entire decision.
 
   Treat an import, ABI, dependency, or round-trip failure as an environment
   problem to resolve before running project scripts.
+
+## Assembly style
+
+- Use `ASCIZ` for null-terminated string literals instead of spelling out a
+  separate zero byte. For example, the current preferred form is:
+
+  ```asm
+  agnb_filename: asciz "images.agnb"
+  ```
+
+  Treat this as the Modern Way in new assembly code unless an existing binary
+  layout requires the terminator to be expressed separately.
 
 ## Keeping context economical
 
