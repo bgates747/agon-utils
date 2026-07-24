@@ -73,71 +73,10 @@ main_loop_timer_reset: equ 60 ; 120ths of a second
     ret ; init
 
 main:
-; begin temporary testing code
-; Open the container and read through the first image's DATA header. No image
-; payload bytes are read or uploaded by this test.
-    ld de,agnb_filename
-    call agnb_open
-    ; call dumpFlags ; DEBUG
-    jr nz,@agnb_done
-
-    call agnb_read_riff_header
-    ; call dumpFlags ; DEBUG
-    jr nz,@agnb_close
-
-    call agnb_read_vers
-    ; call dumpFlags ; DEBUG
-    jr nz,@agnb_close
-
-    call agnb_read_buffer_list
-    ; call dumpFlags ; DEBUG
-    jr nz,@agnb_close
-
-; Stream and consolidate the first DATA payload in its explicit VDP buffer.
-    call agnb_stream_data
-    ; call dumpFlags ; DEBUG
-    jr nz,@agnb_close
-
-; Apply the retained IMAG metadata, then plot the selected bitmap below the
-; diagnostic text.
-    call agnb_finalize_image
-    ; call dumpFlags ; DEBUG
-    jr nz,@agnb_close
-    ld bc,0
-    ld de,120
-    call vdu_plot_bmp
-
-@agnb_close:
-    call agnb_close
-    ; call dumpFlags ; DEBUG
-@agnb_done:
-; Dump normalized metadata for the first manifest image:
-;     00 01  10 00  23 00  01  30 02 00 00
-;     ID     width  height  fmt DATA size
-    ; ld hl,agnb_metadata
-    ; ld a,agnb_meta_size
-    ; call dumpMemoryHex
-
-; Dump the DATA chunk header at which parsing stopped:
-;     44 41 54 41  30 02 00 00
-;     D  A  T  A   payload size
-    ; ld hl,agnb_header
-    ; ld a,agnb_chunk_header_size
-    ; call dumpMemoryHex
-
-; Dump calculated width*height followed by the declared DATA size. Both u32
-; values must be identical:
-;     30 02 00 00
-;     30 02 00 00
-    ; ld hl,agnb_expected_data_size
-    ; ld a,4
-    ; call dumpMemoryHex
-    ; ld hl,agnb_metadata+agnb_meta_data_size
-    ; ld a,4
-    ; call dumpMemoryHex
-    ret
-; end temporary testing code
-
+; Preload and finalize every image in the container before entering the same
+; slideshow loop used by the loose-file harness.
+    call agnb_load_images
+    jp nz,main_end
     ld de, 0
     jp rendbmp
 
@@ -168,18 +107,17 @@ rendbmp:
     ld de,0
 @load_image:
     ld (current_image_index),de
-    ld d,image_record_size
-    mlt de
-    ld iy,image_list
-    add iy,de
-    ld a,(iy+image_type) ; get image type
-    ld bc,(iy+image_width) ; get image width
-    ld de,(iy+image_height) ; get image height
-    ld ix,(iy+image_filesize) ; get image file size
-
-; TODO: implement here everything that vdu_load_img does,
-; except loading the image buffers from disk since that is already done in the container loader
-
+; Select the exact manifest-supplied bufferId for this image. The table is
+; generated independently of record order; the application does not derive IDs.
+    push de
+    pop hl
+    add hl,hl
+    ld de,image_bufferIds
+    add hl,de
+    ld hl,(hl)
+    dec hl
+    inc.s hl ; preserve the u16 bufferId and clear HLU
+    call vdu_buff_select
 
 ; plot image
     call vdu_cls

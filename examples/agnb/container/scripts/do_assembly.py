@@ -192,6 +192,10 @@ def write_images_include(records: list[ImageRecord]) -> None:
     for record in records:
         lines.append(f"buf_{record.name}: equ {record.bufferId}\n")
 
+    lines.append("\nimage_bufferIds:\n")
+    for record in records:
+        lines.append(f"\tdw {record.bufferId}\n")
+
     lines.append(
         "\nimage_list: ; type; width; height; filesize; ex filename pointer:\n"
     )

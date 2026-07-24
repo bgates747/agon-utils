@@ -49,6 +49,8 @@ class ContainerWriterTests(unittest.TestCase):
         self.assertIn("image_ex_filename: equ image_filesize+3", generated)
         self.assertIn("image_record_size: equ image_ex_filename+3", generated)
         self.assertIn(f"buf_{first.name}: equ {first.bufferId}", generated)
+        self.assertIn("image_bufferIds:", generated)
+        self.assertIn(f"\tdw {first.bufferId}\n", generated)
         self.assertIn(
             f"\tdl 1, {first.width}, {first.height}, {first.dataSize}, "
             "0xFFFFFF\n",
@@ -110,7 +112,7 @@ class ContainerWriterTests(unittest.TestCase):
 
         self.assertEqual(offset, len(container))
         self.assertEqual(record_index, len(records))
-        self.assertEqual(len(records), 249)
+        self.assertEqual(len(records), 250)
         self.assertLessEqual(len(records), 256)
 
         for record in records:

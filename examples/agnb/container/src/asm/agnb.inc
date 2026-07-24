@@ -166,6 +166,8 @@ agnb_stream_remaining:
     blkb 3,0
 agnb_stream_block_size:
     blkb 3,0
+agnb_padding_size:
+    db 0
 
 ; Record-validation flags. These are reset at the start of each LIST BUFR.
 agnb_record_has_bhdr:      equ 0
@@ -286,9 +288,69 @@ agnb_error_close:
 
 ; Top-level image load operation.
 ; inputs:  none; uses agnb_filename
-; outputs: all valid LIST BUFR image records uploaded to their explicit IDs
+; outputs: A=0 and Z set after all valid LIST BUFR image records are uploaded
+;          and finalized at their explicit IDs; nonzero error and NZ otherwise
+; destroys: AF, BC, DE, HL, IX
 agnb_load_images:
-    jp agnb_not_implemented
+    ld de,agnb_filename
+    call agnb_open
+    ret nz
+
+    call agnb_read_riff_header
+    jr nz,@load_error
+    call agnb_read_vers
+    jr nz,@load_error
+
+@next_record:
+; End only at the exact declared RIFF boundary. A position beyond it is an
+; internal bounds failure; a position before it must begin another LIST BUFR.
+    ld a,(agnb_state+agnb_state_file_offset+3)
+    ld hl,agnb_state+agnb_state_riff_end+3
+    cp (hl)
+    jr c,@read_record
+    jr nz,@bad_bounds
+    ld hl,(agnb_state+agnb_state_file_offset)
+    ld de,(agnb_state+agnb_state_riff_end)
+    or a
+    sbc hl,de
+    jr z,@success
+    jr nc,@bad_bounds
+
+@read_record:
+    call agnb_read_buffer_list
+    jr nz,@load_error
+    call agnb_stream_data
+    jr nz,@load_error
+    call agnb_finalize_image
+    jr nz,@load_error
+
+; TEMPORARY TRAVERSAL DIAGNOSTIC: display each image immediately after it is
+; loaded and finalized, then wait for a key before parsing the next record.
+; agnb_finalize_image leaves the current writer-specified buffer selected.
+    call vdu_cls
+    ld bc,0
+    ld de,0
+    call vdu_plot_bmp
+    call DEBUG_WAITKEYPRESS
+
+    call agnb_finish_buffer_list
+    jr nz,@load_error
+    jr @next_record
+
+@bad_bounds:
+    ld a,agnb_error_bounds
+    ld (agnb_last_error),a
+@load_error:
+; Preserve the parser/transport error while still closing the open file.
+    push af
+    call agnb_close
+    pop af
+    ld (agnb_last_error),a
+    or a
+    ret
+
+@success:
+    jp agnb_close
 
 ; Read exactly BC bytes from agnb_fil into DE.
 ; inputs:  BC = requested u24 length, DE = destination
@@ -904,6 +966,59 @@ agnb_finalize_image:
     call vdu_bmp_create
     xor a
     ld (agnb_last_error),a
+    ret
+
+; Consume the current DATA chunk's zero alignment padding and require the
+; resulting position to equal the enclosing LIST payload end exactly.
+; outputs: A=0 and Z set on success; error code and NZ on failure
+; destroys: AF, BC, DE, HL
+agnb_finish_buffer_list:
+; padding = (-payload_size) & 3
+    ld a,(agnb_metadata+agnb_meta_data_size)
+    neg
+    and 3
+    ld (agnb_padding_size),a
+    jr z,@check_list_end
+
+    ld bc,0
+    ld c,a
+    ld de,agnb_header
+    call agnb_read_exact
+    ret nz
+
+; Version 0.1 writers emit only zero-valued alignment padding.
+    ld a,(agnb_padding_size)
+    ld b,a
+    ld hl,agnb_header
+@check_padding:
+    ld a,(hl)
+    or a
+    jr nz,@bad_chunk
+    inc hl
+    djnz @check_padding
+
+@check_list_end:
+    ld hl,(agnb_state+agnb_state_file_offset)
+    ld de,(agnb_state+agnb_state_list_end)
+    or a
+    sbc hl,de
+    jr nz,@bad_bounds
+    ld a,(agnb_state+agnb_state_file_offset+3)
+    ld hl,agnb_state+agnb_state_list_end+3
+    cp (hl)
+    jr nz,@bad_bounds
+    xor a
+    ld (agnb_last_error),a
+    ret
+
+@bad_chunk:
+    ld a,agnb_error_chunk
+    jr @error
+@bad_bounds:
+    ld a,agnb_error_bounds
+@error:
+    ld (agnb_last_error),a
+    or a
     ret
 
 ; Skip an unknown or deliberately ignored chunk, including alignment padding,
