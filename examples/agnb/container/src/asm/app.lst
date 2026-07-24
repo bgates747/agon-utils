@@ -1487,7 +1487,7 @@ PC     Output      Line
 0403BA             0631*   
 0403BA             0632*   ; LIST payload must at least contain its type and three nested chunk headers.
 0403BA 2A D0 00 04 0633*       ld hl,(agnb_state+agnb_state_chunk_size)
-0403BE 11 38 00 00 0634*       ld de,agnb_list_type_size+3*agnb_chunk_header_size
+0403BE 11 1C 00 00 0634*       ld de,3*agnb_chunk_header_size+agnb_list_type_size
 0403C2 B7          0635*       or a
 0403C3 ED 52       0636*       sbc hl,de
 0403C5 38 72       0637*       jr c,@bad_chunk
