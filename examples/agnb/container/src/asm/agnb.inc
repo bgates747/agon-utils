@@ -155,6 +155,18 @@ agnb_meta_size:            equ 11
 agnb_metadata:
     blkb agnb_meta_size,0
 
+; Retained u32 result from agnb_calculate_image_data_size for validation and
+; temporary test inspection. The high byte is zero for the 24-bit product.
+agnb_expected_data_size:
+    blkb 4,0
+
+; Working counters used by agnb_stream_data. DATA sizes accepted by the image
+; loader have already been constrained to 24 bits.
+agnb_stream_remaining:
+    blkb 3,0
+agnb_stream_block_size:
+    blkb 3,0
+
 ; Record-validation flags. These are reset at the start of each LIST BUFR.
 agnb_record_has_bhdr:      equ 0
 agnb_record_has_imag:      equ 1
@@ -443,29 +455,456 @@ agnb_read_riff_header:
 
 ; Read a generic eight-byte chunk header into agnb_header and compute its
 ; aligned payload end without crossing the active RIFF/LIST boundary.
+; inputs:  IX = pointer to the enclosing u32 end offset
+; outputs: chunk size/end stored in agnb_state; file positioned at payload
+; destroys: AF, BC, DE, HL
 agnb_read_chunk_header:
-    jp agnb_not_implemented
+    ld bc,agnb_chunk_header_size
+    ld de,agnb_header
+    call agnb_read_exact
+    ret nz
+
+; Retain the complete u32 payload size.
+    ld hl,(agnb_header+agnb_chunk_size)
+    ld (agnb_state+agnb_state_chunk_size),hl
+    ld a,(agnb_header+agnb_chunk_size+3)
+    ld (agnb_state+agnb_state_chunk_size+3),a
+
+; The first byte after the payload is current file position + payload size.
+    ld de,(agnb_state+agnb_state_file_offset)
+    add hl,de
+    ld (agnb_state+agnb_state_chunk_end),hl
+    ld a,(agnb_header+agnb_chunk_size+3)
+    ld b,a
+    ld a,(agnb_state+agnb_state_file_offset+3)
+    adc a,b
+    jr c,@bad_bounds
+    ld (agnb_state+agnb_state_chunk_end+3),a
+
+; Reject a payload end beyond its enclosing RIFF or LIST boundary.
+    cp (ix+3)
+    jr c,@success
+    jr nz,@bad_bounds
+    ld de,(ix)
+    or a
+    sbc hl,de
+    jr c,@success
+    jr z,@success
+@bad_bounds:
+    ld a,agnb_error_bounds
+    ld (agnb_last_error),a
+    or a
+    ret
+@success:
+    xor a
+    ld (agnb_last_error),a
+    ret
 
 ; Validate the single VERS payload and supported version.
+; inputs:  file positioned at the VERS chunk header
+; outputs: file positioned at the following top-level chunk
 agnb_read_vers:
-    jp agnb_not_implemented
+    ld ix,agnb_state+agnb_state_riff_end
+    call agnb_read_chunk_header
+    ret nz
+
+    ld hl,agnb_header+agnb_chunk_id
+    ld de,agnb_id_vers
+    call agnb_compare_fourcc
+    jp nz,@bad_chunk
+
+    ld hl,(agnb_state+agnb_state_chunk_size)
+    ld de,agnb_vers_payload_size
+    or a
+    sbc hl,de
+    jr nz,@bad_version
+    ld a,(agnb_state+agnb_state_chunk_size+3)
+    or a
+    jr nz,@bad_version
+
+; Read the two-byte payload and its two required zero padding bytes together.
+    ld bc,4
+    ld de,agnb_header
+    call agnb_read_exact
+    ret nz
+    ld a,(agnb_header+agnb_vers_major)
+    cp agnb_version_major
+    jr nz,@bad_version
+    ld a,(agnb_header+agnb_vers_minor)
+    cp agnb_version_minor
+    jr nz,@bad_version
+    ld a,(agnb_header+2)
+    or a
+    jr nz,@bad_chunk
+    ld a,(agnb_header+3)
+    or a
+    jr nz,@bad_chunk
+    xor a
+    ld (agnb_last_error),a
+    ret
+@bad_version:
+    ld a,agnb_error_version
+    jr @error
+@bad_chunk:
+    ld a,agnb_error_chunk
+@error:
+    ld (agnb_last_error),a
+    or a
+    ret
 
 ; Parse one LIST BUFR and require BHDR, IMAG, DATA in that order.
+; inputs:  file positioned at a LIST chunk header
+; outputs: normalized metadata and DATA size retained; file positioned at DATA
 agnb_read_buffer_list:
-    jp agnb_not_implemented
+    xor a
+    ld (agnb_record_flags),a
+
+    ld ix,agnb_state+agnb_state_riff_end
+    call agnb_read_chunk_header
+    ret nz
+    ld hl,agnb_header+agnb_chunk_id
+    ld de,agnb_id_list
+    call agnb_compare_fourcc
+    jr nz,@bad_chunk
+
+; LIST payload must at least contain its type and three nested chunk headers.
+    ld hl,(agnb_state+agnb_state_chunk_size)
+    ld de,agnb_list_type_size+3*agnb_chunk_header_size
+    or a
+    sbc hl,de
+    jr c,@bad_chunk
+    ld hl,(agnb_state+agnb_state_chunk_end)
+    ld (agnb_state+agnb_state_list_end),hl
+    ld a,(agnb_state+agnb_state_chunk_end+3)
+    ld (agnb_state+agnb_state_list_end+3),a
+
+    ld bc,agnb_list_type_size
+    ld de,agnb_header
+    call agnb_read_exact
+    ret nz
+    ld hl,agnb_header
+    ld de,agnb_id_bufr
+    call agnb_compare_fourcc
+    jr nz,@bad_chunk
+
+    call agnb_read_bhdr
+    ret nz
+    call agnb_read_imag
+    ret nz
+
+; Read and validate the DATA header, but deliberately leave its payload unread.
+    ld ix,agnb_state+agnb_state_list_end
+    call agnb_read_chunk_header
+    ret nz
+    ld hl,agnb_header+agnb_chunk_id
+    ld de,agnb_id_data
+    call agnb_compare_fourcc
+    jr nz,@bad_chunk
+    ld hl,(agnb_state+agnb_state_chunk_size)
+    ld (agnb_metadata+agnb_meta_data_size),hl
+    ld a,(agnb_state+agnb_state_chunk_size+3)
+    ld (agnb_metadata+agnb_meta_data_size+3),a
+    call agnb_validate_image_data_size
+    ret nz
+    ld a,(agnb_record_flags)
+    or 1<<agnb_record_has_data
+    ld (agnb_record_flags),a
+    xor a
+    ld (agnb_last_error),a
+    ret
+@bad_chunk:
+    ld a,agnb_error_chunk
+    ld (agnb_last_error),a
+    or a
+    ret
 
 ; Read and validate BHDR into agnb_metadata.
 agnb_read_bhdr:
-    jp agnb_not_implemented
+    ld ix,agnb_state+agnb_state_list_end
+    call agnb_read_chunk_header
+    ret nz
+    ld hl,agnb_header+agnb_chunk_id
+    ld de,agnb_id_bhdr
+    call agnb_compare_fourcc
+    jr nz,@bad_chunk
+    ld hl,(agnb_state+agnb_state_chunk_size)
+    ld de,agnb_bhdr_payload_size
+    or a
+    sbc hl,de
+    jp nz,@bad_metadata
+    ld a,(agnb_state+agnb_state_chunk_size+3)
+    or a
+    jp nz,@bad_metadata
+
+; Read two payload bytes plus two zero padding bytes.
+    ld bc,4
+    ld de,agnb_header
+    call agnb_read_exact
+    ret nz
+    ld a,(agnb_header+agnb_bhdr_bufferId)
+    cp $FF
+    jr nz,@store_bufferId
+    ld a,(agnb_header+agnb_bhdr_bufferId+1)
+    cp $FF
+    jr z,@bad_bufferId
+@store_bufferId:
+    ld a,(agnb_header+agnb_bhdr_bufferId)
+    ld (agnb_metadata+agnb_meta_bufferId),a
+    ld a,(agnb_header+agnb_bhdr_bufferId+1)
+    ld (agnb_metadata+agnb_meta_bufferId+1),a
+    ld a,(agnb_header+2)
+    or a
+    jr nz,@bad_chunk
+    ld a,(agnb_header+3)
+    or a
+    jr nz,@bad_chunk
+    ld a,(agnb_record_flags)
+    or 1<<agnb_record_has_bhdr
+    ld (agnb_record_flags),a
+    xor a
+    ld (agnb_last_error),a
+    ret
+@bad_bufferId:
+    ld a,agnb_error_bufferId
+    jr @error
+@bad_metadata:
+    ld a,agnb_error_metadata
+    jr @error
+@bad_chunk:
+    ld a,agnb_error_chunk
+@error:
+    ld (agnb_last_error),a
+    or a
+    ret
 
 ; Read and validate IMAG into agnb_metadata.
 agnb_read_imag:
-    jp agnb_not_implemented
+    ld ix,agnb_state+agnb_state_list_end
+    call agnb_read_chunk_header
+    ret nz
+    ld hl,agnb_header+agnb_chunk_id
+    ld de,agnb_id_imag
+    call agnb_compare_fourcc
+    jp nz,@bad_chunk
+    ld hl,(agnb_state+agnb_state_chunk_size)
+    ld de,agnb_imag_payload_size
+    or a
+    sbc hl,de
+    jp nz,@bad_metadata
+    ld a,(agnb_state+agnb_state_chunk_size+3)
+    or a
+    jp nz,@bad_metadata
 
-; Validate DATA size after BHDR/IMAG, then stream it in filedata-sized blocks
-; to agnb_meta_bufferId and consolidate/create the RGBA2222 bitmap.
+; Read five payload bytes plus three zero padding bytes.
+    ld bc,8
+    ld de,agnb_header
+    call agnb_read_exact
+    ret nz
+    ld a,(agnb_header+agnb_imag_width)
+    ld hl,agnb_header+agnb_imag_width+1
+    or (hl)
+    jp z,@bad_metadata
+    ld a,(agnb_header+agnb_imag_width)
+    ld (agnb_metadata+agnb_meta_width),a
+    ld a,(agnb_header+agnb_imag_width+1)
+    ld (agnb_metadata+agnb_meta_width+1),a
+    ld a,(agnb_header+agnb_imag_height)
+    ld hl,agnb_header+agnb_imag_height+1
+    or (hl)
+    jp z,@bad_metadata
+    ld a,(agnb_header+agnb_imag_height)
+    ld (agnb_metadata+agnb_meta_height),a
+    ld a,(agnb_header+agnb_imag_height+1)
+    ld (agnb_metadata+agnb_meta_height+1),a
+    ld a,(agnb_header+agnb_imag_format)
+    cp agnb_image_rgba2222
+    jr nz,@bad_metadata
+    ld (agnb_metadata+agnb_meta_format),a
+    ld hl,(agnb_header+5)
+    ld de,0
+    or a
+    sbc hl,de
+    jr nz,@bad_chunk
+    ld a,(agnb_record_flags)
+    or 1<<agnb_record_has_imag
+    ld (agnb_record_flags),a
+    xor a
+    ld (agnb_last_error),a
+    ret
+@bad_metadata:
+    ld a,agnb_error_metadata
+    jr @error
+@bad_chunk:
+    ld a,agnb_error_chunk
+@error:
+    ld (agnb_last_error),a
+    or a
+    ret
+
+; Calculate the expected RGBA2222 payload size.
+; inputs:  width and height in agnb_metadata
+; outputs: HL = width * height (unsigned 24-bit)
+;          u32 result retained in agnb_expected_data_size
+; destroys: AF, HL
+;
+; IMPORTANT: umul24 discards product bits above bit 23. That theoretical limit
+; is 16,777,215 bytes/pixels--orders of magnitude larger than any conceivable
+; bitmap on the Agon. The initial image loader therefore deliberately uses the
+; smaller native-ADL result instead of carrying a general u16*u16=u32 routine.
+agnb_calculate_image_data_size:
+; Load each contiguous u16 field as UHL, then use the established eZ80 idiom
+; to discard the accidentally loaded following byte.
+    ld hl,(agnb_metadata+agnb_meta_height)
+    dec hl
+    inc.s hl ; undocumented: preserves HL and clears HLU
+    ex de,hl
+    ld hl,(agnb_metadata+agnb_meta_width)
+    dec hl
+    inc.s hl ; undocumented: preserves HL and clears HLU
+    call umul24
+    ld (agnb_expected_data_size),hl
+    xor a
+    ld (agnb_expected_data_size+3),a
+    ret
+
+; Validate the current RGBA2222 DATA size against width * height.
+; inputs:  normalized IMAG metadata and DATA size in agnb_metadata
+; outputs: A=0 and Z set on success
+;          A=agnb_error_data_size and NZ set on mismatch
+; destroys: AF, DE, HL
+agnb_validate_image_data_size:
+    call agnb_calculate_image_data_size
+
+; A 24-bit calculated size can match only a declared u32 whose high byte is 0.
+    ld a,(agnb_metadata+agnb_meta_data_size+3)
+    or a
+    jr nz,@bad_size
+
+; Compare the native 24-bit product with the low three declared size bytes.
+    ld de,(agnb_metadata+agnb_meta_data_size)
+    or a
+    sbc hl,de
+    jr nz,@bad_size
+    xor a
+    ld (agnb_last_error),a
+    ret
+@bad_size:
+    ld a,agnb_error_data_size
+    ld (agnb_last_error),a
+    or a
+    ret
+
+; Stream the current DATA payload into agnb_meta_bufferId in bounded blocks,
+; then consolidate the completed VDP buffer. This routine is form-agnostic;
+; callers perform image-, audio-, or other form-specific finalization.
 agnb_stream_data:
-    jp agnb_not_implemented
+; Retain the complete 24-bit transfer count. The image metadata gate has
+; already required the declared DATA high byte to be zero.
+    ld hl,(agnb_metadata+agnb_meta_data_size)
+    ld (agnb_stream_remaining),hl
+
+; Clear the exact writer-specified destination before appending any blocks.
+    ld hl,(agnb_metadata+agnb_meta_bufferId)
+    dec hl
+    inc.s hl ; undocumented: preserves bufferId in HL and clears HLU
+    call vdu_clear_buffer
+
+@next_block:
+; A zero remaining count means every declared payload byte was transferred.
+    ld hl,(agnb_stream_remaining)
+    ld de,0
+    or a
+    sbc hl,de
+    jr z,@complete
+
+; Select min(remaining, agnb_io_buffer_size) without truncating the final block.
+    ld hl,(agnb_stream_remaining)
+    ld de,agnb_io_buffer_size
+    or a
+    sbc hl,de
+    jr c,@use_remaining
+    ld bc,agnb_io_buffer_size
+    jr @read_block
+@use_remaining:
+    ld bc,(agnb_stream_remaining)
+@read_block:
+    ld (agnb_stream_block_size),bc
+
+; Read exactly this block from the DATA payload into the shared 8 KiB SRAM.
+    ld de,agnb_io_buffer
+    call agnb_read_exact
+    ret nz
+
+; Append the complete block to the same writer-specified VDP buffer.
+    ld bc,(agnb_stream_block_size)
+    ld de,agnb_io_buffer
+    ld hl,(agnb_metadata+agnb_meta_bufferId)
+    dec hl
+    inc.s hl ; undocumented: preserves bufferId in HL and clears HLU
+    call vdu_load_buffer
+
+; Account for the uploaded block and continue until no bytes remain.
+    ld hl,(agnb_stream_remaining)
+    ld de,(agnb_stream_block_size)
+    or a
+    sbc hl,de
+    jr c,@bad_bounds
+    ld (agnb_stream_remaining),hl
+    jr @next_block
+
+@complete:
+; Exact accounting should place the logical reader at the first byte after the
+; DATA payload. Check all four offset bytes before reporting success.
+    ld hl,(agnb_state+agnb_state_file_offset)
+    ld de,(agnb_state+agnb_state_chunk_end)
+    or a
+    sbc hl,de
+    jr nz,@bad_bounds
+    ld a,(agnb_state+agnb_state_file_offset+3)
+    ld hl,agnb_state+agnb_state_chunk_end+3
+    cp (hl)
+    jr nz,@bad_bounds
+
+; Only a complete, exactly bounded transfer may be consolidated.
+    ld hl,(agnb_metadata+agnb_meta_bufferId)
+    dec hl
+    inc.s hl ; undocumented: preserves bufferId in HL and clears HLU
+    call vdu_consolidate_buffer
+
+    xor a
+    ld (agnb_last_error),a
+    ret
+
+@bad_bounds:
+    ld a,agnb_error_bounds
+    ld (agnb_last_error),a
+    or a
+    ret
+
+; Create an image bitmap from the successfully streamed and consolidated
+; buffer using the retained IMAG metadata.
+; outputs: A=0 and Z set
+; destroys: AF, BC, DE, HL
+agnb_finalize_image:
+; Select the exact writer-specified buffer as the bitmap source.
+    ld hl,(agnb_metadata+agnb_meta_bufferId)
+    dec hl
+    inc.s hl ; undocumented: preserves bufferId in HL and clears HLU
+    call vdu_buff_select
+
+; The five retained IMAG bytes already have the VDP's width/height/format
+; ordering. Load their fields into the existing vdu_bmp_create contract.
+    ld bc,(agnb_metadata+agnb_meta_width)
+    dec bc
+    inc.s bc ; preserve width in BC and clear BCU
+    ld de,(agnb_metadata+agnb_meta_height)
+    dec de
+    inc.s de ; preserve height in DE and clear DEU
+    ld a,(agnb_metadata+agnb_meta_format)
+    call vdu_bmp_create
+    xor a
+    ld (agnb_last_error),a
+    ret
 
 ; Skip an unknown or deliberately ignored chunk, including alignment padding,
 ; without crossing the active enclosing boundary.

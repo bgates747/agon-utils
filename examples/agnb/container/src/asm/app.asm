@@ -44,8 +44,8 @@ init:
 ; set screen mode
     ; ld a,0 ; 640x480x16 single-buffered
     ; ld a,19 ; 1024x768x4 single-buffered
-    ld a,8 ; 320x240x64 single-buffered
-    ; ld a,20 ; 512x384x64 single-buffered
+    ; ld a,8 ; 320x240x64 single-buffered
+    ld a,20 ; 512x384x64 single-buffered
     ; ld a,23 ; 512x384x2 single-buffered
     call vdu_set_screen_mode
 
@@ -74,22 +74,67 @@ main_loop_timer_reset: equ 60 ; 120ths of a second
 
 main:
 ; begin temporary testing code
-; Open the container, read and validate its RIFF header, then close it.
+; Open the container and read through the first image's DATA header. No image
+; payload bytes are read or uploaded by this test.
     ld de,agnb_filename
     call agnb_open
-    call dumpFlags ; DEBUG
+    ; call dumpFlags ; DEBUG
     jr nz,@agnb_done
+
     call agnb_read_riff_header
-    CALL dumpFlags ; DEBUG
+    ; call dumpFlags ; DEBUG
+    jr nz,@agnb_close
+
+    call agnb_read_vers
+    ; call dumpFlags ; DEBUG
+    jr nz,@agnb_close
+
+    call agnb_read_buffer_list
+    ; call dumpFlags ; DEBUG
+    jr nz,@agnb_close
+
+; Stream and consolidate the first DATA payload in its explicit VDP buffer.
+    call agnb_stream_data
+    ; call dumpFlags ; DEBUG
+    jr nz,@agnb_close
+
+; Apply the retained IMAG metadata, then plot the selected bitmap below the
+; diagnostic text.
+    call agnb_finalize_image
+    ; call dumpFlags ; DEBUG
+    jr nz,@agnb_close
+    ld bc,0
+    ld de,120
+    call vdu_plot_bmp
+
+@agnb_close:
     call agnb_close
-    CALL dumpFlags ; DEBUG
+    ; call dumpFlags ; DEBUG
 @agnb_done:
-; Dump the complete on-disk RIFF header:
-;     52 49 46 46  <u32 size>  41 47 4E 42
-;     R  I  F  F               A  G  N  B
-    ld hl,agnb_header
-    ld a,agnb_riff_header_size
-    call dumpMemoryHex
+; Dump normalized metadata for the first manifest image:
+;     00 01  10 00  23 00  01  30 02 00 00
+;     ID     width  height  fmt DATA size
+    ; ld hl,agnb_metadata
+    ; ld a,agnb_meta_size
+    ; call dumpMemoryHex
+
+; Dump the DATA chunk header at which parsing stopped:
+;     44 41 54 41  30 02 00 00
+;     D  A  T  A   payload size
+    ; ld hl,agnb_header
+    ; ld a,agnb_chunk_header_size
+    ; call dumpMemoryHex
+
+; Dump calculated width*height followed by the declared DATA size. Both u32
+; values must be identical:
+;     30 02 00 00
+;     30 02 00 00
+    ; ld hl,agnb_expected_data_size
+    ; ld a,4
+    ; call dumpMemoryHex
+    ; ld hl,agnb_metadata+agnb_meta_data_size
+    ; ld a,4
+    ; call dumpMemoryHex
     ret
 ; end temporary testing code
 

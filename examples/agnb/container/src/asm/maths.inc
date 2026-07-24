@@ -326,3 +326,32 @@ add_uhl_a_signed:
                ; 15 cycles total
     ret
 ; end hlu_add_a_signed
+
+;------------------------------------------------------------------------
+; umul24: HL = HL * DE (unsigned, low 24 bits)
+; Preserves AF, BC, DE
+; Copyright (c) Shawn Sijnstra 2024, MIT license
+; Imported from AgonVideo/src/asm/arith24.inc.
+;------------------------------------------------------------------------
+umul24:
+    push de
+    push bc
+    push af
+    push hl
+    pop bc
+    ld a,24
+    ld hl,0
+@loop:
+    add hl,hl
+    ex de,hl
+    add hl,hl
+    ex de,hl
+    jr nc,@no_add
+    add hl,bc
+@no_add:
+    dec a
+    jr nz,@loop
+    pop af
+    pop bc
+    pop de
+    ret

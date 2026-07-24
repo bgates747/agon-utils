@@ -84,6 +84,10 @@ instead of copying the entire decision.
 
 ## Assembly style
 
+- When asked to consider or modify an eZ80 assembly-language project, read
+  `docs/ez80_hacks.md` before proposing implementation idioms. It records
+  project-tested, non-obvious eZ80 behavior, including undocumented
+  instruction details that may be smaller or faster than conventional code.
 - Use `ASCIZ` for null-terminated string literals instead of spelling out a
   separate zero byte. For example, the current preferred form is:
 

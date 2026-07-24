@@ -152,6 +152,42 @@ vdu_set_scaling:
 @arg: db 0  ; scaling on/off
 @end: 
 
+; VDU 23, 27, &20, bufferId; : Select bitmap (using a buffer ID)
+; inputs: hl=bufferId
+
+vdu_buff_select:
+	ld (@bufferId),hl
+	ld hl,@cmd
+	ld bc,@end-@cmd
+	rst.lil $18
+	ret
+@cmd: db 23,27,0x20
+@bufferId: dw 0x0000
+@end: db 0x00 ; padding
+
+; VDU 23, 27, &21, w; h; format: Create bitmap from selected buffer
+; inputs: a=format; bc=width; de=height
+; prerequisites: buffer selected by vdu_bmp_select or vdu_buff_select
+; formats: https://agonconsole8.github.io/agon-docs/VDP---Bitmaps-API.html
+; 0 	RGBA8888 (4-bytes per pixel)
+; 1 	RGBA2222 (1-bytes per pixel)
+; 2 	Mono/Mask (1-bit per pixel)
+; 3 	Reserved for internal use by VDP (“native” format)
+
+vdu_bmp_create:
+    ld (@width),bc
+    ld (@height),de
+    ld (@fmt),a
+	ld hl,@cmd
+	ld bc,@end-@cmd
+	rst.lil $18
+	ret
+@cmd:       db 23,27,0x21
+@width:     dw 0x0000
+@height:    dw 0x0000
+@fmt:       db 0x00
+@end:
+
 ; https://agonconsole8.github.io/agon-docs/VDP---PLOT-Commands.html
 ; &E8-&EF 	232-239 	Bitmap plot §
 ; VDU 25, mode, x; y;: PLOT command
@@ -169,3 +205,64 @@ vdu_plot_bmp:
 @x0: 	dw 0x0000
 @y0: 	dw 0x0000
 @end:   db 0x00 ; padding
+
+; load a vdu buffer from local memory
+; inputs: hl = bufferId ; bc = length ; de = pointer to data
+
+vdu_load_buffer:
+    ld (@length),bc
+    push de ; save data pointer
+; send the vdu command string
+    ld a,l
+    ld (@bufferId),a
+    ld a,h
+    ld (@bufferId+1),a
+    ld hl,@cmd
+    ld bc,@end-@cmd
+    rst.lil $18
+; send the buffer data
+    pop hl ; pointer to data
+    ld bc,(@length)
+    rst.lil $18 ; send it
+    ret
+; Upload data :: VDU 23, 0 &A0, bufferId; 0, length; <buffer-data>
+@cmd:       db 23,0,0xA0
+@bufferId:	dw 0x0000
+		    db 0 ; load buffer
+@length:	dw 0x0000
+@end: db 0 ; padding
+
+; clear a buffer
+; inputs: hl = bufferId
+
+vdu_clear_buffer:
+    ld a,l
+    ld (@bufferId),a
+    ld a,h
+    ld (@bufferId+1),a
+    ld hl,@cmd
+    ld bc,@end-@cmd
+    rst.lil $18
+    ret
+@cmd:       db 23,0,0xA0
+@bufferId:	dw 0x0000
+		    db 2 ; clear buffer
+@end:
+
+; Command 14: Consolidate blocks in a buffer
+
+vdu_consolidate_buffer:
+; set parameters for vdu call
+    ld a,l
+    ld (@bufferId),a
+    ld a,h
+    ld (@bufferId+1),a
+    ld hl,@beg
+    ld bc,@end-@beg
+    rst.lil $18
+    ret
+; VDU 23, 0, &A0, bufferId; 14
+@beg: db 23,0,0xA0
+@bufferId: dw 0x0000
+           db 14
+@end:
