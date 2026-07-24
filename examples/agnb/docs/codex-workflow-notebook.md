@@ -60,7 +60,25 @@ Avoid repeating the same explanation in several documents. A log should note
 that a durable decision was made and point to the authoritative specification
 instead of copying the entire decision.
 
+Code-review findings, identified risks, and recommended follow-up work should
+normally be written into the current development log rather than left only in
+conversation. Record actionable findings as unchecked checklist items so they
+remain visible and can be ticked off as they are resolved. Omit only genuinely
+transient observations or items the user explicitly declines to retain.
+
 ## Python environment
+
+### Canonical local checkout
+
+Use `/home/smith/Projects/agon-utils` as the canonical local repository.
+Do not develop against `/home/smith/Agon/mystuff/agon-utils`; that is an
+incomplete duplicate missing processed assets and test fixtures.
+
+On 2026-07-24, commit `Fix AGNB minimum LIST size check` and the subsequent
+uncommitted consecutive-container loader fix, regression harness, tests, and
+documentation were migrated from the duplicate into the canonical checkout.
+Read `docs/dev-log/dev-log-20260724.md` for the failure modes, migration
+record, and verification results before continuing AGNB work.
 
 - Before running Python in an open project, look for a project-local `.venv`
   and invoke its interpreter explicitly, even when the user's interactive
@@ -81,6 +99,26 @@ instead of copying the entire decision.
 
   Treat an import, ABI, dependency, or round-trip failure as an environment
   problem to resolve before running project scripts.
+- An Agon application that imports `agonutils` must install the local
+  `agon-utils` checkout into the application's own `.venv`; verifying only the
+  utility repository's separate environment is insufficient. With compatible
+  dependencies already installed, run this from the application root:
+
+  ```text
+  .venv/bin/python -m pip install --no-build-isolation --no-deps -e /home/smith/Projects/agon-utils
+  ```
+
+  Then verify the consumer environment explicitly:
+
+  ```text
+  cd /home/smith/Projects/agon-utils
+  /path/to/application/.venv/bin/python tests/test_agonutils.py
+  /path/to/application/.venv/bin/python -m pip check
+  /path/to/application/.venv/bin/python -c "import agonutils; print(agonutils.__file__)"
+  ```
+
+  The reported extension path should resolve into the local `agon-utils`
+  checkout, and the Python ABI must match the consumer environment.
 
 ## Assembly style
 
@@ -97,6 +135,19 @@ instead of copying the entire decision.
 
   Treat this as the Modern Way in new assembly code unless an existing binary
   layout requires the terminator to be expressed separately.
+
+## AGNB implementation reuse
+
+- The hardware-proven AGNB image-container writer is implemented in
+  `/home/smith/Projects/agon-utils/examples/agnb/container/scripts/do_assembly.py`.
+  Its `ImageRecord`, `make_chunk`, `make_buffer_record`, and `build_container`
+  code implements the version 0.1 `RIFF AGNB` layout, alignment, explicit
+  buffer IDs, and RGBA2222 validation. Reuse or adapt this implementation when
+  adding AGNB generation to another project instead of independently
+  reimplementing the binary format.
+- The independent parser and structural validator is
+  `/home/smith/Projects/agon-utils/examples/agnb/container/scripts/view_agnb.py`.
+  Its `parse_container` path can be reused without launching the GUI.
 
 ## Keeping context economical
 

@@ -585,3 +585,19 @@ not yet skip unknown optional chunks or unsupported record forms, it is a
 restricted implementation prototype, not a fully conforming version 0.1
 reader. Conformance requires the skip behavior in the format specification;
 read-and-discard is sufficient and does not require MOS 3 seeking.
+## Reader lifecycle across consecutive containers
+
+`agnb_open` must initialize all per-file traversal state on every successful
+load attempt; it cannot rely on application BSS initialization. In particular,
+the four-byte `agnb_state_file_offset` and `agnb_state_bytes_read` fields must
+be reset before the first read from each newly opened `FIL`.
+
+Without that reset, the physical FatFS position begins at zero while the
+reader's logical offset retains the previous container's final size. Parsing
+the second container then reaches its declared RIFF boundary early and reports
+`agnb_error_bounds` (`08`). The early distance is approximately the size of
+the first container, which is a useful diagnostic signature.
+
+The canonical runtime harness deliberately traverses `images.agnb` twice in
+one process. Its Python lifecycle test also requires both the per-open reset
+and the two traversal calls.

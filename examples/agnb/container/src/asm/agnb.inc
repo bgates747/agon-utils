@@ -235,6 +235,15 @@ agnb_open:
     ld (agnb_file_is_open),a
     ld (agnb_last_error),a
 
+; Each newly opened container starts at physical and logical offset zero.
+; The original single-container caller received this state from BSS
+; initialization; consecutive container loads must establish it explicitly.
+    ld hl,0
+    ld (agnb_state+agnb_state_file_offset),hl
+    ld (agnb_state+agnb_state_bytes_read),hl
+    ld (agnb_state+agnb_state_file_offset+3),a
+    ld (agnb_state+agnb_state_bytes_read+3),a
+
 ; open the caller-supplied filename into our single reader-owned FIL
     ld hl,agnb_fil
     ld c,fa_read

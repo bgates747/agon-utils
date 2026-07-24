@@ -10,6 +10,7 @@ from PIL import Image
 
 
 SCRIPT_FILE = Path(__file__).resolve().parents[1] / "scripts" / "do_assembly.py"
+CONTAINER_ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("container_do_assembly", SCRIPT_FILE)
 WRITER = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(WRITER)
@@ -119,6 +120,34 @@ class ContainerWriterTests(unittest.TestCase):
             png_file = WRITER.SHARED_PROCESSED_DIR / f"{record.name}.png"
             with Image.open(png_file) as image:
                 self.assertEqual(image.size, (record.width, record.height))
+
+
+class LoaderLifecycleTests(unittest.TestCase):
+    def test_each_open_resets_logical_reader_position(self):
+        loader = (CONTAINER_ROOT / "src" / "asm" / "agnb.inc").read_text()
+        open_body = loader.split("agnb_open:", 1)[1].split("agnb_close:", 1)[0]
+
+        self.assertIn(
+            "ld (agnb_state+agnb_state_file_offset),hl",
+            open_body,
+        )
+        self.assertIn(
+            "ld (agnb_state+agnb_state_file_offset+3),a",
+            open_body,
+        )
+        self.assertIn(
+            "ld (agnb_state+agnb_state_bytes_read),hl",
+            open_body,
+        )
+        self.assertIn(
+            "ld (agnb_state+agnb_state_bytes_read+3),a",
+            open_body,
+        )
+
+    def test_runtime_harness_traverses_container_twice(self):
+        app = (CONTAINER_ROOT / "src" / "asm" / "app.asm").read_text()
+        main_body = app.split("main:", 1)[1].split("mainloop:", 1)[0]
+        self.assertEqual(main_body.count("call agnb_load_images"), 2)
 
 
 if __name__ == "__main__":

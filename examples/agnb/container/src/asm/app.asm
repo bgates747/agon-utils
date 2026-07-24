@@ -74,7 +74,10 @@ main_loop_timer_reset: equ 60 ; 120ths of a second
 
 main:
 ; Preload and finalize every image in the container before entering the same
-; slideshow loop used by the loose-file harness.
+; slideshow loop used by the loose-file harness. Load it twice deliberately:
+; the second traversal is the regression test for per-open reader-state reset.
+    call agnb_load_images
+    jp nz,main_end
     call agnb_load_images
     jp nz,main_end
     ld de, 0
