@@ -161,3 +161,6 @@ examples/agnb/images/shared/assets/processed/*
 examples/agnb/images/loose/build/
 examples/agnb/images/loose/tgt/
 examples/agnb/images/container/tgt/
+examples/agnb/audio/.emulator/
+examples/agnb/audio/assets/processed/
+examples/agnb/audio/tgt/
