@@ -138,7 +138,7 @@ def copy_to_emulator():
 
         tgt_directory = os.path.join(
             AGNB_DIR, ".emulator", "sdcard", "mystuff", "agon-utils",
-            "examples", "agnb", "loose", "tgt",
+            "examples", "agnb", "images", "loose", "tgt",
         )
 
         # Change working directory to the original directory to ensure correct paths
@@ -152,7 +152,7 @@ def copy_to_emulator():
 
 def copy_to_sdcard():
     try:
-        tgt_directory = "/media/smith/AGON/mystuff/agon-utils/examples/agnb/loose/tgt"
+        tgt_directory = "/media/smith/AGON/mystuff/agon-utils/examples/agnb/images/loose/tgt"
         copy_deployment(tgt_directory)
 
     except Exception as e:

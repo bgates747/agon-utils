@@ -31,7 +31,7 @@ def setup_emulator(emulator_dir: Path) -> None:
     sdcard_dir = emulator_dir / "sdcard"
     autoexec_text = (
         "SET KEYBOARD 1\n"
-        f"cd mystuff/agon-utils/examples/agnb/{variant_name}/tgt\n"
+        f"cd mystuff/agon-utils/examples/agnb/images/{variant_name}/tgt\n"
         "load app.bin\n"
     )
 

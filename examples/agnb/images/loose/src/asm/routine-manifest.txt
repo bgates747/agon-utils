@@ -187,8 +187,8 @@ Fast reverse lookup
 -------------------
 The entries above use one routine name per line. From the repository root:
 
-    rg -n '^ROUTINE_NAME[[:space:]]' examples/agnb/loose/src/asm/routine-manifest.txt
+    rg -n '^ROUTINE_NAME[[:space:]]' examples/agnb/images/loose/src/asm/routine-manifest.txt
 
 To verify or locate the definition directly in source:
 
-    rg -n '^ROUTINE_NAME:' examples/agnb/loose/src/asm --glob '*.asm' --glob '*.inc'
+    rg -n '^ROUTINE_NAME:' examples/agnb/images/loose/src/asm --glob '*.asm' --glob '*.inc'

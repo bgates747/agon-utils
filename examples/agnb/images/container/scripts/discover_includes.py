@@ -15,7 +15,7 @@ from pathlib import Path
 
 
 CONTAINER_DIR = Path(__file__).resolve().parents[1]
-PROJECT_DIR = CONTAINER_DIR.parents[2]
+PROJECT_DIR = CONTAINER_DIR.parents[3]
 ASSEMBLY_DIR = CONTAINER_DIR / "src" / "asm"
 INCLUDES_FILE = ASSEMBLY_DIR / "includes.inc"
 DO_ASSEMBLY = CONTAINER_DIR / "scripts" / "do_assembly.py"

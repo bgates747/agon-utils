@@ -45,11 +45,11 @@ The principal local sources are:
 
 Relevant implementation sources under `examples/agnb` are:
 
-- `loose/src/asm/app.asm`
-- `loose/src/asm/vdu.inc`
-- `loose/src/asm/mos_api.inc`
-- generated `loose/src/asm/images.inc`
-- `loose/src/asm/input.inc` and `loose/src/asm/timer.inc` for the slideshow
+- `images/loose/src/asm/app.asm`
+- `images/loose/src/asm/vdu.inc`
+- `images/loose/src/asm/mos_api.inc`
+- generated `images/loose/src/asm/images.inc`
+- `images/loose/src/asm/input.inc` and `images/loose/src/asm/timer.inc` for the slideshow
   test harness
 - `docs/agon-buffer-file-format-specification.md`
 - `docs/image-load-flow-and-metadata-layout.md`
@@ -267,7 +267,7 @@ VDU 23, 27, &21, width; height; format
 ```
 
 The loose harness already implements these as `vdu_buff_select` and
-`vdu_bmp_create` in `loose/src/asm/vdu.inc`. Their calling convention is suitable for
+`vdu_bmp_create` in `images/loose/src/asm/vdu.inc`. Their calling convention is suitable for
 an `.agnb` image finalizer:
 
 - `HL` = buffer ID for `vdu_buff_select`;

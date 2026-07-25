@@ -151,11 +151,13 @@ Icon?
 !examples/jukebox/tgt/
 
 # AGNB generated and working directories
-examples/agnb/loose/.emulator/
-examples/agnb/container/.emulator/
-examples/agnb/shared/assets/orig/
-examples/agnb/shared/assets/processed/*
-!examples/agnb/shared/assets/processed/images.jsonl
-examples/agnb/loose/build/
-examples/agnb/loose/tgt/
-examples/agnb/container/tgt/
+examples/agnb/images/loose/.emulator/
+examples/agnb/images/container/.emulator/
+examples/agnb/images/shared/assets/orig/*
+!examples/agnb/images/shared/assets/orig/00_000.png
+
+examples/agnb/images/shared/assets/processed/*
+!examples/agnb/images/shared/assets/processed/images.jsonl
+examples/agnb/images/loose/build/
+examples/agnb/images/loose/tgt/
+examples/agnb/images/container/tgt/

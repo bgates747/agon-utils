@@ -89,7 +89,7 @@ reordered.
 ## Simulate Indirect Calls Through `HL`, `IX`, or `IY`
 
 The eZ80 provides `jp (hl)` but no corresponding indirect `call (hl)`.
-`CALL_HL` in `container/src/asm/macros.inc` constructs the missing call by
+`CALL_HL` in `images/container/src/asm/macros.inc` constructs the missing call by
 pushing the address immediately after the macro expansion, then jumping
 through `HL`:
 

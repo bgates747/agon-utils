@@ -11,12 +11,12 @@ from PIL import Image
 from image_manifest import ImageManifestEntry, MANIFEST_FILENAME, write_manifest
 
 
-PROJECT_DIR = Path(__file__).resolve().parents[2]
-SHARED_DIR = PROJECT_DIR / "shared"
+IMAGES_DIR = Path(__file__).resolve().parents[2]
+SHARED_DIR = IMAGES_DIR / "shared"
 ORIGINALS_DIR = SHARED_DIR / "assets" / "orig"
 PROCESSED_DIR = SHARED_DIR / "assets" / "processed"
 MANIFEST_FILE = PROCESSED_DIR / MANIFEST_FILENAME
-PALETTE_FILE = PROJECT_DIR.parent / "slideshow" / "palettes" / "Agon64.gpl"
+PALETTE_FILE = IMAGES_DIR.parents[1] / "slideshow" / "palettes" / "Agon64.gpl"
 
 SUPPORTED_EXTENSIONS = {".png", ".jpeg", ".jpg", ".gif"}
 TRANSPARENT_RGBA = (0, 0, 0, 0)

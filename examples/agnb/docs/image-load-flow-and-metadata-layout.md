@@ -7,22 +7,22 @@ reordering by the eZ80.
 
 ## Current loose-file path
 
-The application entry point is `start` in `loose/src/asm/app.asm`.
+The application entry point is `start` in `images/loose/src/asm/app.asm`.
 
 1. `start` calls `init`, both in `app.asm`.
 2. `init` performs the display and timer setup:
-   - `vdu_set_screen_mode` in `loose/src/asm/vdu.inc`
-   - `cursor_off` in `loose/src/asm/vdu.inc`
-   - `vdu_cls` in `loose/src/asm/vdu.inc`
-   - `tmr_main_loop_set` in `loose/src/asm/timer.inc`
-   - `tmr_slideshow_set` in `loose/src/asm/input.inc`
+   - `vdu_set_screen_mode` in `images/loose/src/asm/vdu.inc`
+   - `cursor_off` in `images/loose/src/asm/vdu.inc`
+   - `vdu_cls` in `images/loose/src/asm/vdu.inc`
+   - `tmr_main_loop_set` in `images/loose/src/asm/timer.inc`
+   - `tmr_slideshow_set` in `images/loose/src/asm/input.inc`
 3. `start` calls `main` in `app.asm`.
 4. `main` sets the image index in `DE` to zero and jumps to `rendbmp`, also in
    `app.asm`.
 5. `rendbmp` bounds-checks the index against `num_images`, then enters
    `@load_image`.
 6. `@load_image` locates one 15-byte record in `image_list`, defined in
-`loose/src/asm/images.inc`, and loads its fields into registers.
+`images/loose/src/asm/images.inc`, and loads its fields into registers.
 7. `@load_image` sets the destination VDP buffer ID to 256 and calls
    `vdu_load_img` in `vdu.inc`.
 8. After the load and bitmap creation complete, `@load_image` calls `vdu_cls`
