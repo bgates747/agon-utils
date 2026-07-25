@@ -70,9 +70,9 @@ transient observations or items the user explicitly declines to retain.
 
 ### Canonical local checkout
 
-Use `/home/smith/Projects/agon-utils` as the canonical local repository.
-Do not develop against `/home/smith/Agon/mystuff/agon-utils`; that is an
-incomplete duplicate missing processed assets and test fixtures.
+Use `/home/smith/Agon/mystuff/agon-utils` as the canonical local repository.
+The former complete checkout was moved here on 2026-07-24, replacing the
+incomplete duplicate while preserving its processed assets and test fixtures.
 
 On 2026-07-24, commit `Fix AGNB minimum LIST size check` and the subsequent
 uncommitted consecutive-container loader fix, regression harness, tests, and
@@ -105,13 +105,13 @@ record, and verification results before continuing AGNB work.
   dependencies already installed, run this from the application root:
 
   ```text
-  .venv/bin/python -m pip install --no-build-isolation --no-deps -e /home/smith/Projects/agon-utils
+  .venv/bin/python -m pip install --no-build-isolation --no-deps -e /home/smith/Agon/mystuff/agon-utils
   ```
 
   Then verify the consumer environment explicitly:
 
   ```text
-  cd /home/smith/Projects/agon-utils
+  cd /home/smith/Agon/mystuff/agon-utils
   /path/to/application/.venv/bin/python tests/test_agonutils.py
   /path/to/application/.venv/bin/python -m pip check
   /path/to/application/.venv/bin/python -c "import agonutils; print(agonutils.__file__)"
@@ -139,14 +139,14 @@ record, and verification results before continuing AGNB work.
 ## AGNB implementation reuse
 
 - The hardware-proven AGNB image-container writer is implemented in
-  `/home/smith/Projects/agon-utils/examples/agnb/container/scripts/do_assembly.py`.
+  `/home/smith/Agon/mystuff/agon-utils/examples/agnb/container/scripts/do_assembly.py`.
   Its `ImageRecord`, `make_chunk`, `make_buffer_record`, and `build_container`
   code implements the version 0.1 `RIFF AGNB` layout, alignment, explicit
   buffer IDs, and RGBA2222 validation. Reuse or adapt this implementation when
   adding AGNB generation to another project instead of independently
   reimplementing the binary format.
 - The independent parser and structural validator is
-  `/home/smith/Projects/agon-utils/examples/agnb/container/scripts/view_agnb.py`.
+  `/home/smith/Agon/mystuff/agon-utils/examples/agnb/container/scripts/view_agnb.py`.
   Its `parse_container` path can be reused without launching the GUI.
 
 ## Keeping context economical
