@@ -16,6 +16,10 @@ harnesses.
 
     ld de,audio_filename
     call agnb_load_audio
+
+    ld de,audio_filename
+    ld hl,audio_complete_callback
+    call agnb_load_audio_with_callback
 ```
 
 Both routines accept a zero-terminated filename in `DE`. They return `A=0`
@@ -34,6 +38,12 @@ finalized. The callback may update application progress UI or emit a loading
 breadcrumb; its return value is ignored. The original `agnb_load_images`
 entry point selects an internal no-op callback and remains source-compatible
 with existing consumers.
+
+`agnb_load_audio_with_callback` likewise invokes the routine in `HL` once
+after each VDP sample is finalized. `agnb_load_audio` selects an internal
+no-op callback, preserving its original calling convention. Applications can
+use the callback boundary for loading animation or progress reporting without
+placing application behavior in the container API.
 
 ## External dependencies
 
