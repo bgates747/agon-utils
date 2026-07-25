@@ -10,6 +10,10 @@ harnesses.
     ld de,image_filename
     call agnb_load_images
 
+    ld de,image_filename
+    ld hl,image_complete_callback
+    call agnb_load_images_with_callback
+
     ld de,audio_filename
     call agnb_load_audio
 ```
@@ -23,6 +27,13 @@ The image loader accepts AGNB 0.1 `BHDR/IMAG/DATA` records and creates VDP
 bitmaps. The audio loader accepts provisional AGNB 0.2 `BHDR/AUDI/DATA`
 records and creates VDP samples. Neither routine plots, plays, waits for input,
 prints diagnostics, or owns application filenames.
+
+`agnb_load_images_with_callback` has the same result contract as
+`agnb_load_images` and invokes the routine in `HL` once after each bitmap is
+finalized. The callback may update application progress UI or emit a loading
+breadcrumb; its return value is ignored. The original `agnb_load_images`
+entry point selects an internal no-op callback and remains source-compatible
+with existing consumers.
 
 ## External dependencies
 
@@ -45,9 +56,11 @@ any of those symbols; copy or retain only missing dependencies.
 ## Memory and lifetime
 
 The implementation owns one FatFS `FIL`, parser state, normalized metadata,
-and an 8 KiB transfer window at `0xB7E000`. Calls are synchronous and
-non-reentrant. Every `agnb_open` resets logical reader state, so consecutive
-container loads are supported.
+and an API-owned 8 KiB transfer window in the assembled image. The API does
+not reserve a fixed SRAM address because consuming applications may already
+use that memory for persistent state. Calls are synchronous and non-reentrant.
+Every `agnb_open` resets logical reader state, so consecutive container loads
+are supported.
 
 The writer supplies all buffer IDs. The loader rejects `0xFFFF` and never
 allocates, increments, derives, or remaps IDs.

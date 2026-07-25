@@ -3,6 +3,8 @@
 ;
 ; Public entry points:
 ;   agnb_load_images: DE -> zero-terminated AGNB 0.1 image filename
+;   agnb_load_images_with_callback:
+;                     DE -> filename, HL -> completed-image callback
 ;   agnb_load_audio:  DE -> zero-terminated AGNB 0.2 audio filename
 ;
 ; Applications own plotting, playback, input, timing, and debug behavior.
@@ -199,8 +201,13 @@ agnb_file_is_open:         db 0
 agnb_header:
     blkb agnb_riff_header_size,0
 
-agnb_io_buffer:            equ 0xB7E000 ; same onboard SRAM as app filedata
+; Loader-owned transfer window. Wolf3D's fixed SRAM is occupied by map and
+; sprite state, so the API cannot assume the harness's 0xB7E000 scratch area.
+agnb_io_buffer:            blkb 8192,0
 agnb_io_buffer_size:       equ 8192
+
+; Application callback invoked after each image has been finalized.
+agnb_image_callback:       dl 0
 
 ; Reader subroutine interface
 ; ---------------------------
@@ -308,6 +315,12 @@ agnb_error_close:
 ;          and finalized at their explicit IDs; nonzero error and NZ otherwise
 ; destroys: AF, BC, DE, HL, IX
 agnb_load_images:
+    ld hl,agnb_image_callback_noop
+
+; Callback-enabled image loader.
+; inputs: DE = filename; HL = callback whose result is ignored
+agnb_load_images_with_callback:
+    ld (agnb_image_callback),hl
     call agnb_open
     ret nz
 
@@ -339,6 +352,10 @@ agnb_load_images:
     call agnb_finalize_image
     jr nz,@load_error
 
+; Give the application one completed-bitmap boundary per record.
+; Metadata remains valid for the duration of the callback.
+    call agnb_call_image_callback
+
     call agnb_finish_buffer_list
     jr nz,@load_error
     jr @next_record
@@ -357,6 +374,16 @@ agnb_load_images:
 
 @success:
     jp agnb_close
+
+; The CALL above has already stacked the continuation address. Tail-jump to
+; the selected callback so its RET resumes the loader without clobbering BC.
+agnb_call_image_callback:
+    ld hl,(agnb_image_callback)
+    jp (hl)
+
+agnb_image_callback_noop:
+    xor a
+    ret
 
 ; Read exactly BC bytes from agnb_fil into DE.
 ; inputs:  BC = requested u24 length, DE = destination
