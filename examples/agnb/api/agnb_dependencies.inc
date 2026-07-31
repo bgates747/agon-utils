@@ -106,7 +106,9 @@ vdu_buff_select:
     ret
 @cmd:       db 23,27,$20
 @bufferId:  dw 0
-@end:
+; Native ADL stores three bytes from HL. Keep the third byte outside the
+; five-byte VDU packet instead of letting it overwrite vdu_bmp_create.
+@end:       db 0
 
 ; Create a bitmap from the selected buffer: A=format, BC=width, DE=height.
 vdu_bmp_create:
@@ -139,4 +141,5 @@ vdu_buffer_to_sound:
 @bufferId:   dw 0
 @format:     db 0
 @sampleRate: dw 0
-@end:
+; Native ADL stores three bytes from DE. This excluded byte absorbs DEU.
+@end:        db 0
