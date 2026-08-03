@@ -24,8 +24,13 @@ generated emulator state or build outputs.
 
 The mutable profile is `emulator/`. Create or repair it with
 `scripts/setup_emulator.py`, and launch it with `scripts/run_emulator.sh`.
-Both scripts intentionally fail closed if the bespoke native VDP module is
-absent. All emulator-related changes remain uncommitted and unpushed until the
-Author has tested them and explicitly approves a commit.
+The profile uses the dedicated Fab checkout at
+`/home/smith/Agon/mystuff/fab-agon-emulator-sprite-transforms`, not the other
+owned Fab worktree. Both scripts intentionally fail closed if a selected
+fixture or the bespoke native VDP module is absent. Pass `transforms` or
+`formats`, or `torture` to the launcher to explicitly replace `autoexec.txt`
+for that one fixture selection; a launch without an argument preserves the
+existing autoexec. All emulator-related changes remain uncommitted and unpushed
+until the Author has tested them and explicitly approves a commit.
 
 `TODO.md` is this project's only authoritative actionable checklist.

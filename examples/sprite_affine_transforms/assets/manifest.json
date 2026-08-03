@@ -1,0 +1,221 @@
+{
+  "assets": [
+    {
+      "derived": [
+        {
+          "byte_size": 256,
+          "format": "RGBA2222",
+          "height": 16,
+          "path": "assets/rgba2222/ship_1c.rgba2222",
+          "sha256": "53d8b9dd22b3479e2e01bbe04fbdabc96eb10e4411b9fafd3a340bfe41343bbe",
+          "width": 16
+        },
+        {
+          "byte_size": 1024,
+          "format": "RGBA8888",
+          "height": 16,
+          "path": "assets/rgba8888/ship_1c.rgba8888",
+          "sha256": "8b176831e19075b369259742e212c6b9c9fe08304862e62f604d72a07ce3d61e",
+          "width": 16
+        }
+      ],
+      "embed_by_default": true,
+      "name": "ship_1c",
+      "provenance": {
+        "path": "assets/img/orig/sprites/ship_1c.png",
+        "repository": "nurples",
+        "sha256": "fc4c814eea915ff3d4967a320854ee533928957ed8f3bd2f5204194f87533862"
+      },
+      "purpose": "small asymmetric baseline",
+      "source": {
+        "byte_size": 942,
+        "format": "PNG/P",
+        "height": 16,
+        "path": "assets/source/ship_1c.png",
+        "sha256": "fc4c814eea915ff3d4967a320854ee533928957ed8f3bd2f5204194f87533862",
+        "width": 16
+      }
+    },
+    {
+      "derived": [
+        {
+          "byte_size": 65,
+          "format": "RGBA2222",
+          "height": 13,
+          "path": "assets/rgba2222/laser_a_5x13.rgba2222",
+          "sha256": "46642cd16935dea08f286077e5456ec00d2239bd436566be5a9c1bd19bbf1623",
+          "width": 5
+        },
+        {
+          "byte_size": 260,
+          "format": "RGBA8888",
+          "height": 13,
+          "path": "assets/rgba8888/laser_a_5x13.rgba8888",
+          "sha256": "3fa2f577bf92651abae2a9ea5887f040bddee915ac8807a81ab668d9eec7dcae",
+          "width": 5
+        }
+      ],
+      "embed_by_default": true,
+      "name": "laser_a_5x13",
+      "provenance": {
+        "path": "assets/img/orig/sprites/laser_a.png",
+        "repository": "nurples",
+        "sha256": "2137b6e51bdc8c9e02e55316ee61008be6f94f34a4451c7131f4b749d9c877f1"
+      },
+      "purpose": "odd-width and odd-height affine bounds torture",
+      "source": {
+        "byte_size": 171,
+        "format": "PNG/RGBA",
+        "height": 13,
+        "path": "assets/source/laser_a_5x13.png",
+        "sha256": "2137b6e51bdc8c9e02e55316ee61008be6f94f34a4451c7131f4b749d9c877f1",
+        "width": 5
+      }
+    },
+    {
+      "derived": [
+        {
+          "byte_size": 16896,
+          "format": "RGBA2222",
+          "height": 48,
+          "path": "assets/rgba2222/ctl_panel_top_352x48.rgba2222",
+          "sha256": "f7001be1628f97e3c535b82392a1660a8afd25bcf1f99bc6d1e84714112a2c07",
+          "width": 352
+        },
+        {
+          "byte_size": 67584,
+          "format": "RGBA8888",
+          "height": 48,
+          "path": "assets/rgba8888/ctl_panel_top_352x48.rgba8888",
+          "sha256": "f32d8d2e50eba19cb42139dcf2129a55fcc59c8529cead04785f3ca6d84f1c3c",
+          "width": 352
+        }
+      ],
+      "embed_by_default": false,
+      "name": "ctl_panel_top_352x48",
+      "provenance": {
+        "path": "assets/img/proc/ui/ctl_panel_top.png",
+        "repository": "nurples",
+        "sha256": "8f869d20ae1fb20bc8939acec48709aa801c484a910fc9d78e1e0cc35907be38"
+      },
+      "purpose": "large wide clipping and multi-block RGBA8888 upload torture",
+      "source": {
+        "byte_size": 1367,
+        "format": "PNG/RGBA",
+        "height": 48,
+        "path": "assets/source/ctl_panel_top_352x48.png",
+        "sha256": "8f869d20ae1fb20bc8939acec48709aa801c484a910fc9d78e1e0cc35907be38",
+        "width": 352
+      }
+    },
+    {
+      "derived": [
+        {
+          "byte_size": 384,
+          "format": "RGBA8888",
+          "height": 8,
+          "path": "assets/rgba8888/rgba8888_alpha_edge_12x8.rgba8888",
+          "sha256": "686f080d188051e1e8cc00a21210d0f76050ec95e9325e2d12b324e4dcd1b0e2",
+          "width": 12
+        }
+      ],
+      "generated_source": {
+        "bands": [
+          {
+            "expected": "transparent",
+            "rgba": [
+              255,
+              0,
+              255,
+              0
+            ],
+            "x": "0..2"
+          },
+          {
+            "expected": "opaque red",
+            "rgba": [
+              255,
+              0,
+              0,
+              1
+            ],
+            "x": "3..5"
+          },
+          {
+            "expected": "opaque green",
+            "rgba": [
+              0,
+              255,
+              0,
+              63
+            ],
+            "x": "6..8"
+          },
+          {
+            "expected": "opaque blue",
+            "rgba": [
+              0,
+              0,
+              255,
+              255
+            ],
+            "x": "9..11"
+          }
+        ],
+        "implementation": "scripts/prepare_assets.py:generate_rgba8888_alpha_edge_fixture"
+      },
+      "name": "rgba8888_alpha_edge_12x8",
+      "purpose": "binary-alpha conversion edge: A=0 versus A=1 and A=63"
+    },
+    {
+      "derived": [
+        {
+          "byte_size": 10,
+          "format": "Mask/1bpp/MSB-first",
+          "height": 5,
+          "padding_bits": "zero",
+          "path": "assets/mask/mask_9x5_msb.mask",
+          "row_stride_bytes": 2,
+          "sha256": "c03936e15e95907d0f49cde96539409ba4368d5091e7848e2900b411eabb8a8c",
+          "width": 9
+        }
+      ],
+      "name": "mask_9x5_msb",
+      "provenance": {
+        "path": "assets/source/mask_9x5_msb.txt",
+        "repository": "agon-utils",
+        "sha256": "3825e0fc67baf1d92d0b14f093173b85348bda0f9b92efaffa212e959f17ce24"
+      },
+      "source": {
+        "byte_size": 172,
+        "format": "ASCII mask (#=1, .=0)",
+        "height": 5,
+        "path": "assets/source/mask_9x5_msb.txt",
+        "sha256": "3825e0fc67baf1d92d0b14f093173b85348bda0f9b92efaffa212e959f17ce24",
+        "width": 9
+      }
+    }
+  ],
+  "conversion": {
+    "mask": {
+      "implementation": "scripts/prepare_assets.py:pack_mask_msb",
+      "layout": "row-major, rows byte-aligned, pixel 0 in bit 7"
+    },
+    "rgba2222": {
+      "implementation": "agonutils.img_to_rgba2",
+      "layout": "one byte per pixel, bits AA BB GG RR",
+      "method": "rgb",
+      "palette": {
+        "path": "examples/palettes/Agon64.gpl",
+        "sha256": "c61dd1476415352e74add70f1ed0c81b1d141361a12b26587a6829ee66ec7f94"
+      },
+      "transparent_color": null
+    },
+    "rgba8888": {
+      "implementation": "Pillow Image.convert('RGBA').tobytes('raw', 'RGBA')",
+      "layout": "row-major R G B A bytes"
+    }
+  },
+  "generated_by": "scripts/prepare_assets.py",
+  "schema_version": 1
+}

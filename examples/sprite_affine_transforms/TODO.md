@@ -1,5 +1,5 @@
 # Sprite affine-transform TODO
 
-- [ ] SAT-002 Add deterministic RGBA2222 source assets and conversion commands.
-- [ ] SAT-005 Implement and qualify sprite affine transforms in firmware,
-      emulator, and physical hardware.
+- [ ] SAT-005 Stage and run a transformed-sprite assembly fixture on physical
+      hardware. The final firmware's boot, audio, ordinary-bitmap, and mode-20
+      admission smoke passed; transformed-sprite behavior is emulator-qualified.

@@ -5,6 +5,28 @@ project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 profile="${project_dir}/emulator"
 module_name="vdp_sprite_affine_transforms.so"
 
+if (( $# > 1 )); then
+    printf 'Usage: %s [transforms|formats|torture]\n' "$0" >&2
+    exit 2
+fi
+
+if (( $# == 1 )); then
+    case "$1" in
+        transforms|formats|torture)
+            ;;
+        *)
+            printf 'Unknown fixture %q; expected transforms, formats, or torture\n' "$1" >&2
+            exit 2
+            ;;
+    esac
+    python_bin="${project_dir}/../../.venv/bin/python"
+    if [[ ! -x "${python_bin}" ]]; then
+        printf 'Missing project Python: %s\n' "${python_bin}" >&2
+        exit 1
+    fi
+    "${python_bin}" "${project_dir}/scripts/setup_emulator.py" --fixture "$1"
+fi
+
 if [[ "$(< "${profile}/.bespoke-vdp-profile")" != "${module_name}" ]]; then
     printf 'Invalid or missing bespoke VDP marker\n' >&2
     exit 1

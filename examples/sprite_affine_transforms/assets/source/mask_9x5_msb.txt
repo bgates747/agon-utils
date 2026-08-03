@@ -1,0 +1,7 @@
+; 9x5 one-bit bitmap source. '#' is set, '.' is clear.
+; Each row is independently byte-aligned; x=0 maps to bit 7 (MSB).
+#.......#
+.##......
+..#.#.#..
+...###.#.
+#.#...###

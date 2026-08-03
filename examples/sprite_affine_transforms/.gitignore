@@ -1,0 +1,6 @@
+assets/rgba8888/*
+!assets/rgba8888/.gitkeep
+assets/mask/*
+!assets/mask/.gitkeep
+src/*.lst
+src/*.symbols

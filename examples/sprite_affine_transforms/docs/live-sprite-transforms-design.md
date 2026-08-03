@@ -1,8 +1,9 @@
 # Removing the live-transform restriction from Agon sprites
 
-Status: **DRAFT technical design report**, 2026-08-02. This is a report-only
-analysis. No firmware, `vdp-gl`, documentation, emulator, or hardware behavior
-was changed or tested.
+Status: **IMPLEMENTED ON EXPERIMENTAL PAIRED BRANCHES**, updated 2026-08-03.
+The implementation and fixtures are intentionally uncommitted and unpushed
+pending final review and the repository's human-validation/commit gate. This is
+not yet a released protocol contract.
 
 This report follows
 [`bitmap-transforms-vs-sprites.md`](./bitmap-transforms-vs-sprites.md),
@@ -11,7 +12,189 @@ matrix is currently `Context` draw state used by one bitmap primitive, while a
 sprite carries only raw frame pointers and is rendered by two independent,
 untransformed paths.
 
-## Executive recommendation
+## Implementation result
+
+The functional restriction has been removed for the three bitmap formats that
+can be sprite frames: Mask, RGBA2222, and RGBA8888. A software sprite or a
+hardware-requested sprite can bind a valid 2D affine matrix and use translation,
+scaling, reflection, rotation, shear, or any nonsingular composition of those
+operations. Perspective matrices, singular matrices, non-finite coefficients,
+and results outside the documented resource/coordinate limits fail closed.
+
+The implementation deliberately does **not** execute floating-point affine
+sampling in the VGA scanline ISR. Firmware copies and validates the matrix,
+inverse-samples every animation frame into a private RGBA2222 cache, and then
+publishes immutable ordinary sprite frames. The existing software compositor or
+hardware overlay consumes that cache without knowing about matrix buffers. This
+gives both requested sprite kinds the same public transform behavior while
+keeping unbounded work and mutable buffer state out of scanout.
+
+This differs from one detail of the original staged recommendation below: the
+software path also consumes the shared pre-rasterized cache instead of gaining a
+second affine sampler inside its background-saving compositor. One cache
+implementation proved smaller, made all animation frames transactional, and
+kept the renderer-facing lifetime protocol identical for both backends.
+
+### Experimental control and status
+
+The feature is gated by experimental test flag 3
+(`TESTFLAG_SPRITE_AFFINE`). The binding is per sprite:
+
+```text
+VDU 23,0,&F8,&1412; matrixBufferId;
+```
+
+`&FFFF` unbinds the selected sprite. VDP variable `&1412` reads the selected
+sprite's binding and `&1413` reports its current state:
+
+| Value | Meaning |
+| ---: | --- |
+| 0 | unbound |
+| 1 | feature disabled |
+| 2 | pending (for example, matrix buffer not yet present) |
+| 3 | valid private cache using software composition |
+| 4 | valid private cache using hardware composition |
+| 5 | last-known-good software cache retained after a rejected update |
+| 6 | last-known-good hardware cache retained after a rejected update |
+| 7 | invalid matrix or unreliable source identity |
+| 8 | coordinate, frame-count, allocation, or memory-reserve limit |
+| 9 | sprite source frame missing |
+
+Changing a bound matrix or source bitmap generation makes the binding dirty;
+the next sprite presentation rebuilds it. All frames are prepared before a new
+generation is published. A rejected matrix update retains the complete
+last-known-good cache only while every source bitmap and generation still
+matches. An explicit public clear of the bound matrix buffer unbinds it; normal
+in-place replacement preserves the ID binding and causes regeneration. Sprite
+reset/full reset clear all bindings.
+
+The existing `VDU 23,0,&96,flags,matrixBufferId;` affine selector also accepts
+bit 1 for the current sprite. Every gated affine command now consumes its full
+payload even while the underlying affine test flag is disabled, so probing or
+conditional use cannot leave payload bytes to desynchronize the VDU stream.
+
+### Formats and renderer choice
+
+- RGBA2222 is copied directly into the private cache.
+- RGBA8888 RGB channels are reduced to their top two bits. Alpha preserves the
+  existing sprite convention: zero remains transparent and every nonzero value
+  becomes fully opaque RGBA2222 alpha (`A=3`).
+- Mask frames are sampled through the source bitmap's RGBA2222 accessor and use
+  software composition.
+- A hardware-requested transformed sprite remains on hardware for `Set`, and
+  for `XOR` only when every source is RGBA2222. Mask, unsupported logical paint
+  modes, and RGBA8888 XOR are pinned to the software path so their semantics are
+  not silently changed. The selected status makes that choice observable.
+
+Nearest-neighbour sampling uses transformed pixel-cell corner bounds and
+inverse-mapped destination pixel centres. This is internally consistent for
+negative bounds and right-angle rotations, but fractional transforms can
+rasterize edge pixels differently from the older regular transformed-bitmap
+plot helper. The public bitmap and cache sources are never overwritten.
+
+### Admission and safety limits
+
+The experimental implementation admits at most 64 frames per transformed
+sprite, 1024x768 pixels per transformed frame, 2 MiB of cached pixels per
+sprite, and 65,536 pixels per frame when software composition is required. It
+also preserves 256 KiB of PSRAM and, for software sprites, 96 KiB of internal
+RAM, while checking largest contiguous blocks and every dimension/product
+conversion. These are conservative safety limits, not a statement of maximum
+ESP32 performance. Rejection is visible as status 8 and leaves a qualifying
+last-known-good generation intact.
+
+Bitmap and matrix generations cover buffered mutation and bitmap recreation.
+Publication is failure-atomic: replacement storage and bitmap metadata are
+allocated before retiring an old bitmap, source generations are rechecked after
+cache construction, and renderer-facing pointers are published only as one
+validated list. Old pointers are detached, fenced across a presentation
+boundary, and only then freed. `vdp-gl` now has checked bitmap/list admission,
+coherent pointer/count/stride snapshots, and an explicit sprite-retirement
+fence. The userspace renderer serializes that fence with framebuffer readers;
+the ESP32 renderer crosses a scanout boundary.
+
+### Validation completed
+
+- Native userspace VDP module build passed against the dedicated Fab emulator.
+- The renderer's deterministic publication/lifetime regression passed ten
+  consecutive runs.
+- Five deterministic source assets cover RGBA2222, RGBA8888 (including alpha
+  0, 1, 63, and 255), Mask, a 5x13 rectangle, and a 352x48 RGBA8888 upload whose
+  67,584-byte payload crosses the 65,535-byte protocol block boundary.
+- Three eZ80 fixtures assembled successfully. A packet audit checked 153 VDU
+  templates across their binaries, and the ADL-width audit reported zero
+  hazards.
+- The Author accepted the interactive transform fixture, the all-format
+  fixture, and the lifecycle/parser torture fixture in the bespoke emulator.
+  In the final extended torture run, the Author also accepted the queued
+  same-ID replacement (`U`) and immediate screen-capture consumer (`C`)
+  oracles; `Q` completed teardown and the emulator exited with status 0. That
+  73,211-byte executable has SHA-256
+  `c7c1ca74dea30b15cab1d99ccf6af780e5aaa159a1126e8c610bb10e9dcbb99c`.
+- The final paired ESP32 build used 45,840 bytes RAM and 1,098,025 bytes flash.
+  Its 1,098,400-byte `firmware.bin` has SHA-256
+  `db603aabeadad68f1529c83e3691034391aa94ef334e191bb69bf43bf736bebe`.
+  Esptool wrote and hash-verified that exact artifact on the connected
+  ESP32-PICO-D4, then hard-reset the board. The Author confirmed the custom
+  firmware signature, AgonJukebox audio and ordinary-bitmap operation, and
+  successful entry into mode 20 (512x384x64, single buffered). No affine
+  assembly fixture has yet been staged on the physical machine.
+
+- After the VDP and renderer changes were committed locally, the paired wrapper
+  rebuilt their clean trees under fingerprint `d7671adb9fda4d10`. It reproduced
+  the same 45,840-byte RAM and 1,098,025-byte flash usage and the same
+  1,098,400-byte image size. That later image has SHA-256
+  `45830ade28cd87b3599708047a0f7f5ba82236edc4f42343cd16af45ef94220e`.
+  It was not flashed; the preceding `db603a...bebe` image remains the exact
+  hardware-validated artifact. The two builds used identical source content
+  but different fingerprint/build directories, so their binary hashes are
+  recorded separately rather than claiming byte reproducibility.
+
+The first full-feature hardware artifact exposed an important admission
+regression before the final build above. It reserved 28,672 bytes of new sprite
+state and renderer arrays unconditionally in BSS, increasing reported RAM from
+the 44,688-byte upstream baseline to 73,496 bytes. The machine booted and ran
+AgonJukebox, but a request for mode 20 remained on the 640x480 mode-0 display
+because the framebuffer allocation no longer fit. Transform state is now
+allocated lazily per bound sprite in preferred PSRAM, and the renderer proxy is
+a checked exact-size internal-RAM allocation for only the active high-water.
+The final static increase is 1,152 bytes, and the repeated physical mode-20
+test passed.
+
+### Delivery boundary and remaining limitations
+
+The paired renderer change is mandatory. The stock `agon-vdp` PlatformIO
+dependency still names upstream `vdp-gl#all-the-plots`, which does not contain
+the checked publication/retirement API. The fixture project's
+`scripts/build_firmware.sh` fingerprints both mutable worktrees, builds in an
+isolated directory, installs the exact dedicated renderer checkout, verifies it
+byte-for-byte, and fails closed on a mismatch. Before this can be merged or
+released, the renderer changes need their own published commit and the VDP
+dependency must be advanced to that commit.
+
+Cache construction and list replacement are synchronous and conservative. A
+dirty update can briefly detach the active list while rebuilding/publishing,
+and the ESP32 retirement fence assumes active scanout after VGA initialization;
+it is not a general fence for a controller whose scanout has been stopped.
+Native on-the-fly hardware affine sampling, asynchronous cache jobs, a stronger
+completion command, and protocol stabilization remain future work rather than
+requirements for removing the functional restriction.
+
+The lazy layout also makes two admission details explicit. Activating `N`
+sprites needs a checked internal-RAM proxy of approximately `32 * N` bytes in
+addition to the renderer's canonical list, so the tightest framebuffer modes
+may admit fewer than the protocol maximum even though ordinary mode selection
+is no longer penalized by an unconditional reservation. A failure to allocate
+the small per-bound transform-state object currently leaves that sprite
+reported as unbound rather than resource-limited; later cache and proxy
+admission failures do report status 8. Both are implementation limitations,
+not changes to transform semantics.
+
+The remainder of this document preserves the original design reasoning and
+alternatives. Future-tense recommendations below are historical unless the
+implementation-result section above says they were adopted.
+
+## Original executive recommendation
 
 Do not try to make sprites inherit the current bitmap transform, and do not
 silently regenerate public bitmap buffers. Add an explicit **per-sprite matrix

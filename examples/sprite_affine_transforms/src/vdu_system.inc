@@ -15,6 +15,24 @@ vdu_print_cstr:
     rst.lil 18h
     ret
 
+; Input: B = text column, C = text row.
+vdu_text_cursor_move:
+    ld a,b
+    ld (vdu_text_cursor_move_x),a
+    ld a,c
+    ld (vdu_text_cursor_move_y),a
+    ld hl,vdu_text_cursor_move_packet
+    ld bc,vdu_text_cursor_move_packet_end-vdu_text_cursor_move_packet
+    jp vdu_send_block
+
+vdu_text_cursor_move_packet:
+    db 31
+vdu_text_cursor_move_x:
+    db 0
+vdu_text_cursor_move_y:
+    db 0
+vdu_text_cursor_move_packet_end:
+
 ; Input: A = screen mode.
 vdu_set_screen_mode:
     ld (vdu_set_screen_mode_value),a
@@ -72,3 +90,20 @@ vdu_logical_coordinates_on:
 vdu_logical_coordinates_on_packet:
     db 23,0,0c0h,1
 vdu_logical_coordinates_on_packet_end:
+
+; Input: A = graphics paint mode, C = logical foreground colour.
+vdu_gcol:
+    ld (vdu_gcol_mode),a
+    ld a,c
+    ld (vdu_gcol_colour),a
+    ld hl,vdu_gcol_packet
+    ld bc,vdu_gcol_packet_end-vdu_gcol_packet
+    jp vdu_send_block
+
+vdu_gcol_packet:
+    db 18
+vdu_gcol_mode:
+    db 0
+vdu_gcol_colour:
+    db 0
+vdu_gcol_packet_end:

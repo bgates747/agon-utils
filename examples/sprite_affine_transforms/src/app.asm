@@ -32,10 +32,12 @@ fixture_run:
     call fixture_prepare_vdp
     call fixture_upload_bitmap
     call fixture_plot_regular_bitmap
-    call fixture_create_sprites
 
     ld hl,fixture_help
     call vdu_print_cstr
+
+    call fixture_create_sprites
+    call fixture_request_identity
 
 fixture_main_loop:
     call fixture_wait_vblank
@@ -45,7 +47,6 @@ fixture_main_loop:
     or a
     jr z,fixture_main_loop_done
 
-    call fixture_animate_sprites
     jr fixture_main_loop
 
 fixture_main_loop_done:
@@ -60,11 +61,9 @@ fixture_capture_screen_mode:
     ret
 
 fixture_initialize_ram:
-    ld hl,fixture_motion_left
-    ld (fixture_motion_x),hl      ; ADL24 OK: fixture_motion_x is dl.
-
     xor a
     ld (fixture_previous_key),a
+    ld (fixture_transforms_bound),a
     ld a,1
     ld (fixture_running),a
     ret
@@ -82,7 +81,9 @@ fixture_prepare_vdp:
     call vdu_hardware_sprites_disable
     call vdu_sprite_reset
     call vdu_buffer_clear_all
+    call vdu_affine_matrices_enable
     call vdu_hardware_sprites_enable
+    call vdu_sprite_affine_enable
     ret
 
 ; Replace this routine with a file or AGNB loader if the fixture grows. The
@@ -116,7 +117,7 @@ fixture_create_sprites:
     ld de,fixture_bitmap_buffer_id
     call vdu_sprite_add_buffer_frame
     call vdu_sprite_make_software
-    ld bc,fixture_motion_left
+    ld bc,fixture_software_sprite_x
     ld de,fixture_sprite_y
     call vdu_sprite_move_absolute
     call vdu_sprite_show
@@ -129,7 +130,7 @@ fixture_create_sprites:
     ; Activate it once as software so the VDP allocates saved-background state.
     ; That makes the interactive hardware -> software transition safe.
     call vdu_sprite_make_software
-    ld bc,fixture_motion_left+fixture_motion_offset
+    ld bc,fixture_hardware_sprite_x
     ld de,fixture_sprite_y
     call vdu_sprite_move_absolute
     call vdu_sprite_show
@@ -164,13 +165,32 @@ fixture_poll_key:
     cp 27
     jr z,fixture_request_exit
 
+    cp '0'
+    jp z,fixture_request_identity
+    cp '1'
+    jp z,fixture_request_translate
+    cp '2'
+    jp z,fixture_request_scale_2
+    cp '3'
+    jp z,fixture_request_rotate_90
+    cp '4'
+    jp z,fixture_request_shear
+    cp '5'
+    jp z,fixture_request_reflect_x
+    cp '6'
+    jp z,fixture_request_pivot_rotate_90
+    cp '7'
+    jp z,fixture_request_singular
+    cp '8'
+    jp z,fixture_request_unbind
+
     or 20h
     cp 'q'
-    jr z,fixture_request_exit
+    jp z,fixture_request_exit
     cp 'h'
-    jr z,fixture_request_hardware
+    jp z,fixture_request_hardware
     cp 's'
-    jr z,fixture_request_software
+    jp z,fixture_request_software
     ret
 
 fixture_key_released:
@@ -183,17 +203,148 @@ fixture_request_exit:
     ld (fixture_running),a
     ret
 
+; All valid states rebuild the same matrix ID. Once bound, transitions exercise
+; live matrix mutation without repeating the 1412h binding command.
+fixture_request_identity:
+    call vdu_affine_identity
+    call fixture_ensure_transforms_bound
+    call vdu_sprite_refresh
+    ld hl,fixture_identity_message
+    jp fixture_show_matrix_status
+
+fixture_request_translate:
+    call vdu_affine_identity
+    call vdu_affine_translate_8_4
+    call fixture_ensure_transforms_bound
+    call vdu_sprite_refresh
+    ld hl,fixture_translate_message
+    jp fixture_show_matrix_status
+
+fixture_request_scale_2:
+    call vdu_affine_identity
+    call vdu_affine_scale_2
+    call fixture_ensure_transforms_bound
+    call vdu_sprite_refresh
+    ld hl,fixture_scale_2_message
+    jp fixture_show_matrix_status
+
+fixture_request_rotate_90:
+    call vdu_affine_identity
+    call vdu_affine_rotate_90
+    call fixture_ensure_transforms_bound
+    call vdu_sprite_refresh
+    ld hl,fixture_rotate_90_message
+    jp fixture_show_matrix_status
+
+fixture_request_shear:
+    call vdu_affine_identity
+    call vdu_affine_shear_negative_half_x
+    call fixture_ensure_transforms_bound
+    call vdu_sprite_refresh
+    ld hl,fixture_shear_message
+    jp fixture_show_matrix_status
+
+fixture_request_reflect_x:
+    call vdu_affine_identity
+    call vdu_affine_reflect_x
+    call fixture_ensure_transforms_bound
+    call vdu_sprite_refresh
+    ld hl,fixture_reflect_x_message
+    jp fixture_show_matrix_status
+
+fixture_request_pivot_rotate_90:
+    call vdu_affine_identity
+    call vdu_affine_translate_negative_pivot
+    call vdu_affine_rotate_90
+    call vdu_affine_translate_positive_pivot
+    call fixture_ensure_transforms_bound
+    call vdu_sprite_refresh
+    ld hl,fixture_pivot_rotate_90_message
+    jp fixture_show_matrix_status
+
+; Publish a known scale-2 generation, then replace it with a singular candidate
+; without rebinding. The visible scale-2 generation must remain last-known-good.
+fixture_request_singular:
+    call vdu_affine_identity
+    call vdu_affine_scale_2
+    call fixture_ensure_transforms_bound
+    call vdu_sprite_refresh
+    call fixture_wait_vblank
+    call fixture_wait_vblank
+
+    call vdu_affine_identity
+    call vdu_affine_scale_singular
+    call vdu_sprite_refresh
+    ld hl,fixture_singular_message
+    jp fixture_show_matrix_status
+
+fixture_request_unbind:
+    call fixture_clear_both_transform_bindings
+    call vdu_sprite_refresh
+    ld hl,fixture_unbound_message
+    jp fixture_show_matrix_status
+
 fixture_request_hardware:
-    call fixture_set_right_hardware
-    ld hl,fixture_hardware_message
-    call vdu_print_cstr
-    ret
+    jp fixture_set_right_hardware
 
 fixture_request_software:
-    call fixture_set_right_software
-    ld hl,fixture_software_message
-    call vdu_print_cstr
+    jp fixture_set_right_software
+
+fixture_ensure_transforms_bound:
+    ld a,(fixture_transforms_bound)
+    or a
+    ret nz
+
+fixture_bind_both_transforms:
+    ld a,fixture_software_sprite_id
+    call vdu_sprite_select
+    ld de,fixture_sprite_transform_id
+    call vdu_sprite_bind_transform
+
+    ld a,fixture_hardware_sprite_id
+    call vdu_sprite_select
+    ld de,fixture_sprite_transform_id
+    call vdu_sprite_bind_transform
+
+    ld a,1
+    ld (fixture_transforms_bound),a
     ret
+
+fixture_clear_both_transform_bindings:
+    ld a,fixture_software_sprite_id
+    call vdu_sprite_select
+    call vdu_sprite_clear_transform
+
+    ld a,fixture_hardware_sprite_id
+    call vdu_sprite_select
+    call vdu_sprite_clear_transform
+
+    xor a
+    ld (fixture_transforms_bound),a
+    ret
+
+; Input: HL = zero-terminated status, C = fixed text row. The line is cleared
+; first so switching from a longer label never leaves stale characters.
+fixture_show_status:
+    push hl
+    push bc
+    ld b,0
+    call vdu_text_cursor_move
+    ld hl,fixture_status_blank
+    call vdu_print_cstr
+    pop bc
+    ld b,0
+    call vdu_text_cursor_move
+    pop hl
+    jp vdu_print_cstr
+
+fixture_show_backend_status:
+    ld c,fixture_backend_status_row
+    jp fixture_show_status
+
+fixture_show_matrix_status:
+    ld c,fixture_matrix_status_row
+    jp fixture_show_status
 
 ; A visible software sprite has pixels saved in the framebuffer. Hide and
 ; refresh it while it is still software before changing to the overlay path,
@@ -205,6 +356,8 @@ fixture_set_right_hardware:
     call vdu_sprite_refresh
     call vdu_sprite_make_hardware
     call vdu_sprite_show
+    ld hl,fixture_hardware_message
+    call fixture_show_backend_status
     ret
 
 ; Sprite 1 was activated as software at startup, so its saved-background
@@ -216,42 +369,8 @@ fixture_set_right_software:
     call vdu_sprite_make_software
     call vdu_sprite_show
     call vdu_sprite_refresh
-    ret
-
-fixture_animate_sprites:
-    ld hl,(fixture_motion_x)      ; ADL24 OK: fixture_motion_x is dl.
-    inc hl
-    push hl
-    ld de,fixture_motion_right+1
-    or a
-    sbc hl,de
-    pop hl
-    jr c,fixture_motion_in_range
-    ld hl,fixture_motion_left
-
-fixture_motion_in_range:
-    ld (fixture_motion_x),hl      ; ADL24 OK: fixture_motion_x is dl.
-
-    ld a,fixture_software_sprite_id
-    call vdu_sprite_select
-    ld hl,(fixture_motion_x)      ; ADL24 OK: fixture_motion_x is dl.
-    push hl
-    pop bc
-    ld de,fixture_sprite_y
-    call vdu_sprite_move_absolute
-
-    ld a,fixture_hardware_sprite_id
-    call vdu_sprite_select
-    ld hl,(fixture_motion_x)      ; ADL24 OK: fixture_motion_x is dl.
-    ld de,fixture_motion_offset
-    add hl,de
-    push hl
-    pop bc
-    ld de,fixture_sprite_y
-    call vdu_sprite_move_absolute
-
-    ; Required by the software sprite and harmless for the hardware sprite.
-    call vdu_sprite_refresh
+    ld hl,fixture_software_message
+    call fixture_show_backend_status
     ret
 
 fixture_wait_vblank:
@@ -266,8 +385,11 @@ fixture_wait_vblank_loop:
 fixture_release_vdp:
     xor a
     call vdu_sprite_activate
+    call fixture_clear_both_transform_bindings
     call vdu_sprite_reset
     call vdu_buffer_clear_all
+    call vdu_sprite_affine_disable
+    call vdu_affine_matrices_disable
     call vdu_hardware_sprites_disable
     call vdu_hardware_sprite_preference_clear
 
@@ -278,16 +400,48 @@ fixture_release_vdp:
     ret
 
 fixture_help:
-    db "Bitmap and sprite API fixture",13,10
-    db "Top: ordinary buffered bitmap",13,10
-    db "Bottom: software left, hardware right",13,10
-    db "H/S changes right sprite; ESC/Q exits",13,10,0
+    db "Sprite affine regression",13,10
+    db "Top raw; bottom SW-left / HW-right",13,10
+    db "0 identity  1 translate  2 scale2",13,10
+    db "3 rot90  4 shear  5 reflectX",13,10
+    db "6 pivot90  7 singular  8 unbind",13,10
+    db "H/S right backend; Q/ESC exits",13,10,0
 
 fixture_hardware_message:
-    db "Right sprite: hardware",13,10,0
+    db "Right backend: hardware-requested",0
 
 fixture_software_message:
-    db "Right sprite: software",13,10,0
+    db "Right backend: software",0
+
+fixture_identity_message:
+    db "M0 identity: both match raw shape",0
+
+fixture_translate_message:
+    db "M1 translate (+8,+4)",0
+
+fixture_scale_2_message:
+    db "M2 scale 2x: expect 32x32",0
+
+fixture_rotate_90_message:
+    db "M3 rotate +90: pixels above anchor",0
+
+fixture_shear_message:
+    db "M4 shear X=-0.5: negative X bounds",0
+
+fixture_reflect_x_message:
+    db "M5 reflect X: pixels left of anchor",0
+
+fixture_pivot_rotate_90_message:
+    db "M6 center-pivot +90: remains 16x16",0
+
+fixture_singular_message:
+    db "M7 singular rejected: scale2 remains",0
+
+fixture_unbound_message:
+    db "M8 unbound: raw sprites expected",0
+
+fixture_status_blank:
+    db "                                       ",0
 
 fixture_saved_screen_mode:
     db 0
@@ -298,11 +452,12 @@ fixture_running:
 fixture_previous_key:
     db 0
 
-fixture_motion_x:
-    dl 0
+fixture_transforms_bound:
+    db 0
 
     include "vdu_system.inc"
     include "vdu_buffer.inc"
     include "vdu_bitmap.inc"
     include "vdu_sprite.inc"
+    include "vdu_affine.inc"
     include "fixture_assets.inc"
