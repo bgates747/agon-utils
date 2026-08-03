@@ -164,3 +164,9 @@ examples/agnb/images/container/tgt/
 examples/agnb/audio/.emulator/
 examples/agnb/audio/assets/processed/
 examples/agnb/audio/tgt/
+
+# Sprite affine-transform firmware regression project
+examples/sprite_affine_transforms/build/
+examples/sprite_affine_transforms/emulator/
+examples/sprite_affine_transforms/assets/rgba2222/*
+!examples/sprite_affine_transforms/assets/rgba2222/.gitkeep
