@@ -141,3 +141,18 @@ is refused.
 The launcher uses absolute paths, a temporary fallback-free working directory,
 the dedicated sprite-transform Fab emulator, its matching Console8 MOS
 image/map, and the bespoke VDP module. It never falls back to stock firmware.
+
+## Deploy to the physical SD card
+
+With the Agon card mounted at `/media/smith/AGON`, deploy the three accepted
+fixture binaries with:
+
+```bash
+./scripts/deploy_sdcard.sh
+```
+
+The script has no destination argument. It validates the mount point, source
+hashes, and every existing destination component; refuses symlinks and special
+entries; then recursively replaces only the contents of
+`/media/smith/AGON/mystuff/tests/sprite_xfrms`. Each copied file is verified
+before the card is synchronized.
