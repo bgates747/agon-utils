@@ -11,6 +11,12 @@ VDP_ROOT = AGON_ROOT / "mystuff" / "agon-vdp-sprite-transforms"
 PROFILE = PROJECT_DIR / "emulator"
 MODULE_NAME = "vdp_sprite_affine_transforms.so"
 MODULE = VDP_ROOT / "video" / "build" / "userspace" / MODULE_NAME
+OLD_AUTOEXEC = (
+    b"SET KEYBOARD 1\r\n"
+    b"cd /sprite_affine_transforms\r\n"
+    b"load sprite_affine_transforms.bin\r\n"
+)
+AUTOEXEC = OLD_AUTOEXEC + b"run\r\n"
 
 
 def ensure_symlink(link: Path, target: Path, *, allow_missing=False) -> None:
@@ -40,6 +46,14 @@ def main() -> None:
     ensure_symlink(PROFILE / "mos_console8.map", FAB_ROOT / "firmware" / "mos_console8.map")
     ensure_symlink(PROFILE / MODULE_NAME, MODULE, allow_missing=True)
     ensure_symlink(sdcard / "sprite_affine_transforms", build_dir)
+
+    autoexec = sdcard / "autoexec.txt"
+    if not autoexec.exists():
+        autoexec.write_bytes(AUTOEXEC)
+    elif not autoexec.is_file():
+        raise RuntimeError(f"Expected a regular autoexec file: {autoexec}")
+    elif autoexec.read_bytes() == OLD_AUTOEXEC:
+        autoexec.write_bytes(AUTOEXEC)
 
     marker = PROFILE / ".bespoke-vdp-profile"
     marker.write_text(f"{MODULE_NAME}\n", encoding="utf-8")

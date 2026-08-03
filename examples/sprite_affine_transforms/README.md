@@ -49,6 +49,11 @@ Launch only after that module and a fixture binary exist:
 ./scripts/run_emulator.sh
 ```
 
+The setup script creates a CRLF `autoexec.txt` on first use that loads and runs
+`/sprite_affine_transforms/sprite_affine_transforms.bin`. It preserves an
+existing user-modified autoexec file so interactive selections remain under
+user control.
+
 The launcher uses absolute paths, a temporary fallback-free working directory,
 the owned Fab emulator, its matching Console8 MOS image/map, and the bespoke
 VDP module. It never falls back to stock firmware.
