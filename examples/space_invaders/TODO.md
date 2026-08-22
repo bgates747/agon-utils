@@ -4,25 +4,20 @@ This is the project's single authoritative list of unfinished work. Stable
 item IDs remain until an item is accepted, rejected, or superseded. Record its
 result and rationale in the current dated development log before removing it.
 
-## Foundation
-
-- [ ] **ARCH-001 — Select the video and timing architecture**
-  - Started: --
-  - Finished: --
-  - Details: [ARCH-001](docs/tasks/ARCH-001.md)
-
 ## Hardware
 
 - [ ] **HARDWARE-001 — Build and qualify the GPIO video adapter**
-  - Started: --
+  - Started: 2026-08-22 04:39 EDT
   - Finished: --
+  - Status: Deferred — emulator correctness proof first
   - Details: [HARDWARE-001](docs/tasks/HARDWARE-001.md)
 
 ## Port
 
 - [ ] **PORT-001 — Adapt the original 8080 program to an Agon ADL=0 application**
-  - Started: --
+  - Started: 2026-08-22 05:32 EDT
   - Finished: --
+  - Status: In progress — adapter/init proof passed; source translation next
   - Details: [PORT-001](docs/tasks/PORT-001.md)
 
 - [ ] **VIDEO-001 — Present the original framebuffer through the selected display path**

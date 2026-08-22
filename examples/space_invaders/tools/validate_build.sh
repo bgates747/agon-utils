@@ -26,14 +26,14 @@ test -f "$map" || fail "missing map: $map"
 test -f "$object" || fail "missing object: $object"
 
 size=$(wc -c < "$binary" | tr -d ' ')
-test "$size" -eq 77 || fail "expected 77-byte setup probe, got $size"
+test "$size" -eq 74 || fail "expected 74-byte setup probe, got $size"
 
 test "$(hex_at "$binary" 0 4)" = "c3450000" || \
 	fail "entry jump is not ADL=0 JP 0x0045 followed by offset-3 padding"
 test "$(hex_at "$binary" 64 5)" = "4d4f530000" || \
 	fail "MOS header is not version 0 with ADL=0 mode"
-test "$(hex_at "$binary" 69 8)" = "31feff21000049c9" || \
-	fail "probe body does not initialize SPS, return zero, and RET.LIS"
+test "$(hex_at "$binary" 69 5)" = "21000049c9" || \
+	fail "probe body does not return zero through MOS's CALL.IS frame"
 
 program_name=$(od -An -v -tc -j 4 -N 13 "$binary" | tr -d ' \n')
 test "$program_name" = "invaders.bin\0" || \
@@ -44,4 +44,4 @@ grep -Eq '0x0*40[[:space:]]+__mos_header([[:space:]]|$)' "$map" || \
 grep -Eq '0x0*45[[:space:]]+__start([[:space:]]|$)' "$map" || \
 	fail "map does not place __start at 0x0045"
 
-echo "build validation: OK ($size bytes, ADL=0 entry 0x0045)"
+echo "build validation: OK ($size bytes, ADL=0 entry 0x0045, MOS stack preserved)"

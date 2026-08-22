@@ -48,9 +48,11 @@ with `linker/adl0.ld` and the following raw binary layout:
 Logical linked addresses begin at zero. MOS loads the file into an eZ80 memory
 bank and uses the header’s mode byte to enter it in Z80-compatible mode. Calls
 back to ADL-mode MOS code require explicit mixed-mode instruction suffixes.
-MOS does not initialize the short-mode stack pointer for an `ADL=0` program,
-so the entry probe sets `SPS` to logical address `0xfffe`. It returns through
-`RET.LIS`, matching MOS's long return frame, and reports success in `HL`.
+MOS `_exec16` enters the program with `CALL.IS`, which supplies the long return
+frame consumed by `RET.LIS`. A returning ADL=0 program must preserve that
+stack frame; only a terminal program such as the game may replace SPS. The
+entry probe preserves SP, returns through `RET.LIS`, and reports success in
+`HL`.
 
 These details were checked against the installed Agon documentation at
 `agon-docs/docs/mos/Executables.md`, `agon-docs/docs/MOS.md`, and

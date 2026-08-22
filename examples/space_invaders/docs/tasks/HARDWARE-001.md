@@ -2,8 +2,8 @@
 
 ## State
 
-- Status: Not started
-- Started: --
+- Status: Deferred — emulator correctness proof first
+- Started: 2026-08-22 04:39 EDT
 - Finished: --
 
 ## Intent
@@ -48,10 +48,19 @@ powering newly assembled wiring.
 - [EZ80 Framebuffer Agon](https://github.com/tomm/ez80-framebuffer-agon)
 - [ARCH-001](ARCH-001.md)
 
+The wiring was checked against `vga-ez80` commit
+`000f67f14fa80147dd32cf68be5b7656050fd6b0` dated 2026-08-11. Its direct
+mapping is GPIO D6 through 75 Ω to VGA VSYNC, GPIO D7 through 75 Ω to VGA
+HSYNC, and GPIO C0-C7 through an RGB332 resistor network to VGA blue, green,
+and red respectively.
+
 ## Decisions and assumptions
 
-The adapter is a candidate experiment, not yet the accepted project display
-backend. The upstream project explicitly targets Agon Light 1/2 hardware.
+The adapter is the accepted project display backend under ADR-0002. The
+upstream project explicitly targets Agon Light 1/2 hardware. Stock MOS with
+the application-bundled static driver is the initial qualification path.
+The Author deferred bench work after the authoritative wiring capture so the
+project can establish emulator code correctness first.
 
 ## Unresolved questions
 

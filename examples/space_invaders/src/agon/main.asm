@@ -21,8 +21,7 @@ __mos_header:
 	.byte 0                 ; Z80-compatible execution mode (ADL=0).
 
 __start:
-	ld sp, 0xfffe           ; MOS leaves SPS undefined on ADL=0 entry.
 	ld hl, 0                ; Return success to MOS.
-	ret.lis                 ; Return from ADL=0 code to the ADL-mode caller.
+	ret.lis                 ; Preserve and consume MOS's CALL.IS return frame.
 
 __image_end:

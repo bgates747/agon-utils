@@ -70,9 +70,10 @@ instructions.
 
 ## Outcome
 
-The agondev 1.0 build produces a validated 77-byte `ADL=0` MOS probe, listing,
-and map. Two clean builds produced identical binary, object, listing, and map
-hashes. The probe initializes the Z80-mode stack, returns success in `HL`, and
-uses `RET.LIS` to cross back to the MOS caller. Full evidence and invocation
+The agondev 1.0 build produces a validated 74-byte `ADL=0` MOS probe, listing,
+and map. It preserves the `CALL.IS` return frame supplied by MOS `_exec16`,
+returns success in `HL`, and uses `RET.LIS` to cross back to the MOS caller.
+The original 77-byte probe incorrectly replaced SPS; the emulator core-proof
+work exposed and corrected that boundary error. Full evidence and invocation
 details are recorded in [the build baseline](../agondev.md) and the
 [2026-08-22 development log](../development/2026-08-22.md).
