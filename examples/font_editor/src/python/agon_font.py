@@ -18,7 +18,7 @@ def resolve_font_source(metadata_path, font_config):
     return os.path.abspath(source)
 
 
-def read_font(file_path, font_config_input, *, _seen=None):
+def read_font(file_path, font_config_input, *, _seen=None, render=True):
     """
     Entry point for reading and rendering fonts based on file type. Supports
     different formats like TTF, OTF, PSF, PNG, and custom font files.
@@ -47,11 +47,12 @@ def read_font(file_path, font_config_input, *, _seen=None):
         file_path = resolve_font_source(file_path, font_config)
         font_config['original_font_path'] = file_path
         # The referenced source applies its transforms; do not apply them twice.
-        return read_font(file_path, font_config, _seen=seen)
+        return read_font(file_path, font_config, _seen=seen, render=render)
     else:
         raise ValueError(f"Unsupported font file type: {file_extension}")
 
-    font_config, font_image = resample_and_scale_image(font_config, font_image)
+    if render:
+        font_config, font_image = resample_and_scale_image(font_config, font_image)
     return font_config, font_image
 
 # =============================================================================
@@ -62,6 +63,10 @@ def resample_and_scale_image(font_config, original_image):
     Resample the original image to fit the modified configuration, handling
     position offsets once at the beginning, and applying scaling to each character individually.
     """
+    if font_config.get('position_units', 'source') == 'output':
+        from glyph_resampling import render_atlas
+        return font_config, render_atlas(font_config, original_image)
+    # Legacy recipes retain their original sampling/position interpretation.
     # Extract relevant font configuration parameters
     orig_width = font_config['font_width']
     orig_height = font_config['font_height']
@@ -110,6 +115,11 @@ def resample_and_scale_image(font_config, original_image):
         # Paste the resampled character image into the final font image
         font_image.paste(char_img, (tgt_x, tgt_y))
 
+    return font_config, rasterize_image(font_config, font_image)
+
+
+def rasterize_image(font_config, font_image):
+    """Apply the chosen raster conversion independently of positioning."""
     if font_config['raster_type'] == 'threshold':
         threshold = font_config['threshold']
         font_image = font_image.convert("L")
@@ -127,7 +137,7 @@ def resample_and_scale_image(font_config, original_image):
         au.convert_to_palette(temp_img_filepath, temp_img_filepath, palette_filepath, 'RGB')
         font_image = Image.open(temp_img_filepath).convert('RGBA')
 
-    return font_config, font_image
+    return font_image
 
 def get_chars_from_image(font_config, font_image):
     """

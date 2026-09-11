@@ -48,3 +48,9 @@ the repository's prerequisite extension check. Tk tests require a display, which
 can be virtual; the [document I/O specification](document-io.md) gives the full
 headless suite command. Tests use temporary app copies and generated Tk events
 rather than global input.
+
+The atlas toolbar offers **Optimize All Characters**, which runs an independent
+brightness search per glyph and applies the complete result together. The
+individual preview code remains but has no UI command. Output-pixel positioning,
+legacy conversion and persistence limits are described in
+[Font Resampling Optimization](glyph-resampling.md).

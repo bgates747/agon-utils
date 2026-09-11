@@ -25,6 +25,11 @@ class EditorWidget(tk.Frame):
         self.columnconfigure(0, weight=1)
         self.canvas.bind("<Button-1>", self.on_click)
 
+    def optimize_resampling(self):
+        """Retained individual workflow; intentionally not exposed in the UI."""
+        from resampling_preview import ResamplingPreview
+        ResamplingPreview(self.app_reference)
+
     def populate_from_image(self, image):
         """Use the actual selected glyph as both visible and editable state."""
         config = self.app_reference.font_config_editor.get_config()

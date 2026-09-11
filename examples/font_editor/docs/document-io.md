@@ -36,6 +36,11 @@ PSF or a directly opened bitmap font). Original dimensions, point size, offsets,
 scale adjustments, raster type, colors and palette remain source settings.
 They are not replaced by export dimensions or the exported filename.
 
+The optional `position_units` field distinguishes legacy source offsets from
+whole output-pixel positioning. Older XML defaults to `source`; explicit units
+conversion and the per-character sampling trial are described in
+[glyph-resampling.md](glyph-resampling.md). Search phases are not serialized.
+
 PNG/FONT saves also include a nested `<bitmap>` element containing normalized
 metadata for the exported pixels: exported cell dimensions, zero transforms
 and the appropriate bitmap raster settings. This distinction preserves both
@@ -154,7 +159,13 @@ overwrite rejection, relative/cyclic references and live FONT controls with
 new and legacy sidecars. Its source-rendering probes run without a display.
 Earlier tests now distinguish direct bitmap round trips from XML regeneration.
 
-After the repository extension prerequisite, run the full 18-test suite from
+Three additional checks in `tests/test_glyph_resampling.py` cover output-pixel
+positioning, bounded sampling search and selected-character preview/application.
+
+Two checks in `tests/test_atlas_resampling.py` additionally cover the global
+command, per-glyph equivalence, complete application, cancellation and errors.
+
+After the repository extension prerequisite, run the full 23-test suite from
 the repository root with Xvfb/xvfb-run available:
 
 ```bash

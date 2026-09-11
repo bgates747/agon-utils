@@ -12,6 +12,8 @@ Atlas and character editing behavior is specified in
 [`docs/font-grid-editor.md`](docs/font-grid-editor.md).
 Opening, bitmap export and batch-form isolation are specified in
 [`docs/document-io.md`](docs/document-io.md).
+Output positioning and the per-character resampling trial are specified in
+[`docs/glyph-resampling.md`](docs/glyph-resampling.md).
 The [2026-09-10 application audit](docs/application-audit-2026-09-10.md)
 records known defects, incomplete features, and proposed maintenance boundaries.
 It is findings evidence, not authorization to implement its recommendations.

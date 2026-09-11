@@ -274,6 +274,7 @@ def load_font_metadata_from_xml(xml_filepath, *, bitmap=False):
     
     # Parse XML settings to a dictionary using xml_to_dict
     font_metadata = xml_to_dict(font_config_xml, general_config_xml)
+    font_metadata.setdefault('position_units', 'output' if bitmap else 'source')
     
     return font_metadata
 

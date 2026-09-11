@@ -32,6 +32,11 @@ class ImageDisplay(tk.Frame):
             current_zoom_index=self.current_zoom_index, on_zoom_change=self.change_zoom,
         )
         self.zoom_control.pack(side=tk.LEFT, padx=ui_px(self, 5))
+        self.optimize_all_button = tk.Button(
+            control_frame, text="Optimize All Characters",
+            command=app_reference.optimize_all_characters,
+        )
+        self.optimize_all_button.pack(side=tk.LEFT, padx=ui_px(self, 5))
 
         viewport = tk.Frame(self)
         viewport.pack(fill="both", expand=True)

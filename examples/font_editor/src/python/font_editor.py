@@ -28,6 +28,7 @@ class FontEditor(ttk.Frame):
         self.current_font_xml_file = None    # Path to the currently open .ini file
         self.editor_window = None
         self.editor_widget = None
+        self.optimization_window = None
 
         # Create and add the menu bar
         self.menubar = MenuBar(master, self)
@@ -88,6 +89,13 @@ class FontEditor(ttk.Frame):
         file_path = get_app_config_value("most_recent_file")
         if file_path:
             open_file(self, file_path)
+
+    def optimize_all_characters(self):
+        from atlas_resampling import AtlasResampling
+        if self.optimization_window is not None and self.optimization_window.winfo_exists():
+            self.optimization_window.lift()
+            return
+        self.optimization_window = AtlasResampling(self)
 
     def open_character_editor(self):
         """Reuse one non-modal editor while allowing further atlas selections."""

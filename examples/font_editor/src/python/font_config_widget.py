@@ -127,6 +127,8 @@ class FontConfigComboBox(FontConfigWidget):
 
         # Create the Combobox widget
         self.combobox = ttk.Combobox(self, values=self.options, width=20)
+        if config_setting == 'position_units':
+            self.combobox.configure(state='readonly')
         self.combobox.grid(row=0, column=1, padx=self.pad_x)
 
         # Set the on_change_object to the combobox
@@ -141,6 +143,17 @@ class FontConfigComboBox(FontConfigWidget):
     def set_display_value(self, new_value):
         """Set the display value of the Combobox."""
         self.combobox.set(new_value)
+
+    def _handle_value_change(self, event=None):
+        self.previous_value = self.value
+        super()._handle_value_change(event)
+
+    def position_units_on_change_handler(self):
+        from glyph_resampling import convert_position_units
+        config = self.parent.get_config()
+        config['position_units'] = self.previous_value
+        converted = convert_position_units(config, self.value)
+        self.parent.set_controls_from_config(converted)
 
 class FontConfigTextBox(FontConfigWidget):
     """A widget for displaying and editing a text-based configuration value."""

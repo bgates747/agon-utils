@@ -41,6 +41,8 @@ def get_open_filename(app_reference):
 
 def _validate_open_config(config):
     """Reject unusable geometry/colors before rendering or changing Tk controls."""
+    if config.get('position_units', 'source') not in {'source', 'output'}:
+        raise ValueError('Position units must be source or output')
     for name in ("font_width", "font_height", "font_width_mod", "font_height_mod",
                  "point_size", "chars_per_row"):
         if config[name] <= 0:
@@ -81,6 +83,7 @@ def open_file(app_reference, file_path):
             defaults_path = os.path.join(os.path.dirname(__file__), "font_config.xml")
             font_config = load_font_metadata_from_xml(defaults_path)
             font_config["font_name"] = os.path.splitext(os.path.basename(file_path))[0]
+            font_config["position_units"] = "output"
             font_config["original_font_path"] = file_path
     # Direct bitmap opening starts from those pixels. XML opening starts from
     # its source recipe; a saved output must never replace that recipe's source.
@@ -162,6 +165,7 @@ def _bitmap_export_config(font_config, file_path, *, monochrome=False):
     export_config = font_config.copy()
     export_config.update({
         'original_font_path': os.path.abspath(file_path),
+        'position_units': 'output',
         'font_width': font_config['font_width_mod'],
         'font_height': font_config['font_height_mod'],
         'offset_left': 0,

@@ -130,6 +130,16 @@
         </event_handlers>
     </setting>
     
+    <setting name="position_units">
+        <widget_type>FontConfigComboBox</widget_type>
+        <label_text>Position Units</label_text>
+        <data_type>string</data_type>
+        <default_value>output</default_value>
+        <description>Output pixels give exact positioning. Source retains legacy recipes. Switching converts offsets to the nearest equivalent integer and rerenders.</description>
+        <options><item>output</item><item>source</item></options>
+        <event_handlers><on_change><item>position_units_on_change_handler</item><item>default_redraw_font_handler</item></on_change></event_handlers>
+    </setting>
+
     <setting name="offset_left">
         <widget_type>FontConfigDeltaControl</widget_type>
         <label_text>Offset Left</label_text>
