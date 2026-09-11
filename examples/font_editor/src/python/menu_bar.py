@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import Menu
 from file_manager import get_open_filename, save_file, import_file, export_file, revert_changes
+from ui_scaling import PreferencesDialog
 
 class MenuBar:
     """
@@ -120,7 +121,7 @@ class MenuBar:
     # --------------------------------------------------------------------------
     def open_preferences(self):
         """Open the preferences window to adjust application settings."""
-        pass  # Implement preferences window here
+        PreferencesDialog(self.parent)
 
     # ==========================================================================
     # Help Menu

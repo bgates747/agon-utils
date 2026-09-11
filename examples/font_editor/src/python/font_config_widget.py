@@ -25,7 +25,7 @@ class FontConfigWidget(tk.Frame):
 
         # Create the label for the control
         self.pad_x = 0
-        self.label = tk.Label(self, width=15, text=self.label_text, font=("Helvetica", 10), anchor="w")
+        self.label = tk.Label(self, width=15, text=self.label_text, font="TkDefaultFont", anchor="w")
         self.label.grid(row=0, column=0, padx=self.pad_x)
 
     @property
@@ -110,7 +110,7 @@ class FontConfigWidget(tk.Frame):
         print(f"{self.config_setting}: default_on_change_handler fired - New Value: {new_value}")
     
     def default_redraw_font_handler(self):
-        self.parent.app_reference.image_display.render_font()
+        self.parent.request_redraw()
         print(f"{self.config_setting}: default_redraw_font_handler fired")
 
     def raster_type_on_change_handler(self):
@@ -181,7 +181,7 @@ class FontConfigDeltaControl(FontConfigWidget):
 
         # Decrement button
         self.decrement_button = tk.Button(
-            self, text="-", width=4, font=("Helvetica", 6), 
+            self, text="-", width=2, font="TkDefaultFont",
             command=self._decrement
         )
         self.decrement_button.grid(row=0, column=1, padx=self.pad_x)
@@ -195,7 +195,7 @@ class FontConfigDeltaControl(FontConfigWidget):
 
         # Increment button
         self.increment_button = tk.Button(
-            self, text="+", width=4, font=("Helvetica", 6), 
+            self, text="+", width=2, font="TkDefaultFont",
             command=self._increment
         )
         self.increment_button.grid(row=0, column=3, padx=self.pad_x)

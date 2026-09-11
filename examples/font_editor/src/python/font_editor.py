@@ -6,7 +6,8 @@ from file_manager import open_file
 from config_editor import ConfigEditor
 from menu_bar import MenuBar
 from image_display import ImageDisplay
-from custom_widgets import ConsoleDisplay
+from custom_widgets import ConsoleDisplay, ScrollableFrame
+from ui_scaling import initialize_ui_scaling, ui_px
 from editor_widget import EditorWidget
 from asm_config_editor import DoAssemblyDialog
 from batch_convert_dialog import BatchConvertDialog
@@ -16,6 +17,7 @@ class FontEditor(ttk.Frame):
     Main application class for FontEditor. Manages and organizes the main widgets.
     """
     def __init__(self, master):
+        initialize_ui_scaling(master)
         super().__init__(master)
 
         master.title("Agon Font Editor")  
@@ -24,6 +26,8 @@ class FontEditor(ttk.Frame):
         # Initialize application state variables for the currently loaded font files
         self.current_font_file = None  # Path to the currently open font file
         self.current_font_xml_file = None    # Path to the currently open .ini file
+        self.editor_window = None
+        self.editor_widget = None
 
         # Create and add the menu bar
         self.menubar = MenuBar(master, self)
@@ -34,12 +38,16 @@ class FontEditor(ttk.Frame):
 
         # Left Frame for ConfigEditor
         config_frame = tk.Frame(main_content_frame)
-        config_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10, anchor="n")  # Only expand vertically
+        config_frame.pack(side=tk.LEFT, fill=tk.Y, padx=ui_px(self, 10), pady=ui_px(self, 10), anchor="n")
 
         # Create an instance of ConfigEditor with XML data properties and an app reference
         config_editor_file = os.path.join(os.path.dirname(__file__), "font_config_editor.xml")
-        self.font_config_editor = ConfigEditor(config_frame, config_editor_file, app_reference=self)
-        self.font_config_editor.pack(fill="y", expand=True)  # Fills available vertical space only
+        self.config_scroll = ScrollableFrame(config_frame)
+        self.font_config_editor = ConfigEditor(
+            self.config_scroll.content, config_editor_file, app_reference=self,
+            on_redraw=lambda: self.image_display.render_font(),
+        )
+        self.font_config_editor.pack(fill="both", expand=True)
 
         # Add the "Do Assembly" button at the bottom of the config frame
         do_assembly_button = tk.Button(
@@ -47,7 +55,7 @@ class FontEditor(ttk.Frame):
             text="Do Assembly",
             command=self.open_assembly_dialog
         )
-        do_assembly_button.pack(side=tk.BOTTOM, pady=10)
+        do_assembly_button.pack(side=tk.BOTTOM, pady=ui_px(self, 10))
 
         # Add the "Batch Convert" button at the bottom of the config frame
         batch_convert_button = tk.Button(
@@ -55,11 +63,12 @@ class FontEditor(ttk.Frame):
             text="Batch Convert",
             command=self.open_batch_convert_dialog
         )
-        batch_convert_button.pack(side=tk.BOTTOM, pady=10)
+        batch_convert_button.pack(side=tk.BOTTOM, pady=ui_px(self, 10))
+        self.config_scroll.pack(fill="both", expand=True)
 
         # Right Frame for ImageDisplay and EditorWidget
         image_frame = tk.Frame(main_content_frame)
-        image_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)  # Expands fully
+        image_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=ui_px(self, 10), pady=ui_px(self, 10))
 
         # Create an instance of ImageDisplay with an app reference
         if True:
@@ -67,13 +76,6 @@ class FontEditor(ttk.Frame):
             self.image_display.pack(fill="both", expand=True)  # Fully expand to fill right frame
         else:
             self.image_display = None
-
-        # Create an instance of EditorWidget below ImageDisplay
-        if False:
-            self.editor_widget = EditorWidget(image_frame, app_reference=self)
-            self.editor_widget.pack(fill="x", expand=True, pady=(5, 0))  # Horizontal fill, aligns below ImageDisplay
-        else:
-            self.editor_widget = None
 
         # Bottom ConsoleDisplay
         if False:
@@ -86,6 +88,38 @@ class FontEditor(ttk.Frame):
         file_path = get_app_config_value("most_recent_file")
         if file_path:
             open_file(self, file_path)
+
+    def open_character_editor(self):
+        """Reuse one non-modal editor while allowing further atlas selections."""
+        if self.editor_window is None or not self.editor_window.winfo_exists():
+            self.editor_window = tk.Toplevel(self.master)
+            self.editor_window.transient(self.master)
+            self.editor_window.protocol("WM_DELETE_WINDOW", self.close_character_editor)
+            self.editor_window.bind("<Escape>", lambda event: self.close_character_editor())
+            self.editor_widget = EditorWidget(self.editor_window, app_reference=self)
+            self.editor_widget.pack(fill="both", expand=True, padx=ui_px(self, 8), pady=ui_px(self, 8))
+        self.refresh_character_editor()
+        self.editor_window.deiconify()
+        self.editor_window.lift()
+        self.editor_widget.canvas.focus_set()
+
+    def refresh_character_editor(self):
+        if self.editor_widget is None:
+            return
+        ascii_code = self.image_display.current_ascii_code
+        if ascii_code is None:
+            self.close_character_editor()
+            return
+        label = f" — {chr(ascii_code)}" if 32 <= ascii_code < 127 else ""
+        self.editor_window.title(f"Character {ascii_code} (0x{ascii_code:02X}){label}")
+        self.editor_widget.populate_from_image(self.image_display.get_char_img_ascii(ascii_code))
+
+    def close_character_editor(self):
+        window = self.editor_window
+        self.editor_window = None
+        self.editor_widget = None
+        if window is not None and window.winfo_exists():
+            window.destroy()
 
     def open_assembly_dialog(self):
         """Open the assembly configuration dialog with the current font configuration."""

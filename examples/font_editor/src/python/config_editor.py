@@ -2,15 +2,17 @@ import tkinter as tk
 from tkinter import Button
 from font_config_widget import FontConfigDeltaControl, FontConfigTextBox, FontConfigComboBox, FontConfigColorPicker, FontConfigCheckBox
 from config_manager import dict_to_text, load_xml, get_typed_data
+from ui_scaling import ui_px
 
 class ConfigEditor(tk.Frame):
     """
     A dynamic editor for font configurations, creating controls based on data-driven configuration.
     """
-    def __init__(self, parent, config_editor_file, app_reference, *args, **kwargs):
+    def __init__(self, parent, config_editor_file, app_reference, *args, on_redraw=None, **kwargs):
         super().__init__(parent, *args, **kwargs)
         self.parent = parent
         self.app_reference = app_reference
+        self.on_redraw = on_redraw
         self.config_editor_file = config_editor_file
         self.font_config_xml = load_xml(self.config_editor_file)
         self.controls = {}
@@ -22,7 +24,7 @@ class ConfigEditor(tk.Frame):
     def create_buttons(self):
         """Add buttons to print current and  values to the console."""
         self.print_values_button = Button(self, text="Print Current Values", command=self.print_values)
-        self.print_values_button.grid(row=100, column=0, pady=10, sticky="w")
+        self.print_values_button.grid(row=100, column=0, pady=ui_px(self, 10), sticky="w")
 
     def create_widgets(self):
         # Loop through each setting and create the appropriate control
@@ -64,6 +66,11 @@ class ConfigEditor(tk.Frame):
         for config_setting, control in self.controls.items():
             values[config_setting] = control.value
         return values
+
+    def request_redraw(self):
+        """Only the owning form decides which preview, if any, to update."""
+        if self.on_redraw is not None:
+            self.on_redraw()
 
     def print_values(self):
         """Print the current values dictionary to the console."""

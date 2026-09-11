@@ -258,9 +258,15 @@ def parse_font_filename(file_path):
         'font_height': height,
     }
 
-def load_font_metadata_from_xml(xml_filepath):
+def load_font_metadata_from_xml(xml_filepath, *, bitmap=False):
     """Load font metadata from an XML file, converting values based on types in the general XML config file."""
     font_config_xml = load_xml(xml_filepath)
+    if font_config_xml is None:
+        raise ValueError(f"Could not load font metadata: {xml_filepath}")
+    if bitmap:
+        font_config_xml = font_config_xml.find("bitmap")
+        if font_config_xml is None:
+            return None
     
     # Load general XML config (data types) as parsed XML
     general_config_path = os.path.join(os.path.dirname(__file__), "font_config_editor.xml")
@@ -271,12 +277,16 @@ def load_font_metadata_from_xml(xml_filepath):
     
     return font_metadata
 
-def save_font_metadata_to_xml(font_config, xml_filepath):
+def save_font_metadata_to_xml(font_config, xml_filepath, *, bitmap_config=None):
     """Save font metadata to an XML file based on the provided dictionary with pretty formatting."""
     root = ET.Element("settings")
     
     for key, value in font_config.items():
         setting = ET.SubElement(root, "setting", name=key, value=str(value))
+    if bitmap_config is not None:
+        bitmap = ET.SubElement(root, "bitmap")
+        for key, value in bitmap_config.items():
+            ET.SubElement(bitmap, "setting", name=key, value=str(value))
     
     # Convert to a string and pretty-print using minidom
     rough_string = ET.tostring(root, encoding="utf-8")

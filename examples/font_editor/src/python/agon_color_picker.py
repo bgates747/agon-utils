@@ -7,6 +7,7 @@ import math
 import agonutils as au
 import make_palette as mp
 import os
+from ui_scaling import ui_px
 
 # Define index values for sorting keys
 R, G, B, H, S, V, C, M, Y, K = range(10)
@@ -30,7 +31,8 @@ class AgonColorPicker(tk.Toplevel):
         self.selected_color_image_path = os.path.join(base_dir, 'selected_color.png')
 
         # Extract other parameters from kwargs
-        self.geometry(kwargs.get('app_geometry', '320x380'))
+        if 'app_geometry' in kwargs:
+            self.geometry(kwargs['app_geometry'])
         palette_name = kwargs.get('palette_name')
         self.palette_filepath = f'{base_dir}/{palette_name}.gpl'
         self.palette = mp.read_gimp_palette(self.palette_filepath)
@@ -81,10 +83,10 @@ class AgonColorPicker(tk.Toplevel):
 
 
         # Set image dimensions
-        self.hue_image_width = kwargs.get('hue_image_width', 320)
-        self.hue_image_height = kwargs.get('hue_image_height', 32)
-        self.color_picker_width = kwargs.get('color_picker_width', 160)
-        self.color_picker_height = kwargs.get('color_picker_height', 160)
+        self.hue_image_width = ui_px(self, kwargs.get('hue_image_width', 320))
+        self.hue_image_height = ui_px(self, kwargs.get('hue_image_height', 32))
+        self.color_picker_width = ui_px(self, kwargs.get('color_picker_width', 160))
+        self.color_picker_height = ui_px(self, kwargs.get('color_picker_height', 160))
 
         # Create dummy RGBA images
         self.create_dummy_images()
@@ -122,16 +124,16 @@ class AgonColorPicker(tk.Toplevel):
 
         # OK/Cancel buttons
         button_frame = tk.Frame(self)
-        button_frame.pack(pady=5)
+        button_frame.pack(pady=ui_px(self, 5))
 
         self.ok_button = tk.Button(button_frame, text="OK", command=self.on_ok)
-        self.ok_button.pack(side=tk.LEFT, padx=5)
+        self.ok_button.pack(side=tk.LEFT, padx=ui_px(self, 5))
 
         self.cancel_button = tk.Button(button_frame, text="Cancel", command=self.on_cancel)
-        self.cancel_button.pack(side=tk.LEFT, padx=5)
+        self.cancel_button.pack(side=tk.LEFT, padx=ui_px(self, 5))
 
         # Info label
-        self.info_label = tk.Label(self, text="Click on a hue to generate color picker", font=("Arial", 10), pady=5, height=3, anchor="w", justify="left")
+        self.info_label = tk.Label(self, text="Click on a hue to generate color picker", font="TkDefaultFont", pady=ui_px(self, 5), height=3, anchor="w", justify="left")
         self.info_label.pack(side=tk.BOTTOM, fill=tk.X)
 
         # Initialize color selection variables

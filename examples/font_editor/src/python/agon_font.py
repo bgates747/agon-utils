@@ -8,7 +8,17 @@ from config_manager import load_font_metadata_from_xml, save_font_metadata_to_xm
 # Master Font Functions
 # =============================================================================
 
-def read_font(file_path, font_config_input):
+def resolve_font_source(metadata_path, font_config):
+    """Resolve an XML recipe's source relative to that XML, if necessary."""
+    source = font_config.get('original_font_path', '')
+    if not source:
+        raise ValueError(f"No original font source in {metadata_path}")
+    if not os.path.isabs(source):
+        source = os.path.join(os.path.dirname(os.path.abspath(metadata_path)), source)
+    return os.path.abspath(source)
+
+
+def read_font(file_path, font_config_input, *, _seen=None):
     """
     Entry point for reading and rendering fonts based on file type. Supports
     different formats like TTF, OTF, PSF, PNG, and custom font files.
@@ -26,14 +36,18 @@ def read_font(file_path, font_config_input):
     elif file_extension == '.png':
         font_config, font_image = read_png_font(file_path, font_config_input)
     elif file_extension == '.font':
-        font_config_filepath = file_path + '.xml'
-        if os.path.exists(font_config_filepath):
-            font_config_input = load_font_metadata_from_xml(font_config_filepath)
         font_config, font_image = read_agon_font(file_path, font_config_input)
     elif file_extension == '.xml':
+        seen = set() if _seen is None else _seen
+        identity = os.path.realpath(file_path)
+        if identity in seen:
+            raise ValueError(f"Circular font source reference: {file_path}")
+        seen.add(identity)
         font_config = load_font_metadata_from_xml(file_path)
-        file_path = font_config.get('original_font_path', '')
-        font_config, font_image = read_font(file_path, font_config)
+        file_path = resolve_font_source(file_path, font_config)
+        font_config['original_font_path'] = file_path
+        # The referenced source applies its transforms; do not apply them twice.
+        return read_font(file_path, font_config, _seen=seen)
     else:
         raise ValueError(f"Unsupported font file type: {file_extension}")
 
@@ -101,6 +115,10 @@ def resample_and_scale_image(font_config, original_image):
         font_image = font_image.convert("L")
         font_image = apply_threshold(font_image, threshold)
         font_image = font_image.convert("RGBA")
+    elif font_config['raster_type'] == 'quantized':
+        font_image = quantize_image(font_image).convert("RGBA")
+    elif font_config['raster_type'] == 'grayscale':
+        font_image = font_image.convert("L").convert("RGBA")
     elif font_config['raster_type'] == 'palette':
         palette_fileame = f"colors/{font_config['palette']}.gpl"
         palette_filepath = os.path.join(os.path.dirname(__file__), palette_fileame)
@@ -287,8 +305,8 @@ def apply_threshold(image, threshold):
     return image.point(lambda p: 255 if p > threshold else 0, mode="1")
 
 def quantize_image(image):
-    """Quantize a grayscale image to a 4-level palette."""
-    return image.quantize(colors=4)
+    """Use the nearest of four fixed gray levels, without dithering."""
+    return image.convert("L").point([((value + 42) // 85) * 85 for value in range(256)])
 
 # =============================================================================
 # PSF Font Functions
@@ -470,13 +488,20 @@ def read_png_font(file_path, font_config):
     """
     Opens a PNG image as a font and returns the rendered image.
     """
-    font_image = Image.open(file_path)
+    with Image.open(file_path) as source:
+        font_image = source.convert("RGBA")
 
-    # Update font configuration based on the PNG image size
-    font_config['font_width'] = font_image.width // font_config['chars_per_row']
-    font_config['font_height'] = font_image.height // (
-        (font_config['ascii_end'] - font_config['ascii_start'] + 1) // font_config['chars_per_row']
-    )
+    columns = font_config['chars_per_row']
+    count = font_config['ascii_end'] - font_config['ascii_start'] + 1
+    if columns <= 0 or count <= 0:
+        raise ValueError("PNG font needs a positive column count and character range")
+    rows = (count + columns - 1) // columns
+    if (font_image.width < columns or font_image.height < rows
+            or font_image.width % columns or font_image.height % rows):
+        raise ValueError("PNG dimensions do not match the configured character grid")
+    font_config = font_config.copy()
+    font_config['font_width'] = font_image.width // columns
+    font_config['font_height'] = font_image.height // rows
 
     return font_config, font_image
 
@@ -494,8 +519,20 @@ def read_agon_font(font_filepath, font_config):
     :param font_config: Dictionary with font configuration
     :return: Updated font_config and a PIL image representing the combined character set
     """
-    char_width = font_config['font_width_mod']
-    char_height = font_config['font_height_mod']
+    # Storage geometry belongs to the file, not the current render controls.
+    # Legacy sidecars stored that geometry in *_mod alongside source settings.
+    metadata_path = os.fspath(font_filepath) + '.xml'
+    if os.path.exists(metadata_path):
+        storage = (load_font_metadata_from_xml(metadata_path, bitmap=True)
+                   or load_font_metadata_from_xml(metadata_path))
+        char_width = storage['font_width_mod']
+        char_height = storage['font_height_mod']
+    else:
+        char_width = font_config['font_width']
+        char_height = font_config['font_height']
+    if char_width <= 0 or char_height <= 0:
+        raise ValueError("Stored font dimensions must be positive")
+    font_config = dict(font_config, font_width=char_width, font_height=char_height)
     ascii_start = font_config['ascii_start']
     ascii_end = font_config['ascii_end']
     num_chars = ascii_end - ascii_start + 1
