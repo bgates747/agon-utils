@@ -1,0 +1,9 @@
+{
+  "backend": "mbr-fat32-image",
+  "image_sha256": "8c667aaa432babc4bb6c5d53999c8b7c7deab23d16d3d03c2651435a972579f0",
+  "files": {
+    "/mystuff/bbc-basic-v-adl.bin": "ed6ff5a4707f941ff7b178111771a0bfade3ecdefccbb3bcb4015b9a6d5a87ab",
+    "/mystuff/smoke.bas": "05a28d941a8e0ab225c2791d98d3900c528525d3a1bd391f1dc6fcd28a7e74f5",
+    "/!boot.obey": "1258731ad4dcb79fe3b8b66fd8bca031be80ea52bcffcfd3e7a6ee9e94409b0a"
+  }
+}

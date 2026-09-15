@@ -1,0 +1,67 @@
+
+[1mAgon EZ80 Debugger[0m
+
+[36mbr[eak] <address>             [37mSet a breakpoint at the hex address
+[36mc[ontinue]                    [37mResume (un-pause) Agon CPU
+[36mdelete <address>              [37mDelete a breakpoint
+[36mdis[assemble] [start] [end]   [37mDisassemble in current ADL mode
+[36mdis16 [start] [end]           [37mDisassemble in ADL=0 (Z80) mode
+[36mdis24 [start] [end]           [37mDisassemble in ADL=1 (24-bit) mode
+[36mexit                          [37mQuit from Agon Light Emulator
+[36minfo breakpoints              [37mList breakpoints
+[36m[mem]ory <start> [len]        [37mDump memory. <start> can be a register
+[36mn[ext]                        [37mStep over function calls
+[36mpause                         [37mPause execution and enter debugger
+[36mstate                         [37mShow CPU state
+[36m.                             [37mShow CPU state
+[36ms[tep]                        [37mExecute one instuction
+[36mtrace on                      [37mEnable logging every instruction
+[36mtrace off                     [37mDisable logging every instruction
+[36mtrigger <address> cmd1 : cmd2 : ...[37m
+    Perform debugger commands when <address> is reached
+    eg: break $123 is equivalent to:
+        trigger $123 pause:"CPU paused at breakpoint":state
+
+[36mtriggers                      [37mList triggers
+
+The previous command can be repeated by pressing return.
+
+[32mCPU running. Press <CTRL-C> to pause
+[39m
+Video driver: dummy (can override with SDL_VIDEO_DRIVER environment variable)
+[33mCPU paused (breakpoint)[39m
+* 000000: DI                   AF:ffff BC:000000 DE:000000 HL:000000 SPS:0000 SPL:000000 IX:000000 IY:000000 ADL:0
+[?2004h[K[36m>> [3Ctrigger $10 state[?2004l
+[?2004h[K[36m>> [3Cbreak $400d3[?2004l
+[?2004h[K[36m>> [3Cdelete $0[?2004l
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[39m[39m[39m[32mCPU running[39m
+* 000010: JP.LIL $1906         AF:57ba BC:00000a DE:04640e HL:046401 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:30ba BC:00000a DE:04640d HL:046402 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:35ba BC:00000a DE:04640c HL:046403 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:20ba BC:00000a DE:04640b HL:046404 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:42ba BC:00000a DE:04640a HL:046405 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:41ba BC:00000a DE:046409 HL:046406 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:53ba BC:00000a DE:046408 HL:046407 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:49ba BC:00000a DE:046407 HL:046408 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:43ba BC:00000a DE:046406 HL:046409 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:20ba BC:00000a DE:046405 HL:04640a SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:50ba BC:00000a DE:046404 HL:04640b SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:41ba BC:00000a DE:046403 HL:04640c SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:53ba BC:00000a DE:046402 HL:04640d SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:53ba BC:00000a DE:046401 HL:04640e SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:0dba BC:040103 DE:000001 HL:00000d SPS:0000 SPL:b7fff9 IX:046875 IY:046875 ADL:1
+* 000010: JP.LIL $1906         AF:0aba BC:000100 DE:040001 HL:00000a SPS:0000 SPL:b7fff9 IX:046878 IY:046878 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 0400d3: RET                  AF:0444 BC:040000 DE:040000 HL:000000 SPS:0000 SPL:0bff0e IX:0bc3f8 IY:0bff1d ADL:1
+[?2004h[K[36m>> [3Cstate[?2004l
+[39m* 0400d3: RET                  AF:0444 BC:040000 DE:040000 HL:000000 SPS:0000 SPL:0bff0e IX:0bc3f8 IY:0bff1d IR:0133 MB:00 ADL:1 MADL:1 IFF1:1
+                               Cycles since last break: 697   Cycles per instruction: 4.1
+                               SPL top $0bff0e: 5f 0d 00 48 00 00 2a ff 0b 29 ff 0b 48 01 00 00
+[?2004h[K[36m>> [3Cs[?2004l
+[39m* 000d5f: POP AF               AF:0444 BC:040000 DE:040000 HL:000000 SPS:0000 SPL:0bff11 IX:0bc3f8 IY:0bff1d ADL:1
+[?2004h[K[36m>> [3Cstate[?2004l
+[39m* 000d5f: POP AF               AF:0444 BC:040000 DE:040000 HL:000000 SPS:0000 SPL:0bff11 IX:0bc3f8 IY:0bff1d IR:0134 MB:00 ADL:1 MADL:1 IFF1:1
+                               Cycles since last break: 0   Cycles per instruction: 0.0
+                               SPL top $0bff11: 48 00 00 2a ff 0b 29 ff 0b 48 01 00 00 00 04 f8
+[?2004h[K[36m>> [3C

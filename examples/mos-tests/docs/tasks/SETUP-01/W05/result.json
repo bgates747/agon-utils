@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "interpreter": "bbc-basic-v-adl.bin",
+  "version": "v1.0RC1",
+  "sha256": "ed6ff5a4707f941ff7b178111771a0bfade3ecdefccbb3bcb4015b9a6d5a87ab",
+  "returned_to_mos_pc": "000d5f",
+  "hl": 0,
+  "backend": "mbr-fat32-image",
+  "emulator_exit": 0
+}

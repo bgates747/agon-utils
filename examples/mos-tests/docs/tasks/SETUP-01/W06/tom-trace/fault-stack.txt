@@ -1,0 +1,291 @@
+
+Agon EZ80 Debugger
+
+br[eak] <address>             Set a breakpoint at the hex address
+c[ontinue]                    Resume (un-pause) Agon CPU
+delete <address>              Delete a breakpoint
+dis[assemble] [start] [end]   Disassemble in current ADL mode
+dis16 [start] [end]           Disassemble in ADL=0 (Z80) mode
+dis24 [start] [end]           Disassemble in ADL=1 (24-bit) mode
+exit                          Quit from Agon Light Emulator
+info breakpoints              List breakpoints
+[mem]ory <start> [len]        Dump memory. <start> can be a register
+n[ext]                        Step over function calls
+pause                         Pause execution and enter debugger
+state                         Show CPU state
+.                             Show CPU state
+s[tep]                        Execute one instuction
+trace on                      Enable logging every instruction
+trace off                     Disable logging every instruction
+trigger <address> cmd1 : cmd2 : ...
+    Perform debugger commands when <address> is reached
+    eg: break $123 is equivalent to:
+        trigger $123 pause:"CPU paused at breakpoint":state
+
+triggers                      List triggers
+
+The previous command can be repeated by pressing return.
+
+CPU running. Press <CTRL-C> to pause
+
+Video driver: dummy (can override with SDL_VIDEO_DRIVER environment variable)
+CPU paused (breakpoint)
+* 000000: DI                   AF:ffff BC:000000 DE:000000 HL:000000 SPS:0000 SPL:000000 IX:000000 IY:000000 ADL:0
+>> trigger $e5e4 "F_MOUNT" : state : mem sp 24
+>> trigger $e674 "F_OPEN" : state : mem sp 24
+>> trigger $eb3f "F_READ" : state : mem sp 24
+>> break $e589
+>> delete $0
+>> c
+CPU running
+"F_MOUNT"
+* 00e5e4: LD HL, $fffff1       AF:005d BC:0bc537 DE:0bffdf HL:007e74 SPS:0000 SPL:0bffd3 IX:0bffe2 IY:017053 ADL:1
+0bffd3: 87 7e 00 37 c5 0b f7 a0 01 01 00 00 94 1c 00 f7 |  ~ 7            
+0bffe3: ff 0b 76 1d 00 ff 00 94 |   v     
+CPU paused (breakpoint)
+* 00e589: LD A, (IY+0)         AF:000a BC:000000 DE:0bfa4e HL:0bc537 SPS:0000 SPL:0bfa4e IX:0bfa57 IY:0bc537 ADL:1
+>> state
+* 00e589: LD A, (IY+0)         AF:000a BC:000000 DE:0bfa4e HL:0bc537 SPS:0000 SPL:0bfa4e IX:0bfa57 IY:0bc537 IR:0189 MB:00 ADL:1 MADL:1 IFF1:1
+                               Cycles since last break: 533741   Cycles per instruction: 3.2
+                               SPL top $0bfa4e: 00 00 00 09 00 00 37 c5 0b 69 fc 0b 57 fe 00 af
+>> registers
+PC=00e589 AF:000a BC:000000 DE:0bfa4e HL:0bc537 SPS:0000 SPL:0bfa4e IX:0bfa57 IY:0bc537 IR:0189 MB:00 ADL:1 MADL:1 IFF1:1
+>> mem sp 192
+0bfa4e: 00 00 00 09 00 00 37 c5 0b 69 fc 0b 57 fe 00 af |       7  i  W   
+0bfa5e: fd 0b 63 fc 0b 78 fc 0b db fd 00 af fd 0b 00 00 |   c  x          
+0bfa6e: 00 00 00 00 ff ff ff ff ff ff ff ff ff ff ff ff |                 
+0bfa7e: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff |                 
+0bfa8e: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff |                 
+0bfa9e: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff |                 
+0bfaae: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff |                 
+0bfabe: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff |                 
+0bface: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff |                 
+0bfade: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff |                 
+0bfaee: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff |                 
+0bfafe: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff |                 
+>> mem ix 96
+0bfa57: 69 fc 0b 57 fe 00 af fd 0b 63 fc 0b 78 fc 0b db | i  W     c  x   
+0bfa67: fd 00 af fd 0b 00 00 00 00 00 00 ff ff ff ff ff |                 
+0bfa77: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff |                 
+0bfa87: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff |                 
+0bfa97: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff |                 
+0bfaa7: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff |                 
+>> dis24 $e530 $e5e4
+	.assume adl=1
+  00e530: INC BC               | 03
+  00e531: LD HL, $bcae4        | 21 e4 ca 0b
+  00e535: LD (HL), C           | 71
+  00e536: INC HL               | 23
+  00e537: LD (HL), B           | 70
+  00e538: LD BC, ($bcae4)      | ed 4b e4 ca 0b
+  00e53d: LD (IY+5), C         | fd 71 05
+  00e540: LD (IY+6), B         | fd 70 06
+  00e543: LD BC, $0            | 01 00 00 00
+  00e547: LD (IY+$16), BC      | fd 0f 16
+  00e54a: LD (IY+25), $0       | fd 36 19 00
+  00e54e: OR A, A              | b7
+  00e54f: SBC HL, HL           | ed 62
+  00e551: LD SP, IX            | dd f9
+  00e553: POP IX               | dd e1
+  00e555: RET                  | c9
+  00e556: LD HL, $fffff7       | 21 f7 ff ff
+  00e55a: CALL $174ce          | cd ce 74 01
+  00e55e: LD BC, $9            | 01 09 00 00
+  00e562: LD (IX-$6), BC       | dd 0f fa
+  00e565: LD BC, $0            | 01 00 00 00
+  00e569: LD HL, (IX+$6)       | dd 27 06
+  00e56c: OR A, A              | b7
+  00e56d: SBC HL, BC           | ed 42
+  00e56f: JR Z, $e5ba          | 28 49
+  00e571: LD IY, (IX+$6)       | dd 31 06
+  00e574: LD BC, (IY+$0)       | fd 07 00
+  00e577: LD (IX-$3), BC       | dd 0f fd
+  00e57a: LD BC, $0            | 01 00 00 00
+  00e57e: LD HL, (IX-$3)       | dd 27 fd
+  00e581: OR A, A              | b7
+  00e582: SBC HL, BC           | ed 42
+  00e584: JR Z, $e5ba          | 28 34
+  00e586: LD IY, (IX-$3)       | dd 31 fd
+* 00e589: LD A, (IY+0)         | fd 7e 00
+  00e58c: OR A, A              | b7
+  00e58d: JR Z, $e5ba          | 28 2b
+  00e58f: LD IY, (IX-$3)       | dd 31 fd
+  00e592: LD BC, (IY+$5)       | fd 07 05
+  00e595: LD IY, (IX+$6)       | dd 31 06
+  00e598: LD HL, (IY+$3)       | fd 27 03
+  00e59b: OR A, A              | b7
+  00e59c: SBC.SIS HL, BC       | 40 ed 42
+  00e59f: JR NZ, $e5ba         | 20 19
+  00e5a1: LD IY, (IX-$3)       | dd 31 fd
+  00e5a4: LD C, (IY+1)         | fd 4e 01
+  00e5a7: LD B, $0             | 06 00
+  00e5a9: PUSH BC              | c5
+  00e5aa: CALL $a6e3           | cd e3 a6 00
+  00e5ae: POP BC               | c1
+  00e5af: AND A, $1            | e6 01
+  00e5b1: JR NZ, $e5ba         | 20 07
+  00e5b3: LD BC, $0            | 01 00 00 00
+  00e5b7: LD (IX-$6), BC       | dd 0f fa
+  00e5ba: LD BC, $0            | 01 00 00 00
+  00e5be: LD HL, (IX-$6)       | dd 27 fa
+  00e5c1: OR A, A              | b7
+  00e5c2: SBC HL, BC           | ed 42
+  00e5c4: JR NZ, $e5d1         | 20 0b
+  00e5c6: LD IY, (IX+$6)       | dd 31 06
+  00e5c9: LD BC, (IY+$0)       | fd 07 00
+  00e5cc: LD (IX-$9), BC       | dd 0f f7
+  00e5cf: JR $e5d4             | 18 03
+  00e5d1: LD (IX-$9), BC       | dd 0f f7
+  00e5d4: LD HL, (IX+$9)       | dd 27 09
+  00e5d7: LD BC, (IX-$9)       | dd 07 f7
+  00e5da: LD (HL), BC          | ed 0f
+  00e5dc: LD HL, (IX-$6)       | dd 27 fa
+  00e5df: LD SP, IX            | dd f9
+  00e5e1: POP IX               | dd e1
+  00e5e3: RET                  | c9
+>> dis24 $eb3f $ebc0
+	.assume adl=1
+  00eb3f: LD IY, $ffffda       | 21 da ff ff
+  00eb43: CALL $174ce          | cd ce 74 01
+  00eb47: LD BC, (IX+$9)       | dd 07 09
+  00eb4a: LD (IX-$10), BC      | dd 0f f0
+  00eb4d: LD HL, (IX+$f)       | dd 27 0f
+  00eb50: LD BC, $0            | 01 00 00 00
+  00eb54: LD (HL), BC          | ed 0f
+  00eb56: PEA IX-$3            | ed 65 fd
+  00eb59: LD IY, (IX+$6)       | dd 31 06
+  00eb5c: PEA IY+$0            | ed 66 00
+  00eb5f: CALL $e556           | cd 56 e5 00
+  00eb63: POP BC               | c1
+  00eb64: POP BC               | c1
+  00eb65: LD (IX-$16), HL      | dd 2f ea
+  00eb68: LD BC, $0            | 01 00 00 00
+  00eb6c: LD HL, (IX-$16)      | dd 27 ea
+  00eb6f: OR A, A              | b7
+  00eb70: SBC HL, BC           | ed 42
+  00eb72: JR NZ, $eb89         | 20 15
+  00eb74: LD IY, (IX+$6)       | dd 31 06
+  00eb77: LD A, (IY+16)        | fd 7e 10
+  00eb7a: OR A, A              | b7
+  00eb7b: SBC HL, HL           | ed 62
+  00eb7d: LD L, A              | 6f
+  00eb7e: LD (IX-$16), HL      | dd 2f ea
+  00eb81: LD HL, (IX-$16)      | dd 27 ea
+  00eb84: OR A, A              | b7
+  00eb85: SBC HL, BC           | ed 42
+  00eb87: JR Z, $eb90          | 28 07
+  00eb89: LD HL, (IX-$16)      | dd 27 ea
+  00eb8c: JP $eee7             | c3 e7 ee 00
+  00eb90: LD IY, (IX+$6)       | dd 31 06
+  00eb93: LD A, (IY+15)        | fd 7e 0f
+  00eb96: AND A, $1            | e6 01
+  00eb98: JR NZ, $eba2         | 20 08
+  00eb9a: LD HL, $7            | 21 07 00 00
+  00eb9e: JP $eee7             | c3 e7 ee 00
+  00eba2: LD IY, (IX+$6)       | dd 31 06
+  00eba5: LD HL, (IY+$b)       | fd 27 0b
+  00eba8: LD E, (IY+14)        | fd 5e 0e
+  00ebab: LD BC, (IY+$11)      | fd 07 11
+  00ebae: LD A, (IY+20)        | fd 7e 14
+  00ebb1: CALL $174a0          | cd a0 74 01
+  00ebb5: LD (IX-$22), HL      | dd 2f de
+  00ebb8: LD (IX-31), E        | dd 73 e1
+  00ebbb: LD BC, (IX+$c)       | dd 07 0c
+  00ebbe: XOR A, A             | af
+  00ebbf: LD HL, (IX-$22)      | dd 27 de
+>> trace on
+>> s
+ PC:00e58c AF:030a BC:000000 DE:0bfa4e HL:0bc537 SPS:0000 SPL:0bfa4e IX:0bfa57 IY:0bc537 MB 00 ADL 1 MADL 1 tick 1137546 [fd 7e 00 b7]
+* 00e58c: OR A, A              AF:030a BC:000000 DE:0bfa4e HL:0bc537 SPS:0000 SPL:0bfa4e IX:0bfa57 IY:0bc537 ADL:1
+>> trace off
+>> delete $e589
+>> c
+CPU running
+CPU paused (memory 0xa26300 out of bounds)
+	.assume adl=1
+  00e589: LD A, (IY+0)         | fd 7e 00
+* 00e58c: OR A, A              AF:f5a2 BC:000000 DE:0bff5f HL:a26300 SPS:0000 SPL:0bff5f IX:0bff68 IY:a26300 ADL:1
+>> state
+* 00e58c: OR A, A              AF:f5a2 BC:000000 DE:0bff5f HL:a26300 SPS:0000 SPL:0bff5f IX:0bff68 IY:a26300 IR:0101 MB:00 ADL:1 MADL:1 IFF1:1
+                               Cycles since last break: 102032   Cycles per instruction: 3.4
+                               SPL top $0bff5f: 0a 00 00 09 00 00 00 63 a2 84 ff 0b 01 f4 00 9c
+>> registers
+PC=00e58c AF:f5a2 BC:000000 DE:0bff5f HL:a26300 SPS:0000 SPL:0bff5f IX:0bff68 IY:a26300 IR:0101 MB:00 ADL:1 MADL:1 IFF1:1
+>> mem sp 192
+0bff5f: 0a 00 00 09 00 00 00 63 a2 84 ff 0b 01 f4 00 9c |        c        
+0bff6f: ff 0b 7b ff 0b 01 f5 80 01 19 d0 0b 8a ff 0b 00 |   {             
+0bff7f: 00 00 39 d0 0b 93 ff 0b 0d f5 00 9c ff 0b df ff |   9             
+0bff8f: 0b 55 39 00 df ff 0b e9 3b 00 9c ff 0b 00 63 a2 |  U9     ;     c 
+0bff9f: 01 01 cf 0b 50 23 01 01 cf 0b 63 a2 01 01 cf 0b |     P#    c     
+0bffaf: be ff 0b 4b 38 01 63 a2 01 e9 ce 0b d9 ce 0b d6 |    K8 c         
+0bffbf: ff 0b d6 ff 00 00 00 00 f5 80 01 00 00 00 11 cf |                 
+0bffcf: 0b 00 00 00 00 00 00 19 d0 0b 00 00 00 04 00 00 |                 
+0bffdf: f7 ff 0b 98 1d 00 ff 80 01 ff 00 94 11 08 01 00 |                 
+0bffef: 01 01 ff ff ff 40 00 00 fd ff 0b f7 18 00 00 00 |      @          
+0bffff: 00 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 |                 
+0c000f: f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 |                 
+>> mem ix 96
+0bff68: 84 ff 0b 01 f4 00 9c ff 0b 7b ff 0b 01 f5 80 01 |          {      
+0bff78: 19 d0 0b 8a ff 0b 00 00 00 39 d0 0b 93 ff 0b 0d |          9      
+0bff88: f5 00 9c ff 0b df ff 0b 55 39 00 df ff 0b e9 3b |         U9     ;
+0bff98: 00 9c ff 0b 00 63 a2 01 01 cf 0b 50 23 01 01 cf |      c     P#   
+0bffa8: 0b 63 a2 01 01 cf 0b be ff 0b 4b 38 01 63 a2 01 |  c        K8 c  
+0bffb8: e9 ce 0b d9 ce 0b d6 ff 0b d6 ff 00 00 00 00 f5 |                 
+>> dis24 $e556 $e5e4
+	.assume adl=1
+  00e556: LD HL, $fffff7       | 21 f7 ff ff
+  00e55a: CALL $174ce          | cd ce 74 01
+  00e55e: LD BC, $9            | 01 09 00 00
+  00e562: LD (IX-$6), BC       | dd 0f fa
+  00e565: LD BC, $0            | 01 00 00 00
+  00e569: LD HL, (IX+$6)       | dd 27 06
+  00e56c: OR A, A              | b7
+  00e56d: SBC HL, BC           | ed 42
+  00e56f: JR Z, $e5ba          | 28 49
+  00e571: LD IY, (IX+$6)       | dd 31 06
+  00e574: LD BC, (IY+$0)       | fd 07 00
+  00e577: LD (IX-$3), BC       | dd 0f fd
+  00e57a: LD BC, $0            | 01 00 00 00
+  00e57e: LD HL, (IX-$3)       | dd 27 fd
+  00e581: OR A, A              | b7
+  00e582: SBC HL, BC           | ed 42
+  00e584: JR Z, $e5ba          | 28 34
+  00e586: LD IY, (IX-$3)       | dd 31 fd
+  00e589: LD A, (IY+0)         | fd 7e 00
+* 00e58c: OR A, A              | b7
+  00e58d: JR Z, $e5ba          | 28 2b
+  00e58f: LD IY, (IX-$3)       | dd 31 fd
+  00e592: LD BC, (IY+$5)       | fd 07 05
+  00e595: LD IY, (IX+$6)       | dd 31 06
+  00e598: LD HL, (IY+$3)       | fd 27 03
+  00e59b: OR A, A              | b7
+  00e59c: SBC.SIS HL, BC       | 40 ed 42
+  00e59f: JR NZ, $e5ba         | 20 19
+  00e5a1: LD IY, (IX-$3)       | dd 31 fd
+  00e5a4: LD C, (IY+1)         | fd 4e 01
+  00e5a7: LD B, $0             | 06 00
+  00e5a9: PUSH BC              | c5
+  00e5aa: CALL $a6e3           | cd e3 a6 00
+  00e5ae: POP BC               | c1
+  00e5af: AND A, $1            | e6 01
+  00e5b1: JR NZ, $e5ba         | 20 07
+  00e5b3: LD BC, $0            | 01 00 00 00
+  00e5b7: LD (IX-$6), BC       | dd 0f fa
+  00e5ba: LD BC, $0            | 01 00 00 00
+  00e5be: LD HL, (IX-$6)       | dd 27 fa
+  00e5c1: OR A, A              | b7
+  00e5c2: SBC HL, BC           | ed 42
+  00e5c4: JR NZ, $e5d1         | 20 0b
+  00e5c6: LD IY, (IX+$6)       | dd 31 06
+  00e5c9: LD BC, (IY+$0)       | fd 07 00
+  00e5cc: LD (IX-$9), BC       | dd 0f f7
+  00e5cf: JR $e5d4             | 18 03
+  00e5d1: LD (IX-$9), BC       | dd 0f f7
+  00e5d4: LD HL, (IX+$9)       | dd 27 09
+  00e5d7: LD BC, (IX-$9)       | dd 07 f7
+  00e5da: LD (HL), BC          | ed 0f
+  00e5dc: LD HL, (IX-$6)       | dd 27 fa
+  00e5df: LD SP, IX            | dd f9
+  00e5e1: POP IX               | dd e1
+  00e5e3: RET                  | c9
+>> 

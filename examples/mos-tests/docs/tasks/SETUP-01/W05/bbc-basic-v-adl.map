@@ -1,0 +1,275 @@
+
+There are no discarded input sections
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+USERRAM          0x00040000         0x00070000         rw
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+                0x00040000                        RAM_START = 0x40000
+                0x000b0000                        RAM_END = 0xb0000
+                0x00070000                        RAM_SIZE = (RAM_END - RAM_START)
+                0x00b80000                        STACKTOP = 0xb80000
+                0x00b7e040                        SPL_BOTTOM = 0xb7e040
+                0x00040000                        . = RAM_START
+
+.init           0x00040000      0x18b
+ *(.init)
+ .init          0x00040000      0x18b obj/agon_init.o
+                0x0004004a                AGON_START
+                0x000400c3                AGON_END
+
+.text           0x0004018b     0x6210
+ *(.text)
+ .text          0x0004018b      0x820 obj/bbc-ez80_asmb.o
+                0x000401b5                ASSEM
+ .text          0x000409ab      0xfdf obj/bbc-ez80_main.o
+                0x000409ab                START
+                0x00040a24                VERMSG
+                0x00040a64                WARM
+                0x00040a65                CLOOP
+                0x00040b7b                KEYWDS
+                0x0004126d                BAD
+                0x000412d1                ERROR
+                0x000412e3                EXTERR
+                0x0004138c                DEL
+                0x000413a4                LOAD0
+                0x000413c4                CLEAN
+                0x000413d0                GETTOP
+                0x000413ed                NEWIT
+                0x000413f3                CLEAR
+                0x00041411                LISTIT
+                0x000414c3                CRLF
+                0x000414cb                OUTCHR
+                0x000414e8                OUT
+                0x00041517                FINDL
+                0x00041534                SETLIN
+                0x00041564                SAYLN
+                0x00041575                PBCDL
+                0x000415b3                PUTVAR
+                0x000415cd                GETVAR
+                0x000416cd                GETDEF
+                0x000416ea                LOCATE
+                0x00041784                CREATE
+                0x000417da                LINNUM
+                0x00041852                RANGE
+                0x0004187b                LEXAN2
+                0x00041954                REPORT
+                0x00041958                TEXT
+                0x0004196c                TELL
+                0x00041973                NLIST
+                0x00041980                NXT
+ .text          0x0004198a     0x1855 obj/bbc-ez80_exec.o
+                0x00041a8d                CHAIN0
+                0x00041a96                RUN0
+                0x00041aca                XEQ0
+                0x00041ae3                XEQ
+                0x00041c61                VAR
+                0x00041c70                SYNTAX
+                0x00041c76                ESCAPE
+                0x000421a6                FN
+                0x0004291c                USR
+                0x00042b1f                MODIFY
+                0x00042b42                STOREN
+                0x00042b59                STORE5
+                0x00042b5c                STORE4
+                0x00042b6b                STORE4STR
+                0x00042b77                MODIFS
+                0x00042bab                STACCS
+                0x00042bfc                CHECK
+                0x00042f02                _LOCCHK
+                0x00042f12                TERMQ
+                0x00042f61                TABIT
+                0x00042f8d                SPACES
+                0x000430a8                X14OR5
+                0x000430b8                MUL16
+                0x000430f4                CHANEL
+                0x00043100                CHNL
+                0x00043145                STORE5_SPL
+                0x0004316e                MUL24_FAST
+                0x0004319a                MUL24
+ .text          0x000431df        0x0 obj/agon_init.o
+ .text          0x000431df     0x102c obj/bbc-ez80_eval.o
+                0x000431df                EXPR_24BIT_INT
+                0x000431e3                CONVERT_TO_I24
+                0x000431f3                ITEMI24
+                0x000432c5                EXPR
+                0x00043424                EXPRN
+                0x0004342c                CEXPRI
+                0x00043430                EXPRI
+                0x0004343b                EXPRS
+                0x00043461                ITEMI
+                0x0004354e                LOADN
+                0x0004355b                LOAD4
+                0x00043572                LOAD4STR
+                0x000435bf                CONS
+                0x0004364c                DLOAD5
+                0x00043674                LOADS
+                0x000437f8                COUNT0
+                0x000437fe                COUNT1
+                0x00043887                TRUE
+                0x000438e4                SFIX
+                0x000438f0                VAL0
+                0x00043b05                SEARCH
+                0x00043bc9                INKEY1
+                0x00043caf                TEST
+                0x00043cb6                DECODE
+                0x00043ce8                HEXSTR
+                0x00043d34                STR
+                0x00043d5d                SCP
+                0x00043d61                ZERO
+                0x00043d82                PUSHS
+                0x00043db9                POPS
+                0x00043e30                COMMA
+                0x00043e3d                BRAKET
+                0x00043e97                LETARR
+                0x000441d8                UINT24_TO_UINT32
+                0x000441e6                INT24_TO_INT32
+                0x000441ff                DLOAD5_SPL
+ .text          0x0004420b        0x0 obj/bbc-ez80_data.o
+ .text          0x0004420b     0x1365 obj/agon_os.o
+                0x0004420b                OSINIT
+                0x00044223                CLS
+                0x00044230                PROMPT
+                0x00044232                OSWRCH
+                0x00044264                OSRDCH
+                0x0004428f                OSLINE
+                0x000442c7                ESCSET
+                0x000442e8                TRAP
+                0x000442ec                LTRAP
+                0x000442fc                OSOPEN
+                0x0004430b                OSSHUT
+                0x00044313                OSBGET
+                0x0004431b                OSBPUT
+                0x00044324                OSSTAT
+                0x0004432e                GETPTR
+                0x00044347                PUTPTR
+                0x0004435a                GETEXT
+                0x00044373                OSLOAD
+                0x00044498                OSSAVE
+                0x00044553                OSWORD
+                0x000445bb                OSBYTE
+                0x0004471a                OSCLI
+                0x00044977                BYE
+                0x000449c7                STAR_VERSION
+                0x00044a47                GETIME
+                0x00044a5f                GETIMS
+                0x00044a7d                PUTIME
+                0x00044a9d                PUTIMS
+                0x00044ab9                OSKEY
+                0x00044ac5                PUTCSR
+                0x00044ad0                GETCSR
+                0x00044adc                POINT
+                0x00044b15                PLOT_POINT
+                0x00044b2b                ADVAL
+                0x00044ba5                MODEFN
+                0x00044bb9                WIDFN
+                0x00044bc8                ENVEL
+                0x00044bfc                SOUND
+                0x00044c36                MODE
+                0x00044c5e                CLG
+                0x00044c66                ORIGIN
+                0x00044c7c                COLOUR
+                0x00044d12                GCOL
+                0x00044d33                CSRON
+                0x00044d41                CSROFF
+                0x00044d4f                LINE
+                0x00044d68                CIRCLE
+                0x00044d99                ELLIPS
+                0x00044dcf                MOVE
+                0x00044dd3                DRAW
+                0x00044dd7                FILL
+                0x00044ddb                PLOT
+                0x00044e16                RECTAN
+                0x00044ea4                MOUSE
+                0x00045057                WAIT
+                0x0004509e                OSCALL
+                0x00045117                SYS
+                0x00045255                TINT
+ .text          0x00045570        0x0 obj/bbc-ez80_tokenids.o
+ .text          0x00045570      0xe2b obj/bbc-ez80_math.o
+                0x00045570                FPP
+
+.data           0x0004639b        0x0
+ *(.data)
+ .data          0x0004639b        0x0 obj/bbc-ez80_asmb.o
+ .data          0x0004639b        0x0 obj/bbc-ez80_main.o
+ .data          0x0004639b        0x0 obj/bbc-ez80_exec.o
+ .data          0x0004639b        0x0 obj/agon_init.o
+ .data          0x0004639b        0x0 obj/bbc-ez80_eval.o
+ .data          0x0004639b        0x0 obj/bbc-ez80_data.o
+ .data          0x0004639b        0x0 obj/agon_os.o
+ .data          0x0004639b        0x0 obj/bbc-ez80_tokenids.o
+ .data          0x0004639b        0x0 obj/bbc-ez80_math.o
+
+.bss            0x00046400      0x400
+                0x00046400                        bss_start = .
+ *(.bss-1st)
+ .bss-1st       0x00046400      0x342 obj/bbc-ez80_data.o
+                0x00046400                ACCS
+                0x00046500                BUFFER
+                0x00046600                STAVAR
+                0x0004663c                OC
+                0x00046640                PC
+                0x0004666c                DYNVAR
+                0x0004670e                FNPTR
+                0x00046711                PROPTR
+                0x00046714                PAGE
+                0x00046717                LOMEM
+                0x0004671a                FREE
+                0x0004671d                HIMEM
+                0x00046720                TRACEN
+                0x00046723                AUTONO
+                0x00046726                ERRTRP
+                0x00046729                ONERSP
+                0x0004672c                ERRTXT
+                0x0004672f                DATPTR
+                0x00046732                ERL
+                0x00046735                CURLIN
+                0x00046738                RANDOM
+                0x0004673d                COUNT
+                0x0004673e                WIDTH
+                0x0004673f                ERR
+                0x00046740                LISTON
+                0x00046741                INCREM
+ *(.bss)
+ .bss           0x00046742        0x0 obj/bbc-ez80_asmb.o
+ .bss           0x00046742        0x0 obj/bbc-ez80_main.o
+ .bss           0x00046742        0x0 obj/bbc-ez80_exec.o
+ .bss           0x00046742        0x0 obj/agon_init.o
+ .bss           0x00046742        0x0 obj/bbc-ez80_eval.o
+ .bss           0x00046742       0x35 obj/bbc-ez80_data.o
+                0x00046742                MOS_SYSVARS
+                0x00046745                FLAGS
+                0x00046746                OSWRCHPT
+                0x00046749                OSWRCHCH
+                0x0004674a                OSWRCHFH
+                0x0004674b                KEYDOWN
+                0x0004674c                KEYASCII
+                0x0004674d                SCRAP
+                0x0004676c                conversion_store
+                0x00046770                R0
+                0x00046773                STARTUPCMD
+                0x00046774                SPL
+ .bss           0x00046777        0x0 obj/agon_os.o
+ .bss           0x00046777        0x0 obj/bbc-ez80_tokenids.o
+ .bss           0x00046777        0x0 obj/bbc-ez80_math.o
+ *(.bss-end)
+ *fill*         0x00046777       0x89 
+ .bss-end       0x00046800        0x0 obj/bbc-ez80_data.o
+                0x00046800                USER
+                0x00046800                        bss_end = .
+                0x00000400                        bss_size = SIZEOF (.bss)
+LOAD obj/bbc-ez80_asmb.o
+LOAD obj/bbc-ez80_main.o
+LOAD obj/bbc-ez80_exec.o
+LOAD obj/agon_init.o
+LOAD obj/bbc-ez80_eval.o
+LOAD obj/bbc-ez80_data.o
+LOAD obj/agon_os.o
+LOAD obj/bbc-ez80_tokenids.o
+LOAD obj/bbc-ez80_math.o
+OUTPUT(bin/basic.bin binary)

@@ -1,0 +1,14 @@
+{
+  "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/fab-agon-emulator": "161b1dfa57e0cf6923e361dee987a78aead8f7a7389554a4985532c3e13187dd",
+  "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/fab-agon-emulator.bin": "a96ca0e6f5f51ba6b750bd6fcf96efcaed88e61c431171f79a7db5f29877f17e",
+  "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/mos_platform.bin": "d564243283972690933a4554296ad6202ca4ef54572279533a942960846bebae",
+  "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/mos_platform.map": "d69e60bbce61a7b4b3eef318ba395f11c4e1a5b585755755113992dc94edcb86",
+  "mos_release": "v3.0.2 Arthur",
+  "backend": "hostfs-bootstrap",
+  "video_driver": "dummy",
+  "audio_driver": "dummy",
+  "renderer": "sw",
+  "zero_ram": false,
+  "precise_interrupts": false,
+  "unlimited_cpu": false
+}

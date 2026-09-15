@@ -1,0 +1,2 @@
+PASS: all three retained success receipts, executable hashes and captured output bytes agree.
+No emulator execution repeated for W07. Current runtime hashes recorded retrospectively.

@@ -1,0 +1,36 @@
+Working directory: /home/smith/Agon/mystuff/agon-utils/examples/mos-tests
+$ make
+No test sources yet; SETUP-01 W03 supplies the first C++ smoke test.
+make: *** [Makefile:26: check-sources] Error 1
+Exit: 2; expected: 2
+
+Working directory: /home/smith/Agon/mystuff/agon-utils/examples/mos-tests
+$ make -n clean
+rm -f -r bin obj 
+Exit: 0; expected: 0
+
+Working directory: /home/smith/Agon/mystuff/agon-utils/examples/mos-tests/docs/tasks/SETUP-01/W02/rule-expansion
+$ make -n -f /home/smith/Agon/mystuff/agon-utils/examples/mos-tests/Makefile AGONDEV_TOOLCHAIN=/home/smith/Agon/agondev/release V=
+mkdir bin
+echo [assembling src/preview_asm.src]
+mkdir -p obj/
+/home/smith/Agon/agondev/release/bin/ez80-none-elf-as -march=ez80+full -I /home/smith/Agon/agondev/release/include src/preview_asm.src -o obj/preview_asm.o
+echo [compiling src/preview.cpp]
+mkdir -p obj/
+/home/smith/Agon/agondev/release/bin/ez80-none-elf-clang -mllvm -z80-gas-style -mllvm -z80-print-zero-offset -nostdinc -I./include -isystem /home/smith/Agon/agondev/release/include -target ez80-none-elf -DAGONDEV -Oz -Wa,-march=ez80+full -fno-threadsafe-statics -fcolor-diagnostics -isystem /home/smith/Agon/agondev/release/include/c++ -std=c++14 src/preview.cpp -c -o obj/preview.o
+test -n "obj/preview_asm.o obj/preview.o" || { echo "No test sources yet; SETUP-01 W03 supplies the first C++ smoke test." >&2; exit 1; }
+echo [Linking bin/mos-tests.noname.bin]
+/home/smith/Agon/agondev/release/bin/ez80-none-elf-ld -defsym=RAM_START=0x40000 -defsym=RAM_SIZE=0x70000  -defsym=_has_exit_handler=0 -Map=bin/mos-tests.map -T /home/smith/Agon/agondev/release/config/linker.conf --oformat binary -o bin/mos-tests.noname.bin    obj/preview_asm.o   obj/preview.o -L./lib  -L/home/smith/Agon/agondev/release/lib -l agon 
+echo [Start address 0x40000]
+echo [Setting name \'mos-tests.bin\' in binary]
+cp bin/mos-tests.noname.bin bin/mos-tests.bin
+/home/smith/Agon/agondev/release/bin/agondev-setname bin/mos-tests.bin >/dev/null
+echo [Done]
+Exit: 0; expected: 0
+
+Working directory: /home/smith/Agon/mystuff/agon-utils
+$ git check-ignore examples/mos-tests/obj/check.o examples/mos-tests/bin/check.bin
+examples/mos-tests/obj/check.o
+examples/mos-tests/bin/check.bin
+Exit: 0; expected: 0
+

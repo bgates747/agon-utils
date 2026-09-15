@@ -1,0 +1,3 @@
+; Rule-expansion fixture only.
+.assume adl=1
+.section .text

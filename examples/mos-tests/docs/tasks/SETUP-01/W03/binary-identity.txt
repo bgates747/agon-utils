@@ -1,0 +1,3 @@
+Size: 1235 bytes
+SHA256: a109eee070164e1edd6ea125552896fa98347625874c1373c75081ef73880e00
+Header offset 0x40: 4d4f530001 (MOS, version 0, ADL)

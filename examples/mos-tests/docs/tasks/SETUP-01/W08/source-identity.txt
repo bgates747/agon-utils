@@ -1,0 +1,19 @@
+$ git -C /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4 rev-parse HEAD
+194a5e44c36a8bb886dae1741b01c6e7a1e5ede7
+
+$ git -C /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4 submodule status
+ 6b056597d560fbf5802db7c97172d0aaee62da4f sdcard (6b05659)
+ 69d51197334658411d82c44bd8abd6fc2ff88c9d src/vdp/AgonElectronHAL (v0.5-kingsvalley-9-g69d5119)
+ 2c12e77a0d00f8989c884525479ee6d37340751a src/vdp/userspace-vdp-gl (heads/main)
+ 7bcf28e0a2376e32328a6a5554d0df852b75c80e src/vdp/vdp-console8 (remotes/origin/emulator-console8)
+ 883d0f1e300cecaac1a5fe72dc9e5c44b4184167 src/vdp/vdp-quark (remotes/origin/emulator-quark)
+
+$ sha256sum /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/README.md /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/src/parse_args.rs /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/src/main.rs /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/agon-light-emulator-debugger/src/parser.rs /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/agon-light-emulator-debugger/src/lib.rs /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/agon-ez80-emulator/src/debugger.rs /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/agon-ez80-emulator/src/agon_machine.rs
+64b6e6c0032e3254d7971fdf188d640e656f9cba2804f6d42dda3776fdd2834b  /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/README.md
+392b12487335432841b6ecba410840037089936958d02789619faa722642c018  /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/src/parse_args.rs
+fc9661d4f99b1c78b97653ce1ef8dec7ca7d47cf9a143bfa98d281593cce7d96  /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/src/main.rs
+334ebf56b2ef7d114a370355d24a1914ff5868aadfba4d6017ce3d949e4cd2b9  /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/agon-light-emulator-debugger/src/parser.rs
+fc32b66225dc4672b2d6d8aae115e3b4d6c88a5e315102aaafc24a11e7b737d3  /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/agon-light-emulator-debugger/src/lib.rs
+cb7a05a2b50e57c849f36bff9f51d3075f828a6faa83dd1a1a22cb31e90b16b2  /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/agon-ez80-emulator/src/debugger.rs
+fd83ff143b672ddeee297d9033ae8171eac2736e91bf425e69e5964c03d249b6  /home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/agon-ez80-emulator/src/agon_machine.rs
+

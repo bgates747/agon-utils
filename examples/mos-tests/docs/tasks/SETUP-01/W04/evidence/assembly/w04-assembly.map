@@ -1,0 +1,152 @@
+Archive member included to satisfy reference by file (symbol)
+
+/home/smith/Agon/agondev/release/lib/libagon.a(crt0.o)
+                              (__start)
+/home/smith/Agon/agondev/release/lib/libagon.a(sbrk.o)
+                              /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o) (__sbrkbase)
+/home/smith/Agon/agondev/release/lib/libagon.a(malloc.c.o)
+                              /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o) (_malloc)
+/home/smith/Agon/agondev/release/lib/libagon.a(free.c.o)
+                              /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o) (_free)
+/home/smith/Agon/agondev/release/lib/libagon.a(files.o)
+                              /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o) (__stdio_init)
+/home/smith/Agon/agondev/release/lib/libagon.a(frameset.o)
+                              /home/smith/Agon/agondev/release/lib/libagon.a(malloc.c.o) (__frameset)
+/home/smith/Agon/agondev/release/lib/libagon.a(indcallhl.o)
+                              /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o) (__indcallhl)
+
+There are no discarded input sections
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+USERRAM          0x00040000         0x00070000         rw
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+                0x00040000                        RAM_START = 0x40000
+                0x00070000                        RAM_SIZE = 0x70000
+                0x00000000                        _has_exit_handler = 0x0
+                0x00040000                        . = RAM_START
+
+.init           0x00040000      0x1e1
+ *(.init .init.args .init.bss .fini)
+ .init          0x00040000       0xc8 /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o)
+                0x00040040                __mos_header
+                0x00040045                __start
+                0x000400c5                __start._main
+ .fini          0x000400c8       0xbe /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o)
+                0x000400c8                ___exithl
+                0x000400ca                _exit
+                0x00040129                __Exit
+                0x0004012d                _abort
+ .init.bss      0x00040186       0x11 /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o)
+ .init.args     0x00040197       0x4a /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o)
+                0x00040197                _parse_option
+                0x00040197                _parse_params
+
+.text           0x000401e1      0x22b
+ *(.text)
+ .text          0x000401e1       0x14 obj/main.o
+                0x000401e1                _main
+ .text          0x000401f5       0x2c /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o)
+                0x000401f5                _atexit
+                0x000401f5                _on_exit
+ .text          0x00040221       0x22 /home/smith/Agon/agondev/release/lib/libagon.a(sbrk.o)
+                0x00040221                _sbrk
+ .text          0x00040243       0x9f /home/smith/Agon/agondev/release/lib/libagon.a(malloc.c.o)
+                0x00040243                _malloc
+ .text          0x000402e2       0xbd /home/smith/Agon/agondev/release/lib/libagon.a(free.c.o)
+                0x000402e2                _free
+ .text          0x0004039f       0x5e /home/smith/Agon/agondev/release/lib/libagon.a(files.o)
+                0x0004039f                __stdio_init
+ .text          0x000403fd        0xe /home/smith/Agon/agondev/release/lib/libagon.a(frameset.o)
+                0x000403fd                __frameset
+ .text          0x0004040b        0x1 /home/smith/Agon/agondev/release/lib/libagon.a(indcallhl.o)
+                0x0004040b                __indcallhl
+
+.init_array     0x0004040c        0x0
+ *(.init_array)
+ .init_array    0x0004040c        0x0 /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o)
+
+.ctors          0x0004040c        0x0
+ *(.ctors)
+ .ctors         0x0004040c        0x0 /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o)
+
+.dtors          0x0004040c        0x0
+ *(.dtors)
+ .dtors         0x0004040c        0x0 /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o)
+
+.comment        0x00000000      0x14b
+ .comment       0x00000000       0x6a /home/smith/Agon/agondev/release/lib/libagon.a(malloc.c.o)
+ .comment       0x0000006a       0x6a /home/smith/Agon/agondev/release/lib/libagon.a(free.c.o)
+ .comment       0x000000d4       0x77 /home/smith/Agon/agondev/release/lib/libagon.a(files.o)
+
+.fini_array     0x0004040c        0x0
+ *(.fini_array)
+ .fini_array    0x0004040c        0x0 /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o)
+
+.rodata         0x0004040c       0x2e
+ *(.rodata)
+ .rodata        0x0004040c       0x22 obj/main.o
+ .rodata        0x0004042e        0xc /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o)
+
+.data           0x0004043a       0x4e
+ *(.data)
+ .data          0x0004043a        0x0 obj/main.o
+ .data          0x0004043a       0x39 /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o)
+                0x0004046d                _exit.sp
+                0x00040470                _sys_vars
+ .data          0x00040473        0x3 /home/smith/Agon/agondev/release/lib/libagon.a(sbrk.o)
+                0x00040473                __sbrkbase
+ .data          0x00040476        0x0 /home/smith/Agon/agondev/release/lib/libagon.a(malloc.c.o)
+ .data          0x00040476        0x0 /home/smith/Agon/agondev/release/lib/libagon.a(free.c.o)
+ .data          0x00040476       0x12 /home/smith/Agon/agondev/release/lib/libagon.a(files.o)
+                0x00040476                _stdin
+                0x0004047c                _stdout
+                0x00040482                _stderr
+ .data          0x00040488        0x0 /home/smith/Agon/agondev/release/lib/libagon.a(frameset.o)
+ .data          0x00040488        0x0 /home/smith/Agon/agondev/release/lib/libagon.a(indcallhl.o)
+
+.bss            0x00040488       0x36
+                0x00040488                        bss_start = .
+ *(.bss .bss*)
+ .bss           0x00040488        0x0 obj/main.o
+ .bss           0x00040488        0x0 /home/smith/Agon/agondev/release/lib/libagon.a(crt0.o)
+ .bss           0x00040488        0x0 /home/smith/Agon/agondev/release/lib/libagon.a(sbrk.o)
+ .bss           0x00040488        0x6 /home/smith/Agon/agondev/release/lib/libagon.a(malloc.c.o)
+                0x00040488                __alloc_base
+ .bss           0x0004048e        0x0 /home/smith/Agon/agondev/release/lib/libagon.a(free.c.o)
+ .bss           0x0004048e       0x30 /home/smith/Agon/agondev/release/lib/libagon.a(files.o)
+                0x0004048e                __file_streams
+ .bss           0x000404be        0x0 /home/smith/Agon/agondev/release/lib/libagon.a(frameset.o)
+ .bss           0x000404be        0x0 /home/smith/Agon/agondev/release/lib/libagon.a(indcallhl.o)
+                0x000404be                        bss_end = .
+                0x000b0000                        __stack = (RAM_START + RAM_SIZE)
+                0x00040488                        ___low_bss = bss_start
+                0x00000036                        ___len_bss = SIZEOF (.bss)
+                0x000404be                        ___heapbot = bss_end
+                0x000b0000                        ___heaptop = (RAM_START + RAM_SIZE)
+                0x00000001                        ___run_clearbss = (___len_bss > 0x0)
+                0x00000000                        ___init_array_count = (SIZEOF (.init_array) / 0x3)
+                0x00000000                        ___ctors_count = (SIZEOF (.ctors) / 0x3)
+                0x00000000                        ___dtors_count = (SIZEOF (.dtors) / 0x3)
+                0x00000000                        ___fini_array_count = (SIZEOF (.fini_array) / 0x3)
+                0x00000000                        ___init_count = (___init_array_count + ___ctors_count)
+                0x00000000                        ___fini_count = (___dtors_count + ___fini_array_count)
+                0x00000000                        ___run_init = (___init_count > 0x0)
+                0x00000000                        ___run_fini = (___fini_count > 0x0)
+                0x00000100                        ___init_count_a = ((((___init_count - 0x1) >> 0x10) & 0xff) + 0x1)
+                0x00000100                        ___init_count_b = (((___init_count - 0x1) & 0xff) + 0x1)
+                0x00000100                        ___init_count_c = ((((___init_count - 0x1) >> 0x8) & 0xff) + 0x1)
+                0x00000100                        ___fini_count_a = ((((___fini_count - 0x1) >> 0x10) & 0xff) + 0x1)
+                0x00000100                        ___fini_count_b = (((___fini_count - 0x1) & 0xff) + 0x1)
+                0x00000100                        ___fini_count_c = ((((___fini_count - 0x1) >> 0x8) & 0xff) + 0x1)
+                0x0004040c                        ___init_array_functions = (SIZEOF (.init_array) + ADDR (.init_array))
+                0x0004040c                        ___init_ctors_functions = (SIZEOF (.ctors) + ADDR (.ctors))
+                0x0004040c                        ___fini_dtors_functions = (SIZEOF (.dtors) + ADDR (.dtors))
+                0x0004040c                        ___fini_array_functions = (SIZEOF (.fini_array) + ADDR (.fini_array))
+LOAD obj/main.o
+LOAD /home/smith/Agon/agondev/release/lib/libagon.a
+OUTPUT(bin/w04-assembly.noname.bin binary)

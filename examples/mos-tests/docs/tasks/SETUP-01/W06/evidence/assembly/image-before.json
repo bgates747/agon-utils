@@ -1,0 +1,15 @@
+{
+  "backend": "mbr-fat32-image",
+  "image": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/w06-boot-obey-assembly.img",
+  "sha256": "2c9834149e04d53a12f40297cfb41ba668541833ea88e205b5a21e2ccc99e9e5",
+  "files": {
+    "/mystuff/test.bin": {
+      "sha256": "3c880501077ca50ae602af2011a2009f320ef5eac7ec4b9748db02b05e78d511",
+      "size": 1160
+    },
+    "/!boot.obey": {
+      "sha256": "9582ba96b764011e4712bc7e4b6794006428c3f0e5b036d13b6291ee0282cb8f",
+      "size": 49
+    }
+  }
+}

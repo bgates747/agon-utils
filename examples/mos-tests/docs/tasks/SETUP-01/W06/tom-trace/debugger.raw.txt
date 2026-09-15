@@ -1,0 +1,172 @@
+
+[1mAgon EZ80 Debugger[0m
+
+[36mbr[eak] <address>             [37mSet a breakpoint at the hex address
+[36mc[ontinue]                    [37mResume (un-pause) Agon CPU
+[36mdelete <address>              [37mDelete a breakpoint
+[36mdis[assemble] [start] [end]   [37mDisassemble in current ADL mode
+[36mdis16 [start] [end]           [37mDisassemble in ADL=0 (Z80) mode
+[36mdis24 [start] [end]           [37mDisassemble in ADL=1 (24-bit) mode
+[36mexit                          [37mQuit from Agon Light Emulator
+[36minfo breakpoints              [37mList breakpoints
+[36m[mem]ory <start> [len]        [37mDump memory. <start> can be a register
+[36mn[ext]                        [37mStep over function calls
+[36mpause                         [37mPause execution and enter debugger
+[36mstate                         [37mShow CPU state
+[36m.                             [37mShow CPU state
+[36ms[tep]                        [37mExecute one instuction
+[36mtrace on                      [37mEnable logging every instruction
+[36mtrace off                     [37mDisable logging every instruction
+[36mtrigger <address> cmd1 : cmd2 : ...[37m
+    Perform debugger commands when <address> is reached
+    eg: break $123 is equivalent to:
+        trigger $123 pause:"CPU paused at breakpoint":state
+
+[36mtriggers                      [37mList triggers
+
+The previous command can be repeated by pressing return.
+
+[32mCPU running. Press <CTRL-C> to pause
+[39m
+Video driver: dummy (can override with SDL_VIDEO_DRIVER environment variable)
+[33mCPU paused (breakpoint)[39m
+* 000000: DI                   AF:ffff BC:000000 DE:000000 HL:000000 SPS:0000 SPL:000000 IX:000000 IY:000000 ADL:0
+[?2004h[K[36m>> [3Ctrigger $387b "OBEY ENTRY" : state : mem sp 48[?2004l
+[?2004h[K[36m>> [3Ctrigger $e674 "F_OPEN" : state : mem sp 24[?2004l
+[?2004h[K[36m>> [3Cbreak $3be5[?2004l
+[?2004h[K[36m>> [3Cdelete $0[?2004l
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[39m[39m[39m[39m[32mCPU running[39m
+[33m"OBEY ENTRY"[39m
+* 00387b: LD HL, $ffffbd       AF:0044 BC:0180f5 DE:0bffdf HL:001c9e SPS:0000 SPL:0bffe2 IX:0bfff7 IY:0bced9 ADL:1
+0bffe2: 98 1d 00 f5 80 01 ff 00 94 11 08 01 00 01 01 ff |                 
+0bfff2: ff ff 40 00 00 fd ff 0b f7 18 00 00 00 00 f5 f5 |   @             
+0c0002: f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 |                 
+[33mCPU paused (breakpoint)[39m
+* 003be5: CALL $f4fd           AF:0302 BC:000000 DE:000450 HL:000004 SPS:0000 SPL:0bff99 IX:0bffdf IY:0bd025 ADL:1
+[?2004h[K[36m>> [3Cstate[?2004l
+[39m* 003be5: CALL $f4fd           AF:0302 BC:000000 DE:000450 HL:000004 SPS:0000 SPL:0bff99 IX:0bffdf IY:0bd025 IR:01bc MB:00 ADL:1 MADL:1 IFF1:1
+                               Cycles since last break: 124228   Cycles per instruction: 3.4
+                               SPL top $0bff99: 9c ff 0b 00 63 a2 01 01 cf 0b 50 23 01 01 cf 0b
+[?2004h[K[36m>> [3Cmem sp 96[?2004l
+[39m0bff99: 9c ff 0b 00 63 a2 01 01 cf 0b 50 23 01 01 cf 0b |     c     P#    
+0bffa9: 63 a2 01 01 cf 0b be ff 0b 4b 38 01 63 a2 01 e9 | c        K8 c   
+0bffb9: ce 0b d9 ce 0b d6 ff 0b d6 ff 00 00 00 00 f5 80 |                 
+0bffc9: 01 00 00 00 11 cf 0b 00 00 00 00 00 00 19 d0 0b |                 
+0bffd9: 00 00 00 04 00 00 f7 ff 0b 98 1d 00 ff 80 01 ff |                 
+0bffe9: 00 94 11 08 01 00 01 01 ff ff ff 40 00 00 fd ff |            @    
+[?2004h[K[36m>> [3Cmem ix 48[?2004l
+[39m0bffdf: f7 ff 0b 98 1d 00 ff 80 01 ff 00 94 11 08 01 00 |                 
+0bffef: 01 01 ff ff ff 40 00 00 fd ff 0b f7 18 00 00 00 |      @          
+0bffff: 00 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 |                 
+[?2004h[K[36m>> [3Cmem $1a263 96[?2004l
+[39m01a263: 4c 6f 61 64 20 25 2a 30 00 41 6c 69 61 73 24 40 | Load %*0 Alias$@
+01a273: 4c 6f 61 64 54 79 70 65 5f 62 69 6e 00 48 6f 74 | LoadType_bin Hot
+01a283: 6b 65 79 24 00 2a 20 00 20 00 20 00 2a 20 22 00 | key$ *      * " 
+01a293: 41 6c 69 61 73 24 00 2a 2e 62 69 6e 00 72 75 6e | Alias$ *.bin run
+01a2a3: 3a 00 2a 2e 62 69 6e 00 53 75 6e 00 53 75 6e 64 | : *.bin Sun Sund
+01a2b3: 61 79 00 4d 6f 6e 00 4d 6f 6e 64 61 79 00 54 75 | ay Mon Monday Tu
+[?2004h[K[36m>> [3Cdis24 $3bba $3c04[?2004l
+[39m	.assume adl=1
+  003bba: LD A, (IX-47)        | dd 7e d1
+  003bbd: CALL $17862          | cd 62 78 01
+  003bc1: JR NZ, $3bc7         | 20 04
+  003bc3: LD B, $1             | 06 01
+  003bc5: JR $3bc9             | 18 02
+  003bc7: LD B, $0             | 06 00
+  003bc9: LD A, B              | 78
+  003bca: RLA                  | 17
+  003bcb: SBC HL, HL           | ed 62
+  003bcd: LD L, B              | 68
+  003bce: LD BC, $0            | 01 00 00 00
+  003bd2: OR A, A              | b7
+  003bd3: SBC HL, BC           | ed 42
+  003bd5: JP Z, $3a84          | ca 84 3a 00
+  003bd9: LD A, ($bc000)       | 3a 00 c0 0b
+  003bdd: DEC A                | 3d
+  003bde: LD ($bc000), A       | 32 00 c0 0b
+  003be2: PEA IX-$43           | ed 65 bd
+* 003be5: CALL $f4fd           | cd fd f4 00
+  003be9: POP BC               | c1
+  003bea: LD BC, (IX-$9)       | dd 07 f7
+  003bed: PUSH BC              | c5
+  003bee: CALL $135a0          | cd a0 35 01
+  003bf2: POP BC               | c1
+  003bf3: LD BC, (IX-$12)      | dd 07 ee
+  003bf6: PUSH BC              | c5
+  003bf7: CALL $135a0          | cd a0 35 01
+  003bfb: POP BC               | c1
+  003bfc: LD HL, (IX-$3)       | dd 27 fd
+  003bff: LD SP, IX            | dd f9
+  003c01: POP IX               | dd e1
+  003c03: RET                  | c9
+[?2004h[K[36m>> [3Cdis24 $f3ec $f410[?2004l
+[39m	.assume adl=1
+  00f3ec: LD HL, $fffff0       | 21 f0 ff ff
+  00f3f0: CALL $174ce          | cd ce 74 01
+  00f3f4: PEA IX-$9            | ed 65 f7
+  00f3f7: LD IY, (IX+$6)       | dd 31 06
+  00f3fa: PEA IY+$0            | ed 66 00
+  00f3fd: CALL $e556           | cd 56 e5 00
+  00f401: POP BC               | c1
+  00f402: POP BC               | c1
+  00f403: LD (IX-$6), HL       | dd 2f fa
+  00f406: LD BC, $0            | 01 00 00 00
+  00f40a: LD HL, (IX-$6)       | dd 27 fa
+  00f40d: OR A, A              | b7
+  00f40e: SBC HL, BC           | ed 42
+[?2004h[K[36m>> [3Cdis24 $f4fd $f51a[?2004l
+[39m	.assume adl=1
+  00f4fd: LD HL, $fffffa       | 21 fa ff ff
+  00f501: CALL $174ce          | cd ce 74 01
+  00f505: LD BC, (IX+$6)       | dd 07 06
+  00f508: PUSH BC              | c5
+  00f509: CALL $f3ec           | cd ec f3 00
+  00f50d: POP BC               | c1
+  00f50e: LD (IX-$3), HL       | dd 2f fd
+  00f511: LD BC, $0            | 01 00 00 00
+  00f515: LD HL, (IX-$3)       | dd 27 fd
+  00f518: OR A, A              | b7
+  00f519: SBC HL, BC           | ed 42
+[?2004h[K[36m>> [3Cdis24 $1d70 $1da0[?2004l
+[39m	.assume adl=1
+  001d70: DEC DE               | 1b
+  001d71: NOP                  | 00
+  001d72: CALL $7e6c           | cd 6c 7e 00
+  001d76: CALL $842c           | cd 2c 84 00
+  001d7a: LD BC, $7            | 01 07 00 00
+  001d7e: PUSH BC              | c5
+  001d7f: CALL $15e9           | cd e9 15 00
+  001d83: POP BC               | c1
+  001d84: CALL $9883           | cd 83 98 00
+  001d88: CALL $1c96           | cd 96 1c 00
+  001d8c: OR A, A              | b7
+  001d8d: JR NZ, $1e05         | 20 76
+  001d8f: LD BC, $180f5        | 01 f5 80 01
+  001d93: PUSH BC              | c5
+  001d94: CALL $387b           | cd 7b 38 00
+  001d98: POP BC               | c1
+  001d99: LD (IX-$3), HL       | dd 2f fd
+  001d9c: LD BC, $4            | 01 04 00 00
+[?2004h[K[36m>> [3Cdelete $3be5[?2004l
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[39m[32mCPU running[39m
+[33mCPU paused (memory 0xa26300 out of bounds)[39m
+	.assume adl=1
+  00e589: LD A, (IY+0)         | fd 7e 00
+* 00e58c: OR A, A              AF:f5a2 BC:000000 DE:0bff5f HL:a26300 SPS:0000 SPL:0bff5f IX:0bff68 IY:a26300 ADL:1
+[?2004h[K[36m>> [3Cstate[?2004l
+[39m* 00e58c: OR A, A              AF:f5a2 BC:000000 DE:0bff5f HL:a26300 SPS:0000 SPL:0bff5f IX:0bff68 IY:a26300 IR:010a MB:00 ADL:1 MADL:1 IFF1:1
+                               Cycles since last break: 1070   Cycles per instruction: 13.7
+                               SPL top $0bff5f: 0a 00 00 09 00 00 00 63 a2 84 ff 0b 01 f4 00 9c
+[?2004h[K[36m>> [3Cmem $bff5f 144[?2004l
+[39m0bff5f: 0a 00 00 09 00 00 00 63 a2 84 ff 0b 01 f4 00 9c |        c        
+0bff6f: ff 0b 7b ff 0b 01 f5 80 01 19 d0 0b 8a ff 0b 00 |   {             
+0bff7f: 00 00 39 d0 0b 93 ff 0b 0d f5 00 9c ff 0b 00 00 |   9             
+0bff8f: 02 03 00 03 df ff 0b e9 3b 00 9c ff 0b 00 63 a2 |         ;     c 
+0bff9f: 01 01 cf 0b 50 23 01 01 cf 0b 63 a2 01 01 cf 0b |     P#    c     
+0bffaf: be ff 0b 4b 38 01 63 a2 01 e9 ce 0b d9 ce 0b d6 |    K8 c         
+0bffbf: ff 0b d6 ff 00 00 00 00 f5 80 01 00 00 00 11 cf |                 
+0bffcf: 0b 00 00 00 00 00 00 19 d0 0b 00 00 00 04 00 00 |                 
+0bffdf: f7 ff 0b 98 1d 00 ff 80 01 ff 00 94 11 08 01 00 |                 
+[?2004h[K[36m>> [3C

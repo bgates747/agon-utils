@@ -1,0 +1,10 @@
+[compiling src/main.cpp]
+/home/smith/Agon/agondev/release/bin/ez80-none-elf-clang -mllvm -z80-gas-style -mllvm -z80-print-zero-offset -nostdinc -I./include -isystem /home/smith/Agon/agondev/release/include -target ez80-none-elf -DAGONDEV -Oz -Wa,-march=ez80+full -fno-threadsafe-statics -fcolor-diagnostics -isystem /home/smith/Agon/agondev/release/include/c++ -std=c++14 src/main.cpp -c -o obj/main.o
+[Linking bin/w04-cpp.noname.bin]
+/home/smith/Agon/agondev/release/bin/ez80-none-elf-ld -defsym=RAM_START=0x40000 -defsym=RAM_SIZE=0x70000  -defsym=_has_exit_handler=0 -Map=bin/w04-cpp.map -T /home/smith/Agon/agondev/release/config/linker.conf --oformat binary -o bin/w04-cpp.noname.bin      obj/main.o -L./lib  -L/home/smith/Agon/agondev/release/lib -l agon 
+[Start address 0x40000]
+[Setting name 'w04-cpp.bin' in binary]
+/home/smith/Agon/agondev/release/bin/agondev-setname bin/w04-cpp.bin >/dev/null
+[Done]
+/home/smith/Agon/agondev/release/bin/ez80-none-elf-objdump -dr obj/main.o > bin/main-disassembly.txt
+/home/smith/Agon/agondev/release/bin/ez80-none-elf-clang -mllvm -z80-gas-style -mllvm -z80-print-zero-offset -nostdinc -I./include -isystem /home/smith/Agon/agondev/release/include -target ez80-none-elf -DAGONDEV -Oz -Wa,-march=ez80+full -fno-threadsafe-statics -fcolor-diagnostics -isystem /home/smith/Agon/agondev/release/include/c++ -std=c++14 -S src/main.cpp -o bin/compiler-main.s

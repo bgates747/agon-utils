@@ -1,0 +1,67 @@
+
+Agon EZ80 Debugger
+
+br[eak] <address>             Set a breakpoint at the hex address
+c[ontinue]                    Resume (un-pause) Agon CPU
+delete <address>              Delete a breakpoint
+dis[assemble] [start] [end]   Disassemble in current ADL mode
+dis16 [start] [end]           Disassemble in ADL=0 (Z80) mode
+dis24 [start] [end]           Disassemble in ADL=1 (24-bit) mode
+exit                          Quit from Agon Light Emulator
+info breakpoints              List breakpoints
+[mem]ory <start> [len]        Dump memory. <start> can be a register
+n[ext]                        Step over function calls
+pause                         Pause execution and enter debugger
+state                         Show CPU state
+.                             Show CPU state
+s[tep]                        Execute one instuction
+trace on                      Enable logging every instruction
+trace off                     Disable logging every instruction
+trigger <address> cmd1 : cmd2 : ...
+    Perform debugger commands when <address> is reached
+    eg: break $123 is equivalent to:
+        trigger $123 pause:"CPU paused at breakpoint":state
+
+triggers                      List triggers
+
+The previous command can be repeated by pressing return.
+
+CPU running. Press <CTRL-C> to pause
+
+Video driver: dummy (can override with SDL_VIDEO_DRIVER environment variable)
+CPU paused (breakpoint)
+* 000000: DI                   AF:ffff BC:000000 DE:000000 HL:000000 SPS:0000 SPL:000000 IX:000000 IY:000000 ADL:0
+>> trigger $10 state
+>> break $400d3
+>> delete $0
+>> c
+CPU running
+* 000010: JP.LIL $1906         AF:57ba BC:00000a DE:04640e HL:046401 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:30ba BC:00000a DE:04640d HL:046402 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:35ba BC:00000a DE:04640c HL:046403 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:20ba BC:00000a DE:04640b HL:046404 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:42ba BC:00000a DE:04640a HL:046405 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:41ba BC:00000a DE:046409 HL:046406 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:53ba BC:00000a DE:046408 HL:046407 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:49ba BC:00000a DE:046407 HL:046408 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:43ba BC:00000a DE:046406 HL:046409 SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:20ba BC:00000a DE:046405 HL:04640a SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:50ba BC:00000a DE:046404 HL:04640b SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:41ba BC:00000a DE:046403 HL:04640c SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:53ba BC:00000a DE:046402 HL:04640d SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:53ba BC:00000a DE:046401 HL:04640e SPS:0000 SPL:b7fff3 IX:04683f IY:04686c ADL:1
+* 000010: JP.LIL $1906         AF:0dba BC:040103 DE:000001 HL:00000d SPS:0000 SPL:b7fff9 IX:046875 IY:046875 ADL:1
+* 000010: JP.LIL $1906         AF:0aba BC:000100 DE:040001 HL:00000a SPS:0000 SPL:b7fff9 IX:046878 IY:046878 ADL:1
+CPU paused (breakpoint)
+* 0400d3: RET                  AF:0444 BC:040000 DE:040000 HL:000000 SPS:0000 SPL:0bff0e IX:0bc3f8 IY:0bff1d ADL:1
+>> state
+* 0400d3: RET                  AF:0444 BC:040000 DE:040000 HL:000000 SPS:0000 SPL:0bff0e IX:0bc3f8 IY:0bff1d IR:0133 MB:00 ADL:1 MADL:1 IFF1:1
+                               Cycles since last break: 697   Cycles per instruction: 4.1
+                               SPL top $0bff0e: 5f 0d 00 48 00 00 2a ff 0b 29 ff 0b 48 01 00 00
+>> s
+* 000d5f: POP AF               AF:0444 BC:040000 DE:040000 HL:000000 SPS:0000 SPL:0bff11 IX:0bc3f8 IY:0bff1d ADL:1
+>> state
+* 000d5f: POP AF               AF:0444 BC:040000 DE:040000 HL:000000 SPS:0000 SPL:0bff11 IX:0bc3f8 IY:0bff1d IR:0134 MB:00 ADL:1 MADL:1 IFF1:1
+                               Cycles since last break: 0   Cycles per instruction: 0.0
+                               SPL top $0bff11: 48 00 00 2a ff 0b 29 ff 0b 48 01 00 00 00 04 f8
+>> 

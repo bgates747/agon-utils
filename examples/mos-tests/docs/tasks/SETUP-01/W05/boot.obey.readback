@@ -1,0 +1,4 @@
+SET KEYBOARD 1
+cd /mystuff
+load bbc-basic-v-adl.bin
+run smoke.bas

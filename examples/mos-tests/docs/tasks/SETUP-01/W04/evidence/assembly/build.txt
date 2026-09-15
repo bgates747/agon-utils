@@ -1,0 +1,9 @@
+[assembling src/main.src]
+/home/smith/Agon/agondev/release/bin/ez80-none-elf-as -march=ez80+full -I /home/smith/Agon/agondev/release/include src/main.src -o obj/main.o
+[Linking bin/w04-assembly.noname.bin]
+/home/smith/Agon/agondev/release/bin/ez80-none-elf-ld -defsym=RAM_START=0x40000 -defsym=RAM_SIZE=0x70000  -defsym=_has_exit_handler=0 -Map=bin/w04-assembly.map -T /home/smith/Agon/agondev/release/config/linker.conf --oformat binary -o bin/w04-assembly.noname.bin    obj/main.o   -L./lib  -L/home/smith/Agon/agondev/release/lib -l agon 
+[Start address 0x40000]
+[Setting name 'w04-assembly.bin' in binary]
+/home/smith/Agon/agondev/release/bin/agondev-setname bin/w04-assembly.bin >/dev/null
+[Done]
+/home/smith/Agon/agondev/release/bin/ez80-none-elf-objdump -dr obj/main.o > bin/main-disassembly.txt

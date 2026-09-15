@@ -1,0 +1,15 @@
+{
+  "backend": "raw-fat32-image",
+  "image": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/w06-zero-cpp.img",
+  "sha256": "1a3ed53ce904a0f605dfa2299eed56427c5341ad06525056f60d6c20b59b20a8",
+  "files": {
+    "/mystuff/test.bin": {
+      "sha256": "1fea5d9c1ffdcf5b533841e8f80f52974d655d0bec5c2b4c57d476894d8cdbd0",
+      "size": 1218
+    },
+    "/autoexec.txt": {
+      "sha256": "9582ba96b764011e4712bc7e4b6794006428c3f0e5b036d13b6291ee0282cb8f",
+      "size": 49
+    }
+  }
+}

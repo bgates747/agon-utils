@@ -1,0 +1,41 @@
+
+obj/main.o:     file format elf32-z80
+
+
+Disassembly of section .text:
+
+00000000 <_main>:
+   0:	21 d8 ff ff       	ld hl,0xffffd8
+   4:	cd 00 00 00       	call 0x0000
+			5: r_imm24	__frameset
+   8:	21 00 00 00       	ld hl,0x0000
+			9: r_imm24	.rodata
+   c:	01 22 00 00       	ld bc,0x0022
+  10:	11 01 00 00       	ld de,0x0001
+  14:	dd 1f db          	ld (ix-37),de
+  17:	3e 57             	ld a,0x57
+  19:	ed 12 de          	lea de,ix-34
+  1c:	dd 1f d8          	ld (ix-40),de
+  1f:	ed b0             	ldir
+  21:	4f                	ld c,a
+  22:	79                	ld a,c
+  23:	b7                	or a,a
+  24:	28 18             	jr z,0x003e
+  26:	b7                	or a,a
+  27:	ed 62             	sbc hl,hl
+  29:	69                	ld l,c
+  2a:	e5                	push hl
+  2b:	cd 00 00 00       	call 0x0000
+			2c: r_imm24	_putch
+  2f:	e1                	pop hl
+  30:	dd 27 d8          	ld hl,(ix-40)
+  33:	dd 17 db          	ld de,(ix-37)
+  36:	19                	add hl,de
+  37:	4e                	ld c,(hl)
+  38:	13                	inc de
+  39:	dd 1f db          	ld (ix-37),de
+  3c:	18 e4             	jr 0x0022
+  3e:	21 56 34 12       	ld hl,0x123456
+  42:	dd f9             	ld sp,ix
+  44:	dd e1             	pop ix
+  46:	c9                	ret

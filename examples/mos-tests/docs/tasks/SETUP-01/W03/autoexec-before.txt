@@ -1,0 +1,2 @@
+SET KEYBOARD 1
+cd /mystuff

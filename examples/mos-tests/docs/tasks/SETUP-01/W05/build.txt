@@ -1,0 +1,21 @@
+[assembling src/bbc-ez80_asmb.s]
+ez80-none-elf-as -march=ez80+full -I ./include src/bbc-ez80_asmb.s -o obj/bbc-ez80_asmb.o
+[assembling src/bbc-ez80_main.s]
+ez80-none-elf-as -march=ez80+full -I ./include src/bbc-ez80_main.s -o obj/bbc-ez80_main.o
+[assembling src/bbc-ez80_exec.s]
+ez80-none-elf-as -march=ez80+full -I ./include src/bbc-ez80_exec.s -o obj/bbc-ez80_exec.o
+[assembling src/agon_init.s]
+ez80-none-elf-as -march=ez80+full -I ./include src/agon_init.s -o obj/agon_init.o
+[assembling src/bbc-ez80_eval.s]
+ez80-none-elf-as -march=ez80+full -I ./include src/bbc-ez80_eval.s -o obj/bbc-ez80_eval.o
+[assembling src/bbc-ez80_data.s]
+ez80-none-elf-as -march=ez80+full -I ./include src/bbc-ez80_data.s -o obj/bbc-ez80_data.o
+[assembling src/agon_os.s]
+ez80-none-elf-as -march=ez80+full -I ./include src/agon_os.s -o obj/agon_os.o
+[assembling src/bbc-ez80_tokenids.s]
+ez80-none-elf-as -march=ez80+full -I ./include src/bbc-ez80_tokenids.s -o obj/bbc-ez80_tokenids.o
+[assembling src/bbc-ez80_math.s]
+ez80-none-elf-as -march=ez80+full -I ./include src/bbc-ez80_math.s -o obj/bbc-ez80_math.o
+[Linking bin/basic.bin]
+ez80-none-elf-ld   -Map=bin/basic.map -T ./config/linker.conf --oformat binary -o bin/basic.bin     obj/bbc-ez80_asmb.o    obj/bbc-ez80_main.o    obj/bbc-ez80_exec.o    obj/agon_init.o    obj/bbc-ez80_eval.o    obj/bbc-ez80_data.o    obj/agon_os.o    obj/bbc-ez80_tokenids.o    obj/bbc-ez80_math.o 
+[Done]

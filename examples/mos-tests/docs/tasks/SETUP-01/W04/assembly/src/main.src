@@ -1,0 +1,21 @@
+; Independent implementation: no libagon output wrapper, no compiler loop.
+.assume adl=1
+.section .text
+.global _main
+_main:
+    ld hl, message
+loop:
+    ld a, (hl)
+    or a
+    jr z, done
+    push hl
+    rst.lil 10h
+    pop hl
+    inc hl
+    jr loop
+done:
+    ld hl, 123456h
+    ret
+.section .rodata
+message:
+    db "W04: MOS ABI 0123456789 AaZz !?", 13, 10, 0

@@ -1,0 +1,5 @@
+Command: cd /home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator && ./fab-agon-emulator
+WAYLAND_DISPLAY=wayland-1
+PID: 1619730
+Poll after 3 seconds: None
+Deployment SHA256: a109eee070164e1edd6ea125552896fa98347625874c1373c75081ef73880e00

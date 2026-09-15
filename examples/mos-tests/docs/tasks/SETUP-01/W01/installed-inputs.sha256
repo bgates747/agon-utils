@@ -1,0 +1,6 @@
+34670dda66966bc83b59bafe97bbe84fd7ca20ad15728eb3f3753097d22dc51d  /home/smith/Agon/agondev/release/bin/ez80-none-elf-clang
+00dec630d1c386521887e6af0bb1b2045f66ae6f181f84491269f020a0342bdb  /home/smith/Agon/agondev/release/bin/ez80-none-elf-as
+2f4321d67956d8389bc28661b8684f8e054ee3b4e9eb890245f6c9afa33434cf  /home/smith/Agon/agondev/release/bin/ez80-none-elf-ld
+5de7878342ab6780593fbf8d54d8005960e2471bd0e34c0e307fbcfe42fef28a  /home/smith/Agon/agondev/release/lib/libagon.a
+a42cbc9fba68e95029f4d0733ae6112e782b9a31d2136f040bef2b3da41f8f7d  /home/smith/Agon/agondev/release/config/makefile.inc
+35e642f4e17a8293b4653d927aca81bc1d82f42052a91f47578048918c3e3b73  /home/smith/Agon/agondev/release/config/linker.conf

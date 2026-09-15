@@ -1,0 +1,23 @@
+
+obj/main.o:     file format elf32-z80
+
+
+Disassembly of section .text:
+
+00000000 <_main>:
+   0:	21 00 00 00       	ld hl,0x0000
+			1: r_imm24	.rodata
+
+00000004 <loop>:
+   4:	7e                	ld a,(hl)
+   5:	b7                	or a,a
+   6:	28 07             	jr z,0x000f
+   8:	e5                	push hl
+   9:	5b d7             	rst.lil 0x10
+   b:	e1                	pop hl
+   c:	23                	inc hl
+   d:	18 f5             	jr 0x0004
+
+0000000f <done>:
+   f:	21 56 34 12       	ld hl,0x123456
+  13:	c9                	ret

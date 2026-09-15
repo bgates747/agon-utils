@@ -1,0 +1,41 @@
+
+/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/obj/main.o:     file format elf32-z80
+
+
+Disassembly of section .text:
+
+00000000 <_main>:
+   0:	21 cf ff ff       	ld hl,0xffffcf
+   4:	cd 00 00 00       	call 0x0000
+			5: r_imm24	__frameset
+   8:	21 00 00 00       	ld hl,0x0000
+			9: r_imm24	.rodata
+   c:	01 2b 00 00       	ld bc,0x002b
+  10:	11 01 00 00       	ld de,0x0001
+  14:	dd 1f d2          	ld (ix-46),de
+  17:	fd 21 00 00 00    	ld iy,0x0000
+  1c:	3e 4d             	ld a,0x4d
+  1e:	ed 12 d5          	lea de,ix-43
+  21:	dd 1f cf          	ld (ix-49),de
+  24:	ed b0             	ldir
+  26:	4f                	ld c,a
+  27:	79                	ld a,c
+  28:	b7                	or a,a
+  29:	28 1c             	jr z,0x0047
+  2b:	fd 69             	ld iyl,c
+  2d:	fd e5             	push iy
+  2f:	cd 00 00 00       	call 0x0000
+			30: r_imm24	_putch
+  33:	fd 21 00 00 00    	ld iy,0x0000
+  38:	e1                	pop hl
+  39:	dd 27 cf          	ld hl,(ix-49)
+  3c:	dd 17 d2          	ld de,(ix-46)
+  3f:	19                	add hl,de
+  40:	4e                	ld c,(hl)
+  41:	13                	inc de
+  42:	dd 1f d2          	ld (ix-46),de
+  45:	18 e0             	jr 0x0027
+  47:	ed 23 00          	lea hl,iy+0
+  4a:	dd f9             	ld sp,ix
+  4c:	dd e1             	pop ix
+  4e:	c9                	ret

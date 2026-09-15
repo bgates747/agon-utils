@@ -1,0 +1,76 @@
+
+Agon EZ80 Debugger
+
+br[eak] <address>             Set a breakpoint at the hex address
+c[ontinue]                    Resume (un-pause) Agon CPU
+delete <address>              Delete a breakpoint
+dis[assemble] [start] [end]   Disassemble in current ADL mode
+dis16 [start] [end]           Disassemble in ADL=0 (Z80) mode
+dis24 [start] [end]           Disassemble in ADL=1 (24-bit) mode
+exit                          Quit from Agon Light Emulator
+info breakpoints              List breakpoints
+[mem]ory <start> [len]        Dump memory. <start> can be a register
+n[ext]                        Step over function calls
+pause                         Pause execution and enter debugger
+state                         Show CPU state
+.                             Show CPU state
+s[tep]                        Execute one instuction
+trace on                      Enable logging every instruction
+trace off                     Disable logging every instruction
+trigger <address> cmd1 : cmd2 : ...
+    Perform debugger commands when <address> is reached
+    eg: break $123 is equivalent to:
+        trigger $123 pause:"CPU paused at breakpoint":state
+
+triggers                      List triggers
+
+The previous command can be repeated by pressing return.
+
+CPU running. Press <CTRL-C> to pause
+
+Video driver: dummy (can override with SDL_VIDEO_DRIVER environment variable)
+CPU paused (breakpoint)
+* 000000: DI                   AF:ffff BC:000000 DE:000000 HL:000000 SPS:0000 SPL:000000 IX:000000 IY:000000 ADL:0
+>> trigger $401e1 state
+>> trigger $10 state
+>> trigger $400c8 pause : state
+>> delete $0
+>> c
+CPU running
+* 0401e1: LD HL, $ffffd8       AF:4502 BC:000001 DE:0bd061 HL:040474 SPS:0000 SPL:0afff7 IX:040477 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:5742 BC:000057 DE:040210 HL:000057 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:3042 BC:000030 DE:040210 HL:000030 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:3442 BC:000034 DE:040210 HL:000034 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:3a42 BC:00003a DE:040210 HL:00003a SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:2042 BC:000020 DE:040210 HL:000020 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:4d42 BC:00004d DE:040210 HL:00004d SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:4f42 BC:00004f DE:040210 HL:00004f SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:5342 BC:000053 DE:040210 HL:000053 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:2042 BC:000020 DE:040210 HL:000020 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:4142 BC:000041 DE:040210 HL:000041 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:4242 BC:000042 DE:040210 HL:000042 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:4942 BC:000049 DE:040210 HL:000049 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:2042 BC:000020 DE:040210 HL:000020 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:3042 BC:000030 DE:040210 HL:000030 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:3142 BC:000031 DE:040210 HL:000031 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:3242 BC:000032 DE:040210 HL:000032 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:3342 BC:000033 DE:040210 HL:000033 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:3442 BC:000034 DE:040210 HL:000034 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:3542 BC:000035 DE:040210 HL:000035 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:3642 BC:000036 DE:040210 HL:000036 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:3742 BC:000037 DE:040210 HL:000037 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:3842 BC:000038 DE:040210 HL:000038 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:3942 BC:000039 DE:040210 HL:000039 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:2042 BC:000020 DE:040210 HL:000020 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:4142 BC:000041 DE:040210 HL:000041 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:6142 BC:000061 DE:040210 HL:000061 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:5a42 BC:00005a DE:040210 HL:00005a SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:7a42 BC:00007a DE:040210 HL:00007a SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:2042 BC:000020 DE:040210 HL:000020 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:2142 BC:000021 DE:040210 HL:000021 SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:3f42 BC:00003f DE:040210 HL:00003f SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:0d42 BC:00000d DE:040210 HL:00000d SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+* 000010: JP.LIL $1906         AF:0a42 BC:00000a DE:040210 HL:00000a SPS:0000 SPL:0affc2 IX:0afff4 IY:0bff1d ADL:1
+CPU paused
+* 0400c8: PUSH HL              AF:0044 BC:000000 DE:000022 HL:123456 SPS:0000 SPL:0afffa IX:040477 IY:0bff1d ADL:1
+>> 

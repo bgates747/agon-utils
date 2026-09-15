@@ -1,0 +1,14 @@
+{
+  "variant": "cpp",
+  "passed": true,
+  "backend": "mbr-fat32-image",
+  "binary_sha256": "1fea5d9c1ffdcf5b533841e8f80f52974d655d0bec5c2b4c57d476894d8cdbd0",
+  "main_address": "0x401e1",
+  "return_address": "0x400c8",
+  "output_hex": "5730343a204d4f532041424920303132333435363738392041615a7a20213f0d0a",
+  "return_hl": "123456",
+  "stack_balanced": true,
+  "ix_preserved": true,
+  "elapsed_seconds": 1.192,
+  "emulator_exit": 0
+}

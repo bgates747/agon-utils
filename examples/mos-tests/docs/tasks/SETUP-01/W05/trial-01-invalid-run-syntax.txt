@@ -1,0 +1,38 @@
+
+Agon EZ80 Debugger
+
+br[eak] <address>             Set a breakpoint at the hex address
+c[ontinue]                    Resume (un-pause) Agon CPU
+delete <address>              Delete a breakpoint
+dis[assemble] [start] [end]   Disassemble in current ADL mode
+dis16 [start] [end]           Disassemble in ADL=0 (Z80) mode
+dis24 [start] [end]           Disassemble in ADL=1 (24-bit) mode
+exit                          Quit from Agon Light Emulator
+info breakpoints              List breakpoints
+[mem]ory <start> [len]        Dump memory. <start> can be a register
+n[ext]                        Step over function calls
+pause                         Pause execution and enter debugger
+state                         Show CPU state
+.                             Show CPU state
+s[tep]                        Execute one instuction
+trace on                      Enable logging every instruction
+trace off                     Disable logging every instruction
+trigger <address> cmd1 : cmd2 : ...
+    Perform debugger commands when <address> is reached
+    eg: break $123 is equivalent to:
+        trigger $123 pause:"CPU paused at breakpoint":state
+
+triggers                      List triggers
+
+The previous command can be repeated by pressing return.
+
+CPU running. Press <CTRL-C> to pause
+
+Video driver: dummy (can override with SDL_VIDEO_DRIVER environment variable)
+CPU paused (breakpoint)
+* 000000: DI                   AF:ffff BC:000000 DE:000000 HL:000000 SPS:0000 SPL:000000 IX:000000 IY:000000 ADL:0
+>> trigger $10 state
+>> break $400d3
+>> delete $0
+>> c
+CPU running
