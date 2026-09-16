@@ -10,26 +10,26 @@ qualification is also a useful independent result.
 
 ## State
 
-Reconstructed contract checkpoint. Completed items: none.
+Reconstructed contract checkpoint. Completed items: W01, W02, W03, W04.
 Remaining work is frozen and unstarted at this checkpoint. The subproject TODO
 owns unfinished task indexing. This is a retrospective grouping, not an exact
 previous edit version or a backdated acceptance record.
 
 ## Work
 
-- W01 [ ] Audit the existing maintained and task-local helpers and instructions.
+- W01 [x] Audit the existing maintained and task-local helpers and instructions.
   Map each to human entry points, shared implementation, agent-specific tooling
   or historical evidence. Identify reusable operations and promotion candidates,
   including their dependencies and existing validation. Do not treat every
   experimental runner as mature or duplicate it merely to populate a directory.
-- W02 [ ] Create the audience entry points and navigation.
+- W02 [x] Create the audience entry points and navigation.
   Make the most prominent usage direction in the root README a link telling
   humans to start in human/README.md. Create human/README.md with distinct
   emulator and hardware routes and agents/README.md with agent workflow and
   links to shared human operations. Link AGENTS.md to the agent entry point.
   Clearly distinguish working procedures from planned capabilities; do not
   invent hardware instructions or imply hardware qualification has occurred.
-- W03 [ ] Expose the existing qualified operations through human-facing tools.
+- W03 [x] Expose the existing qualified operations through human-facing tools.
   Provide runnable front ends under human/ using existing maintained helpers
   and appropriately promoted mature code. Keep fixtures, deployment primitives,
   result semantics and comparison logic in one shared implementation. Preserve
@@ -37,7 +37,7 @@ previous edit version or a backdated acceptance record.
   exit codes and saved results; make interactive requirements explicit so an
   agent can invoke the same operations without duplicating them. Hardware
   support that needs design or equipment verification remains visibly pending.
-- W04 [ ] Add agent guidance and validate the scaffold.
+- W04 [x] Add agent guidance and validate the scaffold.
   Document prerequisite checks, backend selection, tool invocation, evidence
   interpretation and cleanup. Link to human instructions rather than copying
   them. Add agent-only automation only where it provides a distinct capability.
@@ -45,6 +45,11 @@ previous edit version or a backdated acceptance record.
   the existing qualified baseline. Record backend and evidence limitations;
   update handoff and document remaining work without claiming suite coverage.
 
+All W01–W04 items are **Completed**. [Audit](MAIN-02/audit.md) records ownership
+and promotion; human/ and agents/ own the entry points. Shared smoke validation
+and front-end error checks are retained under MAIN-02/validation and
+MAIN-02/front-end-checks.json. Hardware and the full-suite boot bundle remain
+explicitly pending, as permitted by this scaffold's scope.
 
 ## Interface priority
 

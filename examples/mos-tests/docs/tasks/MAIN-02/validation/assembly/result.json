@@ -1,0 +1,14 @@
+{
+  "variant": "assembly",
+  "passed": true,
+  "backend": "mbr-fat32-image",
+  "binary_sha256": "3c880501077ca50ae602af2011a2009f320ef5eac7ec4b9748db02b05e78d511",
+  "main_address": "0x401e1",
+  "return_address": "0x400c8",
+  "output_hex": "5730343a204d4f532041424920303132333435363738392041615a7a20213f0d0a",
+  "return_hl": "123456",
+  "stack_balanced": true,
+  "ix_preserved": true,
+  "elapsed_seconds": 1.219,
+  "emulator_exit": 0
+}

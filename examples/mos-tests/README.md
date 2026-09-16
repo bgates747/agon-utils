@@ -1,5 +1,9 @@
 # MOS tests
 
+**If you are a human who wants to use these tools, start in [human/](human/README.md) and follow its emulator or hardware instructions.**
+
+Agents: start with [agents/](agents/README.md).
+
 A MOS test suite within `agon-utils/examples/mos-tests`, intended to exercise
 Agon MOS behavior and help isolate AgonDev code-generation or MOS-call faults.
 The scaffold, dedicated emulator, and standard AgonDev build configuration

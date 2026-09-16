@@ -1,0 +1,25 @@
+{
+  "backend": "headless-raw-image",
+  "identities": {
+    "fab-agon-emulator": {
+      "path": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/fab-agon-emulator",
+      "sha256": "161b1dfa57e0cf6923e361dee987a78aead8f7a7389554a4985532c3e13187dd"
+    },
+    "fab-agon-emulator.bin": {
+      "path": "/home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/fab-agon-emulator",
+      "sha256": "a96ca0e6f5f51ba6b750bd6fcf96efcaed88e61c431171f79a7db5f29877f17e"
+    },
+    "firmware/mos_platform.bin": {
+      "path": "/home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/firmware/mos_platform.bin",
+      "sha256": "d564243283972690933a4554296ad6202ca4ef54572279533a942960846bebae"
+    },
+    "firmware/mos_platform.map": {
+      "path": "/home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/firmware/mos_platform.map",
+      "sha256": "d69e60bbce61a7b4b3eef318ba395f11c4e1a5b585755755113992dc94edcb86"
+    },
+    "firmware/vdp_platform.so": {
+      "path": "/home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/firmware/vdp_platform.so",
+      "sha256": "bc7a8a6a28e176c9679c96de4bda16010b765074ec8ba155fccde189c1051955"
+    }
+  }
+}

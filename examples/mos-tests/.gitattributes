@@ -1,0 +1,5 @@
+# Preserve exact binary evidence and debugger transcripts; never normalize bytes.
+*.bin binary
+*.sram binary
+*.raw.txt binary
+docs/tasks/**/debugger*.txt binary

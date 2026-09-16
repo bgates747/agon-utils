@@ -1,9 +1,9 @@
 # MOS tests checkpoint handoff
 
-Reconstructed checkpoint: Accept MOS coverage strategy and freeze tooling scaffold work.
+Reconstructed checkpoint: Accept shared human tools and freeze runner qualification contracts.
 The Author authorized this retrospective commit series on 2026-09-16.
 Original chronological evidence remains in dated logs and task silos.
-Next frozen work: MAIN-02 W01. It is not implemented in this commit.
+Next frozen work: MAIN-03 W01 / TEST-01 W01. It is not implemented in this commit.
 
 Project: /home/smith/Agon/mystuff/agon-utils/examples/mos-tests
 Python: /home/smith/Agon/mystuff/agon-utils/.venv/bin/python

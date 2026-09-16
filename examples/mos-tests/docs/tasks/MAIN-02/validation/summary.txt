@@ -1,0 +1,2 @@
+ALL SELECTED SMOKE CHECKS PASSED — 2 variants
+Backend: headless emulator, raw SD image. Hardware untested.

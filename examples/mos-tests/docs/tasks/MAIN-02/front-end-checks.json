@@ -1,0 +1,41 @@
+[
+  {
+    "args": [
+      "help"
+    ],
+    "exit": 0,
+    "output": "Usage: human/mos-tests COMMAND [options]\n  build       Build the existing C++ smoke binary\n  image       Prepare a fresh raw image (--output PATH, optional --binary PATH)\n  smoke       Run C++/assembly headlessly and save evidence (--output FRESH_DIR)\n  debug       Launch headless interactive debugger (--image PATH)\n  hardware    Show hardware support status\n"
+  },
+  {
+    "args": [
+      "hardware"
+    ],
+    "exit": 2,
+    "output": "Hardware full-suite bundle/reporting is not implemented. See human/hardware.md.\n"
+  },
+  {
+    "args": [
+      "unknown"
+    ],
+    "exit": 2,
+    "output": "Unknown command: unknown\n"
+  },
+  {
+    "args": [
+      "smoke",
+      "--output",
+      ".emulator/runs/main-02-validation"
+    ],
+    "exit": 1,
+    "output": "Traceback (most recent call last):\n  File \"/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/scripts/run_smoke.py\", line 117, in <module>\n    RUN.mkdir(parents=True, exist_ok=False)\n    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/smith/.local/share/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py\", line 1011, in mkdir\n    os.mkdir(self, mode)\n    ~~~~~~~~^^^^^^^^^^^^\nFileExistsError: [Errno 17] File exists: '/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/runs/main-02-validation'\n"
+  },
+  {
+    "args": [
+      "debug",
+      "--image",
+      "/nonexistent/mos-tests.img"
+    ],
+    "exit": 1,
+    "output": "Traceback (most recent call last):\n  File \"/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/scripts/run_emulator.py\", line 18, in <module>\n    if __name__==\"__main__\": main()\n                             ~~~~^^\n  File \"/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/scripts/run_emulator.py\", line 9, in main\n    image=args.image.resolve(strict=True)\n  File \"/home/smith/.local/share/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py\", line 938, in resolve\n    return self.with_segments(os.path.realpath(self, strict=strict))\n                              ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\n  File \"<frozen posixpath>\", line 457, in realpath\nFileNotFoundError: [Errno 2] No such file or directory: '/nonexistent'\n"
+  }
+]

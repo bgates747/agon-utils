@@ -1,0 +1,15 @@
+{
+  "backend": "mbr-fat32-image",
+  "image": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/runs/main-02-final/assembly/sd.img",
+  "sha256": "62036d2c012711af09f12247c88f06ccbc8b3c75d2dddd44e504f8741c34207f",
+  "files": {
+    "/mystuff/test.bin": {
+      "sha256": "3c880501077ca50ae602af2011a2009f320ef5eac7ec4b9748db02b05e78d511",
+      "size": 1160
+    },
+    "/!boot.obey": {
+      "sha256": "9582ba96b764011e4712bc7e4b6794006428c3f0e5b036d13b6291ee0282cb8f",
+      "size": 49
+    }
+  }
+}
