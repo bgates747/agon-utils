@@ -10,20 +10,24 @@ through the existing human/agent entry points. Qualify each component with
 
 ## State and scope
 
-Reconstructed contract checkpoint. Completed items: none.
+Reconstructed contract checkpoint. Completed items: W01.
 Remaining work is frozen and unstarted at this checkpoint. The subproject TODO
 owns unfinished task indexing. This is a retrospective grouping, not an exact
 previous edit version or a backdated acceptance record.
 
 ## Work
 
-- W01 [ ] Freeze the executable data contracts.
+- W01 [x] Freeze the executable data contracts.
   Specify typed v1 payload layouts, register snapshot fields and preservation
   masks, catalogue/selection manifest and run identities, checkpoint state and
   error dispositions. Confirm envelope, CRC, SRAM bounds and generation rules
   against the strategy. Define known-answer bytes with TEST-01 W01 independently
   of serialization code. Publish maintained format documentation; do not dump
   compiler structs or duplicate upstream API contracts.
+  **Completed** — [frozen format](../result-format-v1.md), maintained
+  fixtures/format-v1 (six record types, 44 capture vectors, 14 report scenarios)
+  and [W01 checks](MAIN-03/W01/validation.txt). These define independent
+  expectations; production encoding/capture/report qualification remains pending.
 - W02 [ ] Implement the shared catalogue and bounded runner lifecycle.
   Add synthetic case descriptors and immutable IDs, per-function/group/exact-case
   selection, stable ordering, declared backend capabilities and fresh run output.

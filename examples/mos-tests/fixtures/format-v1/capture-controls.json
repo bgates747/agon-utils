@@ -1,0 +1,436 @@
+[
+  {
+    "id": "preserve-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [],
+    "expected": "no differences"
+  },
+  {
+    "id": "A-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a5da0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      1
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "BC-low-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a55a8302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      2
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "BC-upper-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a55a0302810605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      4
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "DE-low-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a55a0302018605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      5
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "DE-upper-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a55a0302010605840908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      7
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "HL-low-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a55a0302010605048908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      8
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "HL-upper-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a55a0302010605040908870c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      10
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "IX-low-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a55a0302010605040908078c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      11
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "IX-upper-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a55a0302010605040908070c0b8a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      13
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "IY-low-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a55a0302010605040908070c0b0a8f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      14
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "IY-upper-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a55a0302010605040908070c0b0a0f0e8d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      16
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "SP-low-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a55a0302010605040908070c0b0a0f0e0d80f00b001004000100ff0300000000",
+    "changed_offsets": [
+      17
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "SP-upper-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a55a0302010605040908070c0b0a0f0e0d00f08b001004000100ff0300000000",
+    "changed_offsets": [
+      19
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "flag-0-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a45a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "01",
+    "expected": "only named flag bit differs"
+  },
+  {
+    "id": "flag-1-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a75a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "02",
+    "expected": "only named flag bit differs"
+  },
+  {
+    "id": "flag-2-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "a15a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "04",
+    "expected": "only named flag bit differs"
+  },
+  {
+    "id": "flag-3-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "ad5a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "08",
+    "expected": "only named flag bit differs"
+  },
+  {
+    "id": "flag-4-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "b55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "10",
+    "expected": "only named flag bit differs"
+  },
+  {
+    "id": "flag-5-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "855a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "20",
+    "expected": "only named flag bit differs"
+  },
+  {
+    "id": "flag-6-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "e55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "40",
+    "expected": "only named flag bit differs"
+  },
+  {
+    "id": "flag-7-0",
+    "entry": "a55a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "exit": "255a0302010605040908070c0b0a0f0e0d00f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "80",
+    "expected": "only named flag bit differs"
+  },
+  {
+    "id": "preserve-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [],
+    "expected": "no differences"
+  },
+  {
+    "id": "A-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5a25fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      1
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "BC-low-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5aa57cfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      2
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "BC-upper-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5aa5fcfd7ef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      4
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "DE-low-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5aa5fcfdfe79fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      5
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "DE-upper-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5aa5fcfdfef9fa7bf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      7
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "HL-low-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5aa5fcfdfef9fafb76f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      8
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "HL-upper-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5aa5fcfdfef9fafbf6f778f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      10
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "IX-low-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5aa5fcfdfef9fafbf6f7f873f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      11
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "IX-upper-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5aa5fcfdfef9fafbf6f7f8f3f475f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      13
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "IY-low-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5aa5fcfdfef9fafbf6f7f8f3f4f570f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      14
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "IY-upper-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f17200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      16
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "SP-low-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f280f00b001004000100ff0300000000",
+    "changed_offsets": [
+      17
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "SP-upper-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f08b001004000100ff0300000000",
+    "changed_offsets": [
+      19
+    ],
+    "xor_mask": "80",
+    "expected": "one byte differs; all other bytes identical"
+  },
+  {
+    "id": "flag-0-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5ba5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "01",
+    "expected": "only named flag bit differs"
+  },
+  {
+    "id": "flag-1-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "58a5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "02",
+    "expected": "only named flag bit differs"
+  },
+  {
+    "id": "flag-2-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "5ea5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "04",
+    "expected": "only named flag bit differs"
+  },
+  {
+    "id": "flag-3-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "52a5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "08",
+    "expected": "only named flag bit differs"
+  },
+  {
+    "id": "flag-4-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "4aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "10",
+    "expected": "only named flag bit differs"
+  },
+  {
+    "id": "flag-5-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "7aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "20",
+    "expected": "only named flag bit differs"
+  },
+  {
+    "id": "flag-6-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "1aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "40",
+    "expected": "only named flag bit differs"
+  },
+  {
+    "id": "flag-7-1",
+    "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "exit": "daa5fcfdfef9fafbf6f7f8f3f4f5f0f1f200f00b001004000100ff0300000000",
+    "changed_offsets": [
+      0
+    ],
+    "xor_mask": "80",
+    "expected": "only named flag bit differs"
+  }
+]

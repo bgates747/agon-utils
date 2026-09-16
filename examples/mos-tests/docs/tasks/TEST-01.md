@@ -9,18 +9,22 @@ it does not test MOS conformance or authorize firmware changes.
 
 ## State
 
-Reconstructed contract checkpoint. Completed items: none.
+Reconstructed contract checkpoint. Completed items: W01.
 Remaining work is frozen and unstarted at this checkpoint. The subproject TODO
 owns unfinished task indexing. This is a retrospective grouping, not an exact
 previous edit version or a backdated acceptance record.
 
 ## Work
 
-- W01 [ ] Define independent controls and golden evidence.
+- W01 [x] Define independent controls and golden evidence.
   Write readable expected register changes and manually inspectable wire records,
   CRC known answers, case plans and report totals. Include explicit byte-order,
   width and upper-byte checks. Record the rationale so tests do not merely mirror
   serializer or comparison implementation. Agree contracts with MAIN-03 W01.
+  **Completed** — [frozen format](../result-format-v1.md), maintained
+  fixtures/format-v1 (six record types, 44 capture vectors, 14 report scenarios)
+  and [W01 checks](TEST-01/W01/validation.txt). These define independent
+  expectations; production encoding/capture/report qualification remains pending.
 - W02 [ ] Qualify the assembly capture boundary.
   Exercise preserving controls and intentional changes to each captured register,
   upper byte and promised flag; check known return values and stack accounting.

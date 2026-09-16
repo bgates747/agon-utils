@@ -1,0 +1,233 @@
+[
+  {
+    "id": "all-pass",
+    "selected": [
+      1,
+      2
+    ],
+    "ends": [
+      "PASSED",
+      "PASSED"
+    ],
+    "assertions": [
+      1,
+      1
+    ],
+    "failed_assertions": [
+      0,
+      0
+    ],
+    "run_end": true,
+    "verdict": "ALL TESTS PASSED",
+    "passed": 2,
+    "failed_tests": 0
+  },
+  {
+    "id": "two-assertions-one-test",
+    "selected": [
+      1,
+      2
+    ],
+    "ends": [
+      "FAILED",
+      "PASSED"
+    ],
+    "assertions": [
+      3,
+      1
+    ],
+    "failed_assertions": [
+      2,
+      0
+    ],
+    "run_end": true,
+    "verdict": "FAILURES",
+    "passed": 1,
+    "failed_tests": 1
+  },
+  {
+    "id": "two-failing-tests",
+    "selected": [
+      1,
+      2
+    ],
+    "ends": [
+      "FAILED",
+      "FAILED"
+    ],
+    "assertions": [
+      1,
+      2
+    ],
+    "failed_assertions": [
+      1,
+      2
+    ],
+    "run_end": true,
+    "verdict": "FAILURES",
+    "passed": 0,
+    "failed_tests": 2
+  },
+  {
+    "id": "expected-error-pass",
+    "selected": [
+      1
+    ],
+    "ends": [
+      "PASSED"
+    ],
+    "assertions": [
+      1
+    ],
+    "failed_assertions": [
+      0
+    ],
+    "run_end": true,
+    "verdict": "ALL TESTS PASSED",
+    "passed": 1,
+    "failed_tests": 0,
+    "note": "API returned the expected nonzero error status"
+  },
+  {
+    "id": "missing-finalization",
+    "selected": [
+      1
+    ],
+    "ends": [
+      "PASSED"
+    ],
+    "run_end": false,
+    "verdict": "INCOMPLETE",
+    "passed": 1,
+    "failed_tests": 0
+  },
+  {
+    "id": "missing-case",
+    "selected": [
+      1,
+      2
+    ],
+    "ends": [
+      "PASSED",
+      null
+    ],
+    "run_end": true,
+    "verdict": "INCOMPLETE",
+    "passed": 1,
+    "failed_tests": 0
+  },
+  {
+    "id": "known-failure-then-fault",
+    "selected": [
+      1,
+      2
+    ],
+    "ends": [
+      "FAILED",
+      null
+    ],
+    "run_end": false,
+    "verdict": "INCOMPLETE",
+    "passed": 0,
+    "failed_tests": 1
+  },
+  {
+    "id": "empty-plan",
+    "selected": [],
+    "ends": [],
+    "run_end": true,
+    "verdict": "CONFIGURATION ERROR",
+    "passed": 0,
+    "failed_tests": 0
+  },
+  {
+    "id": "observed",
+    "selected": [
+      1,
+      2
+    ],
+    "ends": [
+      "PASSED",
+      "OBSERVED"
+    ],
+    "run_end": true,
+    "verdict": "NO FAILURES OBSERVED \u2014 coverage limited",
+    "passed": 1,
+    "failed_tests": 0
+  },
+  {
+    "id": "skipped",
+    "selected": [
+      1,
+      2
+    ],
+    "ends": [
+      "PASSED",
+      "SKIPPED"
+    ],
+    "run_end": true,
+    "verdict": "NO FAILURES OBSERVED \u2014 coverage limited",
+    "passed": 1,
+    "failed_tests": 0
+  },
+  {
+    "id": "unsupported",
+    "selected": [
+      1,
+      2
+    ],
+    "ends": [
+      "PASSED",
+      "UNSUPPORTED"
+    ],
+    "run_end": true,
+    "verdict": "NO FAILURES OBSERVED \u2014 coverage limited",
+    "passed": 1,
+    "failed_tests": 0
+  },
+  {
+    "id": "blocked",
+    "selected": [
+      1,
+      2
+    ],
+    "ends": [
+      "PASSED",
+      "BLOCKED"
+    ],
+    "run_end": true,
+    "verdict": "NO FAILURES OBSERVED \u2014 coverage limited",
+    "passed": 1,
+    "failed_tests": 0
+  },
+  {
+    "id": "error",
+    "selected": [
+      1,
+      2
+    ],
+    "ends": [
+      "PASSED",
+      "ERROR"
+    ],
+    "run_end": true,
+    "verdict": "INCOMPLETE",
+    "passed": 1,
+    "failed_tests": 0
+  },
+  {
+    "id": "incomplete",
+    "selected": [
+      1,
+      2
+    ],
+    "ends": [
+      "PASSED",
+      "INCOMPLETE"
+    ],
+    "run_end": true,
+    "verdict": "INCOMPLETE",
+    "passed": 1,
+    "failed_tests": 0
+  }
+]

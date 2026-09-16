@@ -1,0 +1,10 @@
+Contract/oracle checks only; no production runner qualification.
+run-start: literal field/length/CRC/hex agreement
+case-start: literal field/length/CRC/hex agreement
+observation: literal field/length/CRC/hex agreement
+case-end: literal field/length/CRC/hex agreement
+checkpoint-error: literal field/length/CRC/hex agreement
+run-end: literal field/length/CRC/hex agreement
+44 capture delta vectors checked.
+128-byte control slot CRC and total 8192-byte SRAM budget checked.
+14 hand-specified report scenarios retained; executable reporting tests remain pending.

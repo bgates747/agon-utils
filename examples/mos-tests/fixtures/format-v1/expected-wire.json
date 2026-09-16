@@ -1,0 +1,60 @@
+{
+  "run-start": {
+    "type": 1,
+    "sequence": 1,
+    "case_key": 0,
+    "payload_bytes": 136,
+    "total_bytes": 181,
+    "crc32": "680e5d56",
+    "sha256": "66f99e3a9bb45a12cc489ed4e8fbf7ec770c46eb658308e503fec67391a676a7"
+  },
+  "case-start": {
+    "type": 2,
+    "sequence": 2,
+    "case_key": 1,
+    "payload_bytes": 68,
+    "total_bytes": 113,
+    "crc32": "b7c5d9ab",
+    "sha256": "659e0e2bcb4f32fbf864f53966207e7d48255cccc702f6cc8fb375e2d98a59d5"
+  },
+  "observation": {
+    "type": 3,
+    "sequence": 3,
+    "case_key": 1,
+    "payload_bytes": 112,
+    "total_bytes": 157,
+    "crc32": "8ca189cc",
+    "sha256": "4ea12118fce46b0e19093a3edc9eae02a425ce645d97def1f5e9e1895ca526d2"
+  },
+  "case-end": {
+    "type": 4,
+    "sequence": 4,
+    "case_key": 1,
+    "payload_bytes": 20,
+    "total_bytes": 65,
+    "crc32": "89dc4960",
+    "sha256": "864ed3d8ba0958a987f4b71d169f2f05c902fda6aa2e7d6a8b39554abe6740b9"
+  },
+  "checkpoint-error": {
+    "type": 5,
+    "sequence": 5,
+    "case_key": 1,
+    "payload_bytes": 16,
+    "total_bytes": 61,
+    "crc32": "0c4bb037",
+    "sha256": "3177fa240ef12219f45493ea2839603d47c62461369625dd95f09684eaa6cf17"
+  },
+  "run-end": {
+    "type": 6,
+    "sequence": 5,
+    "case_key": 0,
+    "payload_bytes": 68,
+    "total_bytes": 113,
+    "crc32": "8c5e538f",
+    "sha256": "0d1d0253292a01dfa008bcf60e1e5692fa40850e1920e3199c3e43f1038dcadb"
+  },
+  "invalid": {
+    "bad-crc.bin": "reject CRC; no verdict from this record",
+    "missing-commit.bin": "incomplete tail; no case completion"
+  }
+}
