@@ -40,4 +40,3 @@ owned=[line for line in ps.splitlines() if 'fab-agon-emulator' in line and str(O
 assert not owned,owned
 (OUT/'result.json').write_text(json.dumps(dict(passed=True,steps=steps,prior_result_files_preserved=len(prior),owned_emulator_processes_remaining=owned,hardware_tested=False),indent=2)+'\n')
 print('PASSED: W07 aggregate and independent fresh-image repeat',flush=True)
-

@@ -9,7 +9,8 @@ retrieval is a separate before-reset opportunity.
 
 ## State and sequencing
 
-W01 authorized on 2026-09-16. MAIN-03 W07 and TEST-01 accepted.
+W01 accepted on 2026-09-16; W02 authorized after this checkpoint.
+MAIN-03 W07 and TEST-01 accepted in ecec9b9.
 This checkpoint freezes W01 scope before contract design; implementation is unstarted.
 Runs **before the proposed MAIN-04 first MOS slice**. MAIN-04 retains its existing
 proposed identity; task numbers do not prescribe execution order.
@@ -24,19 +25,26 @@ debugger, menu application or claim of power-loss atomicity is included.
 
 ## Work
 
-- W01 [ ] Freeze the recovery state and storage contract.
+- W01 [x] Freeze the recovery state and storage contract.
   Specify journal fields/version, alternating-slot CRC/generation rules,
   run/case/phase identity, publication ordering around CASE_START, CASE_END,
   RUN_END and close, and bounded discovery/reconciliation when the journal is
   missing or damaged. Define empty-installation evidence and ambiguous-state
   handling. Specify acknowledgement publication and interruption-safe behavior.
   Freeze independent expected outcomes before building the reader/writer.
+  **Completed and accepted on 2026-09-16** — [contract](../restart-recovery.md) and
+  [W01 review](MAIN-05/W01/validation.md), with 30 independent transition
+  expectations and a 256-byte IDLE slot fixture. W02 is not started.
 - W02 [ ] Implement the shared startup recovery gate.
   Inspect before run allocation and before test execution through autoexec.
   Reuse validated manifests/records; preserve originals and surface interrupted,
   corrupt, conflicting or unreadable state prominently. Retain confirmed
   failures. Never infer a reset cause or a pass from missing evidence.
   Implement the on-device helper in C++/AgonDev with bounded storage operations.
+  Validate native journal/record controls and headless raw-image clean/repeat,
+  interrupted/repeat-blocked, corrupt/missing journal and damaged evidence cases.
+  W03 dispositions remain unavailable and must fail closed; W04 broadens fault
+  boundary coverage. Preserve the existing startup qualification and smoke paths.
 - W03 [ ] Add explicit recovery dispositions to human tools.
   Document and implement retry, selected continuation and acknowledgement/parking
   with durable provenance. New execution gets a new run identity and parent link;

@@ -349,6 +349,10 @@ limits and elapsed measurements are recorded, not treated as hardware equivalenc
 
 ### Restart recovery gate — planned, MAIN-05
 
+The [restart recovery contract](restart-recovery.md) defines MAIN-05 W01 journal
+bytes, transition ordering, bounded reconciliation and explicit dispositions.
+It is designed but not yet implemented; result-format v1 remains unchanged.
+
 Run recovery inspection from the normal startup helper, before allocating a new
 run or executing any test group. This applies to both emulator and hardware
 autoexec workflows; it must not depend on an agent being present. Current startup

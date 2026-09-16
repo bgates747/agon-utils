@@ -96,3 +96,20 @@ MAIN-05 W01. MAIN-03 and TEST-01 are accepted/closed and removed from TODO.
 Freeze W01 scope in this checkpoint, then design the recovery contract and
 independent transition expectations. No W02 implementation or push authorized
 by this checkpoint. Earlier pending-acceptance paragraphs describe prior state.
+
+## MAIN-05 W01 design ready
+
+Checkpoint ecec9b9 accepted W07 and froze W01 scope. W01 now supplies
+docs/restart-recovery.md plus 30 transition expectations and an independent
+IDLE-slot binary fixture under docs/tasks/MAIN-05/W01. It awaits acceptance and
+commit before W02 implementation. Key decisions: invalid slot blocks despite an
+older clean slot; reconcile bounded retained history; publish intent before
+allocation/case entry; park remains stopped; retry/continue is explicit and
+one-use with new parent-linked identity. No emulator launched for this design.
+
+## W01 accepted; W02 authorized
+
+The Author requested “push, then do your next work.” This accepts W01 for its
+result checkpoint, freezes W02 implementation/validation scope, and authorizes
+pushing these commits before implementing the gate. W03 dispositions remain
+separate. No hardware execution or firmware repair is authorized.
