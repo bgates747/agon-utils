@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "purpose": "synthetic capture qualification",
+  "seeds": [
+    0,
+    1
+  ],
+  "input_source": "fixtures/format-v1/capture-controls.json"
+}

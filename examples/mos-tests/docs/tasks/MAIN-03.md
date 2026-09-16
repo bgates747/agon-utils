@@ -10,7 +10,7 @@ through the existing human/agent entry points. Qualify each component with
 
 ## State and scope
 
-Reconstructed contract checkpoint. Completed items: W01.
+Reconstructed contract checkpoint. Completed items: W01, W02.
 Remaining work is frozen and unstarted at this checkpoint. The subproject TODO
 owns unfinished task indexing. This is a retrospective grouping, not an exact
 previous edit version or a backdated acceptance record.
@@ -28,12 +28,17 @@ previous edit version or a backdated acceptance record.
   fixtures/format-v1 (six record types, 44 capture vectors, 14 report scenarios)
   and [W01 checks](MAIN-03/W01/validation.txt). These define independent
   expectations; production encoding/capture/report qualification remains pending.
-- W02 [ ] Implement the shared catalogue and bounded runner lifecycle.
+- W02 [x] Implement the shared catalogue and bounded runner lifecycle.
   Add synthetic case descriptors and immutable IDs, per-function/group/exact-case
   selection, stable ordering, declared backend capabilities and fresh run output.
   Reject unknown/empty selections and collisions. Persist the selected plan;
   distinguish skipped, unsupported, blocked and incomplete outcomes from passes.
   Keep the root smoke and promoted comparison usable while adding the runner.
+  **Completed** — shared host/Agon C++ selector, validated synthetic catalogue,
+  persisted planning artifacts, lifecycle hooks and human front ends are in
+  maintained locations. [W02 checks](MAIN-03/W02/validation.txt) cover native
+  lifecycle/selection failures and the AgonDev build. Plans remain unexecuted;
+  capture, durable hooks and binary run records connect in subsequent items.
 - W03 [ ] Implement and qualify immediate register capture and SRAM staging.
   Use the agreed $B7E000–$B7FFFF user-owned layout, explicit mapping checks and
   guarded boundaries. Capture full-width entry/exit registers, applicable flags

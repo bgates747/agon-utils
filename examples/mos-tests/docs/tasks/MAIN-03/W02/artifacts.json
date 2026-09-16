@@ -1,0 +1,8 @@
+{
+  "catalogue/catalogue.json": "7ee450ce126b2a23f17334c1abf6af2985075db1cd48423fc24ec30bb0f8c893",
+  "apps/runner/bin/mos-runner.bin": "51721037c2fa84c9f9c6638c5e9936bd34edfa3f05559283d2b51c91bab0b7b5",
+  "apps/runner/bin/mos-runner.map": "65320d4f8f146501f48d9c4ab1af148d37dfd65632e7c26ef23d66614b370289",
+  "apps/runner/include/lifecycle.h": "d9109154945713c04894c320cbeea2ac7e2515fb5cc6375a139cfef6bea2fab7",
+  "apps/runner/src/main.cpp": "360edb4b22c537f28abf8155f9729831c6d9ff3bf14a92465f441a3992217e14",
+  "scripts/plan_run.py": "982234803796ffb64fab88134d07b7eb0fb203228ba0c2a83717ab13c15c6cdc"
+}

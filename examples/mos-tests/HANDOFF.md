@@ -1,9 +1,9 @@
 # MOS tests checkpoint handoff
 
-Reconstructed checkpoint: Accept v1 data contracts and independent runner oracles.
+Reconstructed checkpoint: Accept catalogue planning and bounded runner lifecycle.
 The Author authorized this retrospective commit series on 2026-09-16.
 Original chronological evidence remains in dated logs and task silos.
-Next frozen work: MAIN-03 W02. It is not implemented in this commit.
+Next frozen work: MAIN-03 W03 / TEST-01 W02. It is not implemented in this commit.
 
 Project: /home/smith/Agon/mystuff/agon-utils/examples/mos-tests
 Python: /home/smith/Agon/mystuff/agon-utils/.venv/bin/python

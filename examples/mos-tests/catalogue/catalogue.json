@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "key": 1,
+      "id": "control.preserve.001",
+      "function": "synthetic_preserve",
+      "route": "synthetic",
+      "group": "controls",
+      "expectation_sha256": "39542ceb09aa1c63dfc17e65f24d191f9ee69aaee8a662000ae7ae4033a1d251",
+      "fixture_sha256": "8517f0ab621b24e008e3591c2a64058d1e8c6bcbc657065f12fe3ceb8f0ed299",
+      "capabilities": [],
+      "isolation": "pure",
+      "samples": [
+        0,
+        1
+      ],
+      "timeout_ms": 1000
+    },
+    {
+      "key": 2,
+      "id": "control.ix-upper.001",
+      "function": "synthetic_clobber",
+      "route": "synthetic",
+      "group": "controls",
+      "expectation_sha256": "be54c69aed5082437ab4225620165a8f5242fe8c83b3675f16137e4a57f38841",
+      "fixture_sha256": "8517f0ab621b24e008e3591c2a64058d1e8c6bcbc657065f12fe3ceb8f0ed299",
+      "capabilities": [
+        "capture.primary"
+      ],
+      "isolation": "pure",
+      "samples": [
+        0,
+        1
+      ],
+      "timeout_ms": 1000
+    },
+    {
+      "key": 3,
+      "id": "control.uart-required.001",
+      "function": "synthetic_capability",
+      "route": "synthetic",
+      "group": "controls",
+      "expectation_sha256": "f2b64345f9ed6d40e5bfd39801147d41a41b142c3cac4280e4a3b5d5d2b11d5e",
+      "fixture_sha256": "8517f0ab621b24e008e3591c2a64058d1e8c6bcbc657065f12fe3ceb8f0ed299",
+      "capabilities": [
+        "uart.peer"
+      ],
+      "isolation": "pure",
+      "samples": [
+        0,
+        1
+      ],
+      "timeout_ms": 1000
+    }
+  ]
+}

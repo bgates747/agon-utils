@@ -1,0 +1,7 @@
+PASSED: AgonDev C++14 target build produced apps/runner/bin/mos-runner.bin.
+PASSED: same C++ selector compiled natively with -Wall -Wextra -Werror.
+PASSED: 11 native lifecycle controls cover normal/discrepant/unsupported/blocked,
+empty/duplicate plans, start/finish/cleanup failures and invalid/incomplete results.
+PASSED: planner stable union/order, exact selector, declared backend, existing-output
+refusal preserving bytes, unknown/empty selector and unknown-capability rejection.
+No target execution, capture, timeout preemption or MOS conformance qualification.

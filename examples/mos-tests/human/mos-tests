@@ -6,8 +6,10 @@ PYTHON="$REPO/.venv/bin/python"
 command=${1:-help}
 if [ "$#" -gt 0 ]; then shift; fi
 case "$command" in
-  help|--help|-h) printf '%s\n' 'Usage: human/mos-tests COMMAND [options]' '  build       Build the existing C++ smoke binary'       '  image       Prepare a fresh raw image (--output PATH, optional --binary PATH)' '  smoke       Run C++/assembly headlessly and save evidence (--output FRESH_DIR)' '  debug       Launch headless interactive debugger (--image PATH)' '  hardware    Show hardware support status' ;;
+  help|--help|-h) printf '%s\n' 'Usage: human/mos-tests COMMAND [options]' '  build       Build the existing C++ smoke binary' '  plan        Save selection only; no execution (--output DIR --backend emulator SELECTOR...)' '  runner-build Build the Agon catalogue/selector foundation'     '  image       Prepare a fresh raw image (--output PATH, optional --binary PATH)' '  smoke       Run C++/assembly headlessly and save evidence (--output FRESH_DIR)' '  debug       Launch headless interactive debugger (--image PATH)' '  hardware    Show hardware support status' ;;
   build) exec make -C "$ROOT" "$@" ;;
+  plan) exec "$PYTHON" "$ROOT/scripts/plan_run.py" "$@" ;;
+  runner-build) "$PYTHON" "$ROOT/scripts/plan_run.py" --list >/dev/null; exec make -C "$ROOT/apps/runner" "$@" ;;
   image) exec "$PYTHON" "$ROOT/scripts/prepare_sd_image.py" "$@" ;;
   smoke) exec "$PYTHON" "$ROOT/scripts/run_smoke.py" "$@" ;;
   debug) exec "$PYTHON" "$ROOT/scripts/run_emulator.py" "$@" -d -b 0 ;;

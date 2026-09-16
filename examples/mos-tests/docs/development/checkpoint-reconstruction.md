@@ -30,5 +30,6 @@ work, including MAIN-02. Unfinished W06/W07 work is not accepted as implemented.
 - `7d6ef6b` — Freeze mos-tests checkpoint rules and strategy/scaffold contracts.
 - `9da9114` — Accept MOS coverage strategy and freeze tooling scaffold work.
 - `cf57c9d` — Accept shared human tools and freeze runner qualification contracts.
+- `6dd339f` — Accept v1 data contracts and independent runner oracles.
 
-This tree includes group 4; its successor contract remains frozen in the task documents.
+This tree includes group 5; its successor contract remains frozen in the task documents.

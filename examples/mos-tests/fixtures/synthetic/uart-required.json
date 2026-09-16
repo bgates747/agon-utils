@@ -1,0 +1,4 @@
+{
+  "purpose": "selection capability gate only",
+  "requires_qualified_capture": true
+}
