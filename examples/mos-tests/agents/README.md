@@ -29,3 +29,6 @@ report the planner's success or the target build as execution of selected tests.
 
 [Result reports](../human/reports.md) are available through `human/mos-tests report`;
 `report-check` qualifies the host decoder without launching an emulator.
+
+[Editable startup bundles](../human/startup.md) use the shared bundle/startup/
+startup-check front ends. W06 is accepted; its checkpoint precedes W07.

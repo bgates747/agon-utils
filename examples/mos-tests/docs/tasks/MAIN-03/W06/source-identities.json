@@ -1,0 +1,15 @@
+{
+  "scripts/startup_bundle.py": "bc4bcfc4411ce1b7f9c7a27fb439bf2f31ac853a1f59df2af6e6b6a39de4a10e",
+  "agents/run_startup.py": "66e5a9ca1d28ec3b1ce6c121d75cf2600fec17e4a10a24d5961a092398444c70",
+  "human/mos-tests": "be99c532ea64ccdfc87eff077cc998c295c18197dabb4d68a1ed6de7bcf847ca",
+  "tests/startup/check.py": "71dd37fae605e9ab5e9c19036db1c11c00fd8aef813d440f3e1d85ff6e3f0263",
+  "tests/startup/primitive.cpp": "f8c8630cea4f386400698d9a686ab66bc1d8d6b4462aaa621fcc63db2696cfae",
+  "tests/startup/continuation.cpp": "0b268911392744be59bb1f41b31c1cbb2863fa6872c4ca157174c2c733b71da4",
+  "apps/startup-runner/src/main.cpp": "a90ffe1dc979ab9156c0dc92051eb673f73b6cec4bf9913e44f47269926118a4",
+  "apps/startup-runner/src/probe.asm": "9ad1464d53a233c74595c162b28d5da420148f37ee22a5c5ca221b693e183bc2",
+  "apps/startup-runner/include/continuation.h": "65b761e51366f1f3cfa3f27d83422fff54587e839be60015082cc29970bd4d73",
+  "apps/startup-runner/include/generated.h": "52b743ab05014f59b756fbac8830dc6eb5e49ecddc80afacc02fc186a741cc1a",
+  "apps/startup-runner/include/script.h": "356d8771b1178c2d20fdf202ec605f4c3258da80e164c97ee377cc11f264c9f7",
+  "apps/startup-runner/include/sha256.h": "5ce53fce0846077e296aac744329d646fd6b63a37dc55caa4f696291a3fdd481",
+  "apps/startup-runner/Makefile": "6cbc9f270bd7b04f636cb55d263a65e2360ed2f78d167f0fa467c30032f50902"
+}

@@ -1,0 +1,18 @@
+# MOS tests: comment out or delete BOTH lines of a function group.
+LOAD /mos-tests/runner.bin
+RUN . begin
+
+# synthetic_preserve
+LOAD /mos-tests/runner.bin
+RUN . function synthetic_preserve
+
+# synthetic_clobber
+LOAD /mos-tests/runner.bin
+RUN . function synthetic_clobber
+
+# synthetic_capability
+LOAD /mos-tests/runner.bin
+RUN . function synthetic_capability
+
+LOAD /mos-tests/runner.bin
+RUN . finalize

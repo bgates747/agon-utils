@@ -14,4 +14,6 @@ promoted C++/assembly fixtures and observer into maintained locations and reran
 them through the human front end successfully. Historical BASIC evidence remains
 under SETUP-01/W05 pending general-runner integration. No hardware qualification
 is claimed. Use raw SD images and !boot.obey; do not use inherited hostfs targets
-for qualification. The general runner remains designed, not implemented.
+for qualification. The startup runner now executes the three synthetic controls with the same
+AgonDev toolchain; human/mos-tests bundle builds it and supplies its generated
+catalogue/hash table. See human/startup.md for the editable startup workflow.

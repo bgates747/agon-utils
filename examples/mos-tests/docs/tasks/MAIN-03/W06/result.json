@@ -1,0 +1,102 @@
+{
+  "passed": true,
+  "native_sha_vectors": 13,
+  "continuation_controls": 9,
+  "valid_selections": 7,
+  "rejected_scripts": 7,
+  "trials": [
+    {
+      "name": "full",
+      "statuses": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "verdict": "NO FAILURES OBSERVED \u2014 coverage limited",
+      "seconds": 9.582575125998119
+    },
+    {
+      "name": "single",
+      "statuses": [
+        0,
+        0,
+        0
+      ],
+      "verdict": "ALL TESTS PASSED",
+      "seconds": 8.771367035002186
+    },
+    {
+      "name": "commented-group",
+      "statuses": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "verdict": "ALL TESTS PASSED",
+      "seconds": 9.31639970499964
+    },
+    {
+      "name": "deliberate-failure",
+      "statuses": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "verdict": "FAILURES",
+      "seconds": 9.258439223998721
+    },
+    {
+      "name": "infrastructure-stop",
+      "statuses": [
+        0,
+        35
+      ],
+      "verdict": "INCOMPLETE",
+      "seconds": 8.6212628889989
+    },
+    {
+      "name": "changed-script",
+      "statuses": [
+        0,
+        26
+      ],
+      "verdict": "INCOMPLETE",
+      "seconds": 8.55503395100095
+    },
+    {
+      "name": "unknown-function",
+      "statuses": [
+        20
+      ],
+      "verdict": null,
+      "seconds": 1.2083538229999249
+    },
+    {
+      "name": "missing-finalize",
+      "statuses": [
+        0,
+        0,
+        0
+      ],
+      "verdict": "INCOMPLETE",
+      "seconds": 8.936056321999786
+    },
+    {
+      "name": "missing-group",
+      "statuses": [
+        0,
+        0
+      ],
+      "verdict": "INCOMPLETE",
+      "seconds": 8.71431391799706
+    },
+    {
+      "name": "repeat boot: monotonic identity and prior-run preservation"
+    }
+  ],
+  "hardware_tested": false
+}

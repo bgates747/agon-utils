@@ -1,9 +1,9 @@
 # Run MOS tests
 
-Start here for human use. Current tools run the accepted C++/assembly smoke
-comparison on the Linux bench, headlessly using raw SD images. The general MOS
-case runner, editable full-suite autoexec.txt bundle and on-device decoder are
-not implemented yet. These smoke checks do not establish broad MOS correctness.
+Start here for human use. [Editable startup bundles](startup.md) now run the
+synthetic foundation controls through autoexec.txt, on the Linux bench with
+headless raw SD images. Real MOS function cases and physical hardware qualification
+remain later work. The current controls do not establish broad MOS correctness.
 
 - [Emulator instructions](emulator.md): working build, image and automated smoke tools.
 - [Hardware instructions/status](hardware.md): prerequisites and current limits.
@@ -13,7 +13,7 @@ absolute Linux path from anywhere. Python helpers use agon-utils/.venv. On-devic
 helper applications will use C++ targeting AgonDev.
 
 [Selection planning](planning.md) is now available separately from smoke execution.
-It saves plans only; the general runner does not execute tests yet.
+It saves plans only; use the startup workflow above to execute synthetic controls.
 
 [Register capture qualification](../docs/register-capture.md) is available through
 `human/mos-tests capture-check`. It checks synthetic controls, not MOS conformance.

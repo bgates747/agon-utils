@@ -10,7 +10,8 @@ through the existing human/agent entry points. Qualify each component with
 
 ## State and scope
 
-In progress. W01–W05 complete; W06–W07 have not started. The subproject
+In progress. W01–W06 implemented and qualified. W06 accepted by the Author on 2026-09-16;
+W07 is frozen and unstarted. The subproject
 [TODO](../../TODO.md) owns unfinished status. [Test strategy](../test-strategy.md)
 is the design authority; provisional notes are historical. MAIN-02 supplies
 working smoke front ends. MAIN-03 builds the general foundation with synthetic
@@ -81,7 +82,7 @@ peripheral support or automatic hardware deployment is included.
   [W05 evidence](MAIN-03/W05/validation.md). All 58 scenarios and 1,380 malformed
   record controls passed, including the 14 agreed report oracles. TEST-01 W03/W05
   complete; authenticated startup/bundle integration remains W06.
-- W06 [ ] Deliver and validate editable startup selection and shared front ends.
+- W06 [x] Deliver and validate editable startup selection and shared front ends.
   Supply a verified !boot.obey -> EXEC /autoexec.txt chain with commented function
   groups and LOAD/RUN commands. Preserve run identity/plan across group invocations
   so missing groups/finalization cannot yield all-pass. Test disabling a complete
@@ -89,6 +90,11 @@ peripheral support or automatic hardware deployment is included.
   continues; infrastructure errors stop it. Reuse human/mos-tests and link agent
   guidance to the same operations. Verify with raw images, headlessly; document
   what can be copied to hardware without claiming an unperformed hardware run.
+  **Completed and accepted on 2026-09-16** —
+  [startup guide](../../human/startup.md), [implementation contract](../startup-bundle.md)
+  and [W06 evidence](MAIN-03/W06/validation.md). Ten raw-image scenarios plus
+  parser/hash/continuation controls passed. Hardware remains untested. Commit
+  this result checkpoint on acceptance before beginning the frozen W07 work.
 - W07 [ ] Exercise end-to-end qualification and record delivery limits.
   Run the complete TEST-01 synthetic acceptance set and a fresh-image repeat,
   retaining binary/text evidence and exact runtime/toolchain identities. Verify

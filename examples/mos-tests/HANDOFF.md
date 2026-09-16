@@ -45,29 +45,32 @@ with their limits. No emulator was launched for closeout.
 The subproject-root [TODO.md](TODO.md) owns unfinished work. SETUP-01 and all its
 immutable subtask records are retained under `docs/tasks/`; MOS-01 is separate.
 Keep unrelated agon-utils changes out of MOS tests commits. Upstream checkouts
-remain read-only. Pushes have not been requested.
+remain read-only. Prior checkpoints were pushed through c73d827; W06 is accepted for the next checkpoint.
 
 ## Current human and agent entry points
 
 Humans start at human/README.md and use human/mos-tests. Agents start at
 agents/README.md and reuse the same tool. The promoted smoke comparison passes
 for C++ and assembly through raw images; results are saved per fresh run directory.
-Hardware, full-suite autoexec selection and the first MOS case batch are not
-implemented. See docs/test-strategy.md for accepted design.
+Editable autoexec selection now runs synthetic controls; physical hardware and
+the first real MOS case batch remain unqualified/unimplemented. See docs/test-strategy.md for accepted design.
 MAIN-02 validation evidence is under docs/tasks/MAIN-02/. The Author authorized retrospective checkpoint commits on 2026-09-16;
 no upstream publication or physical hardware work was performed.
 
-MAIN-03 W01–W05 and TEST-01 W01–W05 are complete. Binary recording/capture
-and the host decoder/report are qualified component by component. Use
-human/mos-tests report and report-check; see human/reports.md. W05 passed 58
-scenarios and 1,380 malformed-record controls, including all 14 report oracles.
-Evidence: docs/tasks/MAIN-03/W05/. No emulator was launched for host decoder work.
+MAIN-03 W01–W06 and TEST-01 W01–W06 are implemented and qualified. W06 is
+accepted by the Author on 2026-09-16; this checkpoint commits its results with
+the already frozen W07 contract before beginning W07. Do not accumulate another uncommitted work item.
+See human/startup.md for bundle, startup and startup-check commands. W06 retains
+!boot.obey -> EXEC /autoexec.txt as the MOS-01 workaround; firmware is unchanged.
 
-Next is MAIN-03 W06 with TEST-01 W06: authenticated editable autoexec startup
-bundle, persistent selection/run identity and shared human/agent front ends.
-W04's target fixture uses illustrative hashes; do not relabel it an authenticated
-full-suite result. IFF, alternate state, arbitrary crash/power-loss behavior and
-hardware remain unqualified. Supplied recovery errors override file completion;
-a file-only report does not establish successful close or absence of lost errors.
-Completed work through MAIN-03 W05 is accepted for the retrospective checkpoint
-series authorized on 2026-09-16. W06 is frozen but unstarted. MOS-01 remains parked.
+Ten raw-image scenarios passed, with native parser/hash/continuation controls.
+Selection is derived on target from actual script bytes; run identities allocate
+from an installation namespace/counter, and repeated boots preserve earlier runs.
+Ordinary discrepancies continue; infrastructure/script-integrity errors stop.
+Evidence: docs/tasks/MAIN-03/W06/, with a compressed qualification archive.
+The current bundle implements only three synthetic controls; default coverage
+is two passes and one unsupported UART fixture, not an all-pass suite claim.
+
+Next after this checkpoint: MAIN-03 W07 aggregate qualification, fresh-image
+repeat and delivery closeout. Hardware, alternate CPU state, power-loss guarantees
+and arbitrary crash recovery remain unqualified. MOS-01 remains parked. This W06 acceptance checkpoint is local; prior checkpoints remain pushed at c73d827.

@@ -23,7 +23,8 @@ The [coverage matrix](mos-coverage-matrix.md) defines proposed case families and
 backend requirements; it contains no executed-case results.
 
 [Test strategy](test-strategy.md) is the current W03 implementation design and
-supersedes the provisional runner/result notes. Implementation remains pending.
+supersedes the provisional runner/result notes. Component guides below describe
+implemented capabilities and qualification limits.
 
 [Result format v1](result-format-v1.md) owns exact runner data contracts;
 fixtures/format-v1 holds independent known-answer bytes and report/capture oracles.
@@ -36,3 +37,6 @@ fixtures/format-v1 holds independent known-answer bytes and report/capture oracl
 
 [Result reports](../human/reports.md) are available through `human/mos-tests report`;
 `report-check` qualifies the host decoder without launching an emulator.
+
+[Editable startup bundles](../human/startup.md) use the shared bundle/startup/
+startup-check front ends. W06 is accepted; its checkpoint precedes W07.

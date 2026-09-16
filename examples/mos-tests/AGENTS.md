@@ -144,7 +144,8 @@ Agent implementation rules in docs/test-strategy.md. In particular, establish
 independent expectations, qualify the tester and preserve failure reproducers.
 
 MAIN-02 entry points now exist: read agents/README.md and reuse human/mos-tests.
-Hardware/full-suite startup capability remains pending as labelled there.
+Editable startup bundles for synthetic controls now exist; use human/startup.md.
+Physical hardware and real MOS case coverage remain unqualified.
 
 ## Acceptance checkpoints and frozen work contracts
 

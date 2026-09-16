@@ -16,8 +16,8 @@ From /home/smith/Agon/mystuff/agon-utils/examples/mos-tests:
 
 The run directory must contain catalogue.json, plan.json, target.json, bundle.json,
 run.json, selection-script.txt, the bundle's named artifacts and results.bin.
-An existing report directory is refused. W06 will deliver the general startup
-bundle; the W04 recording fixture used illustrative hashes and cannot be promoted
+An existing report directory is refused. The W06 startup bundle now produces these artifacts with actual hashes.
+The W04 recording fixture used illustrative hashes and cannot be promoted
 into an authenticated suite result merely by creating a report.
 
 1. summary.txt contains the summary and non-passing case details, without terminal

@@ -9,7 +9,8 @@ it does not test MOS conformance or authorize firmware changes.
 
 ## State
 
-In progress. W01–W05 complete; W06 end-to-end startup remains.
+W01–W06 implemented and qualified. W06 accepted with MAIN-03 W06 on 2026-09-16;
+MAIN-03 W07 still owns aggregate delivery qualification and closeout.
 The subproject TODO owns unfinished status. Use [test strategy](../test-strategy.md)
 and MAIN-03's maintained format contract. Expectations must not be computed solely
 by the component being tested.
@@ -65,13 +66,16 @@ by the component being tested.
   **Completed** — [report qualification](TEST-01/W05/validation.md): all 14
   agreed outcomes, unique failure counts, summary order, coloured/plain output,
   CLI exit codes and recovery limitations passed.
-- W06 [ ] Validate startup selection and an end-to-end synthetic run.
+- W06 [x] Validate startup selection and an end-to-end synthetic run.
   Exercise full and single-function plans, commented-out LOAD/RUN groups, unknown
   names, missing finalization and command failures through the human front end.
   Verify discrepancies persist while later groups continue, infrastructure errors
   stop EXEC, and plan reconciliation detects missing cases. Save fresh-image
   repeat evidence with identities. Validate emulator RAM retrieval only if the
   backend supports it; separate that capability result from checkpoint evidence.
+  **Completed and accepted on 2026-09-16** —
+  [startup checks](TEST-01/W06/validation.md) passed on fresh raw images with
+  actual script execution and SRAM retrieval. No hardware qualification claimed.
 
 ## Acceptance criteria
 

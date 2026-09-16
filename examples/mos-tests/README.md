@@ -11,6 +11,10 @@ are complete and accepted. C++, independent assembly, and BBC BASIC smoke checks
 passed headlessly. See [build configuration](docs/build.md),
 [test results](docs/test-results.md), and [SETUP-01](docs/tasks/SETUP-01.md).
 
+The [editable startup workflow](human/startup.md) now runs the three synthetic
+foundation controls and creates separately identified binary results and reports.
+Physical hardware and real MOS function coverage remain later work.
+
 ## Test direction
 
 1. C++ is the primary test implementation language.
