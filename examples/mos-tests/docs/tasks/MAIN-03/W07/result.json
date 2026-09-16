@@ -1,0 +1,140 @@
+{
+  "passed": true,
+  "steps": [
+    {
+      "name": "python-baseline",
+      "command": [
+        "/home/smith/Agon/mystuff/agon-utils/.venv/bin/python",
+        "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/../../tests/test_agonutils.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.049
+    },
+    {
+      "name": "planner",
+      "command": [
+        "/home/smith/Agon/mystuff/agon-utils/.venv/bin/python",
+        "tests/runner/check_planner.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.318
+    },
+    {
+      "name": "lifecycle-build",
+      "command": [
+        "g++",
+        "-std=c++14",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Iapps/runner/include",
+        "tests/runner/lifecycle_test.cpp",
+        "-o",
+        "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/qualification/w07-01/lifecycle"
+      ],
+      "exit_code": 0,
+      "seconds": 0.055
+    },
+    {
+      "name": "lifecycle",
+      "command": [
+        "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/qualification/w07-01/lifecycle"
+      ],
+      "exit_code": 0,
+      "seconds": 0.002
+    },
+    {
+      "name": "runner-build",
+      "command": [
+        "./human/mos-tests",
+        "runner-build"
+      ],
+      "exit_code": 0,
+      "seconds": 0.057
+    },
+    {
+      "name": "capture",
+      "command": [
+        "./human/mos-tests",
+        "capture-check",
+        "--output",
+        "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/qualification/w07-01/capture"
+      ],
+      "exit_code": 0,
+      "seconds": 14.53
+    },
+    {
+      "name": "recording",
+      "command": [
+        "./human/mos-tests",
+        "recording-check",
+        "--output",
+        "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/qualification/w07-01/recording"
+      ],
+      "exit_code": 0,
+      "seconds": 4.005
+    },
+    {
+      "name": "report",
+      "command": [
+        "./human/mos-tests",
+        "report-check",
+        "--output",
+        "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/qualification/w07-01/report"
+      ],
+      "exit_code": 0,
+      "seconds": 0.448
+    },
+    {
+      "name": "startup",
+      "command": [
+        "./human/mos-tests",
+        "startup-check",
+        "--output",
+        "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/qualification/w07-01/startup"
+      ],
+      "exit_code": 0,
+      "seconds": 87.236
+    },
+    {
+      "name": "smoke",
+      "command": [
+        "./human/mos-tests",
+        "smoke",
+        "--output",
+        "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/qualification/w07-01/smoke"
+      ],
+      "exit_code": 0,
+      "seconds": 2.645
+    },
+    {
+      "name": "fresh-bundle",
+      "command": [
+        "./human/mos-tests",
+        "bundle",
+        "--script",
+        "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/qualification/w07-01/autoexec.txt",
+        "--output",
+        "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/qualification/w07-01/fresh-bundle"
+      ],
+      "exit_code": 0,
+      "seconds": 0.633
+    },
+    {
+      "name": "fresh-run",
+      "command": [
+        "./human/mos-tests",
+        "startup",
+        "--bundle",
+        "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/qualification/w07-01/fresh-bundle",
+        "--output",
+        "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/qualification/w07-01/fresh-run"
+      ],
+      "exit_code": 0,
+      "seconds": 9.331
+    }
+  ],
+  "prior_result_files_preserved": 10,
+  "owned_emulator_processes_remaining": [],
+  "hardware_tested": false
+}

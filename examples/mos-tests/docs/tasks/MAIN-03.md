@@ -11,7 +11,7 @@ through the existing human/agent entry points. Qualify each component with
 ## State and scope
 
 In progress. W01–W06 implemented and qualified. W06 accepted by the Author on 2026-09-16;
-W07 is frozen and unstarted. The subproject
+W07 accepted by the Author on 2026-09-16; task complete. The subproject
 [TODO](../../TODO.md) owns unfinished status. [Test strategy](../test-strategy.md)
 is the design authority; provisional notes are historical. MAIN-02 supplies
 working smoke front ends. MAIN-03 builds the general foundation with synthetic
@@ -95,7 +95,7 @@ peripheral support or automatic hardware deployment is included.
   and [W06 evidence](MAIN-03/W06/validation.md). Ten raw-image scenarios plus
   parser/hash/continuation controls passed. Hardware remains untested. Commit
   this result checkpoint on acceptance before beginning the frozen W07 work.
-- W07 [ ] Exercise end-to-end qualification and record delivery limits.
+- W07 [x] Exercise end-to-end qualification and record delivery limits.
   Run the complete TEST-01 synthetic acceptance set and a fresh-image repeat,
   retaining binary/text evidence and exact runtime/toolchain identities. Verify
   all processes close and previous runs survive. Attempt controlled emulator SRAM
@@ -103,6 +103,10 @@ peripheral support or automatic hardware deployment is included.
   if that capability cannot be established rather than manufacturing evidence.
   Promote mature helpers into maintained locations and update human/agent guides,
   handoff and task status. No real MOS conformance claim from synthetic controls.
+  **Completed and accepted on 2026-09-16** — [W07 qualification](MAIN-03/W07/validation.md):
+  all synthetic acceptance checks, smoke regression and independent fresh-image
+  repeat passed. Prior results survived and no Fab processes remained. Controlled
+  pre-reset SRAM retrieval is supported; hardware and arbitrary crashes unqualified.
 
 ## Dependencies and sequencing
 

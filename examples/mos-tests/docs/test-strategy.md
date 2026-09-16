@@ -347,6 +347,50 @@ require manual intervention and lose uncheckpointed RAM. Persisted case-start
 identifies the interrupted case; report it incomplete. Backend-specific timeout
 limits and elapsed measurements are recorded, not treated as hardware equivalence.
 
+### Restart recovery gate — planned, MAIN-05
+
+Run recovery inspection from the normal startup helper, before allocating a new
+run or executing any test group. This applies to both emulator and hardware
+autoexec workflows; it must not depend on an agent being present. Current startup
+preserves previous runs but does not yet implement this gate.
+
+Before entering a case, persist and sync its run/case identity and CASE_START.
+Use a small versioned, checksummed alternating-slot SD journal to locate the
+active run and distinguish execution from finalization/close phases. Freeze exact
+fields and publication ordering before implementation. The journal is a locator
+and conservative stop signal, not independent proof of a test verdict. Validate
+the run's manifests, identities, record prefix and selected-plan completion.
+
+On restart, an unresolved run stops automatic execution. Preserve its artifacts,
+identify the last valid started case without a matching completion, and report
+INCOMPLETE with any already confirmed failures. If evidence cannot locate a case,
+say so. A complete record stream with an unresolved close/journal transition is
+not silently promoted to a clean completion. Missing, corrupt or conflicting
+journal state requires bounded reconciliation against retained run directories;
+unreadable or ambiguous evidence blocks testing rather than becoming a fresh
+installation. Define how a genuinely empty installation is recognized.
+
+Call the event an interruption, not a proven test-caused reset. Manual reset,
+power loss and storage errors can leave the same evidence. Attach a reset reason
+only when its source is trustworthy and explicitly identified. Do not depend on
+reset-persistent SRAM: MOS may wipe it. Pre-reset debugger SRAM/register/trace
+capture and post-restart SD inspection are complementary recovery paths.
+
+Recovery inspection is repeatable and performs no automatic retry. Require an
+explicit human or agent disposition to retry, continue a selected remainder, or
+acknowledge/park the interrupted run. Persist that decision without rewriting the
+original evidence. Retry/continuation starts a new linked run with fresh
+prerequisites and an explicit selection; it cannot resume an uncertain file tail,
+reuse half-completed fixture state, or count unexecuted cases as passes. Another
+reset during recovery or acknowledgement must still stop safely, preventing
+reboot loops. Storage write failure must not clear the unresolved state.
+
+On-device recovery helpers use C++/AgonDev. Human tools own recovery instructions
+and actions; agents reuse them. Emulator checks use raw images and synthetic
+interruptions, including interrupted recovery itself. Journal CRCs, alternating
+slots and accepted sync calls do not establish physical power-loss durability.
+Implement and qualify this gate before the first real MOS case batch.
+
 ## Human output and validation boundaries
 
 Reports begin with the verdict, before metadata or detailed evidence:
@@ -503,7 +547,8 @@ selected, with stable local work IDs.
 | Entry points | Existing MAIN-02: human/agent front doors and wrappers around already-qualified operations | Human can find and invoke current smoke workflows; unsupported hardware procedures labelled; no dependency on an unbuilt general runner |
 | Runner foundation | Proposed MAIN-03: catalogue/selection, SRAM capture boundary, binary v1 typed payloads, SD checkpoints, host text decoder and editable startup bundle | Buildable thin implementation with immutable fixture manifests and candidate format vectors; finalize payload schemas before encoder/decoder interoperability claims |
 | Validate the tester | Proposed TEST-01: deliberate preserving/clobbering controls, golden records, damaged/incomplete/duplicate inputs, reporting and checkpoint failure paths | Known mutations detected, preserving controls pass, no corrupt/incomplete evidence yields all-pass; foundation is not trusted before these checks |
-| First MOS slice | Proposed MAIN-04: implement the 12 cases above using the qualified foundation | Two seed observations per case; ordinary headless raw-image run produces binary plus summary-first text; per-function script selection agrees with shared catalogue |
+| Restart recovery | Planned [MAIN-05](tasks/MAIN-05.md): startup journal, recovery gate and explicit dispositions | Qualified synthetic interrupted-boot/recovery controls; no automatic retry; prerequisite to MAIN-04 |
+| First MOS slice | Proposed MAIN-04: implement the 12 cases above using the qualified foundation and accepted MAIN-05 recovery gate | Two seed observations per case; ordinary headless raw-image run produces binary plus summary-first text; per-function script selection agrees with shared catalogue |
 | Human hardware parity | Follow-on scope to promote after first slice: same bundle on hardware, retrieval and on-device C++ report helper | Physical run independently reported; no emulator result substituted for hardware validation; device/report procedure actually exercised |
 
 MAIN-03 and TEST-01 have an intentional iteration: implement a candidate capture

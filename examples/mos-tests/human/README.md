@@ -23,3 +23,5 @@ It saves plans only; use the startup workflow above to execute synthetic control
 
 [Result reports](reports.md) are available through `human/mos-tests report`;
 `report-check` qualifies the host decoder without launching an emulator.
+
+[Foundation qualification](qualification.md) gives the complete synthetic check procedure and evidence limits.

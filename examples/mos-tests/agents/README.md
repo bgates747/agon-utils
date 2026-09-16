@@ -32,3 +32,5 @@ report the planner's success or the target build as execution of selected tests.
 
 [Editable startup bundles](../human/startup.md) use the shared bundle/startup/
 startup-check front ends. W06 is accepted; its checkpoint precedes W07.
+
+For complete qualification, follow [the human procedure](../human/qualification.md). Run shared-profile emulator checks sequentially and retain all expected negative-case evidence.

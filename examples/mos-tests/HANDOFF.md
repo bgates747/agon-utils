@@ -45,7 +45,7 @@ with their limits. No emulator was launched for closeout.
 The subproject-root [TODO.md](TODO.md) owns unfinished work. SETUP-01 and all its
 immutable subtask records are retained under `docs/tasks/`; MOS-01 is separate.
 Keep unrelated agon-utils changes out of MOS tests commits. Upstream checkouts
-remain read-only. Prior checkpoints were pushed through c73d827; W06 is accepted for the next checkpoint.
+remain read-only. Prior checkpoints were pushed through c73d827; W06 is committed locally as 6bc13e9.
 
 ## Current human and agent entry points
 
@@ -71,6 +71,28 @@ Evidence: docs/tasks/MAIN-03/W06/, with a compressed qualification archive.
 The current bundle implements only three synthetic controls; default coverage
 is two passes and one unsupported UART fixture, not an all-pass suite claim.
 
-Next after this checkpoint: MAIN-03 W07 aggregate qualification, fresh-image
-repeat and delivery closeout. Hardware, alternate CPU state, power-loss guarantees
+At the W06 checkpoint, the next work was W07; it has now passed as recorded below. Hardware, alternate CPU state, power-loss guarantees
 and arbitrary crash recovery remain unqualified. MOS-01 remains parked. This W06 acceptance checkpoint is local; prior checkpoints remain pushed at c73d827.
+
+## MAIN-03 W07 delivery qualification
+
+All aggregate synthetic checks and an independent fresh-image repeat passed.
+See docs/tasks/MAIN-03/W07/validation.md and human/qualification.md. W07 results
+await acceptance and commit; MAIN-03 and TEST-01 remain in TODO until then.
+Twelve command stages took about 119 seconds on this Linux host. Ten prior W06
+result files were unchanged; repeated boots preserved previous runs; no Fab
+processes remained. Controlled pre-reset SRAM retrieval is supported. Hardware,
+arbitrary crash recovery and power-loss guarantees remain unqualified.
+Next is MAIN-05 restart recovery, before the proposed MAIN-04 real MOS cases.
+Freeze its W01 contract after the pending W07 acceptance checkpoint. The design
+now requires SD-backed startup inspection and explicit interruption disposition,
+preventing automatic reboot loops. No recovery implementation or real cases
+started; no push.
+
+## Accepted foundation; MAIN-05 W01 authorized
+
+On 2026-09-16 the Author approved the W07 result checkpoint and proceeding with
+MAIN-05 W01. MAIN-03 and TEST-01 are accepted/closed and removed from TODO.
+Freeze W01 scope in this checkpoint, then design the recovery contract and
+independent transition expectations. No W02 implementation or push authorized
+by this checkpoint. Earlier pending-acceptance paragraphs describe prior state.

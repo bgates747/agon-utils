@@ -10,7 +10,8 @@ it does not test MOS conformance or authorize firmware changes.
 ## State
 
 W01–W06 implemented and qualified. W06 accepted with MAIN-03 W06 on 2026-09-16;
-MAIN-03 W07 still owns aggregate delivery qualification and closeout.
+MAIN-03 W07 aggregate delivery qualification accepted on 2026-09-16; task complete.
+See [aggregate evidence](MAIN-03/W07/validation.md).
 The subproject TODO owns unfinished status. Use [test strategy](../test-strategy.md)
 and MAIN-03's maintained format contract. Expectations must not be computed solely
 by the component being tested.
