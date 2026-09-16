@@ -33,5 +33,6 @@ work, including MAIN-02. Unfinished W06/W07 work is not accepted as implemented.
 - `6dd339f` — Accept v1 data contracts and independent runner oracles.
 - `425f4f6` — Accept catalogue planning and bounded runner lifecycle.
 - `528577a` — Accept independently qualified SRAM register capture.
+- `143d55d` — Accept binary recording and checkpoint failure qualification.
 
-This tree includes group 7; its successor contract remains frozen in the task documents.
+This tree includes group 8; its successor contract remains frozen in the task documents.

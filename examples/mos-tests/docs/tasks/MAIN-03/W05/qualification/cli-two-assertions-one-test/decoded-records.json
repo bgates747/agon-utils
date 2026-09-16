@@ -1,0 +1,84 @@
+[
+  {
+    "type": 1,
+    "sequence": 1,
+    "key": 0,
+    "run": "000102030405060708090a0b0c0d0e0f",
+    "payload": "01000100020000006f647f996856fbb898ff3edee279b8af3237f7abb47775c49091544ca482d86be3d84350a23e7a720173e48ede3d03ceb7bd3deb184df89854effedcfd9536b20f874823ac51f181f99f0d302c8c7c6b7dfc29e3e7ace703037ceadabc489f56ad8be15ef0b941973dc9f6610a2b7274df2af5b5c29c9f3bba13917a39039dbf",
+    "source": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/reports/check-03/two-assertions-one-test/results.bin",
+    "offset": 0
+  },
+  {
+    "type": 2,
+    "sequence": 2,
+    "key": 1,
+    "run": "000102030405060708090a0b0c0d0e0f",
+    "payload": "010001009e719976717baeb46a6cbf8a05d50585a83cf9c7cab0e5d0d7ce659d400850f1fd2eb031dc6cc0c7623e4e63ff6f05d6829de4b95ee02920b810b222f61c1a03",
+    "source": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/reports/check-03/two-assertions-one-test/results.bin",
+    "offset": 181
+  },
+  {
+    "type": 3,
+    "sequence": 3,
+    "key": 1,
+    "run": "000102030405060708090a0b0c0d0e0f",
+    "payload": "010002000000000001000100010000000a",
+    "source": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/reports/check-03/two-assertions-one-test/results.bin",
+    "offset": 294
+  },
+  {
+    "type": 4,
+    "sequence": 4,
+    "key": 1,
+    "run": "000102030405060708090a0b0c0d0e0f",
+    "payload": "01000200030000000200000001000000260000006f7065726174696f6e2072657475726e656420616e20756e65787065637465642076616c7565",
+    "outcome": "FAILED",
+    "assertions": 3,
+    "failed_assertions": 2,
+    "observations": 1,
+    "reason": "operation returned an unexpected value",
+    "source": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/reports/check-03/two-assertions-one-test/results.bin",
+    "offset": 356
+  },
+  {
+    "type": 2,
+    "sequence": 5,
+    "key": 2,
+    "run": "000102030405060708090a0b0c0d0e0f",
+    "payload": "010001009e719976717baeb46a6cbf8a05d50585a83cf9c7cab0e5d0d7ce659d400850f1fd2eb031dc6cc0c7623e4e63ff6f05d6829de4b95ee02920b810b222f61c1a03",
+    "source": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/reports/check-03/two-assertions-one-test/results.bin",
+    "offset": 459
+  },
+  {
+    "type": 3,
+    "sequence": 6,
+    "key": 2,
+    "run": "000102030405060708090a0b0c0d0e0f",
+    "payload": "010002000000000001000100010000000a",
+    "source": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/reports/check-03/two-assertions-one-test/results.bin",
+    "offset": 572
+  },
+  {
+    "type": 4,
+    "sequence": 7,
+    "key": 2,
+    "run": "000102030405060708090a0b0c0d0e0f",
+    "payload": "0100010001000000000000000100000000000000",
+    "outcome": "PASSED",
+    "assertions": 1,
+    "failed_assertions": 0,
+    "observations": 1,
+    "reason": "",
+    "source": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/reports/check-03/two-assertions-one-test/results.bin",
+    "offset": 634
+  },
+  {
+    "type": 6,
+    "sequence": 8,
+    "key": 0,
+    "run": "000102030405060708090a0b0c0d0e0f",
+    "payload": "0100000001000000010000000000000000000000000000000000000000000000000000000f874823ac51f181f99f0d302c8c7c6b7dfc29e3e7ace703037ceadabc489f56",
+    "source": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/reports/check-03/two-assertions-one-test/results.bin",
+    "offset": 699
+  }
+]

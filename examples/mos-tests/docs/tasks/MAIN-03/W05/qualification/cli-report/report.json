@@ -1,0 +1,28 @@
+{
+  "verdict": "ALL TESTS PASSED",
+  "selected": 2,
+  "counts": {
+    "PASSED": 2,
+    "FAILED": 0,
+    "OBSERVED": 0,
+    "SKIPPED": 0,
+    "UNSUPPORTED": 0,
+    "BLOCKED": 0,
+    "ERROR": 0,
+    "INCOMPLETE": 0
+  },
+  "failed_tests": 0,
+  "failed_ids": [],
+  "issues": [],
+  "details": [],
+  "run_id": "000102030405060708090a0b0c0d0e0f",
+  "backend": "emulator",
+  "sources": [
+    {
+      "path": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/reports/check-03/all-pass/results.bin",
+      "sha256": "748b2387699f59ed59cee32d4cc43d6cb3f26f38c1e03c470a8cb66375dfcba5"
+    }
+  ],
+  "recovery_note": null,
+  "forensic": false
+}

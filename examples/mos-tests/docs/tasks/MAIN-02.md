@@ -10,10 +10,11 @@ qualification is also a useful independent result.
 
 ## State
 
-Reconstructed contract checkpoint. Completed items: W01, W02, W03, W04.
-Remaining work is frozen and unstarted at this checkpoint. The subproject TODO
-owns unfinished task indexing. This is a retrospective grouping, not an exact
-previous edit version or a backdated acceptance record.
+Implementation complete; validation passed. Accepted for the retrospective
+checkpoint series by the Author on 2026-09-16.
+The subproject-root [TODO.md](../../TODO.md) owns unfinished task status.
+MAIN-01 is accepted. The scaffold follows its maintained strategy; the general
+runner and case implementation remain subsequent work.
 
 ## Work
 

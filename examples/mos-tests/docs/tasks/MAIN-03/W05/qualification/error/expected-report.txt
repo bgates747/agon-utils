@@ -1,0 +1,10 @@
+INCOMPLETE
+Selected: 2; passed: 1; failed tests: 0.
+Backend: emulator. Verdict concerns supplied evidence; hardware and close/power-loss durability are not inferred.
+
+Evidence problems:
+- case infrastructure error/incomplete
+
+Case details (non-passing cases):
+ERROR: case.2 (function.2) — error
+  Assertions: 0; failed: 0.

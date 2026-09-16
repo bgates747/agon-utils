@@ -14,10 +14,10 @@ listed functions have been tested or implement the full suite.
 
 ## State and ownership
 
-Reconstructed contract checkpoint. Completed items: W01, W02, W03, W04.
-Remaining work is frozen and unstarted at this checkpoint. The subproject TODO
-owns unfinished task indexing. This is a retrospective grouping, not an exact
-previous edit version or a backdated acceptance record.
+Design complete. W01–W04 are completed; accepted by the Author for implementation.
+The subproject-root [TODO.md](../../TODO.md) owns unfinished task status.
+`MAIN-*` covers core suite work, `TEST-*` is reserved for testing the tests,
+and `MOS-*` covers firmware defects.
 
 ## Work
 

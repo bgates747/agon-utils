@@ -1,0 +1,13 @@
+INCOMPLETE
+Selected: 2; passed: 0; failed tests: 1.
+Failed tests: case.1
+Backend: emulator. Verdict concerns supplied evidence; hardware and close/power-loss durability are not inferred.
+
+Evidence problems:
+- missing run end
+- selected cases lack valid completion
+
+Case details (non-passing cases):
+FAILED: case.1 (function.1) — operation returned an unexpected value
+  Assertions: 1; failed: 1.
+  Sample 0, observation 1, kind 2: 0a

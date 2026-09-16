@@ -1,0 +1,50 @@
+{
+  "verdict": "FAILURES",
+  "selected": 2,
+  "counts": {
+    "PASSED": 1,
+    "FAILED": 1,
+    "OBSERVED": 0,
+    "SKIPPED": 0,
+    "UNSUPPORTED": 0,
+    "BLOCKED": 0,
+    "ERROR": 0,
+    "INCOMPLETE": 0
+  },
+  "failed_tests": 1,
+  "failed_ids": [
+    "case.1"
+  ],
+  "issues": [],
+  "details": [
+    {
+      "id": "case.1",
+      "function": "function.1",
+      "outcome": "FAILED",
+      "assertions": 3,
+      "failed_assertions": 2,
+      "reason": "operation returned an unexpected value",
+      "preservation_changed_offsets": [],
+      "observations": [
+        {
+          "sample": 0,
+          "id": 1,
+          "kind": 2,
+          "chunks": [
+            "0a"
+          ]
+        }
+      ]
+    }
+  ],
+  "run_id": "000102030405060708090a0b0c0d0e0f",
+  "backend": "emulator",
+  "sources": [
+    {
+      "path": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/reports/check-04/two-assertions-one-test/results.bin",
+      "sha256": "90483bd8bd640e066823e499c6cc24056f9d081e16a1eb8fb9237e9e1e51e3e7"
+    }
+  ],
+  "recovery_note": null,
+  "forensic": false
+}

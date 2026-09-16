@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "catalogue_sha256": "681272e4ec75699f3742bfc0342aef9b8245b44f5032539c5eedeff3a4c10874",
+  "selectors": [
+    "all"
+  ],
+  "case_keys": [],
+  "backend": "emulator",
+  "capabilities": [],
+  "script_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

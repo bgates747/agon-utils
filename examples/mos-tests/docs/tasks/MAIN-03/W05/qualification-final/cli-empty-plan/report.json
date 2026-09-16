@@ -1,0 +1,24 @@
+{
+  "verdict": "CONFIGURATION ERROR",
+  "selected": 0,
+  "counts": {
+    "PASSED": 0,
+    "FAILED": 0,
+    "OBSERVED": 0,
+    "SKIPPED": 0,
+    "UNSUPPORTED": 0,
+    "BLOCKED": 0,
+    "ERROR": 0,
+    "INCOMPLETE": 0
+  },
+  "failed_tests": 0,
+  "failed_ids": [],
+  "issues": [
+    "empty/unknown/duplicate selected keys"
+  ],
+  "details": [],
+  "backend": "unverified",
+  "sources": [],
+  "recovery_note": null,
+  "forensic": false
+}

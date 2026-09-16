@@ -10,10 +10,16 @@ through the existing human/agent entry points. Qualify each component with
 
 ## State and scope
 
-Reconstructed contract checkpoint. Completed items: W01, W02, W03, W04.
-Remaining work is frozen and unstarted at this checkpoint. The subproject TODO
-owns unfinished task indexing. This is a retrospective grouping, not an exact
-previous edit version or a backdated acceptance record.
+In progress. W01–W05 complete; W06–W07 have not started. The subproject
+[TODO](../../TODO.md) owns unfinished status. [Test strategy](../test-strategy.md)
+is the design authority; provisional notes are historical. MAIN-02 supplies
+working smoke front ends. MAIN-03 builds the general foundation with synthetic
+control cases, not the proposed 12 real MOS cases; those follow after qualification.
+
+All implementation lives on Linux. On-device applications use C++/AgonDev with
+narrow reviewed assembly capture/call boundaries; host helpers reuse the existing
+Python environment. No firmware repair, menu application, alternate-mode harness,
+peripheral support or automatic hardware deployment is included.
 
 ## Work
 
@@ -62,7 +68,7 @@ previous edit version or a backdated acceptance record.
   controls, 1,064 SRAM interruption checks and raw-image capture/checkpoint/
   collision readback passed. TEST-01 W04 complete; W03 encoder portion passed,
   with decoder/recovery qualification continuing in W05. Hardware untested.
-- W05 [ ] Implement the host decoder and initial human report.
+- W05 [x] Implement the host decoder and initial human report.
   Validate identities, lengths, CRC, version, duplicate sequences and selected-plan
   completion. Decode saved files and explicit recovered buffers with provenance.
   Lead with all-pass only for complete selected coverage; otherwise give failed
@@ -71,6 +77,10 @@ previous edit version or a backdated acceptance record.
   supported terminals and a plain mode without control codes in saved text.
   Keep OBSERVED/ERROR/INCOMPLETE distinct. Integrate TEST-01 W03/W05. Defer verbose,
   grouping, menu and on-device decoder enhancements to later bounded work.
+  **Completed** — [report guide](../../human/reports.md), maintained decoder and
+  [W05 evidence](MAIN-03/W05/validation.md). All 58 scenarios and 1,380 malformed
+  record controls passed, including the 14 agreed report oracles. TEST-01 W03/W05
+  complete; authenticated startup/bundle integration remains W06.
 - W06 [ ] Deliver and validate editable startup selection and shared front ends.
   Supply a verified !boot.obey -> EXEC /autoexec.txt chain with commented function
   groups and LOAD/RUN commands. Preserve run identity/plan across group invocations

@@ -1,0 +1,6 @@
+CONFIGURATION ERROR
+Selected: 0; passed: 0; failed tests: 0.
+Backend: unverified. Verdict concerns supplied evidence; hardware and close/power-loss durability are not inferred.
+
+Evidence problems:
+- empty/unknown/duplicate selected keys

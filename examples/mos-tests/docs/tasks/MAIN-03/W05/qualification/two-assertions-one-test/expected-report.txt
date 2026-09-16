@@ -1,0 +1,9 @@
+FAILED: 1 tests failed
+Selected: 2; passed: 1; failed tests: 1.
+Failed tests: case.1
+Backend: emulator. Verdict concerns supplied evidence; hardware and close/power-loss durability are not inferred.
+
+Case details (non-passing cases):
+FAILED: case.1 (function.1) — operation returned an unexpected value
+  Assertions: 3; failed: 2.
+  Sample 0, observation 1, kind 2: 0a

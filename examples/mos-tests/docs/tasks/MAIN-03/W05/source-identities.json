@@ -1,0 +1,6 @@
+{
+  "scripts/report_results.py": "1921c072eff57a459f4495b7fbc501b2a56e50f74d2dbad5fa4037781e136cda",
+  "scripts/plan_run.py": "982234803796ffb64fab88134d07b7eb0fb203228ba0c2a83717ab13c15c6cdc",
+  "tests/reporting/check.py": "23280d9b37946e6052f8e0cead5ccf26443f26308ab619425adf0f5893cdb366",
+  "fixtures/format-v1/report-oracles.json": "03ca4cb9a393e6bee93db8179b55baa5c55bd40f67d3bcad3f7e2adc30c7d266"
+}

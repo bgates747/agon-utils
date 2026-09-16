@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "key": 1,
+      "id": "case.1",
+      "function": "function.1",
+      "route": "synthetic",
+      "group": "controls",
+      "expectation_sha256": "fd2eb031dc6cc0c7623e4e63ff6f05d6829de4b95ee02920b810b222f61c1a03",
+      "fixture_sha256": "9e719976717baeb46a6cbf8a05d50585a83cf9c7cab0e5d0d7ce659d400850f1",
+      "capabilities": [],
+      "isolation": "pure",
+      "samples": [
+        0
+      ],
+      "timeout_ms": 1000
+    },
+    {
+      "key": 2,
+      "id": "case.2",
+      "function": "function.2",
+      "route": "synthetic",
+      "group": "controls",
+      "expectation_sha256": "fd2eb031dc6cc0c7623e4e63ff6f05d6829de4b95ee02920b810b222f61c1a03",
+      "fixture_sha256": "9e719976717baeb46a6cbf8a05d50585a83cf9c7cab0e5d0d7ce659d400850f1",
+      "capabilities": [],
+      "isolation": "pure",
+      "samples": [
+        0
+      ],
+      "timeout_ms": 1000
+    }
+  ]
+}

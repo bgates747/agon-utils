@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "catalogue_sha256": "681272e4ec75699f3742bfc0342aef9b8245b44f5032539c5eedeff3a4c10874",
+  "artifacts": [
+    {
+      "path": "input.json",
+      "size": 14,
+      "sha256": "9e719976717baeb46a6cbf8a05d50585a83cf9c7cab0e5d0d7ce659d400850f1"
+    },
+    {
+      "path": "expected.json",
+      "size": 17,
+      "sha256": "fd2eb031dc6cc0c7623e4e63ff6f05d6829de4b95ee02920b810b222f61c1a03"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "verdict": "INCOMPLETE",
+  "selected": 1,
+  "counts": {
+    "PASSED": 1,
+    "FAILED": 0,
+    "OBSERVED": 0,
+    "SKIPPED": 0,
+    "UNSUPPORTED": 0,
+    "BLOCKED": 0,
+    "ERROR": 0,
+    "INCOMPLETE": 0
+  },
+  "failed_tests": 0,
+  "failed_ids": [],
+  "issues": [
+    "missing run end"
+  ],
+  "details": [],
+  "run_id": "000102030405060708090a0b0c0d0e0f",
+  "backend": "emulator",
+  "sources": [
+    {
+      "path": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/reports/check-03/missing-finalization/results.bin",
+      "sha256": "c51a2e5a79514197e6e583dfc24e037009deb8d808d43884297be244213f9e48"
+    }
+  ],
+  "recovery_note": null,
+  "forensic": false
+}

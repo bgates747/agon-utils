@@ -9,10 +9,10 @@ it does not test MOS conformance or authorize firmware changes.
 
 ## State
 
-Reconstructed contract checkpoint. Completed items: W01, W02, W04.
-Remaining work is frozen and unstarted at this checkpoint. The subproject TODO
-owns unfinished task indexing. This is a retrospective grouping, not an exact
-previous edit version or a backdated acceptance record.
+In progress. W01–W05 complete; W06 end-to-end startup remains.
+The subproject TODO owns unfinished status. Use [test strategy](../test-strategy.md)
+and MAIN-03's maintained format contract. Expectations must not be computed solely
+by the component being tested.
 
 ## Work
 
@@ -36,12 +36,15 @@ previous edit version or a backdated acceptance record.
   **Completed** — [W02 qualification](TEST-01/W02/validation.md), with 52
   synthetic controls, independent CPU-state comparisons and guarded SRAM retrieval.
   Limits include IFF, alternate registers/modes and hardware; no MOS claim.
-- W03 [ ] Validate record encoding, decoding and recovery interpretation.
+- W03 [x] Validate record encoding, decoding and recovery interpretation.
   Check golden records, zero/max payloads and boundaries, unsupported versions,
   invalid lengths/CRC/commit markers, truncation at each structural boundary,
   missing/reordered/conflicting records and identical duplicates. Unknown case/run
   identities cannot be accepted blindly. Test strict valid-prefix decoding and
   separately labelled forensic fragments; no recovery fragment proves completion.
+  **Completed** — [encoder checks](TEST-01/W03/encoder-validation.md) passed
+  with MAIN-03 W04; [decoder qualification](TEST-01/W03/validation.md) now covers
+  production identity/order, malformed records and labelled recovery with W05.
 - W04 [x] Exercise checkpoint and buffer failure paths.
   Inject short writes, write/sync errors, full staging buffer and interrupted
   header updates at controlled abstraction boundaries. Verify bounded emergency
@@ -51,7 +54,7 @@ previous edit version or a backdated acceptance record.
   **Completed** — [checkpoint qualification](TEST-01/W04/validation.md):
   storage, buffer and counter failures stop safely; interrupted publication and
   prior-run preservation checks passed. Hardware/power-loss behavior untested.
-- W05 [ ] Qualify verdicts and human report semantics.
+- W05 [x] Qualify verdicts and human report semantics.
   Fixture plans cover all-pass, single/multiple failing tests, multiple failed
   assertions in one test, expected-error test passes, skips/unsupported/blocked,
   no selected cases, incomplete execution and infrastructure errors. Verify counts
@@ -59,6 +62,9 @@ previous edit version or a backdated acceptance record.
   coverage. Check plain output has no colour controls, coloured status labels
   reset correctly and messages claim only observed effects. Future presentation
   modes must reuse invariant summary totals when introduced.
+  **Completed** — [report qualification](TEST-01/W05/validation.md): all 14
+  agreed outcomes, unique failure counts, summary order, coloured/plain output,
+  CLI exit codes and recovery limitations passed.
 - W06 [ ] Validate startup selection and an end-to-end synthetic run.
   Exercise full and single-function plans, commented-out LOAD/RUN groups, unknown
   names, missing finalization and command failures through the human front end.

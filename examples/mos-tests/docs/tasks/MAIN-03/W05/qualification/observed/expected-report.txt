@@ -1,0 +1,8 @@
+NO FAILURES OBSERVED — coverage limited
+Selected: 2; passed: 1; failed tests: 0.
+Backend: emulator. Verdict concerns supplied evidence; hardware and close/power-loss durability are not inferred.
+
+Case details (non-passing cases):
+OBSERVED: case.2 (function.2) — observed
+  Assertions: 0; failed: 0.
+  Sample 0, observation 1, kind 2: 0a

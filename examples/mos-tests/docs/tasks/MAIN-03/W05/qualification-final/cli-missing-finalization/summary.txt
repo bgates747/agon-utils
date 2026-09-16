@@ -1,0 +1,6 @@
+INCOMPLETE
+Selected: 1; passed: 1; failed tests: 0.
+Backend: emulator. Verdict concerns supplied evidence; hardware and close/power-loss durability are not inferred.
+
+Evidence problems:
+- missing run end

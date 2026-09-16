@@ -1,0 +1,39 @@
+{
+  "verdict": "NO FAILURES OBSERVED \u2014 coverage limited",
+  "selected": 2,
+  "counts": {
+    "PASSED": 1,
+    "FAILED": 0,
+    "OBSERVED": 0,
+    "SKIPPED": 1,
+    "UNSUPPORTED": 0,
+    "BLOCKED": 0,
+    "ERROR": 0,
+    "INCOMPLETE": 0
+  },
+  "failed_tests": 0,
+  "failed_ids": [],
+  "issues": [],
+  "details": [
+    {
+      "id": "case.2",
+      "function": "function.2",
+      "outcome": "SKIPPED",
+      "assertions": 0,
+      "failed_assertions": 0,
+      "reason": "skipped",
+      "preservation_changed_offsets": [],
+      "observations": []
+    }
+  ],
+  "run_id": "000102030405060708090a0b0c0d0e0f",
+  "backend": "emulator",
+  "sources": [
+    {
+      "path": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/reports/check-04/skipped/results.bin",
+      "sha256": "1e1d8295b02e0a565a6ef13fdd0de25eceb30a3815b2ebb945033394de69b656"
+    }
+  ],
+  "recovery_note": null,
+  "forensic": false
+}

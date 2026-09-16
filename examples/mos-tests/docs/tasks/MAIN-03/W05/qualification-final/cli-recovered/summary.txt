@@ -1,0 +1,7 @@
+INCOMPLETE
+Selected: 2; passed: 2; failed tests: 0.
+Backend: emulator. Verdict concerns supplied evidence; hardware and close/power-loss durability are not inferred.
+
+Evidence problems:
+- /home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/reports/check-04/recovered.sram: SRAM state is not ended
+- checkpoint error: operation 3, status 8, attempted 8, confirmed 8

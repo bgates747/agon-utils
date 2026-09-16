@@ -63,6 +63,89 @@ Jeroen Venema's BBC BASIC V ADL is deployed as `bbc-basic-v-adl.bin` to
 avoid ambiguity with other BASIC ports. Preserve its upstream source filename
 and version/hash in provenance; do not rename files in the upstream checkout.
 
+## MOS API contract authority
+
+`docs/mos-api-inventory.md` owns scope accounting and project findings, not a
+copy of upstream contracts. Before designing assertions, verify the target MOS
+binary/map and source revision and read the referenced upstream documentation
+and implementation. Documentation is independently versioned; record conflicts
+rather than treating either prose or source behavior as automatically correct.
+Review the inventory and discrepancy notes whenever the target or documentation
+baseline changes. W01 archives are historical evidence only, not current agent
+guidance; do not extract them into maintained source/documentation directories.
+
+## Compatibility and discrepancy handling
+
+Finding an API discrepancy does not authorize a firmware patch or behavior
+change. The Author's stated community policy is to preserve established behavior
+so legacy applications do not break on fixes. Prioritize documentation updates
+that prominently distinguish advertised behavior from observed behavior and
+highlight omissions, especially defaults. Include pinned versions, execution
+paths and evidence. Do not silently rewrite expectations to conceal mismatches.
+Any behavior-changing exception requires separate explicit Author direction.
+MOS-01 is parked and must not be resumed on the strength of a new finding.
+Upstream publication or maintainer contact requires separate authorization.
+
+Register-preservation auditing is a core suite requirement: compare documented
+promises with immediately captured state across relevant paths. Distinguish
+outputs and unspecified effects, include full register widths and promised flags,
+and independently validate that the observation harness detects known clobbers.
+
+## Human and agent tooling ownership
+
+Follow MAIN-02's audience structure for new tooling and MAIN-01's strategy.
+The root README's prominent usage direction must lead humans to human/README.md,
+which owns human-facing emulator and hardware instructions and runnable tools.
+Agents use agents/README.md for their workflow, linking to human procedures and
+calling their tools where useful. Until MAIN-02 scaffolds these paths, use the
+existing maintained guides; do not imply those entry points already exist.
+Keep common fixtures, build/deployment primitives and result logic in one shared
+implementation. Agent-only tooling adds automation rather than duplicating human
+tools. Promote mature task experiments with provenance before routine use.
+Hardware is authoritative for real-machine behavior; emulator results also have
+independent value. Identify the backend and never imply one validates the other.
+
+## Runner direction and helper language
+
+Prioritize the human-editable autoexec.txt workflow before a menu convenience
+application. See docs/provisional-runner-design.md for provisional details;
+verify boot chaining and script syntax before presenting runnable instructions.
+On-device helper applications must use C++ targeting AgonDev, including any
+future menu. This does not constrain assembly ABI tests, BASIC fixtures or
+existing host-side Python orchestration. Reuse common function selection and
+result logic across human and agent interfaces.
+
+## Onboard SRAM ownership
+
+The Author confirms a hard platform contract: the eZ80's 8 KiB onboard SRAM is
+always user-allocated space. System code never uses it for runtime storage;
+MOS reset wiping, including soft resets, is the exception. Do not require an
+audit to establish system non-use. For this pinned target it maps to
+$B7E000–$B7FFFF. Verify mappings for other targets and coordinate allocations
+among user code. Capture recovery must precede reset; do not assume persistence.
+
+### SRAM contract violation exception
+
+Any stock MOS or VDP routine writing onboard user SRAM, apart from the allowed
+MOS reset wipe, violates the platform ownership contract. Flag such a finding
+prominently for immediate rectification, with writer attribution, address range,
+target identity and reproducible evidence. This is an explicit exception to the
+usual policy of retaining legacy discrepancies and clarifying documentation:
+system writes to this user-owned space are not acceptable legacy behavior.
+Flagging and prioritizing rectification does not itself authorize implementing
+or publishing a firmware patch; obtain separate explicit direction for that work.
+
+MAIN-01 W03 consolidated the runner/result ideas into docs/test-strategy.md.
+Use that maintained design for implementation; provisional design notes are
+superseded brainstorming provenance. Do not present designed interfaces as built.
+
+Before implementing or investigating tests, follow the Test design patterns and
+Agent implementation rules in docs/test-strategy.md. In particular, establish
+independent expectations, qualify the tester and preserve failure reproducers.
+
+MAIN-02 entry points now exist: read agents/README.md and reuse human/mos-tests.
+Hardware/full-suite startup capability remains pending as labelled there.
+
 ## Acceptance checkpoints and frozen work contracts
 
 1. Before implementation, freeze the next work item's scope, stable IDs,
