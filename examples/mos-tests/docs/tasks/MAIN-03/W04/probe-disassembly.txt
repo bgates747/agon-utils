@@ -1,0 +1,126 @@
+
+/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/apps/recording-controls/obj/probe.o:     file format elf32-z80
+
+
+Disassembly of section .text:
+
+00000000 <_recording_probe>:
+   0:	dd e5             	push ix
+   2:	fd e5             	push iy
+   4:	01 03 02 01       	ld bc,0x10203
+   8:	11 06 05 04       	ld de,0x40506
+   c:	21 09 08 07       	ld hl,0x70809
+  10:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+  15:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+  1a:	cd 28 00 00       	call 0x0028
+			1b: r_imm24	.text+0x28
+  1e:	cd 92 00 00       	call 0x0092
+			1f: r_imm24	.text+0x92
+  22:	fd e1             	pop iy
+  24:	dd e1             	pop ix
+  26:	c9                	ret
+
+00000027 <_recording_done>:
+  27:	c9                	ret
+
+00000028 <_capture_before>:
+  28:	22 08 e9 b7       	ld (0xb7e908),hl
+  2c:	f5                	push af
+  2d:	e1                	pop hl
+  2e:	22 00 e9 b7       	ld (0xb7e900),hl
+  32:	ed 43 02 e9 b7    	ld (0xb7e902),bc
+  37:	ed 53 05 e9 b7    	ld (0xb7e905),de
+  3c:	dd 22 0b e9 b7    	ld (0xb7e90b),ix
+  41:	fd 22 0e e9 b7    	ld (0xb7e90e),iy
+  46:	ed 73 11 e9 b7    	ld (0xb7e911),sp
+  4b:	2a 11 e9 b7       	ld hl,(0xb7e911)
+  4f:	23                	inc hl
+  50:	23                	inc hl
+  51:	23                	inc hl
+  52:	22 11 e9 b7       	ld (0xb7e911),hl
+  56:	21 28 00 00       	ld hl,0x0028
+			57: r_imm24	.text+0x28
+  5a:	22 14 e9 b7       	ld (0xb7e914),hl
+  5e:	ed 6e             	ld a,mb
+  60:	32 17 e9 b7       	ld (0xb7e917),a
+  64:	3e 01             	ld a,0x01
+  66:	32 18 e9 b7       	ld (0xb7e918),a
+  6a:	af                	xor a,a
+  6b:	32 19 e9 b7       	ld (0xb7e919),a
+  6f:	32 1c e9 b7       	ld (0xb7e91c),a
+  73:	32 1d e9 b7       	ld (0xb7e91d),a
+  77:	32 1e e9 b7       	ld (0xb7e91e),a
+  7b:	32 1f e9 b7       	ld (0xb7e91f),a
+  7f:	21 ff 03 00       	ld hl,0x03ff
+  83:	22 1a e9 b7       	ld (0xb7e91a),hl
+  87:	2a 00 e9 b7       	ld hl,(0xb7e900)
+  8b:	e5                	push hl
+  8c:	f1                	pop af
+  8d:	2a 08 e9 b7       	ld hl,(0xb7e908)
+  91:	c9                	ret
+
+00000092 <_capture_after>:
+  92:	22 28 e9 b7       	ld (0xb7e928),hl
+  96:	f5                	push af
+  97:	e1                	pop hl
+  98:	22 20 e9 b7       	ld (0xb7e920),hl
+  9c:	ed 43 22 e9 b7    	ld (0xb7e922),bc
+  a1:	ed 53 25 e9 b7    	ld (0xb7e925),de
+  a6:	dd 22 2b e9 b7    	ld (0xb7e92b),ix
+  ab:	fd 22 2e e9 b7    	ld (0xb7e92e),iy
+  b0:	ed 73 31 e9 b7    	ld (0xb7e931),sp
+  b5:	2a 31 e9 b7       	ld hl,(0xb7e931)
+  b9:	23                	inc hl
+  ba:	23                	inc hl
+  bb:	23                	inc hl
+  bc:	22 31 e9 b7       	ld (0xb7e931),hl
+  c0:	21 92 00 00       	ld hl,0x0092
+			c1: r_imm24	.text+0x92
+  c4:	22 34 e9 b7       	ld (0xb7e934),hl
+  c8:	ed 6e             	ld a,mb
+  ca:	32 37 e9 b7       	ld (0xb7e937),a
+  ce:	3e 01             	ld a,0x01
+  d0:	32 38 e9 b7       	ld (0xb7e938),a
+  d4:	af                	xor a,a
+  d5:	32 39 e9 b7       	ld (0xb7e939),a
+  d9:	32 3c e9 b7       	ld (0xb7e93c),a
+  dd:	32 3d e9 b7       	ld (0xb7e93d),a
+  e1:	32 3e e9 b7       	ld (0xb7e93e),a
+  e5:	32 3f e9 b7       	ld (0xb7e93f),a
+  e9:	21 ff 03 00       	ld hl,0x03ff
+  ed:	22 3a e9 b7       	ld (0xb7e93a),hl
+  f1:	2a 20 e9 b7       	ld hl,(0xb7e920)
+  f5:	e5                	push hl
+  f6:	f1                	pop af
+  f7:	2a 28 e9 b7       	ld hl,(0xb7e928)
+  fb:	c9                	ret
+
+000000fc <_capture_available>:
+  fc:	ed 38 b5          	in0 a,(0xb5)
+  ff:	fe b7             	cp a,0xb7
+ 101:	20 0c             	jr nz,0x010f
+ 103:	ed 38 b4          	in0 a,(0xb4)
+ 106:	e6 80             	and a,0x80
+ 108:	28 05             	jr z,0x010f
+ 10a:	21 01 00 00       	ld hl,0x0001
+ 10e:	c9                	ret
+
+0000010f <capture_unavailable>:
+ 10f:	21 00 00 00       	ld hl,0x0000
+ 113:	c9                	ret
+
+00000114 <_recording_write>:
+ 114:	dd e5             	push ix
+ 116:	dd 21 00 00 00    	ld ix,0x0000
+ 11b:	dd 39             	add ix,sp
+ 11d:	dd 27 06          	ld hl,(ix+6)
+ 120:	dd 17 09          	ld de,(ix+9)
+ 123:	dd 07 0c          	ld bc,(ix+12)
+ 126:	3e 83             	ld a,0x83
+ 128:	5b cf             	rst.lil 0x08
+ 12a:	dd 17 0f          	ld de,(ix+15)
+ 12d:	12                	ld (de),a
+ 12e:	c5                	push bc
+ 12f:	e1                	pop hl
+ 130:	dd e1             	pop ix
+ 132:	c9                	ret

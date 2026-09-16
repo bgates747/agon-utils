@@ -1,0 +1,2 @@
+PASSED: 191 interrupted emergency publications.
+PASSED: six frozen records and control slot; typed payloads/bounds; 22 failure controls; 873 interrupted SRAM publications.

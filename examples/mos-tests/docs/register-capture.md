@@ -47,4 +47,7 @@ merely to silence a discrepancy. This observer also demonstrates that the tested
 Fab debugger can retrieve this SRAM window. Recovery after arbitrary CPU/VDP
 faults is not established by a successful controlled pause. Reset wipes SRAM.
 
-Binary recording and checkpoint integration are frozen as MAIN-03 W04, not implemented at this checkpoint.
+MAIN-03 W04 now connects capture to shared lifecycle recording/checkpoint hooks
+in a synthetic qualification app; see [binary recording](binary-recording.md).
+Full catalogue/startup execution and report decoding remain subsequent work.
+Capture alone does not guarantee durable or complete case results.

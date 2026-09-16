@@ -10,7 +10,7 @@ through the existing human/agent entry points. Qualify each component with
 
 ## State and scope
 
-Reconstructed contract checkpoint. Completed items: W01, W02, W03.
+Reconstructed contract checkpoint. Completed items: W01, W02, W03, W04.
 Remaining work is frozen and unstarted at this checkpoint. The subproject TODO
 owns unfinished task indexing. This is a retrospective grouping, not an exact
 previous edit version or a backdated acceptance record.
@@ -50,13 +50,18 @@ previous edit version or a backdated acceptance record.
   [W03 evidence](MAIN-03/W03/validation.md): 52 controls passed with independent
   debugger observations and intact SRAM guards. ADL/MB0 primary state qualified;
   IFF, alternate state and hardware remain unqualified. Record framing follows W04.
-- W04 [ ] Implement binary recording and frequent SD checkpoints.
+- W04 [x] Implement binary recording and frequent SD checkpoints.
   Serialize v1 records, CRC and commit marker; sync case-start before entry and
   observations/end before advancing. Track confirmed progress, preserve emergency
   state and halt cleanly on short writes, sync errors or capacity exhaustion.
   Keep filesystem operations outside capture windows and establish preconditions
   after checkpoint side effects. Integrate TEST-01 W03/W04. Do not claim
   power-loss durability or run destructive media cases from an open script.
+  **Completed** — [recording contract](../binary-recording.md) and
+  [W04 evidence](MAIN-03/W04/validation.md): frozen-byte agreement, 22 fault
+  controls, 1,064 SRAM interruption checks and raw-image capture/checkpoint/
+  collision readback passed. TEST-01 W04 complete; W03 encoder portion passed,
+  with decoder/recovery qualification continuing in W05. Hardware untested.
 - W05 [ ] Implement the host decoder and initial human report.
   Validate identities, lengths, CRC, version, duplicate sequences and selected-plan
   completion. Decode saved files and explicit recovered buffers with provenance.

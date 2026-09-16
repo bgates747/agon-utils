@@ -9,7 +9,7 @@ it does not test MOS conformance or authorize firmware changes.
 
 ## State
 
-Reconstructed contract checkpoint. Completed items: W01, W02.
+Reconstructed contract checkpoint. Completed items: W01, W02, W04.
 Remaining work is frozen and unstarted at this checkpoint. The subproject TODO
 owns unfinished task indexing. This is a retrospective grouping, not an exact
 previous edit version or a backdated acceptance record.
@@ -42,12 +42,15 @@ previous edit version or a backdated acceptance record.
   missing/reordered/conflicting records and identical duplicates. Unknown case/run
   identities cannot be accepted blindly. Test strict valid-prefix decoding and
   separately labelled forensic fragments; no recovery fragment proves completion.
-- W04 [ ] Exercise checkpoint and buffer failure paths.
+- W04 [x] Exercise checkpoint and buffer failure paths.
   Inject short writes, write/sync errors, full staging buffer and interrupted
   header updates at controlled abstraction boundaries. Verify bounded emergency
   evidence, no silent overwrite, no recursive failed reporting and no progression
   to another ordinary case after unsafe failure. Preserve prior runs. Synthetic
   fault injection validates runner handling, not real card power-loss guarantees.
+  **Completed** — [checkpoint qualification](TEST-01/W04/validation.md):
+  storage, buffer and counter failures stop safely; interrupted publication and
+  prior-run preservation checks passed. Hardware/power-loss behavior untested.
 - W05 [ ] Qualify verdicts and human report semantics.
   Fixture plans cover all-pass, single/multiple failing tests, multiple failed
   assertions in one test, expected-error test passes, skips/unsupported/blocked,

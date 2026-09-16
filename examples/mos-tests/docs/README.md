@@ -9,3 +9,5 @@ Task contracts live in tasks/; TODO at the subproject root owns unfinished work.
 [Frozen result format](result-format-v1.md).
 
 [Capture](register-capture.md).
+
+[Recording](binary-recording.md).

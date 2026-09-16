@@ -1,0 +1,15 @@
+{
+  "backend": "mbr-fat32-image",
+  "image": "/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/.emulator/runs/recording-04/sd.img",
+  "sha256": "d08487aadddc62b1c077aed59b7e01d8adab996b4b88d6319a8ff774d738136d",
+  "files": {
+    "/mystuff/test.bin": {
+      "sha256": "b8fa65a8c4a2973cccd6e5c5cc4b252d399f34cf19d9f82b3d563e7bee4bdf4c",
+      "size": 10241
+    },
+    "/!boot.obey": {
+      "sha256": "9582ba96b764011e4712bc7e4b6794006428c3f0e5b036d13b6291ee0282cb8f",
+      "size": 49
+    }
+  }
+}

@@ -1,0 +1,3779 @@
+
+/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/apps/recording-controls/obj/main.o:     file format elf32-z80
+
+
+Disassembly of section .text:
+
+00000000 <__Z8metadataPvRKN5suite4CaseERNS0_4wire7PayloadE>:
+       0:	21 fd ff ff       	ld hl,0xfffffd
+       4:	cd 00 00 00       	call 0x0000
+			5: r_imm24	__frameset
+       8:	dd 31 0c          	ld iy,(ix+12)
+       b:	40 21 44 00       	ld.sis hl,0x0044
+       f:	3e 01             	ld a,0x01
+      11:	ed 13 04          	lea de,iy+4
+      14:	ed 03 00          	lea bc,iy+0
+      17:	dd 1f fd          	ld (ix-3),de
+      1a:	11 00 04 00       	ld de,0x0400
+      1e:	fd 19             	add iy,de
+      20:	fd 75 00          	ld (iy+0),l
+      23:	fd 74 01          	ld (iy+1),h
+      26:	c5                	push bc
+      27:	fd e1             	pop iy
+      29:	fd 77 00          	ld (iy+0),a
+      2c:	fd 73 01          	ld (iy+1),e
+      2f:	fd 77 02          	ld (iy+2),a
+      32:	fd 73 03          	ld (iy+3),e
+      35:	ed 23 44          	lea hl,iy+68
+      38:	fd 73 44          	ld (iy+68),e
+      3b:	e5                	push hl
+      3c:	d1                	pop de
+      3d:	13                	inc de
+      3e:	01 bb 03 00       	ld bc,0x03bb
+      42:	ed b0             	ldir
+      44:	dd 17 fd          	ld de,(ix-3)
+      47:	21 01 00 00       	ld hl,0x0001
+			48: r_imm24	.bss+0x1
+      4b:	01 40 00 00       	ld bc,0x0040
+      4f:	ed b0             	ldir
+      51:	e1                	pop hl
+      52:	dd e1             	pop ix
+      54:	c9                	ret
+
+00000055 <__Z7executePvRKN5suite4CaseE>:
+      55:	21 8c fb ff       	ld hl,0xfffb8c
+      59:	cd 00 00 00       	call 0x0000
+			5a: r_imm24	__frameset
+      5d:	01 98 fb ff       	ld bc,0xfffb98
+      61:	ed 55 00          	lea iy,ix+0
+      64:	fd 09             	add iy,bc
+      66:	ed 22 9a          	lea hl,ix-102
+      69:	dd e5             	push ix
+      6b:	01 95 fb ff       	ld bc,0xfffb95
+      6f:	dd 09             	add ix,bc
+      71:	dd 2f 00          	ld (ix+0),hl
+      74:	dd e1             	pop ix
+      76:	01 8f fb ff       	ld bc,0xfffb8f
+      7a:	ed 22 00          	lea hl,ix+0
+      7d:	09                	add hl,bc
+      7e:	ed 3e             	ld (hl),iy
+      80:	ed 23 00          	lea hl,iy+0
+      83:	01 92 fb ff       	ld bc,0xfffb92
+      87:	ed 55 00          	lea iy,ix+0
+      8a:	fd 09             	add iy,bc
+      8c:	fd 2f 00          	ld (iy+0),hl
+      8f:	cd 00 00 00       	call 0x0000
+			90: r_imm24	_recording_probe
+      93:	dd 36 9a 00       	ld (ix-102),0x00
+      97:	11 95 fb ff       	ld de,0xfffb95
+      9b:	ed 22 00          	lea hl,ix+0
+      9e:	19                	add hl,de
+      9f:	ed 27             	ld hl,(hl)
+      a1:	e5                	push hl
+      a2:	fd e1             	pop iy
+      a4:	fd 23             	inc iy
+      a6:	01 5f 00 00       	ld bc,0x005f
+      aa:	ed 13 00          	lea de,iy+0
+      ad:	ed b0             	ldir
+      af:	11 40 00 00       	ld de,0x0040
+      b3:	01 00 00 00       	ld bc,0x0000
+      b7:	c5                	push bc
+      b8:	e1                	pop hl
+      b9:	b7                	or a,a
+      ba:	ed 52             	sbc hl,de
+      bc:	28 1e             	jr z,0x00dc
+      be:	21 00 e9 b7       	ld hl,0xb7e900
+      c2:	09                	add hl,bc
+      c3:	7e                	ld a,(hl)
+      c4:	dd 1f fd          	ld (ix-3),de
+      c7:	11 95 fb ff       	ld de,0xfffb95
+      cb:	ed 22 00          	lea hl,ix+0
+      ce:	19                	add hl,de
+      cf:	ed 31             	ld iy,(hl)
+      d1:	fd 09             	add iy,bc
+      d3:	fd 77 00          	ld (iy+0),a
+      d6:	03                	inc bc
+      d7:	dd 17 fd          	ld de,(ix-3)
+      da:	18 db             	jr 0x00b7
+      dc:	11 54 00 00       	ld de,0x0054
+      e0:	01 40 00 00       	ld bc,0x0040
+      e4:	c5                	push bc
+      e5:	e1                	pop hl
+      e6:	b7                	or a,a
+      e7:	ed 52             	sbc hl,de
+      e9:	28 19             	jr z,0x0104
+      eb:	dd 1f fd          	ld (ix-3),de
+      ee:	11 95 fb ff       	ld de,0xfffb95
+      f2:	ed 22 00          	lea hl,ix+0
+      f5:	19                	add hl,de
+      f6:	ed 31             	ld iy,(hl)
+      f8:	fd 09             	add iy,bc
+      fa:	fd 36 00 ff       	ld (iy+0),0xff
+      fe:	03                	inc bc
+      ff:	dd 17 fd          	ld de,(ix-3)
+     102:	18 e0             	jr 0x00e4
+     104:	21 14 00 00       	ld hl,0x0014
+     108:	e5                	push hl
+     109:	01 95 fb ff       	ld bc,0xfffb95
+     10d:	ed 22 00          	lea hl,ix+0
+     110:	09                	add hl,bc
+     111:	ed 31             	ld iy,(hl)
+     113:	ed 66 20          	pea iy+32
+     116:	fd e5             	push iy
+     118:	cd 00 00 00       	call 0x0000
+			119: r_imm24	_memcmp
+     11c:	01 8c fb ff       	ld bc,0xfffb8c
+     120:	ed 55 00          	lea iy,ix+0
+     123:	fd 09             	add iy,bc
+     125:	fd 2f 00          	ld (iy+0),hl
+     128:	e1                	pop hl
+     129:	e1                	pop hl
+     12a:	e1                	pop hl
+     12b:	01 92 fb ff       	ld bc,0xfffb92
+     12f:	ed 22 00          	lea hl,ix+0
+     132:	09                	add hl,bc
+     133:	ed 31             	ld iy,(hl)
+     135:	ed 23 03          	lea hl,iy+3
+     138:	01 8f fb ff       	ld bc,0xfffb8f
+     13c:	ed 55 00          	lea iy,ix+0
+     13f:	fd 09             	add iy,bc
+     141:	fd 37 00          	ld iy,(iy+0)
+     144:	fd 36 03 00       	ld (iy+3),0x00
+     148:	e5                	push hl
+     149:	d1                	pop de
+     14a:	13                	inc de
+     14b:	01 fc 03 00       	ld bc,0x03fc
+     14f:	ed b0             	ldir
+     151:	40 21 70 00       	ld.sis hl,0x0070
+     155:	dd 75 98          	ld (ix-104),l
+     158:	dd 74 99          	ld (ix-103),h
+     15b:	fd 36 00 01       	ld (iy+0),0x01
+     15f:	fd 74 01          	ld (iy+1),h
+     162:	fd 36 02 01       	ld (iy+2),0x01
+     166:	b7                	or a,a
+     167:	ed 62             	sbc hl,hl
+     169:	fd 2f 04          	ld (iy+4),hl
+     16c:	fd 74 07          	ld (iy+7),h
+     16f:	fd 36 08 01       	ld (iy+8),0x01
+     173:	fd 36 0a 60       	ld (iy+10),0x60
+     177:	fd 36 0c 01       	ld (iy+12),0x01
+     17b:	ed 23 00          	lea hl,iy+0
+     17e:	01 92 fb ff       	ld bc,0xfffb92
+     182:	ed 55 00          	lea iy,ix+0
+     185:	fd 09             	add iy,bc
+     187:	fd 37 00          	ld iy,(iy+0)
+     18a:	ed 13 10          	lea de,iy+16
+     18d:	e5                	push hl
+     18e:	fd e1             	pop iy
+     190:	fd 36 0d 00       	ld (iy+13),0x00
+     194:	fd 36 0e 00       	ld (iy+14),0x00
+     198:	fd 36 0f 00       	ld (iy+15),0x00
+     19c:	01 95 fb ff       	ld bc,0xfffb95
+     1a0:	ed 22 00          	lea hl,ix+0
+     1a3:	09                	add hl,bc
+     1a4:	ed 27             	ld hl,(hl)
+     1a6:	01 60 00 00       	ld bc,0x0060
+     1aa:	ed b0             	ldir
+     1ac:	dd 27 09          	ld hl,(ix+9)
+     1af:	ed 27             	ld hl,(hl)
+     1b1:	01 92 fb ff       	ld bc,0xfffb92
+     1b5:	ed 55 00          	lea iy,ix+0
+     1b8:	fd 09             	add iy,bc
+     1ba:	fd 17 00          	ld de,(iy+0)
+     1bd:	d5                	push de
+     1be:	e5                	push hl
+     1bf:	cd 00 00 00       	call 0x0000
+			1c0: r_imm24	__ZN5suite17RecordedLifecycle11observationERKNS_4wire7PayloadE
+     1c3:	11 00 00 00       	ld de,0x0000
+     1c7:	e1                	pop hl
+     1c8:	e1                	pop hl
+     1c9:	cb 47             	bit 0,a
+     1cb:	d5                	push de
+     1cc:	e1                	pop hl
+     1cd:	01 00 00 00       	ld bc,0x0000
+			1ce: r_imm24	.rodata
+     1d1:	3e 07             	ld a,0x07
+     1d3:	28 3f             	jr z,0x0214
+     1d5:	01 8c fb ff       	ld bc,0xfffb8c
+     1d9:	ed 22 00          	lea hl,ix+0
+     1dc:	09                	add hl,bc
+     1dd:	ed 27             	ld hl,(hl)
+     1df:	09                	add hl,bc
+     1e0:	b7                	or a,a
+     1e1:	ed 42             	sbc hl,bc
+     1e3:	28 04             	jr z,0x01e9
+     1e5:	3e 00             	ld a,0x00
+     1e7:	18 02             	jr 0x01eb
+     1e9:	3e ff             	ld a,0xff
+     1eb:	1e 01             	ld e,0x01
+     1ed:	01 1e 00 00       	ld bc,0x001e
+			1ee: r_imm24	.rodata+0x1e
+     1f1:	cb 47             	bit 0,a
+     1f3:	20 02             	jr nz,0x01f7
+     1f5:	1e 02             	ld e,0x02
+     1f7:	09                	add hl,bc
+     1f8:	b7                	or a,a
+     1f9:	ed 42             	sbc hl,bc
+     1fb:	20 06             	jr nz,0x0203
+     1fd:	21 00 00 00       	ld hl,0x0000
+     201:	18 04             	jr 0x0207
+     203:	21 01 00 00       	ld hl,0x0001
+     207:	cb 47             	bit 0,a
+     209:	20 04             	jr nz,0x020f
+     20b:	01 1f 00 00       	ld bc,0x001f
+			20c: r_imm24	.rodata+0x1f
+     20f:	7b                	ld a,e
+     210:	11 01 00 00       	ld de,0x0001
+     214:	dd 31 06          	ld iy,(ix+6)
+     217:	fd 77 00          	ld (iy+0),a
+     21a:	fd 1f 01          	ld (iy+1),de
+     21d:	af                	xor a,a
+     21e:	fd 77 04          	ld (iy+4),a
+     221:	fd 2f 05          	ld (iy+5),hl
+     224:	fd 77 08          	ld (iy+8),a
+     227:	fd 0f 09          	ld (iy+9),bc
+     22a:	ed 23 00          	lea hl,iy+0
+     22d:	dd f9             	ld sp,ix
+     22f:	dd e1             	pop ix
+     231:	c9                	ret
+
+00000232 <__ZN5suite17RecordedLifecycle11observationERKNS_4wire7PayloadE>:
+     232:	21 fd ff ff       	ld hl,0xfffffd
+     236:	cd 00 00 00       	call 0x0000
+			237: r_imm24	__frameset
+     23a:	dd 31 09          	ld iy,(ix+9)
+     23d:	af                	xor a,a
+     23e:	11 00 04 00       	ld de,0x0400
+     242:	ed 03 00          	lea bc,iy+0
+     245:	fd 19             	add iy,de
+     247:	fd 27 00          	ld hl,(iy+0)
+     24a:	40 11 10 00       	ld.sis de,0x0010
+     24e:	b7                	or a,a
+     24f:	40 ed 52          	sbc.sis hl,de
+     252:	da 1f 03 00       	jp c,0x031f
+			253: r_imm24	.text+0x31f
+     256:	c5                	push bc
+     257:	fd e1             	pop iy
+     259:	fd 7e 06          	ld a,(iy+6)
+     25c:	b7                	or a,a
+     25d:	c2 22 03 00       	jp nz,0x0322
+			25e: r_imm24	.text+0x322
+     261:	fd 7e 07          	ld a,(iy+7)
+     264:	b7                	or a,a
+     265:	c2 22 03 00       	jp nz,0x0322
+			266: r_imm24	.text+0x322
+     269:	fd 7e 08          	ld a,(iy+8)
+     26c:	fe 01             	cp a,0x01
+     26e:	c2 22 03 00       	jp nz,0x0322
+			26f: r_imm24	.text+0x322
+     272:	fd 7e 09          	ld a,(iy+9)
+     275:	b7                	or a,a
+     276:	c2 22 03 00       	jp nz,0x0322
+			277: r_imm24	.text+0x322
+     27a:	dd 31 06          	ld iy,(ix+6)
+     27d:	3e ff             	ld a,0xff
+     27f:	fd 27 0f          	ld hl,(iy+15)
+     282:	ed 13 00          	lea de,iy+0
+     285:	fd 07 00          	ld bc,(iy+0)
+     288:	dd 0f fd          	ld (ix-3),bc
+     28b:	fd 5e 12          	ld e,(iy+18)
+     28e:	01 ff ff ff       	ld bc,0xffffff
+     292:	cd 00 00 00       	call 0x0000
+			293: r_imm24	__lcmpu
+     296:	20 25             	jr nz,0x02bd
+     298:	21 05 00 00       	ld hl,0x0005
+     29c:	dd 31 fd          	ld iy,(ix-3)
+     29f:	fd 17 5f          	ld de,(iy+95)
+     2a2:	fd 4e 62          	ld c,(iy+98)
+     2a5:	c5                	push bc
+     2a6:	d5                	push de
+     2a7:	11 00 00 00       	ld de,0x0000
+     2ab:	d5                	push de
+     2ac:	e5                	push hl
+     2ad:	e5                	push hl
+     2ae:	fd e5             	push iy
+     2b0:	cd 00 00 00       	call 0x0000
+			2b1: r_imm24	__ZN5suite8Recorder4failEhmm
+     2b4:	57                	ld d,a
+     2b5:	e1                	pop hl
+     2b6:	e1                	pop hl
+     2b7:	e1                	pop hl
+     2b8:	e1                	pop hl
+     2b9:	e1                	pop hl
+     2ba:	e1                	pop hl
+     2bb:	18 67             	jr 0x0324
+     2bd:	dd 31 fd          	ld iy,(ix-3)
+     2c0:	fd 27 6b          	ld hl,(iy+107)
+     2c3:	fd 5e 6e          	ld e,(iy+110)
+     2c6:	cd 00 00 00       	call 0x0000
+			2c7: r_imm24	__lcmpzero
+     2ca:	28 56             	jr z,0x0322
+     2cc:	dd 27 09          	ld hl,(ix+9)
+     2cf:	e5                	push hl
+     2d0:	21 03 00 00       	ld hl,0x0003
+     2d4:	e5                	push hl
+     2d5:	fd e5             	push iy
+     2d7:	cd 00 00 00       	call 0x0000
+			2d8: r_imm24	__ZN5suite8Recorder6appendEhRKNS_4wire7PayloadE
+     2db:	e1                	pop hl
+     2dc:	e1                	pop hl
+     2dd:	e1                	pop hl
+     2de:	cb 47             	bit 0,a
+     2e0:	28 40             	jr z,0x0322
+     2e2:	dd 27 06          	ld hl,(ix+6)
+     2e5:	ed 27             	ld hl,(hl)
+     2e7:	e5                	push hl
+     2e8:	cd 00 00 00       	call 0x0000
+			2e9: r_imm24	__ZN5suite8Recorder10checkpointEv
+     2ec:	e1                	pop hl
+     2ed:	cb 47             	bit 0,a
+     2ef:	3e 00             	ld a,0x00
+     2f1:	28 2c             	jr z,0x031f
+     2f3:	16 01             	ld d,0x01
+     2f5:	dd 31 06          	ld iy,(ix+6)
+     2f8:	ed 23 0f          	lea hl,iy+15
+     2fb:	fd 07 0f          	ld bc,(iy+15)
+     2fe:	e5                	push hl
+     2ff:	fd e1             	pop iy
+     301:	ed 33 03          	lea iy,iy+3
+     304:	c5                	push bc
+     305:	e1                	pop hl
+     306:	fd 5e 00          	ld e,(iy+0)
+     309:	01 01 00 00       	ld bc,0x0001
+     30d:	cd 00 00 00       	call 0x0000
+			30e: r_imm24	__ladd
+     311:	dd 31 06          	ld iy,(ix+6)
+     314:	fd 2f 0f          	ld (iy+15),hl
+     317:	dd 31 06          	ld iy,(ix+6)
+     31a:	fd 73 12          	ld (iy+18),e
+     31d:	18 05             	jr 0x0324
+     31f:	57                	ld d,a
+     320:	18 02             	jr 0x0324
+     322:	16 00             	ld d,0x00
+     324:	7a                	ld a,d
+     325:	e1                	pop hl
+     326:	dd e1             	pop ix
+     328:	c9                	ret
+
+00000329 <__Z7cleanupPvRKN5suite4CaseE>:
+     329:	cd 00 00 00       	call 0x0000
+			32a: r_imm24	__frameset0
+     32d:	3e 01             	ld a,0x01
+     32f:	dd e1             	pop ix
+     331:	c9                	ret
+
+00000332 <_main>:
+     332:	21 c9 fa ff       	ld hl,0xfffac9
+     336:	cd 00 00 00       	call 0x0000
+			337: r_imm24	__frameset
+     33a:	cd 00 00 00       	call 0x0000
+			33b: r_imm24	_capture_available
+     33e:	09                	add hl,bc
+     33f:	b7                	or a,a
+     340:	ed 42             	sbc hl,bc
+     342:	20 08             	jr nz,0x034c
+     344:	21 13 00 00       	ld hl,0x0013
+     348:	c3 d7 03 00       	jp 0x03d7
+			349: r_imm24	.text+0x3d7
+     34c:	ed 55 d6          	lea iy,ix-42
+     34f:	dd 36 d6 00       	ld (ix-42),0x00
+     353:	ed 13 00          	lea de,iy+0
+     356:	13                	inc de
+     357:	01 23 00 00       	ld bc,0x0023
+     35b:	ed 23 00          	lea hl,iy+0
+     35e:	ed b0             	ldir
+     360:	21 01 00 00       	ld hl,0x0001
+     364:	e5                	push hl
+     365:	21 48 00 00       	ld hl,0x0048
+			366: r_imm24	.rodata+0x48
+     369:	e5                	push hl
+     36a:	01 e4 fa ff       	ld bc,0xfffae4
+     36e:	ed 22 00          	lea hl,ix+0
+     371:	09                	add hl,bc
+     372:	ed 3e             	ld (hl),iy
+     374:	fd e5             	push iy
+     376:	cd 00 00 00       	call 0x0000
+			377: r_imm24	_ffs_fopen
+     37a:	e1                	pop hl
+     37b:	e1                	pop hl
+     37c:	e1                	pop hl
+     37d:	b7                	or a,a
+     37e:	20 53             	jr nz,0x03d3
+     380:	21 81 00 00       	ld hl,0x0081
+			381: r_imm24	.bss+0x81
+     384:	11 10 00 00       	ld de,0x0010
+     388:	d5                	push de
+     389:	e5                	push hl
+     38a:	01 e4 fa ff       	ld bc,0xfffae4
+     38e:	ed 22 00          	lea hl,ix+0
+     391:	09                	add hl,bc
+     392:	ed 27             	ld hl,(hl)
+     394:	e5                	push hl
+     395:	cd 00 00 00       	call 0x0000
+			396: r_imm24	_ffs_fread
+     399:	01 e1 fa ff       	ld bc,0xfffae1
+     39d:	ed 55 00          	lea iy,ix+0
+     3a0:	fd 09             	add iy,bc
+     3a2:	fd 2f 00          	ld (iy+0),hl
+     3a5:	e1                	pop hl
+     3a6:	e1                	pop hl
+     3a7:	e1                	pop hl
+     3a8:	01 e4 fa ff       	ld bc,0xfffae4
+     3ac:	ed 22 00          	lea hl,ix+0
+     3af:	09                	add hl,bc
+     3b0:	ed 27             	ld hl,(hl)
+     3b2:	e5                	push hl
+     3b3:	cd 00 00 00       	call 0x0000
+			3b4: r_imm24	_ffs_fclose
+     3b7:	e1                	pop hl
+     3b8:	11 10 00 00       	ld de,0x0010
+     3bc:	01 e1 fa ff       	ld bc,0xfffae1
+     3c0:	ed 22 00          	lea hl,ix+0
+     3c3:	09                	add hl,bc
+     3c4:	ed 27             	ld hl,(hl)
+     3c6:	b7                	or a,a
+     3c7:	ed 52             	sbc hl,de
+     3c9:	ca dc 03 00       	jp z,0x03dc
+			3ca: r_imm24	.text+0x3dc
+     3cd:	21 15 00 00       	ld hl,0x0015
+     3d1:	18 04             	jr 0x03d7
+     3d3:	21 14 00 00       	ld hl,0x0014
+     3d7:	dd f9             	ld sp,ix
+     3d9:	dd e1             	pop ix
+     3db:	c9                	ret
+     3dc:	b7                	or a,a
+     3dd:	21 15 00 00       	ld hl,0x0015
+     3e1:	c2 d7 03 00       	jp nz,0x03d7
+			3e2: r_imm24	.text+0x3d7
+     3e5:	11 5c ff ff       	ld de,0xffff5c
+     3e9:	ed 55 00          	lea iy,ix+0
+     3ec:	fd 19             	add iy,de
+     3ee:	11 e7 fa ff       	ld de,0xfffae7
+     3f2:	ed 22 00          	lea hl,ix+0
+     3f5:	19                	add hl,de
+     3f6:	e5                	push hl
+     3f7:	c1                	pop bc
+     3f8:	2e 11             	ld l,0x11
+     3fa:	dd e5             	push ix
+     3fc:	11 e1 fa ff       	ld de,0xfffae1
+     400:	dd 19             	add ix,de
+     402:	dd 2f 00          	ld (ix+0),hl
+     405:	dd e1             	pop ix
+     407:	11 de fa ff       	ld de,0xfffade
+     40b:	ed 22 00          	lea hl,ix+0
+     40e:	19                	add hl,de
+     40f:	ed 3e             	ld (hl),iy
+     411:	ed 23 00          	lea hl,iy+0
+     414:	11 e4 fa ff       	ld de,0xfffae4
+     418:	ed 55 00          	lea iy,ix+0
+     41b:	fd 19             	add iy,de
+     41d:	fd 2f 00          	ld (iy+0),hl
+     420:	c5                	push bc
+     421:	fd e1             	pop iy
+     423:	ed 23 73          	lea hl,iy+115
+     426:	dd e5             	push ix
+     428:	01 db fa ff       	ld bc,0xfffadb
+     42c:	dd 09             	add ix,bc
+     42e:	dd 2f 00          	ld (ix+0),hl
+     431:	dd e1             	pop ix
+     433:	ed 23 70          	lea hl,iy+112
+     436:	dd e5             	push ix
+     438:	01 c9 fa ff       	ld bc,0xfffac9
+     43c:	dd 09             	add ix,bc
+     43e:	dd 2f 00          	ld (ix+0),hl
+     441:	dd e1             	pop ix
+     443:	ed 23 5d          	lea hl,iy+93
+     446:	dd e5             	push ix
+     448:	01 d5 fa ff       	ld bc,0xfffad5
+     44c:	dd 09             	add ix,bc
+     44e:	dd 2f 00          	ld (ix+0),hl
+     451:	dd e1             	pop ix
+     453:	ed 23 4c          	lea hl,iy+76
+     456:	dd e5             	push ix
+     458:	01 d2 fa ff       	ld bc,0xfffad2
+     45c:	dd 09             	add ix,bc
+     45e:	dd 2f 00          	ld (ix+0),hl
+     461:	dd e1             	pop ix
+     463:	ed 23 3b          	lea hl,iy+59
+     466:	dd e5             	push ix
+     468:	01 cf fa ff       	ld bc,0xfffacf
+     46c:	dd 09             	add ix,bc
+     46e:	dd 2f 00          	ld (ix+0),hl
+     471:	dd e1             	pop ix
+     473:	01 d8 fa ff       	ld bc,0xfffad8
+     477:	ed 22 00          	lea hl,ix+0
+     47a:	09                	add hl,bc
+     47b:	ed 3e             	ld (hl),iy
+     47d:	ed 23 0f          	lea hl,iy+15
+     480:	01 cc fa ff       	ld bc,0xfffacc
+     484:	ed 55 00          	lea iy,ix+0
+     487:	fd 09             	add iy,bc
+     489:	fd 2f 00          	ld (iy+0),hl
+     48c:	11 00 20 00       	ld de,0x2000
+     490:	01 00 00 00       	ld bc,0x0000
+     494:	c5                	push bc
+     495:	e1                	pop hl
+     496:	b7                	or a,a
+     497:	ed 52             	sbc hl,de
+     499:	28 0a             	jr z,0x04a5
+     49b:	21 00 e0 b7       	ld hl,0xb7e000
+     49f:	09                	add hl,bc
+     4a0:	36 c7             	ld (hl),0xc7
+     4a2:	03                	inc bc
+     4a3:	18 ef             	jr 0x0494
+     4a5:	0e 05             	ld c,0x05
+     4a7:	11 00 00 00       	ld de,0x0000
+     4ab:	d5                	push de
+     4ac:	fd e1             	pop iy
+     4ae:	eb                	ex de,hl
+     4af:	11 80 00 00       	ld de,0x0080
+     4b3:	b7                	or a,a
+     4b4:	ed 52             	sbc hl,de
+     4b6:	28 39             	jr z,0x04f1
+     4b8:	ed 13 00          	lea de,iy+0
+     4bb:	d5                	push de
+     4bc:	e1                	pop hl
+     4bd:	cd 00 00 00       	call 0x0000
+			4be: r_imm24	__ishru
+     4c1:	e5                	push hl
+     4c2:	fd e1             	pop iy
+     4c4:	dd 0f fd          	ld (ix-3),bc
+     4c7:	dd e5             	push ix
+     4c9:	01 e1 fa ff       	ld bc,0xfffae1
+     4cd:	dd 09             	add ix,bc
+     4cf:	dd 27 00          	ld hl,(ix+0)
+     4d2:	dd e1             	pop ix
+     4d4:	eb                	ex de,hl
+     4d5:	fd 55             	ld d,iyl
+     4d7:	eb                	ex de,hl
+     4d8:	ed 55 00          	lea iy,ix+0
+     4db:	fd 09             	add iy,bc
+     4dd:	fd 2f 00          	ld (iy+0),hl
+     4e0:	ed 6c             	mlt hl
+     4e2:	7d                	ld a,l
+     4e3:	c6 11             	add a,0x11
+     4e5:	21 01 00 00       	ld hl,0x0001
+			4e6: r_imm24	.bss+0x1
+     4e9:	19                	add hl,de
+     4ea:	77                	ld (hl),a
+     4eb:	13                	inc de
+     4ec:	dd 07 fd          	ld bc,(ix-3)
+     4ef:	18 ba             	jr 0x04ab
+     4f1:	01 de fa ff       	ld bc,0xfffade
+     4f5:	ed 22 00          	lea hl,ix+0
+     4f8:	09                	add hl,bc
+     4f9:	ed 31             	ld iy,(hl)
+     4fb:	21 00 e0 b7       	ld hl,0xb7e000
+     4ff:	fd 2f 00          	ld (iy+0),hl
+     502:	21 91 00 00       	ld hl,0x0091
+			503: r_imm24	.bss+0x91
+     506:	fd 2f 03          	ld (iy+3),hl
+     509:	21 00 00 00       	ld hl,0x0000
+			50a: r_imm24	__ZN5suite10MosStorage5writeEPvPKhjPm
+     50d:	fd 2f 06          	ld (iy+6),hl
+     510:	21 00 00 00       	ld hl,0x0000
+			511: r_imm24	__ZN5suite10MosStorage4syncEPv
+     514:	fd 2f 09          	ld (iy+9),hl
+     517:	21 00 00 00       	ld hl,0x0000
+			518: r_imm24	__ZN5suite10MosStorage5closeEPv
+     51b:	fd 2f 0c          	ld (iy+12),hl
+     51e:	21 01 00 00       	ld hl,0x0001
+     522:	dd 2f bb          	ld (ix-69),hl
+     525:	dd 74 be          	ld (ix-66),h
+     528:	01 e4 fa ff       	ld bc,0xfffae4
+     52c:	ed 22 00          	lea hl,ix+0
+     52f:	09                	add hl,bc
+     530:	ed 31             	ld iy,(hl)
+     532:	ed 23 63          	lea hl,iy+99
+     535:	dd 36 bf 00       	ld (ix-65),0x00
+     539:	e5                	push hl
+     53a:	d1                	pop de
+     53b:	13                	inc de
+     53c:	01 0d 00 00       	ld bc,0x000d
+     540:	ed b0             	ldir
+     542:	dd 36 cd 01       	ld (ix-51),0x01
+     546:	dd 36 ce 01       	ld (ix-50),0x01
+     54a:	dd 36 cf 00       	ld (ix-49),0x00
+     54e:	21 00 00 00       	ld hl,0x0000
+     552:	dd 2f d0          	ld (ix-48),hl
+     555:	dd 2f d3          	ld (ix-45),hl
+     558:	ed 13 0f          	lea de,iy+15
+     55b:	21 81 00 00       	ld hl,0x0081
+			55c: r_imm24	.bss+0x81
+     55f:	01 10 00 00       	ld bc,0x0010
+     563:	ed b0             	ldir
+     565:	ed 13 1f          	lea de,iy+31
+     568:	21 21 00 00       	ld hl,0x0021
+			569: r_imm24	.bss+0x21
+     56c:	01 20 00 00       	ld bc,0x0020
+     570:	ed b0             	ldir
+     572:	ed 13 3f          	lea de,iy+63
+     575:	21 41 00 00       	ld hl,0x0041
+			576: r_imm24	.bss+0x41
+     579:	01 20 00 00       	ld bc,0x0020
+     57d:	ed b0             	ldir
+     57f:	01 e4 fa ff       	ld bc,0xfffae4
+     583:	ed 22 00          	lea hl,ix+0
+     586:	09                	add hl,bc
+     587:	ed 27             	ld hl,(hl)
+     589:	e5                	push hl
+     58a:	cd 00 00 00       	call 0x0000
+			58b: r_imm24	__ZN5suite8Recorder5beginEv
+     58e:	e1                	pop hl
+     58f:	cb 47             	bit 0,a
+     591:	21 16 00 00       	ld hl,0x0016
+     595:	ca d7 03 00       	jp z,0x03d7
+			596: r_imm24	.text+0x3d7
+     599:	21 50 00 00       	ld hl,0x0050
+			59a: r_imm24	.rodata+0x50
+     59d:	e5                	push hl
+     59e:	21 91 00 00       	ld hl,0x0091
+			59f: r_imm24	.bss+0x91
+     5a2:	e5                	push hl
+     5a3:	cd 00 00 00       	call 0x0000
+			5a4: r_imm24	__ZN5suite10MosStorage4openEPKc
+     5a7:	c1                	pop bc
+     5a8:	c1                	pop bc
+     5a9:	cd 00 00 00       	call 0x0000
+			5aa: r_imm24	__lcmpzero
+     5ad:	c2 df 07 00       	jp nz,0x07df
+			5ae: r_imm24	.text+0x7df
+     5b1:	01 db fa ff       	ld bc,0xfffadb
+     5b5:	ed 22 00          	lea hl,ix+0
+     5b8:	09                	add hl,bc
+     5b9:	ed 31             	ld iy,(hl)
+     5bb:	ed 23 03          	lea hl,iy+3
+     5be:	01 d8 fa ff       	ld bc,0xfffad8
+     5c2:	ed 55 00          	lea iy,ix+0
+     5c5:	fd 09             	add iy,bc
+     5c7:	fd 37 00          	ld iy,(iy+0)
+     5ca:	fd 36 76 00       	ld (iy+118),0x00
+     5ce:	e5                	push hl
+     5cf:	d1                	pop de
+     5d0:	13                	inc de
+     5d1:	01 fc 03 00       	ld bc,0x03fc
+     5d5:	ed b0             	ldir
+     5d7:	40 21 88 00       	ld.sis hl,0x0088
+     5db:	dd e5             	push ix
+     5dd:	01 5a ff ff       	ld bc,0xffff5a
+     5e1:	dd 09             	add ix,bc
+     5e3:	dd 75 00          	ld (ix+0),l
+     5e6:	dd 74 01          	ld (ix+1),h
+     5e9:	dd e1             	pop ix
+     5eb:	fd 36 73 01       	ld (iy+115),0x01
+     5ef:	fd 74 74          	ld (iy+116),h
+     5f2:	fd 36 75 01       	ld (iy+117),0x01
+     5f6:	fd 36 77 02       	ld (iy+119),0x02
+     5fa:	ed 23 00          	lea hl,iy+0
+     5fd:	01 db fa ff       	ld bc,0xfffadb
+     601:	ed 55 00          	lea iy,ix+0
+     604:	fd 09             	add iy,bc
+     606:	fd 37 00          	ld iy,(iy+0)
+     609:	ed 13 08          	lea de,iy+8
+     60c:	e5                	push hl
+     60d:	fd e1             	pop iy
+     60f:	fd 36 78 00       	ld (iy+120),0x00
+     613:	fd 36 79 00       	ld (iy+121),0x00
+     617:	fd 36 7a 00       	ld (iy+122),0x00
+     61b:	21 01 00 00       	ld hl,0x0001
+			61c: r_imm24	.bss+0x1
+     61f:	01 80 00 00       	ld bc,0x0080
+     623:	ed b0             	ldir
+     625:	01 db fa ff       	ld bc,0xfffadb
+     629:	ed 22 00          	lea hl,ix+0
+     62c:	09                	add hl,bc
+     62d:	ed 27             	ld hl,(hl)
+     62f:	e5                	push hl
+     630:	21 01 00 00       	ld hl,0x0001
+     634:	e5                	push hl
+     635:	01 e4 fa ff       	ld bc,0xfffae4
+     639:	ed 22 00          	lea hl,ix+0
+     63c:	09                	add hl,bc
+     63d:	ed 27             	ld hl,(hl)
+     63f:	e5                	push hl
+     640:	cd 00 00 00       	call 0x0000
+			641: r_imm24	__ZN5suite8Recorder6appendEhRKNS_4wire7PayloadE
+     644:	e1                	pop hl
+     645:	e1                	pop hl
+     646:	e1                	pop hl
+     647:	cb 47             	bit 0,a
+     649:	ca 14 08 00       	jp z,0x0814
+			64a: r_imm24	.text+0x814
+     64d:	01 e4 fa ff       	ld bc,0xfffae4
+     651:	ed 22 00          	lea hl,ix+0
+     654:	09                	add hl,bc
+     655:	ed 27             	ld hl,(hl)
+     657:	e5                	push hl
+     658:	cd 00 00 00       	call 0x0000
+			659: r_imm24	__ZN5suite8Recorder10checkpointEv
+     65c:	e1                	pop hl
+     65d:	cb 47             	bit 0,a
+     65f:	ca 14 08 00       	jp z,0x0814
+			660: r_imm24	.text+0x814
+     663:	01 d8 fa ff       	ld bc,0xfffad8
+     667:	ed 22 00          	lea hl,ix+0
+     66a:	09                	add hl,bc
+     66b:	ed 31             	ld iy,(hl)
+     66d:	dd e5             	push ix
+     66f:	01 e4 fa ff       	ld bc,0xfffae4
+     673:	dd 09             	add ix,bc
+     675:	dd 27 00          	ld hl,(ix+0)
+     678:	dd e1             	pop ix
+     67a:	fd 2f 5d          	ld (iy+93),hl
+     67d:	01 c9 fa ff       	ld bc,0xfffac9
+     681:	ed 22 00          	lea hl,ix+0
+     684:	09                	add hl,bc
+     685:	ed 27             	ld hl,(hl)
+     687:	fd 2f 60          	ld (iy+96),hl
+     68a:	21 00 00 00       	ld hl,0x0000
+			68b: r_imm24	.text
+     68e:	fd 2f 63          	ld (iy+99),hl
+     691:	21 55 00 00       	ld hl,0x0055
+			692: r_imm24	.text+0x55
+     695:	fd 2f 66          	ld (iy+102),hl
+     698:	21 29 03 00       	ld hl,0x0329
+			699: r_imm24	.text+0x329
+     69c:	fd 2f 69          	ld (iy+105),hl
+     69f:	ed 23 00          	lea hl,iy+0
+     6a2:	fd 21 00 00 00    	ld iy,0x0000
+     6a7:	ed 13 00          	lea de,iy+0
+     6aa:	e5                	push hl
+     6ab:	fd e1             	pop iy
+     6ad:	fd 1f 6c          	ld (iy+108),de
+     6b0:	fd 36 6f 00       	ld (iy+111),0x00
+     6b4:	01 d5 fa ff       	ld bc,0xfffad5
+     6b8:	ed 22 00          	lea hl,ix+0
+     6bb:	09                	add hl,bc
+     6bc:	ed 27             	ld hl,(hl)
+     6be:	fd 2f 70          	ld (iy+112),hl
+     6c1:	01 d2 fa ff       	ld bc,0xfffad2
+     6c5:	ed 22 00          	lea hl,ix+0
+     6c8:	09                	add hl,bc
+     6c9:	ed 17             	ld de,(hl)
+     6cb:	21 86 00 00       	ld hl,0x0086
+			6cc: r_imm24	.rodata+0x86
+     6cf:	fd 21 11 00 00    	ld iy,0x0011
+     6d4:	ed 03 00          	lea bc,iy+0
+     6d7:	ed b0             	ldir
+     6d9:	01 cf fa ff       	ld bc,0xfffacf
+     6dd:	ed 22 00          	lea hl,ix+0
+     6e0:	09                	add hl,bc
+     6e1:	ed 17             	ld de,(hl)
+     6e3:	21 ad 00 00       	ld hl,0x00ad
+			6e4: r_imm24	.rodata+0xad
+     6e7:	ed 03 00          	lea bc,iy+0
+     6ea:	ed b0             	ldir
+     6ec:	01 d8 fa ff       	ld bc,0xfffad8
+     6f0:	ed 22 00          	lea hl,ix+0
+     6f3:	09                	add hl,bc
+     6f4:	ed 31             	ld iy,(hl)
+     6f6:	dd e5             	push ix
+     6f8:	01 d2 fa ff       	ld bc,0xfffad2
+     6fc:	dd 09             	add ix,bc
+     6fe:	dd 27 00          	ld hl,(ix+0)
+     701:	dd e1             	pop ix
+     703:	fd 2f 35          	ld (iy+53),hl
+     706:	01 cf fa ff       	ld bc,0xfffacf
+     70a:	ed 22 00          	lea hl,ix+0
+     70d:	09                	add hl,bc
+     70e:	ed 27             	ld hl,(hl)
+     710:	fd 2f 38          	ld (iy+56),hl
+     713:	01 d5 fa ff       	ld bc,0xfffad5
+     717:	ed 22 00          	lea hl,ix+0
+     71a:	09                	add hl,bc
+     71b:	ed 27             	ld hl,(hl)
+     71d:	fd 2f 00          	ld (iy+0),hl
+     720:	21 00 00 00       	ld hl,0x0000
+			721: r_imm24	__ZN5suite17RecordedLifecycle5startEPvRKNS_4CaseE
+     724:	fd 2f 03          	ld (iy+3),hl
+     727:	21 00 00 00       	ld hl,0x0000
+			728: r_imm24	__ZN5suite17RecordedLifecycle7executeEPvRKNS_4CaseE
+     72b:	fd 2f 06          	ld (iy+6),hl
+     72e:	21 00 00 00       	ld hl,0x0000
+			72f: r_imm24	__ZN5suite17RecordedLifecycle6finishEPvRKNS_4CaseERKNS_6ResultE
+     732:	fd 2f 09          	ld (iy+9),hl
+     735:	21 00 00 00       	ld hl,0x0000
+			736: r_imm24	__ZN5suite17RecordedLifecycle7cleanupEPvRKNS_4CaseE
+     739:	fd 2f 0c          	ld (iy+12),hl
+     73c:	fd e5             	push iy
+     73e:	b7                	or a,a
+     73f:	ed 62             	sbc hl,hl
+     741:	e5                	push hl
+     742:	e5                	push hl
+     743:	21 02 00 00       	ld hl,0x0002
+     747:	e5                	push hl
+     748:	ed 66 35          	pea iy+53
+     74b:	01 cc fa ff       	ld bc,0xfffacc
+     74f:	ed 22 00          	lea hl,ix+0
+     752:	09                	add hl,bc
+     753:	ed 27             	ld hl,(hl)
+     755:	e5                	push hl
+     756:	cd 00 00 00       	call 0x0000
+			757: r_imm24	__ZN5suite3runEPKPKNS_4CaseEjmRKNS_5HooksE
+     75a:	e1                	pop hl
+     75b:	e1                	pop hl
+     75c:	e1                	pop hl
+     75d:	e1                	pop hl
+     75e:	e1                	pop hl
+     75f:	e1                	pop hl
+     760:	01 d8 fa ff       	ld bc,0xfffad8
+     764:	ed 22 00          	lea hl,ix+0
+     767:	09                	add hl,bc
+     768:	ed 31             	ld iy,(hl)
+     76a:	fd cb 33 46       	bit 0,(iy+51)
+     76e:	28 48             	jr z,0x07b8
+     770:	21 41 00 00       	ld hl,0x0041
+			771: r_imm24	.bss+0x41
+     774:	e5                	push hl
+     775:	01 cc fa ff       	ld bc,0xfffacc
+     779:	ed 22 00          	lea hl,ix+0
+     77c:	09                	add hl,bc
+     77d:	ed 27             	ld hl,(hl)
+     77f:	e5                	push hl
+     780:	01 db fa ff       	ld bc,0xfffadb
+     784:	ed 22 00          	lea hl,ix+0
+     787:	09                	add hl,bc
+     788:	ed 27             	ld hl,(hl)
+     78a:	e5                	push hl
+     78b:	cd 00 00 00       	call 0x0000
+			78c: r_imm24	__ZN5suite4wire7Payload7run_endEPKmPKh
+     78f:	e1                	pop hl
+     790:	e1                	pop hl
+     791:	e1                	pop hl
+     792:	01 db fa ff       	ld bc,0xfffadb
+     796:	ed 22 00          	lea hl,ix+0
+     799:	09                	add hl,bc
+     79a:	ed 27             	ld hl,(hl)
+     79c:	e5                	push hl
+     79d:	01 e4 fa ff       	ld bc,0xfffae4
+     7a1:	ed 22 00          	lea hl,ix+0
+     7a4:	09                	add hl,bc
+     7a5:	ed 27             	ld hl,(hl)
+     7a7:	e5                	push hl
+     7a8:	cd 00 00 00       	call 0x0000
+			7a9: r_imm24	__ZN5suite8Recorder10finish_runERKNS_4wire7PayloadE
+     7ac:	e1                	pop hl
+     7ad:	e1                	pop hl
+     7ae:	cb 47             	bit 0,a
+     7b0:	28 06             	jr z,0x07b8
+     7b2:	3e 01             	ld a,0x01
+     7b4:	32 00 00 00       	ld (0x0000),a
+			7b5: r_imm24	.bss
+     7b8:	3a 00 00 00       	ld a,(0x0000)
+			7b9: r_imm24	.bss
+     7bc:	b7                	or a,a
+     7bd:	20 06             	jr nz,0x07c5
+     7bf:	3e 04             	ld a,0x04
+     7c1:	32 00 00 00       	ld (0x0000),a
+			7c2: r_imm24	.bss
+     7c5:	cd 00 00 00       	call 0x0000
+			7c6: r_imm24	_recording_done
+     7c9:	3a 00 00 00       	ld a,(0x0000)
+			7ca: r_imm24	.bss
+     7cd:	fe 01             	cp a,0x01
+     7cf:	21 00 00 00       	ld hl,0x0000
+     7d3:	ca d7 03 00       	jp z,0x03d7
+			7d4: r_imm24	.text+0x3d7
+     7d7:	21 19 00 00       	ld hl,0x0019
+     7db:	c3 d7 03 00       	jp 0x03d7
+			7dc: r_imm24	.text+0x3d7
+     7df:	01 00 00 00       	ld bc,0x0000
+     7e3:	c5                	push bc
+     7e4:	03                	inc bc
+     7e5:	c5                	push bc
+     7e6:	d5                	push de
+     7e7:	e5                	push hl
+     7e8:	21 05 00 00       	ld hl,0x0005
+     7ec:	e5                	push hl
+     7ed:	01 e4 fa ff       	ld bc,0xfffae4
+     7f1:	ed 22 00          	lea hl,ix+0
+     7f4:	09                	add hl,bc
+     7f5:	ed 27             	ld hl,(hl)
+     7f7:	e5                	push hl
+     7f8:	cd 00 00 00       	call 0x0000
+			7f9: r_imm24	__ZN5suite8Recorder4failEhmm
+     7fc:	e1                	pop hl
+     7fd:	e1                	pop hl
+     7fe:	e1                	pop hl
+     7ff:	e1                	pop hl
+     800:	e1                	pop hl
+     801:	e1                	pop hl
+     802:	3e 02             	ld a,0x02
+     804:	32 00 00 00       	ld (0x0000),a
+			805: r_imm24	.bss
+     808:	cd 00 00 00       	call 0x0000
+			809: r_imm24	_recording_done
+     80c:	21 17 00 00       	ld hl,0x0017
+     810:	c3 d7 03 00       	jp 0x03d7
+			811: r_imm24	.text+0x3d7
+     814:	3e 03             	ld a,0x03
+     816:	32 00 00 00       	ld (0x0000),a
+			817: r_imm24	.bss
+     81a:	cd 00 00 00       	call 0x0000
+			81b: r_imm24	_recording_done
+     81e:	21 18 00 00       	ld hl,0x0018
+     822:	c3 d7 03 00       	jp 0x03d7
+			823: r_imm24	.text+0x3d7
+
+00000826 <__ZN5suite8Recorder5beginEv>:
+     826:	21 fc ff ff       	ld hl,0xfffffc
+     82a:	cd 00 00 00       	call 0x0000
+			82b: r_imm24	__frameset
+     82e:	dd 31 06          	ld iy,(ix+6)
+     831:	af                	xor a,a
+     832:	21 0f 00 00       	ld hl,0x000f
+     836:	dd 2f fd          	ld (ix-3),hl
+     839:	11 1f 00 00       	ld de,0x001f
+     83d:	dd 27 fd          	ld hl,(ix-3)
+     840:	d5                	push de
+     841:	c1                	pop bc
+     842:	b7                	or a,a
+     843:	ed 52             	sbc hl,de
+     845:	28 1c             	jr z,0x0863
+     847:	ed 23 00          	lea hl,iy+0
+     84a:	dd 17 fd          	ld de,(ix-3)
+     84d:	fd 19             	add iy,de
+     84f:	dd 77 fc          	ld (ix-4),a
+     852:	fd 7e 00          	ld a,(iy+0)
+     855:	e5                	push hl
+     856:	fd e1             	pop iy
+     858:	dd b6 fc          	or a,(ix-4)
+     85b:	13                	inc de
+     85c:	dd 1f fd          	ld (ix-3),de
+     85f:	c5                	push bc
+     860:	d1                	pop de
+     861:	18 da             	jr 0x083d
+     863:	b7                	or a,a
+     864:	28 1d             	jr z,0x0883
+     866:	fd 27 06          	ld hl,(iy+6)
+     869:	09                	add hl,bc
+     86a:	b7                	or a,a
+     86b:	ed 42             	sbc hl,bc
+     86d:	28 14             	jr z,0x0883
+     86f:	fd 27 09          	ld hl,(iy+9)
+     872:	09                	add hl,bc
+     873:	b7                	or a,a
+     874:	ed 42             	sbc hl,bc
+     876:	28 0b             	jr z,0x0883
+     878:	fd 27 0c          	ld hl,(iy+12)
+     87b:	09                	add hl,bc
+     87c:	b7                	or a,a
+     87d:	ed 42             	sbc hl,bc
+     87f:	c2 8d 08 00       	jp nz,0x088d
+			880: r_imm24	.text+0x88d
+     883:	fd 36 73 01       	ld (iy+115),0x01
+     887:	af                	xor a,a
+     888:	dd f9             	ld sp,ix
+     88a:	dd e1             	pop ix
+     88c:	c9                	ret
+     88d:	dd 27 06          	ld hl,(ix+6)
+     890:	ed 31             	ld iy,(hl)
+     892:	fd 36 7c 00       	ld (iy+124),0x00
+     896:	dd 31 06          	ld iy,(ix+6)
+     899:	fd 27 74          	ld hl,(iy+116)
+     89c:	09                	add hl,bc
+     89d:	b7                	or a,a
+     89e:	ed 42             	sbc hl,bc
+     8a0:	28 12             	jr z,0x08b4
+     8a2:	fd 17 77          	ld de,(iy+119)
+     8a5:	01 7c 00 00       	ld bc,0x007c
+     8a9:	c5                	push bc
+     8aa:	d5                	push de
+     8ab:	cd 00 00 00       	call 0x0000
+			8ac: r_imm24	__indcallhl
+     8af:	dd 31 06          	ld iy,(ix+6)
+     8b2:	e1                	pop hl
+     8b3:	e1                	pop hl
+     8b4:	fd 27 00          	ld hl,(iy+0)
+     8b7:	01 fc 00 00       	ld bc,0x00fc
+     8bb:	09                	add hl,bc
+     8bc:	70                	ld (hl),b
+     8bd:	fd 27 74          	ld hl,(iy+116)
+     8c0:	09                	add hl,bc
+     8c1:	b7                	or a,a
+     8c2:	ed 42             	sbc hl,bc
+     8c4:	28 0e             	jr z,0x08d4
+     8c6:	fd 17 77          	ld de,(iy+119)
+     8c9:	c5                	push bc
+     8ca:	d5                	push de
+     8cb:	cd 00 00 00       	call 0x0000
+			8cc: r_imm24	__indcallhl
+     8cf:	dd 31 06          	ld iy,(ix+6)
+     8d2:	e1                	pop hl
+     8d3:	e1                	pop hl
+     8d4:	11 00 0e 00       	ld de,0x0e00
+     8d8:	01 00 0d 00       	ld bc,0x0d00
+     8dc:	c5                	push bc
+     8dd:	e1                	pop hl
+     8de:	b7                	or a,a
+     8df:	ed 52             	sbc hl,de
+     8e1:	28 2a             	jr z,0x090d
+     8e3:	fd 27 00          	ld hl,(iy+0)
+     8e6:	09                	add hl,bc
+     8e7:	36 00             	ld (hl),0x00
+     8e9:	fd 27 74          	ld hl,(iy+116)
+     8ec:	09                	add hl,bc
+     8ed:	b7                	or a,a
+     8ee:	ed 42             	sbc hl,bc
+     8f0:	28 18             	jr z,0x090a
+     8f2:	fd 17 77          	ld de,(iy+119)
+     8f5:	c5                	push bc
+     8f6:	d5                	push de
+     8f7:	dd 0f fd          	ld (ix-3),bc
+     8fa:	cd 00 00 00       	call 0x0000
+			8fb: r_imm24	__indcallhl
+     8fe:	11 00 0e 00       	ld de,0x0e00
+     902:	dd 07 fd          	ld bc,(ix-3)
+     905:	dd 31 06          	ld iy,(ix+6)
+     908:	e1                	pop hl
+     909:	e1                	pop hl
+     90a:	03                	inc bc
+     90b:	18 cf             	jr 0x08dc
+     90d:	fd e5             	push iy
+     90f:	cd 00 00 00       	call 0x0000
+			910: r_imm24	__ZN5suite8Recorder7publishEv
+     913:	e1                	pop hl
+     914:	c3 88 08 00       	jp 0x0888
+			915: r_imm24	.text+0x888
+
+00000918 <__ZN5suite10MosStorage4openEPKc>:
+     918:	cd 00 00 00       	call 0x0000
+			919: r_imm24	__frameset0
+     91c:	dd 07 06          	ld bc,(ix+6)
+     91f:	dd 27 09          	ld hl,(ix+9)
+     922:	11 06 00 00       	ld de,0x0006
+     926:	d5                	push de
+     927:	e5                	push hl
+     928:	c5                	push bc
+     929:	cd 00 00 00       	call 0x0000
+			92a: r_imm24	_ffs_fopen
+     92d:	5f                	ld e,a
+     92e:	e1                	pop hl
+     92f:	e1                	pop hl
+     930:	e1                	pop hl
+     931:	b7                	or a,a
+     932:	28 04             	jr z,0x0938
+     934:	3e 00             	ld a,0x00
+     936:	18 02             	jr 0x093a
+     938:	3e 01             	ld a,0x01
+     93a:	dd 31 06          	ld iy,(ix+6)
+     93d:	fd 77 24          	ld (iy+36),a
+     940:	b7                	or a,a
+     941:	ed 62             	sbc hl,hl
+     943:	6b                	ld l,e
+     944:	5c                	ld e,h
+     945:	dd e1             	pop ix
+     947:	c9                	ret
+
+00000948 <__ZN5suite8Recorder4failEhmm>:
+     948:	21 bf f7 ff       	ld hl,0xfff7bf
+     94c:	cd 00 00 00       	call 0x0000
+			94d: r_imm24	__frameset
+     950:	dd 31 06          	ld iy,(ix+6)
+     953:	2e 00             	ld l,0x00
+     955:	fd cb 73 46       	bit 0,(iy+115)
+     959:	c2 1a 0b 00       	jp nz,0x0b1a
+			95a: r_imm24	.text+0xb1a
+     95d:	fd 7e 71          	ld a,(iy+113)
+     960:	fe 06             	cp a,0x06
+     962:	ca 1a 0b 00       	jp z,0x0b1a
+			963: r_imm24	.text+0xb1a
+     966:	01 f8 fb ff       	ld bc,0xfffbf8
+     96a:	ed 55 00          	lea iy,ix+0
+     96d:	fd 09             	add iy,bc
+     96f:	dd 7e 09          	ld a,(ix+9)
+     972:	ed 23 00          	lea hl,iy+0
+     975:	ed 13 00          	lea de,iy+0
+     978:	01 c5 f7 ff       	ld bc,0xfff7c5
+     97c:	ed 55 00          	lea iy,ix+0
+     97f:	fd 09             	add iy,bc
+     981:	fd 2f 00          	ld (iy+0),hl
+     984:	01 cb f7 ff       	ld bc,0xfff7cb
+     988:	ed 22 00          	lea hl,ix+0
+     98b:	09                	add hl,bc
+     98c:	dd e5             	push ix
+     98e:	01 c8 f7 ff       	ld bc,0xfff7c8
+     992:	dd 09             	add ix,bc
+     994:	dd 2f 00          	ld (ix+0),hl
+     997:	dd e1             	pop ix
+     999:	dd 31 06          	ld iy,(ix+6)
+     99c:	fd 36 73 01       	ld (iy+115),0x01
+     9a0:	dd 31 06          	ld iy,(ix+6)
+     9a3:	fd 36 71 05       	ld (iy+113),0x05
+     9a7:	dd 31 06          	ld iy,(ix+6)
+     9aa:	fd 27 63          	ld hl,(iy+99)
+     9ad:	01 bf f7 ff       	ld bc,0xfff7bf
+     9b1:	ed 55 00          	lea iy,ix+0
+     9b4:	fd 09             	add iy,bc
+     9b6:	fd 2f 00          	ld (iy+0),hl
+     9b9:	dd 31 06          	ld iy,(ix+6)
+     9bc:	fd 6e 66          	ld l,(iy+102)
+     9bf:	01 c2 f7 ff       	ld bc,0xfff7c2
+     9c3:	ed 55 00          	lea iy,ix+0
+     9c6:	fd 09             	add iy,bc
+     9c8:	fd 75 00          	ld (iy+0),l
+     9cb:	01 c5 f7 ff       	ld bc,0xfff7c5
+     9cf:	ed 22 00          	lea hl,ix+0
+     9d2:	09                	add hl,bc
+     9d3:	ed 31             	ld iy,(hl)
+     9d5:	ed 23 03          	lea hl,iy+3
+     9d8:	d5                	push de
+     9d9:	fd e1             	pop iy
+     9db:	fd 36 03 00       	ld (iy+3),0x00
+     9df:	e5                	push hl
+     9e0:	d1                	pop de
+     9e1:	13                	inc de
+     9e2:	01 fc 03 00       	ld bc,0x03fc
+     9e6:	ed b0             	ldir
+     9e8:	40 21 10 00       	ld.sis hl,0x0010
+     9ec:	dd 75 f8          	ld (ix-8),l
+     9ef:	dd 74 f9          	ld (ix-7),h
+     9f2:	fd 36 00 01       	ld (iy+0),0x01
+     9f6:	fd 74 01          	ld (iy+1),h
+     9f9:	fd 77 02          	ld (iy+2),a
+     9fc:	dd 07 0c          	ld bc,(ix+12)
+     9ff:	79                	ld a,c
+     a00:	fd 77 04          	ld (iy+4),a
+     a03:	78                	ld a,b
+     a04:	fd 77 05          	ld (iy+5),a
+     a07:	5d                	ld e,l
+     a08:	dd 66 0f          	ld h,(ix+15)
+     a0b:	7c                	ld a,h
+     a0c:	6b                	ld l,e
+     a0d:	cd 00 00 00       	call 0x0000
+			a0e: r_imm24	__lshru
+     a11:	79                	ld a,c
+     a12:	fd 77 06          	ld (iy+6),a
+     a15:	16 18             	ld d,0x18
+     a17:	dd 07 0c          	ld bc,(ix+12)
+     a1a:	7c                	ld a,h
+     a1b:	6a                	ld l,d
+     a1c:	cd 00 00 00       	call 0x0000
+			a1d: r_imm24	__lshru
+     a20:	79                	ld a,c
+     a21:	fd 77 07          	ld (iy+7),a
+     a24:	dd 07 12          	ld bc,(ix+18)
+     a27:	79                	ld a,c
+     a28:	fd 77 08          	ld (iy+8),a
+     a2b:	78                	ld a,b
+     a2c:	fd 77 09          	ld (iy+9),a
+     a2f:	dd 66 15          	ld h,(ix+21)
+     a32:	7c                	ld a,h
+     a33:	6b                	ld l,e
+     a34:	cd 00 00 00       	call 0x0000
+			a35: r_imm24	__lshru
+     a38:	79                	ld a,c
+     a39:	fd 77 0a          	ld (iy+10),a
+     a3c:	dd 07 12          	ld bc,(ix+18)
+     a3f:	7c                	ld a,h
+     a40:	6a                	ld l,d
+     a41:	cd 00 00 00       	call 0x0000
+			a42: r_imm24	__lshru
+     a45:	79                	ld a,c
+     a46:	fd 77 0b          	ld (iy+11),a
+     a49:	dd e5             	push ix
+     a4b:	01 bf f7 ff       	ld bc,0xfff7bf
+     a4f:	dd 09             	add ix,bc
+     a51:	dd 17 00          	ld de,(ix+0)
+     a54:	dd e1             	pop ix
+     a56:	7b                	ld a,e
+     a57:	fd 77 0c          	ld (iy+12),a
+     a5a:	7a                	ld a,d
+     a5b:	fd 77 0d          	ld (iy+13),a
+     a5e:	d5                	push de
+     a5f:	c1                	pop bc
+     a60:	dd 1f fd          	ld (ix-3),de
+     a63:	dd e5             	push ix
+     a65:	11 c2 f7 ff       	ld de,0xfff7c2
+     a69:	dd 19             	add ix,de
+     a6b:	dd 66 00          	ld h,(ix+0)
+     a6e:	dd e1             	pop ix
+     a70:	7c                	ld a,h
+     a71:	2e 10             	ld l,0x10
+     a73:	cd 00 00 00       	call 0x0000
+			a74: r_imm24	__lshru
+     a77:	79                	ld a,c
+     a78:	fd 77 0e          	ld (iy+14),a
+     a7b:	dd 17 fd          	ld de,(ix-3)
+     a7e:	d5                	push de
+     a7f:	c1                	pop bc
+     a80:	7c                	ld a,h
+     a81:	2e 18             	ld l,0x18
+     a83:	cd 00 00 00       	call 0x0000
+			a84: r_imm24	__lshru
+     a87:	79                	ld a,c
+     a88:	fd 77 0f          	ld (iy+15),a
+     a8b:	dd 31 06          	ld iy,(ix+6)
+     a8e:	fd 27 5f          	ld hl,(iy+95)
+     a91:	dd e5             	push ix
+     a93:	01 c2 f7 ff       	ld bc,0xfff7c2
+     a97:	dd 09             	add ix,bc
+     a99:	dd 2f 00          	ld (ix+0),hl
+     a9c:	dd e1             	pop ix
+     a9e:	fd 7e 62          	ld a,(iy+98)
+     aa1:	fd 17 6b          	ld de,(iy+107)
+     aa4:	fd 4e 6e          	ld c,(iy+110)
+     aa7:	dd 1f fd          	ld (ix-3),de
+     aaa:	11 c5 f7 ff       	ld de,0xfff7c5
+     aae:	ed 22 00          	lea hl,ix+0
+     ab1:	19                	add hl,de
+     ab2:	ed 27             	ld hl,(hl)
+     ab4:	e5                	push hl
+     ab5:	c5                	push bc
+     ab6:	dd 17 fd          	ld de,(ix-3)
+     ab9:	d5                	push de
+     aba:	5f                	ld e,a
+     abb:	d5                	push de
+     abc:	01 c2 f7 ff       	ld bc,0xfff7c2
+     ac0:	ed 22 00          	lea hl,ix+0
+     ac3:	09                	add hl,bc
+     ac4:	ed 27             	ld hl,(hl)
+     ac6:	e5                	push hl
+     ac7:	ed 66 0f          	pea iy+15
+     aca:	21 05 00 00       	ld hl,0x0005
+     ace:	e5                	push hl
+     acf:	01 c8 f7 ff       	ld bc,0xfff7c8
+     ad3:	ed 22 00          	lea hl,ix+0
+     ad6:	09                	add hl,bc
+     ad7:	ed 27             	ld hl,(hl)
+     ad9:	e5                	push hl
+     ada:	cd 00 00 00       	call 0x0000
+			adb: r_imm24	__ZN5suite4wire6encodeEPhhPKhmmRKNS0_7PayloadE
+     ade:	fd 21 18 00 00    	ld iy,0x0018
+     ae3:	fd 39             	add iy,sp
+     ae5:	fd f9             	ld sp,iy
+     ae7:	11 00 00 00       	ld de,0x0000
+     aeb:	5d                	ld e,l
+     aec:	54                	ld d,h
+     aed:	d5                	push de
+     aee:	e1                	pop hl
+     aef:	2b                	dec hl
+     af0:	e5                	push hl
+     af1:	d5                	push de
+     af2:	01 c8 f7 ff       	ld bc,0xfff7c8
+     af6:	ed 22 00          	lea hl,ix+0
+     af9:	09                	add hl,bc
+     afa:	ed 27             	ld hl,(hl)
+     afc:	e5                	push hl
+     afd:	21 00 0d 00       	ld hl,0x0d00
+     b01:	e5                	push hl
+     b02:	dd 27 06          	ld hl,(ix+6)
+     b05:	e5                	push hl
+     b06:	cd 00 00 00       	call 0x0000
+			b07: r_imm24	__ZN5suite8Recorder13publish_bytesEjPKhjj
+     b0a:	e1                	pop hl
+     b0b:	e1                	pop hl
+     b0c:	e1                	pop hl
+     b0d:	e1                	pop hl
+     b0e:	e1                	pop hl
+     b0f:	dd 27 06          	ld hl,(ix+6)
+     b12:	e5                	push hl
+     b13:	cd 00 00 00       	call 0x0000
+			b14: r_imm24	__ZN5suite8Recorder7publishEv
+     b17:	e1                	pop hl
+     b18:	2e 00             	ld l,0x00
+     b1a:	7d                	ld a,l
+     b1b:	dd f9             	ld sp,ix
+     b1d:	dd e1             	pop ix
+     b1f:	c9                	ret
+
+00000b20 <__ZN5suite8Recorder6appendEhRKNS_4wire7PayloadE>:
+     b20:	21 c7 fb ff       	ld hl,0xfffbc7
+     b24:	cd 00 00 00       	call 0x0000
+			b25: r_imm24	__frameset
+     b28:	dd 31 06          	ld iy,(ix+6)
+     b2b:	01 ff ff ff       	ld bc,0xffffff
+     b2f:	1e 00             	ld e,0x00
+     b31:	fd cb 73 46       	bit 0,(iy+115)
+     b35:	c2 86 0c 00       	jp nz,0x0c86
+			b36: r_imm24	.text+0xc86
+     b39:	fd 7e 71          	ld a,(iy+113)
+     b3c:	fe 06             	cp a,0x06
+     b3e:	ca 86 0c 00       	jp z,0x0c86
+			b3f: r_imm24	.text+0xc86
+     b42:	3e ff             	ld a,0xff
+     b44:	fd 27 5f          	ld hl,(iy+95)
+     b47:	fd 56 62          	ld d,(iy+98)
+     b4a:	dd 0f fd          	ld (ix-3),bc
+     b4d:	01 ca fb ff       	ld bc,0xfffbca
+     b51:	ed 55 00          	lea iy,ix+0
+     b54:	fd 09             	add iy,bc
+     b56:	fd 2f 00          	ld (iy+0),hl
+     b59:	5a                	ld e,d
+     b5a:	dd 07 fd          	ld bc,(ix-3)
+     b5d:	cd 00 00 00       	call 0x0000
+			b5e: r_imm24	__lcmpu
+     b61:	20 08             	jr nz,0x0b6b
+     b63:	21 02 00 00       	ld hl,0x0002
+     b67:	c5                	push bc
+     b68:	c5                	push bc
+     b69:	18 2a             	jr 0x0b95
+     b6b:	21 f7 ff ff       	ld hl,0xfffff7
+     b6f:	dd 07 06          	ld bc,(ix+6)
+     b72:	c5                	push bc
+     b73:	fd e1             	pop iy
+     b75:	fd 07 67          	ld bc,(iy+103)
+     b78:	5f                	ld e,a
+     b79:	fd 7e 6a          	ld a,(iy+106)
+     b7c:	cd 00 00 00       	call 0x0000
+			b7d: r_imm24	__lcmpu
+     b80:	30 26             	jr nc,0x0ba8
+     b82:	21 03 00 00       	ld hl,0x0003
+     b86:	5a                	ld e,d
+     b87:	d5                	push de
+     b88:	01 ca fb ff       	ld bc,0xfffbca
+     b8c:	ed 55 00          	lea iy,ix+0
+     b8f:	fd 09             	add iy,bc
+     b91:	fd 17 00          	ld de,(iy+0)
+     b94:	d5                	push de
+     b95:	11 00 00 00       	ld de,0x0000
+     b99:	d5                	push de
+     b9a:	e5                	push hl
+     b9b:	21 05 00 00       	ld hl,0x0005
+     b9f:	e5                	push hl
+     ba0:	dd 27 06          	ld hl,(ix+6)
+     ba3:	e5                	push hl
+     ba4:	c3 7b 0c 00       	jp 0x0c7b
+			ba5: r_imm24	.text+0xc7b
+     ba8:	dd 27 0c          	ld hl,(ix+12)
+     bab:	dd 1f fd          	ld (ix-3),de
+     bae:	11 cd fb ff       	ld de,0xfffbcd
+     bb2:	ed 55 00          	lea iy,ix+0
+     bb5:	fd 19             	add iy,de
+     bb7:	ed 03 00          	lea bc,iy+0
+     bba:	dd e5             	push ix
+     bbc:	11 c7 fb ff       	ld de,0xfffbc7
+     bc0:	dd 19             	add ix,de
+     bc2:	dd 0f 00          	ld (ix+0),bc
+     bc5:	dd e1             	pop ix
+     bc7:	dd 31 06          	ld iy,(ix+6)
+     bca:	fd 07 6b          	ld bc,(iy+107)
+     bcd:	dd 31 06          	ld iy,(ix+6)
+     bd0:	fd 7e 6e          	ld a,(iy+110)
+     bd3:	e5                	push hl
+     bd4:	6f                	ld l,a
+     bd5:	e5                	push hl
+     bd6:	c5                	push bc
+     bd7:	dd 17 fd          	ld de,(ix-3)
+     bda:	6a                	ld l,d
+     bdb:	e5                	push hl
+     bdc:	01 ca fb ff       	ld bc,0xfffbca
+     be0:	ed 22 00          	lea hl,ix+0
+     be3:	09                	add hl,bc
+     be4:	ed 27             	ld hl,(hl)
+     be6:	e5                	push hl
+     be7:	dd 31 06          	ld iy,(ix+6)
+     bea:	ed 66 0f          	pea iy+15
+     bed:	dd 6e 09          	ld l,(ix+9)
+     bf0:	e5                	push hl
+     bf1:	01 c7 fb ff       	ld bc,0xfffbc7
+     bf5:	ed 22 00          	lea hl,ix+0
+     bf8:	09                	add hl,bc
+     bf9:	ed 27             	ld hl,(hl)
+     bfb:	e5                	push hl
+     bfc:	cd 00 00 00       	call 0x0000
+			bfd: r_imm24	__ZN5suite4wire6encodeEPhhPKhmmRKNS0_7PayloadE
+     c00:	4d                	ld c,l
+     c01:	44                	ld b,h
+     c02:	21 18 00 00       	ld hl,0x0018
+     c06:	39                	add hl,sp
+     c07:	f9                	ld sp,hl
+     c08:	69                	ld l,c
+     c09:	60                	ld h,b
+     c0a:	40 09             	add.sis hl,bc
+     c0c:	b7                	or a,a
+     c0d:	40 ed 42          	sbc.sis hl,bc
+     c10:	20 17             	jr nz,0x0c29
+     c12:	dd 31 06          	ld iy,(ix+6)
+     c15:	fd 27 5f          	ld hl,(iy+95)
+     c18:	fd 5e 62          	ld e,(iy+98)
+     c1b:	d5                	push de
+     c1c:	e5                	push hl
+     c1d:	b7                	or a,a
+     c1e:	ed 62             	sbc hl,hl
+     c20:	e5                	push hl
+     c21:	21 04 00 00       	ld hl,0x0004
+     c25:	e5                	push hl
+     c26:	23                	inc hl
+     c27:	18 4f             	jr 0x0c78
+     c29:	b7                	or a,a
+     c2a:	ed 62             	sbc hl,hl
+     c2c:	e5                	push hl
+     c2d:	d1                	pop de
+     c2e:	dd 1f fd          	ld (ix-3),de
+     c31:	11 ca fb ff       	ld de,0xfffbca
+     c35:	ed 55 00          	lea iy,ix+0
+     c38:	fd 19             	add iy,de
+     c3a:	fd 0f 00          	ld (iy+0),bc
+     c3d:	dd 17 fd          	ld de,(ix-3)
+     c40:	59                	ld e,c
+     c41:	50                	ld d,b
+     c42:	dd 31 06          	ld iy,(ix+6)
+     c45:	fd 07 6f          	ld bc,(iy+111)
+     c48:	e5                	push hl
+     c49:	fd e1             	pop iy
+     c4b:	fd 69             	ld iyl,c
+     c4d:	fd 60             	ld iyh,b
+     c4f:	21 00 08 00       	ld hl,0x0800
+     c53:	ed 03 00          	lea bc,iy+0
+     c56:	b7                	or a,a
+     c57:	ed 42             	sbc hl,bc
+     c59:	b7                	or a,a
+     c5a:	ed 52             	sbc hl,de
+     c5c:	ec 00 00 00       	call pe,0x0000
+			c5d: r_imm24	__setflag
+     c60:	f2 8c 0c 00       	jp p,0x0c8c
+			c61: r_imm24	.text+0xc8c
+     c64:	dd 31 06          	ld iy,(ix+6)
+     c67:	fd 27 5f          	ld hl,(iy+95)
+     c6a:	fd 5e 62          	ld e,(iy+98)
+     c6d:	d5                	push de
+     c6e:	e5                	push hl
+     c6f:	b7                	or a,a
+     c70:	ed 62             	sbc hl,hl
+     c72:	e5                	push hl
+     c73:	e5                	push hl
+     c74:	21 04 00 00       	ld hl,0x0004
+     c78:	e5                	push hl
+     c79:	fd e5             	push iy
+     c7b:	cd 00 00 00       	call 0x0000
+			c7c: r_imm24	__ZN5suite8Recorder4failEhmm
+     c7f:	5f                	ld e,a
+     c80:	e1                	pop hl
+     c81:	e1                	pop hl
+     c82:	e1                	pop hl
+     c83:	e1                	pop hl
+     c84:	e1                	pop hl
+     c85:	e1                	pop hl
+     c86:	7b                	ld a,e
+     c87:	dd f9             	ld sp,ix
+     c89:	dd e1             	pop ix
+     c8b:	c9                	ret
+     c8c:	01 00 01 00       	ld bc,0x0100
+     c90:	fd 09             	add iy,bc
+     c92:	d5                	push de
+     c93:	c1                	pop bc
+     c94:	0b                	dec bc
+     c95:	c5                	push bc
+     c96:	d5                	push de
+     c97:	01 c7 fb ff       	ld bc,0xfffbc7
+     c9b:	ed 22 00          	lea hl,ix+0
+     c9e:	09                	add hl,bc
+     c9f:	ed 27             	ld hl,(hl)
+     ca1:	e5                	push hl
+     ca2:	fd e5             	push iy
+     ca4:	dd 27 06          	ld hl,(ix+6)
+     ca7:	e5                	push hl
+     ca8:	cd 00 00 00       	call 0x0000
+			ca9: r_imm24	__ZN5suite8Recorder13publish_bytesEjPKhjj
+     cac:	e1                	pop hl
+     cad:	e1                	pop hl
+     cae:	e1                	pop hl
+     caf:	e1                	pop hl
+     cb0:	e1                	pop hl
+     cb1:	dd 31 06          	ld iy,(ix+6)
+     cb4:	fd 27 6f          	ld hl,(iy+111)
+     cb7:	dd e5             	push ix
+     cb9:	01 ca fb ff       	ld bc,0xfffbca
+     cbd:	dd 09             	add ix,bc
+     cbf:	dd 17 00          	ld de,(ix+0)
+     cc2:	dd e1             	pop ix
+     cc4:	40 19             	add.sis hl,de
+     cc6:	fd 75 6f          	ld (iy+111),l
+     cc9:	fd 74 70          	ld (iy+112),h
+     ccc:	ed 13 5f          	lea de,iy+95
+     ccf:	fd 27 5f          	ld hl,(iy+95)
+     cd2:	ed 03 00          	lea bc,iy+0
+     cd5:	d5                	push de
+     cd6:	fd e1             	pop iy
+     cd8:	ed 33 03          	lea iy,iy+3
+     cdb:	fd 5e 00          	ld e,(iy+0)
+     cde:	c5                	push bc
+     cdf:	fd e1             	pop iy
+     ce1:	01 01 00 00       	ld bc,0x0001
+     ce5:	af                	xor a,a
+     ce6:	cd 00 00 00       	call 0x0000
+			ce7: r_imm24	__ladd
+     cea:	fd 2f 5f          	ld (iy+95),hl
+     ced:	fd 73 62          	ld (iy+98),e
+     cf0:	dd 7e 09          	ld a,(ix+9)
+     cf3:	fe 03             	cp a,0x03
+     cf5:	20 04             	jr nz,0x0cfb
+     cf7:	fd 36 71 03       	ld (iy+113),0x03
+     cfb:	fd e5             	push iy
+     cfd:	cd 00 00 00       	call 0x0000
+			cfe: r_imm24	__ZN5suite8Recorder7publishEv
+     d01:	5f                	ld e,a
+     d02:	c3 85 0c 00       	jp 0x0c85
+			d03: r_imm24	.text+0xc85
+
+00000d06 <__ZN5suite8Recorder10checkpointEv>:
+     d06:	21 ea f7 ff       	ld hl,0xfff7ea
+     d0a:	cd 00 00 00       	call 0x0000
+			d0b: r_imm24	__frameset
+     d0e:	dd 31 06          	ld iy,(ix+6)
+     d11:	1e 00             	ld e,0x00
+     d13:	fd cb 73 46       	bit 0,(iy+115)
+     d17:	c2 88 0f 00       	jp nz,0x0f88
+			d18: r_imm24	.text+0xf88
+     d1b:	fd 7e 71          	ld a,(iy+113)
+     d1e:	fe 06             	cp a,0x06
+     d20:	ca 88 0f 00       	jp z,0x0f88
+			d21: r_imm24	.text+0xf88
+     d24:	1e 01             	ld e,0x01
+     d26:	fd 27 6f          	ld hl,(iy+111)
+     d29:	40 09             	add.sis hl,bc
+     d2b:	b7                	or a,a
+     d2c:	40 ed 42          	sbc.sis hl,bc
+     d2f:	ca 88 0f 00       	jp z,0x0f88
+			d30: r_imm24	.text+0xf88
+     d33:	fd 36 71 04       	ld (iy+113),0x04
+     d37:	fd e5             	push iy
+     d39:	cd 00 00 00       	call 0x0000
+			d3a: r_imm24	__ZN5suite8Recorder7publishEv
+     d3d:	e1                	pop hl
+     d3e:	cb 47             	bit 0,a
+     d40:	ca 62 0f 00       	jp z,0x0f62
+			d41: r_imm24	.text+0xf62
+     d44:	01 f6 f7 ff       	ld bc,0xfff7f6
+     d48:	ed 55 00          	lea iy,ix+0
+     d4b:	fd 09             	add iy,bc
+     d4d:	ed 23 04          	lea hl,iy+4
+     d50:	dd e5             	push ix
+     d52:	01 f0 f7 ff       	ld bc,0xfff7f0
+     d56:	dd 09             	add ix,bc
+     d58:	dd 2f 00          	ld (ix+0),hl
+     d5b:	dd e1             	pop ix
+     d5d:	01 f3 f7 ff       	ld bc,0xfff7f3
+     d61:	ed 22 00          	lea hl,ix+0
+     d64:	09                	add hl,bc
+     d65:	ed 3e             	ld (hl),iy
+     d67:	ed 23 00          	lea hl,iy+0
+     d6a:	01 ea f7 ff       	ld bc,0xfff7ea
+     d6e:	ed 55 00          	lea iy,ix+0
+     d71:	fd 09             	add iy,bc
+     d73:	fd 2f 00          	ld (iy+0),hl
+     d76:	dd 27 06          	ld hl,(ix+6)
+     d79:	e5                	push hl
+     d7a:	fd e1             	pop iy
+     d7c:	fd 27 6f          	ld hl,(iy+111)
+     d7f:	fd 17 00          	ld de,(iy+0)
+     d82:	01 ed f7 ff       	ld bc,0xfff7ed
+     d86:	ed 55 00          	lea iy,ix+0
+     d89:	fd 09             	add iy,bc
+     d8b:	fd 1f 00          	ld (iy+0),de
+     d8e:	11 00 00 00       	ld de,0x0000
+     d92:	5d                	ld e,l
+     d93:	54                	ld d,h
+     d94:	01 00 00 00       	ld bc,0x0000
+     d98:	d5                	push de
+     d99:	e1                	pop hl
+     d9a:	b7                	or a,a
+     d9b:	ed 42             	sbc hl,bc
+     d9d:	28 32             	jr z,0x0dd1
+     d9f:	dd 1f fd          	ld (ix-3),de
+     da2:	11 ed f7 ff       	ld de,0xfff7ed
+     da6:	ed 22 00          	lea hl,ix+0
+     da9:	19                	add hl,de
+     daa:	ed 27             	ld hl,(hl)
+     dac:	09                	add hl,bc
+     dad:	dd 17 fd          	ld de,(ix-3)
+     db0:	d5                	push de
+     db1:	fd e1             	pop iy
+     db3:	11 00 01 00       	ld de,0x0100
+     db7:	19                	add hl,de
+     db8:	ed 13 00          	lea de,iy+0
+     dbb:	7e                	ld a,(hl)
+     dbc:	dd 1f fd          	ld (ix-3),de
+     dbf:	11 f0 f7 ff       	ld de,0xfff7f0
+     dc3:	ed 22 00          	lea hl,ix+0
+     dc6:	19                	add hl,de
+     dc7:	ed 27             	ld hl,(hl)
+     dc9:	09                	add hl,bc
+     dca:	77                	ld (hl),a
+     dcb:	03                	inc bc
+     dcc:	dd 17 fd          	ld de,(ix-3)
+     dcf:	18 c7             	jr 0x0d98
+     dd1:	b7                	or a,a
+     dd2:	ed 62             	sbc hl,hl
+     dd4:	01 f3 f7 ff       	ld bc,0xfff7f3
+     dd8:	ed 55 00          	lea iy,ix+0
+     ddb:	fd 09             	add iy,bc
+     ddd:	fd 37 00          	ld iy,(iy+0)
+     de0:	fd 2f 00          	ld (iy+0),hl
+     de3:	01 ea f7 ff       	ld bc,0xfff7ea
+     de7:	ed 22 00          	lea hl,ix+0
+     dea:	09                	add hl,bc
+     deb:	ed 31             	ld iy,(hl)
+     ded:	ed 23 03          	lea hl,iy+3
+     df0:	36 00             	ld (hl),0x00
+     df2:	ed 03 00          	lea bc,iy+0
+     df5:	dd 31 06          	ld iy,(ix+6)
+     df8:	fd 27 06          	ld hl,(iy+6)
+     dfb:	dd 31 06          	ld iy,(ix+6)
+     dfe:	fd 37 03          	ld iy,(iy+3)
+     e01:	c5                	push bc
+     e02:	d5                	push de
+     e03:	dd e5             	push ix
+     e05:	01 f0 f7 ff       	ld bc,0xfff7f0
+     e09:	dd 09             	add ix,bc
+     e0b:	dd 17 00          	ld de,(ix+0)
+     e0e:	dd e1             	pop ix
+     e10:	d5                	push de
+     e11:	fd e5             	push iy
+     e13:	cd 00 00 00       	call 0x0000
+			e14: r_imm24	__indcallhl
+     e17:	e5                	push hl
+     e18:	c1                	pop bc
+     e19:	e1                	pop hl
+     e1a:	e1                	pop hl
+     e1b:	e1                	pop hl
+     e1c:	e1                	pop hl
+     e1d:	11 f3 f7 ff       	ld de,0xfff7f3
+     e21:	ed 22 00          	lea hl,ix+0
+     e24:	19                	add hl,de
+     e25:	ed 31             	ld iy,(hl)
+     e27:	fd 27 00          	ld hl,(iy+0)
+     e2a:	fd 5e 03          	ld e,(iy+3)
+     e2d:	dd 0f fd          	ld (ix-3),bc
+     e30:	01 f0 f7 ff       	ld bc,0xfff7f0
+     e34:	ed 55 00          	lea iy,ix+0
+     e37:	fd 09             	add iy,bc
+     e39:	fd 2f 00          	ld (iy+0),hl
+     e3c:	cd 00 00 00       	call 0x0000
+			e3d: r_imm24	__lcmpzero
+     e40:	dd 07 fd          	ld bc,(ix-3)
+     e43:	20 66             	jr nz,0x0eab
+     e45:	dd 31 06          	ld iy,(ix+6)
+     e48:	fd 27 6f          	ld hl,(iy+111)
+     e4b:	11 00 00 00       	ld de,0x0000
+     e4f:	5d                	ld e,l
+     e50:	54                	ld d,h
+     e51:	c5                	push bc
+     e52:	e1                	pop hl
+     e53:	b7                	or a,a
+     e54:	ed 52             	sbc hl,de
+     e56:	fd 21 ff ff ff    	ld iy,0xffffff
+     e5b:	01 f0 f7 ff       	ld bc,0xfff7f0
+     e5f:	ed 22 00          	lea hl,ix+0
+     e62:	f5                	push af
+     e63:	09                	add hl,bc
+     e64:	f1                	pop af
+     e65:	ed 3e             	ld (hl),iy
+     e67:	fd 7c             	ld a,iyh
+     e69:	5f                	ld e,a
+     e6a:	20 3f             	jr nz,0x0eab
+     e6c:	dd 27 06          	ld hl,(ix+6)
+     e6f:	e5                	push hl
+     e70:	fd e1             	pop iy
+     e72:	fd 27 09          	ld hl,(iy+9)
+     e75:	fd 17 03          	ld de,(iy+3)
+     e78:	d5                	push de
+     e79:	cd 00 00 00       	call 0x0000
+			e7a: r_imm24	__indcallhl
+     e7d:	53                	ld d,e
+     e7e:	c1                	pop bc
+     e7f:	01 f3 f7 ff       	ld bc,0xfff7f3
+     e83:	ed 55 00          	lea iy,ix+0
+     e86:	fd 09             	add iy,bc
+     e88:	fd 37 00          	ld iy,(iy+0)
+     e8b:	fd 2f 00          	ld (iy+0),hl
+     e8e:	fd 72 03          	ld (iy+3),d
+     e91:	01 f0 f7 ff       	ld bc,0xfff7f0
+     e95:	ed 55 00          	lea iy,ix+0
+     e98:	fd 09             	add iy,bc
+     e9a:	fd 2f 00          	ld (iy+0),hl
+     e9d:	cd 00 00 00       	call 0x0000
+			e9e: r_imm24	__lcmpzero
+     ea1:	ca ee 0e 00       	jp z,0x0eee
+			ea2: r_imm24	.text+0xeee
+     ea5:	3e 00             	ld a,0x00
+     ea7:	c3 f0 0e 00       	jp 0x0ef0
+			ea8: r_imm24	.text+0xef0
+     eab:	01 f3 f7 ff       	ld bc,0xfff7f3
+     eaf:	ed 22 00          	lea hl,ix+0
+     eb2:	09                	add hl,bc
+     eb3:	73                	ld (hl),e
+     eb4:	dd 27 06          	ld hl,(ix+6)
+     eb7:	eb                	ex de,hl
+     eb8:	d5                	push de
+     eb9:	fd e1             	pop iy
+     ebb:	fd 27 5f          	ld hl,(iy+95)
+     ebe:	fd 5e 62          	ld e,(iy+98)
+     ec1:	01 ff ff ff       	ld bc,0xffffff
+     ec5:	78                	ld a,b
+     ec6:	cd 00 00 00       	call 0x0000
+			ec7: r_imm24	__ladd
+     eca:	d5                	push de
+     ecb:	e5                	push hl
+     ecc:	11 f3 f7 ff       	ld de,0xfff7f3
+     ed0:	ed 22 00          	lea hl,ix+0
+     ed3:	19                	add hl,de
+     ed4:	6e                	ld l,(hl)
+     ed5:	e5                	push hl
+     ed6:	11 f0 f7 ff       	ld de,0xfff7f0
+     eda:	ed 22 00          	lea hl,ix+0
+     edd:	19                	add hl,de
+     ede:	ed 27             	ld hl,(hl)
+     ee0:	e5                	push hl
+     ee1:	21 01 00 00       	ld hl,0x0001
+     ee5:	e5                	push hl
+     ee6:	dd 27 06          	ld hl,(ix+6)
+     ee9:	e5                	push hl
+     eea:	c3 7d 0f 00       	jp 0x0f7d
+			eeb: r_imm24	.text+0xf7d
+     eee:	3e 01             	ld a,0x01
+     ef0:	01 f3 f7 ff       	ld bc,0xfff7f3
+     ef4:	ed 22 00          	lea hl,ix+0
+     ef7:	09                	add hl,bc
+     ef8:	77                	ld (hl),a
+     ef9:	01 ff ff ff       	ld bc,0xffffff
+     efd:	dd 31 06          	ld iy,(ix+6)
+     f00:	fd 27 5f          	ld hl,(iy+95)
+     f03:	fd 5e 62          	ld e,(iy+98)
+     f06:	78                	ld a,b
+     f07:	cd 00 00 00       	call 0x0000
+			f08: r_imm24	__ladd
+     f0b:	dd 0f fd          	ld (ix-3),bc
+     f0e:	01 f3 f7 ff       	ld bc,0xfff7f3
+     f12:	ed 55 00          	lea iy,ix+0
+     f15:	fd 09             	add iy,bc
+     f17:	fd cb 00 46       	bit 0,(iy+0)
+     f1b:	dd 07 fd          	ld bc,(ix-3)
+     f1e:	ca 8e 0f 00       	jp z,0x0f8e
+			f1f: r_imm24	.text+0xf8e
+     f22:	dd 31 06          	ld iy,(ix+6)
+     f25:	fd 2f 63          	ld (iy+99),hl
+     f28:	fd 73 66          	ld (iy+102),e
+     f2b:	40 21 00 00       	ld.sis hl,0x0000
+     f2f:	fd 75 6f          	ld (iy+111),l
+     f32:	fd 74 70          	ld (iy+112),h
+     f35:	fd 27 6b          	ld hl,(iy+107)
+     f38:	fd 5e 6e          	ld e,(iy+110)
+     f3b:	cd 00 00 00       	call 0x0000
+			f3c: r_imm24	__lcmpzero
+     f3f:	3e 01             	ld a,0x01
+     f41:	28 02             	jr z,0x0f45
+     f43:	3e 02             	ld a,0x02
+     f45:	fd 77 71          	ld (iy+113),a
+     f48:	fd e5             	push iy
+     f4a:	cd 00 00 00       	call 0x0000
+			f4b: r_imm24	__ZN5suite8Recorder7publishEv
+     f4e:	e1                	pop hl
+     f4f:	cb 47             	bit 0,a
+     f51:	28 0f             	jr z,0x0f62
+     f53:	dd 27 06          	ld hl,(ix+6)
+     f56:	e5                	push hl
+     f57:	cd 00 00 00       	call 0x0000
+			f58: r_imm24	__ZN5suite8Recorder7publishEv
+     f5b:	1e 01             	ld e,0x01
+     f5d:	e1                	pop hl
+     f5e:	cb 47             	bit 0,a
+     f60:	20 26             	jr nz,0x0f88
+     f62:	dd 31 06          	ld iy,(ix+6)
+     f65:	fd 27 5f          	ld hl,(iy+95)
+     f68:	fd 5e 62          	ld e,(iy+98)
+     f6b:	d5                	push de
+     f6c:	e5                	push hl
+     f6d:	b7                	or a,a
+     f6e:	ed 62             	sbc hl,hl
+     f70:	e5                	push hl
+     f71:	21 03 00 00       	ld hl,0x0003
+     f75:	e5                	push hl
+     f76:	21 05 00 00       	ld hl,0x0005
+     f7a:	e5                	push hl
+     f7b:	fd e5             	push iy
+     f7d:	cd 00 00 00       	call 0x0000
+			f7e: r_imm24	__ZN5suite8Recorder4failEhmm
+     f81:	5f                	ld e,a
+     f82:	e1                	pop hl
+     f83:	e1                	pop hl
+     f84:	e1                	pop hl
+     f85:	e1                	pop hl
+     f86:	e1                	pop hl
+     f87:	e1                	pop hl
+     f88:	7b                	ld a,e
+     f89:	dd f9             	ld sp,ix
+     f8b:	dd e1             	pop ix
+     f8d:	c9                	ret
+     f8e:	4b                	ld c,e
+     f8f:	c5                	push bc
+     f90:	e5                	push hl
+     f91:	6a                	ld l,d
+     f92:	e5                	push hl
+     f93:	01 f0 f7 ff       	ld bc,0xfff7f0
+     f97:	ed 22 00          	lea hl,ix+0
+     f9a:	09                	add hl,bc
+     f9b:	ed 27             	ld hl,(hl)
+     f9d:	e5                	push hl
+     f9e:	21 02 00 00       	ld hl,0x0002
+     fa2:	c3 e5 0e 00       	jp 0x0ee5
+			fa3: r_imm24	.text+0xee5
+
+00000fa6 <__ZN5suite3runEPKPKNS_4CaseEjmRKNS_5HooksE>:
+     fa6:	21 da ff ff       	ld hl,0xffffda
+     faa:	cd 00 00 00       	call 0x0000
+			fab: r_imm24	__frameset
+     fae:	dd 27 06          	ld hl,(ix+6)
+     fb1:	af                	xor a,a
+     fb2:	77                	ld (hl),a
+     fb3:	e5                	push hl
+     fb4:	fd e1             	pop iy
+     fb6:	fd 23             	inc iy
+     fb8:	01 25 00 00       	ld bc,0x0025
+     fbc:	ed 13 00          	lea de,iy+0
+     fbf:	ed b0             	ldir
+     fc1:	dd 17 0c          	ld de,(ix+12)
+     fc4:	d5                	push de
+     fc5:	e1                	pop hl
+     fc6:	09                	add hl,bc
+     fc7:	b7                	or a,a
+     fc8:	ed 42             	sbc hl,bc
+     fca:	28 32             	jr z,0x0ffe
+     fcc:	dd 31 15          	ld iy,(ix+21)
+     fcf:	fd 27 03          	ld hl,(iy+3)
+     fd2:	09                	add hl,bc
+     fd3:	b7                	or a,a
+     fd4:	ed 42             	sbc hl,bc
+     fd6:	28 26             	jr z,0x0ffe
+     fd8:	dd 31 15          	ld iy,(ix+21)
+     fdb:	fd 27 06          	ld hl,(iy+6)
+     fde:	09                	add hl,bc
+     fdf:	b7                	or a,a
+     fe0:	ed 42             	sbc hl,bc
+     fe2:	28 1a             	jr z,0x0ffe
+     fe4:	dd 31 15          	ld iy,(ix+21)
+     fe7:	fd 27 09          	ld hl,(iy+9)
+     fea:	09                	add hl,bc
+     feb:	b7                	or a,a
+     fec:	ed 42             	sbc hl,bc
+     fee:	28 0e             	jr z,0x0ffe
+     ff0:	dd 31 15          	ld iy,(ix+21)
+     ff3:	fd 27 0c          	ld hl,(iy+12)
+     ff6:	09                	add hl,bc
+     ff7:	b7                	or a,a
+     ff8:	ed 42             	sbc hl,bc
+     ffa:	c2 0d 10 00       	jp nz,0x100d
+			ffb: r_imm24	.text+0x100d
+     ffe:	dd 31 06          	ld iy,(ix+6)
+    1001:	fd 36 25 01       	ld (iy+37),0x01
+    1005:	dd 27 06          	ld hl,(ix+6)
+    1008:	dd f9             	ld sp,ix
+    100a:	dd e1             	pop ix
+    100c:	c9                	ret
+    100d:	dd 31 09          	ld iy,(ix+9)
+    1010:	21 01 00 00       	ld hl,0x0001
+    1014:	ed 02 f4          	lea bc,ix-12
+    1017:	dd 0f ee          	ld (ix-18),bc
+    101a:	dd 2f f1          	ld (ix-15),hl
+    101d:	01 00 00 00       	ld bc,0x0000
+    1021:	c5                	push bc
+    1022:	e1                	pop hl
+    1023:	b7                	or a,a
+    1024:	ed 52             	sbc hl,de
+    1026:	ca b3 10 00       	jp z,0x10b3
+			1027: r_imm24	.text+0x10b3
+    102a:	dd 0f eb          	ld (ix-21),bc
+    102d:	c5                	push bc
+    102e:	e1                	pop hl
+    102f:	01 03 00 00       	ld bc,0x0003
+    1033:	cd 00 00 00       	call 0x0000
+			1034: r_imm24	__imulu
+    1037:	e5                	push hl
+    1038:	d1                	pop de
+    1039:	ed 23 00          	lea hl,iy+0
+    103c:	19                	add hl,de
+    103d:	ed 03 00          	lea bc,iy+0
+    1040:	ed 31             	ld iy,(hl)
+    1042:	ed 23 00          	lea hl,iy+0
+    1045:	09                	add hl,bc
+    1046:	b7                	or a,a
+    1047:	ed 42             	sbc hl,bc
+    1049:	ca fe 0f 00       	jp z,0x0ffe
+			104a: r_imm24	.text+0xffe
+    104d:	fd 27 00          	ld hl,(iy+0)
+    1050:	fd 5e 03          	ld e,(iy+3)
+    1053:	dd 2f e8          	ld (ix-24),hl
+    1056:	cd 00 00 00       	call 0x0000
+			1057: r_imm24	__lcmpzero
+    105a:	dd 31 f1          	ld iy,(ix-15)
+    105d:	ca fe 0f 00       	jp z,0x0ffe
+			105e: r_imm24	.text+0xffe
+    1061:	ed 23 00          	lea hl,iy+0
+    1064:	2b                	dec hl
+    1065:	dd 2f e5          	ld (ix-27),hl
+    1068:	09                	add hl,bc
+    1069:	b7                	or a,a
+    106a:	ed 42             	sbc hl,bc
+    106c:	28 30             	jr z,0x109e
+    106e:	c5                	push bc
+    106f:	fd e1             	pop iy
+    1071:	ed 23 03          	lea hl,iy+3
+    1074:	dd 2f df          	ld (ix-33),hl
+    1077:	c5                	push bc
+    1078:	e1                	pop hl
+    1079:	ed 27             	ld hl,(hl)
+    107b:	dd 2f e2          	ld (ix-30),hl
+    107e:	dd 27 e2          	ld hl,(ix-30)
+    1081:	ed 07             	ld bc,(hl)
+    1083:	dd 27 e8          	ld hl,(ix-24)
+    1086:	57                	ld d,a
+    1087:	dd 31 e2          	ld iy,(ix-30)
+    108a:	fd 7e 03          	ld a,(iy+3)
+    108d:	dd 31 e5          	ld iy,(ix-27)
+    1090:	cd 00 00 00       	call 0x0000
+			1091: r_imm24	__lcmpu
+    1094:	7a                	ld a,d
+    1095:	dd 07 df          	ld bc,(ix-33)
+    1098:	20 c7             	jr nz,0x1061
+    109a:	c3 fe 0f 00       	jp 0x0ffe
+			109b: r_imm24	.text+0xffe
+    109e:	dd 07 eb          	ld bc,(ix-21)
+    10a1:	03                	inc bc
+    10a2:	dd 27 f1          	ld hl,(ix-15)
+    10a5:	23                	inc hl
+    10a6:	dd 2f f1          	ld (ix-15),hl
+    10a9:	dd 17 0c          	ld de,(ix+12)
+    10ac:	dd 31 09          	ld iy,(ix+9)
+    10af:	c3 21 10 00       	jp 0x1021
+			10b0: r_imm24	.text+0x1021
+    10b3:	dd 3e f1          	ld (ix-15),iy
+    10b6:	d5                	push de
+    10b7:	e1                	pop hl
+    10b8:	09                	add hl,bc
+    10b9:	b7                	or a,a
+    10ba:	ed 42             	sbc hl,bc
+    10bc:	ca 3e 12 00       	jp z,0x123e
+			10bd: r_imm24	.text+0x123e
+    10c0:	dd 1f e8          	ld (ix-24),de
+    10c3:	dd 27 f1          	ld hl,(ix-15)
+    10c6:	ed 07             	ld bc,(hl)
+    10c8:	dd 27 15          	ld hl,(ix+21)
+    10cb:	e5                	push hl
+    10cc:	fd e1             	pop iy
+    10ce:	fd 27 03          	ld hl,(iy+3)
+    10d1:	fd 17 00          	ld de,(iy+0)
+    10d4:	dd 0f eb          	ld (ix-21),bc
+    10d7:	c5                	push bc
+    10d8:	d5                	push de
+    10d9:	cd 00 00 00       	call 0x0000
+			10da: r_imm24	__indcallhl
+    10dd:	e1                	pop hl
+    10de:	e1                	pop hl
+    10df:	cb 47             	bit 0,a
+    10e1:	ca fe 0f 00       	jp z,0x0ffe
+			10e2: r_imm24	.text+0xffe
+    10e5:	dd 31 eb          	ld iy,(ix-21)
+    10e8:	fd 27 0d          	ld hl,(iy+13)
+    10eb:	fd 56 10          	ld d,(iy+16)
+    10ee:	e5                	push hl
+    10ef:	fd e1             	pop iy
+    10f1:	5a                	ld e,d
+    10f2:	dd 07 0f          	ld bc,(ix+15)
+    10f5:	dd 7e 12          	ld a,(ix+18)
+    10f8:	cd 00 00 00       	call 0x0000
+			10f9: r_imm24	__land
+    10fc:	dd 2f df          	ld (ix-33),hl
+    10ff:	dd 73 de          	ld (ix-34),e
+    1102:	dd 3e e5          	ld (ix-27),iy
+    1105:	ed 03 00          	lea bc,iy+0
+    1108:	dd 72 e2          	ld (ix-30),d
+    110b:	7a                	ld a,d
+    110c:	cd 00 00 00       	call 0x0000
+			110d: r_imm24	__lcmpu
+    1110:	dd 17 eb          	ld de,(ix-21)
+    1113:	20 20             	jr nz,0x1135
+    1115:	dd 27 15          	ld hl,(ix+21)
+    1118:	d5                	push de
+    1119:	c1                	pop bc
+    111a:	e5                	push hl
+    111b:	fd e1             	pop iy
+    111d:	fd 27 06          	ld hl,(iy+6)
+    1120:	fd 17 00          	ld de,(iy+0)
+    1123:	c5                	push bc
+    1124:	d5                	push de
+    1125:	dd 17 ee          	ld de,(ix-18)
+    1128:	d5                	push de
+    1129:	cd 00 00 00       	call 0x0000
+			112a: r_imm24	__indcallhl
+    112d:	dd 17 ee          	ld de,(ix-18)
+    1130:	e1                	pop hl
+    1131:	e1                	pop hl
+    1132:	e1                	pop hl
+    1133:	18 1d             	jr 0x1152
+    1135:	dd 36 f4 05       	ld (ix-12),0x05
+    1139:	b7                	or a,a
+    113a:	ed 62             	sbc hl,hl
+    113c:	dd 2f f5          	ld (ix-11),hl
+    113f:	dd 74 f8          	ld (ix-8),h
+    1142:	dd 2f f9          	ld (ix-7),hl
+    1145:	dd 74 fc          	ld (ix-4),h
+    1148:	21 be 00 00       	ld hl,0x00be
+			1149: r_imm24	.rodata+0xbe
+    114c:	dd 2f fd          	ld (ix-3),hl
+    114f:	dd 17 ee          	ld de,(ix-18)
+    1152:	d5                	push de
+    1153:	cd 00 00 00       	call 0x0000
+			1154: r_imm24	__ZN5suite5validERKNS_6ResultE
+    1157:	e1                	pop hl
+    1158:	cb 47             	bit 0,a
+    115a:	20 1a             	jr nz,0x1176
+    115c:	dd 36 f4 07       	ld (ix-12),0x07
+    1160:	b7                	or a,a
+    1161:	ed 62             	sbc hl,hl
+    1163:	dd 2f f5          	ld (ix-11),hl
+    1166:	dd 74 f8          	ld (ix-8),h
+    1169:	dd 2f f9          	ld (ix-7),hl
+    116c:	dd 74 fc          	ld (ix-4),h
+    116f:	21 d1 00 00       	ld hl,0x00d1
+			1170: r_imm24	.rodata+0xd1
+    1173:	dd 2f fd          	ld (ix-3),hl
+    1176:	dd 27 15          	ld hl,(ix+21)
+    1179:	e5                	push hl
+    117a:	fd e1             	pop iy
+    117c:	fd 27 09          	ld hl,(iy+9)
+    117f:	fd 17 00          	ld de,(iy+0)
+    1182:	dd 07 ee          	ld bc,(ix-18)
+    1185:	c5                	push bc
+    1186:	dd 07 eb          	ld bc,(ix-21)
+    1189:	c5                	push bc
+    118a:	d5                	push de
+    118b:	cd 00 00 00       	call 0x0000
+			118c: r_imm24	__indcallhl
+    118f:	e1                	pop hl
+    1190:	e1                	pop hl
+    1191:	e1                	pop hl
+    1192:	cb 47             	bit 0,a
+    1194:	ca fe 0f 00       	jp z,0x0ffe
+			1195: r_imm24	.text+0xffe
+    1198:	dd 7e f4          	ld a,(ix-12)
+    119b:	b7                	or a,a
+    119c:	ed 62             	sbc hl,hl
+    119e:	dd 77 da          	ld (ix-38),a
+    11a1:	6f                	ld l,a
+    11a2:	2b                	dec hl
+    11a3:	0e 02             	ld c,0x02
+    11a5:	cd 00 00 00       	call 0x0000
+			11a6: r_imm24	__ishl
+    11a9:	e5                	push hl
+    11aa:	c1                	pop bc
+    11ab:	dd 31 06          	ld iy,(ix+6)
+    11ae:	fd 09             	add iy,bc
+    11b0:	dd 3e db          	ld (ix-37),iy
+    11b3:	fd 27 00          	ld hl,(iy+0)
+    11b6:	ed 33 03          	lea iy,iy+3
+    11b9:	fd 5e 00          	ld e,(iy+0)
+    11bc:	01 01 00 00       	ld bc,0x0001
+    11c0:	af                	xor a,a
+    11c1:	cd 00 00 00       	call 0x0000
+			11c2: r_imm24	__ladd
+    11c5:	dd 31 db          	ld iy,(ix-37)
+    11c8:	fd 2f 00          	ld (iy+0),hl
+    11cb:	fd 73 03          	ld (iy+3),e
+    11ce:	dd 31 06          	ld iy,(ix+6)
+    11d1:	ed 13 20          	lea de,iy+32
+    11d4:	dd 31 06          	ld iy,(ix+6)
+    11d7:	fd 27 20          	ld hl,(iy+32)
+    11da:	d5                	push de
+    11db:	fd e1             	pop iy
+    11dd:	ed 33 03          	lea iy,iy+3
+    11e0:	fd 5e 00          	ld e,(iy+0)
+    11e3:	dd 31 06          	ld iy,(ix+6)
+    11e6:	cd 00 00 00       	call 0x0000
+			11e7: r_imm24	__ladd
+    11ea:	fd 2f 20          	ld (iy+32),hl
+    11ed:	fd 73 23          	ld (iy+35),e
+    11f0:	dd 27 df          	ld hl,(ix-33)
+    11f3:	dd 5e de          	ld e,(ix-34)
+    11f6:	dd 07 e5          	ld bc,(ix-27)
+    11f9:	dd 7e e2          	ld a,(ix-30)
+    11fc:	cd 00 00 00       	call 0x0000
+			11fd: r_imm24	__lcmpu
+    1200:	20 23             	jr nz,0x1225
+    1202:	dd 27 15          	ld hl,(ix+21)
+    1205:	e5                	push hl
+    1206:	fd e1             	pop iy
+    1208:	fd 27 0c          	ld hl,(iy+12)
+    120b:	fd 17 00          	ld de,(iy+0)
+    120e:	dd 07 eb          	ld bc,(ix-21)
+    1211:	c5                	push bc
+    1212:	d5                	push de
+    1213:	cd 00 00 00       	call 0x0000
+			1214: r_imm24	__indcallhl
+    1217:	e1                	pop hl
+    1218:	e1                	pop hl
+    1219:	cb 47             	bit 0,a
+    121b:	ca fe 0f 00       	jp z,0x0ffe
+			121c: r_imm24	.text+0xffe
+    121f:	dd 7e f4          	ld a,(ix-12)
+    1222:	dd 77 da          	ld (ix-38),a
+    1225:	dd 7e da          	ld a,(ix-38)
+    1228:	c6 f9             	add a,0xf9
+    122a:	fe 02             	cp a,0x02
+    122c:	da fe 0f 00       	jp c,0x0ffe
+			122d: r_imm24	.text+0xffe
+    1230:	dd 17 e8          	ld de,(ix-24)
+    1233:	1b                	dec de
+    1234:	dd 31 f1          	ld iy,(ix-15)
+    1237:	ed 33 03          	lea iy,iy+3
+    123a:	c3 b3 10 00       	jp 0x10b3
+			123b: r_imm24	.text+0x10b3
+    123e:	dd 31 06          	ld iy,(ix+6)
+    1241:	fd 36 24 01       	ld (iy+36),0x01
+    1245:	c3 05 10 00       	jp 0x1005
+			1246: r_imm24	.text+0x1005
+
+00001249 <__ZN5suite4wire7Payload7run_endEPKmPKh>:
+    1249:	21 fc ff ff       	ld hl,0xfffffc
+    124d:	cd 00 00 00       	call 0x0000
+			124e: r_imm24	__frameset
+    1251:	dd 31 06          	ld iy,(ix+6)
+    1254:	ed 23 02          	lea hl,iy+2
+    1257:	fd 36 02 00       	ld (iy+2),0x00
+    125b:	e5                	push hl
+    125c:	d1                	pop de
+    125d:	13                	inc de
+    125e:	01 fd 03 00       	ld bc,0x03fd
+    1262:	ed b0             	ldir
+    1264:	01 00 04 00       	ld bc,0x0400
+    1268:	ed 13 00          	lea de,iy+0
+    126b:	fd 09             	add iy,bc
+    126d:	40 21 44 00       	ld.sis hl,0x0044
+    1271:	fd 75 00          	ld (iy+0),l
+    1274:	fd 74 01          	ld (iy+1),h
+    1277:	01 00 00 00       	ld bc,0x0000
+    127b:	d5                	push de
+    127c:	fd e1             	pop iy
+    127e:	fd 36 00 01       	ld (iy+0),0x01
+    1282:	fd 70 01          	ld (iy+1),b
+    1285:	11 20 00 00       	ld de,0x0020
+    1289:	c5                	push bc
+    128a:	e1                	pop hl
+    128b:	b7                	or a,a
+    128c:	ed 52             	sbc hl,de
+    128e:	28 4b             	jr z,0x12db
+    1290:	c5                	push bc
+    1291:	d1                	pop de
+    1292:	dd 1f fd          	ld (ix-3),de
+    1295:	dd 27 06          	ld hl,(ix+6)
+    1298:	19                	add hl,de
+    1299:	dd 31 09          	ld iy,(ix+9)
+    129c:	fd 19             	add iy,de
+    129e:	fd 17 00          	ld de,(iy+0)
+    12a1:	fd 7e 03          	ld a,(iy+3)
+    12a4:	dd 77 fc          	ld (ix-4),a
+    12a7:	7b                	ld a,e
+    12a8:	e5                	push hl
+    12a9:	fd e1             	pop iy
+    12ab:	fd 77 04          	ld (iy+4),a
+    12ae:	7a                	ld a,d
+    12af:	fd 77 05          	ld (iy+5),a
+    12b2:	d5                	push de
+    12b3:	c1                	pop bc
+    12b4:	dd 66 fc          	ld h,(ix-4)
+    12b7:	7c                	ld a,h
+    12b8:	2e 10             	ld l,0x10
+    12ba:	cd 00 00 00       	call 0x0000
+			12bb: r_imm24	__lshru
+    12be:	79                	ld a,c
+    12bf:	fd 77 06          	ld (iy+6),a
+    12c2:	d5                	push de
+    12c3:	c1                	pop bc
+    12c4:	7c                	ld a,h
+    12c5:	2e 18             	ld l,0x18
+    12c7:	cd 00 00 00       	call 0x0000
+			12c8: r_imm24	__lshru
+    12cb:	79                	ld a,c
+    12cc:	fd 77 07          	ld (iy+7),a
+    12cf:	11 04 00 00       	ld de,0x0004
+    12d3:	dd 27 fd          	ld hl,(ix-3)
+    12d6:	19                	add hl,de
+    12d7:	e5                	push hl
+    12d8:	c1                	pop bc
+    12d9:	18 aa             	jr 0x1285
+    12db:	dd 31 06          	ld iy,(ix+6)
+    12de:	ed 13 24          	lea de,iy+36
+    12e1:	dd 27 0c          	ld hl,(ix+12)
+    12e4:	01 20 00 00       	ld bc,0x0020
+    12e8:	ed b0             	ldir
+    12ea:	dd f9             	ld sp,ix
+    12ec:	dd e1             	pop ix
+    12ee:	c9                	ret
+
+000012ef <__ZN5suite8Recorder10finish_runERKNS_4wire7PayloadE>:
+    12ef:	21 fa ff ff       	ld hl,0xfffffa
+    12f3:	cd 00 00 00       	call 0x0000
+			12f4: r_imm24	__frameset
+    12f7:	dd 31 06          	ld iy,(ix+6)
+    12fa:	0e 00             	ld c,0x00
+    12fc:	fd cb 73 46       	bit 0,(iy+115)
+    1300:	c2 b8 13 00       	jp nz,0x13b8
+			1301: r_imm24	.text+0x13b8
+    1304:	fd 7e 71          	ld a,(iy+113)
+    1307:	fe 06             	cp a,0x06
+    1309:	ca b8 13 00       	jp z,0x13b8
+			130a: r_imm24	.text+0x13b8
+    130d:	fd 27 6b          	ld hl,(iy+107)
+    1310:	fd 5e 6e          	ld e,(iy+110)
+    1313:	cd 00 00 00       	call 0x0000
+			1314: r_imm24	__lcmpzero
+    1317:	c2 b8 13 00       	jp nz,0x13b8
+			1318: r_imm24	.text+0x13b8
+    131b:	dd 27 09          	ld hl,(ix+9)
+    131e:	e5                	push hl
+    131f:	21 06 00 00       	ld hl,0x0006
+    1323:	e5                	push hl
+    1324:	fd e5             	push iy
+    1326:	cd 00 00 00       	call 0x0000
+			1327: r_imm24	__ZN5suite8Recorder6appendEhRKNS_4wire7PayloadE
+    132a:	e1                	pop hl
+    132b:	e1                	pop hl
+    132c:	e1                	pop hl
+    132d:	cb 47             	bit 0,a
+    132f:	ca 75 13 00       	jp z,0x1375
+			1330: r_imm24	.text+0x1375
+    1333:	dd 27 06          	ld hl,(ix+6)
+    1336:	e5                	push hl
+    1337:	cd 00 00 00       	call 0x0000
+			1338: r_imm24	__ZN5suite8Recorder10checkpointEv
+    133b:	e1                	pop hl
+    133c:	cb 47             	bit 0,a
+    133e:	0e 00             	ld c,0x00
+    1340:	ca b8 13 00       	jp z,0x13b8
+			1341: r_imm24	.text+0x13b8
+    1344:	dd 27 06          	ld hl,(ix+6)
+    1347:	e5                	push hl
+    1348:	fd e1             	pop iy
+    134a:	fd 27 0c          	ld hl,(iy+12)
+    134d:	fd 17 03          	ld de,(iy+3)
+    1350:	d5                	push de
+    1351:	cd 00 00 00       	call 0x0000
+			1352: r_imm24	__indcallhl
+    1355:	e5                	push hl
+    1356:	c1                	pop bc
+    1357:	e1                	pop hl
+    1358:	c5                	push bc
+    1359:	e1                	pop hl
+    135a:	cd 00 00 00       	call 0x0000
+			135b: r_imm24	__lcmpzero
+    135e:	20 1b             	jr nz,0x137b
+    1360:	dd 27 06          	ld hl,(ix+6)
+    1363:	e5                	push hl
+    1364:	fd e1             	pop iy
+    1366:	fd 36 71 06       	ld (iy+113),0x06
+    136a:	fd e5             	push iy
+    136c:	cd 00 00 00       	call 0x0000
+			136d: r_imm24	__ZN5suite8Recorder7publishEv
+    1370:	4f                	ld c,a
+    1371:	c3 b7 13 00       	jp 0x13b7
+			1372: r_imm24	.text+0x13b7
+    1375:	0e 00             	ld c,0x00
+    1377:	c3 b8 13 00       	jp 0x13b8
+			1378: r_imm24	.text+0x13b8
+    137b:	3e ff             	ld a,0xff
+    137d:	dd 1f fa          	ld (ix-6),de
+    1380:	dd 31 06          	ld iy,(ix+6)
+    1383:	fd 27 5f          	ld hl,(iy+95)
+    1386:	dd 17 06          	ld de,(ix+6)
+    1389:	d5                	push de
+    138a:	fd e1             	pop iy
+    138c:	fd 5e 62          	ld e,(iy+98)
+    138f:	dd 0f fd          	ld (ix-3),bc
+    1392:	01 ff ff ff       	ld bc,0xffffff
+    1396:	cd 00 00 00       	call 0x0000
+			1397: r_imm24	__ladd
+    139a:	d5                	push de
+    139b:	e5                	push hl
+    139c:	dd 27 fa          	ld hl,(ix-6)
+    139f:	e5                	push hl
+    13a0:	dd 27 fd          	ld hl,(ix-3)
+    13a3:	e5                	push hl
+    13a4:	21 03 00 00       	ld hl,0x0003
+    13a8:	e5                	push hl
+    13a9:	dd 27 06          	ld hl,(ix+6)
+    13ac:	e5                	push hl
+    13ad:	cd 00 00 00       	call 0x0000
+			13ae: r_imm24	__ZN5suite8Recorder4failEhmm
+    13b1:	4f                	ld c,a
+    13b2:	e1                	pop hl
+    13b3:	e1                	pop hl
+    13b4:	e1                	pop hl
+    13b5:	e1                	pop hl
+    13b6:	e1                	pop hl
+    13b7:	e1                	pop hl
+    13b8:	79                	ld a,c
+    13b9:	dd f9             	ld sp,ix
+    13bb:	dd e1             	pop ix
+    13bd:	c9                	ret
+
+000013be <__ZN5suite10MosStorage5writeEPvPKhjPm>:
+    13be:	21 ff ff ff       	ld hl,0xffffff
+    13c2:	cd 00 00 00       	call 0x0000
+			13c3: r_imm24	__frameset
+    13c6:	dd 27 06          	ld hl,(ix+6)
+    13c9:	dd 17 09          	ld de,(ix+9)
+    13cc:	dd 07 0c          	ld bc,(ix+12)
+    13cf:	dd 36 ff 00       	ld (ix-1),0x00
+    13d3:	ed 65 ff          	pea ix-1
+    13d6:	c5                	push bc
+    13d7:	d5                	push de
+    13d8:	e5                	push hl
+    13d9:	cd 00 00 00       	call 0x0000
+			13da: r_imm24	_recording_write
+    13dd:	d1                	pop de
+    13de:	d1                	pop de
+    13df:	d1                	pop de
+    13e0:	d1                	pop de
+    13e1:	11 00 00 00       	ld de,0x0000
+    13e5:	dd 5e ff          	ld e,(ix-1)
+    13e8:	dd 31 0f          	ld iy,(ix+15)
+    13eb:	fd 1f 00          	ld (iy+0),de
+    13ee:	af                	xor a,a
+    13ef:	fd 77 03          	ld (iy+3),a
+    13f2:	33                	inc sp
+    13f3:	dd e1             	pop ix
+    13f5:	c9                	ret
+
+000013f6 <__ZN5suite10MosStorage4syncEPv>:
+    13f6:	cd 00 00 00       	call 0x0000
+			13f7: r_imm24	__frameset0
+    13fa:	dd 27 06          	ld hl,(ix+6)
+    13fd:	e5                	push hl
+    13fe:	cd 00 00 00       	call 0x0000
+			13ff: r_imm24	_ffs_fsync
+    1402:	e1                	pop hl
+    1403:	b7                	or a,a
+    1404:	ed 62             	sbc hl,hl
+    1406:	6f                	ld l,a
+    1407:	5c                	ld e,h
+    1408:	dd e1             	pop ix
+    140a:	c9                	ret
+
+0000140b <__ZN5suite10MosStorage5closeEPv>:
+    140b:	cd 00 00 00       	call 0x0000
+			140c: r_imm24	__frameset0
+    140f:	dd 27 06          	ld hl,(ix+6)
+    1412:	e5                	push hl
+    1413:	cd 00 00 00       	call 0x0000
+			1414: r_imm24	_ffs_fclose
+    1417:	5f                	ld e,a
+    1418:	e1                	pop hl
+    1419:	b7                	or a,a
+    141a:	20 07             	jr nz,0x1423
+    141c:	dd 31 06          	ld iy,(ix+6)
+    141f:	fd 36 24 00       	ld (iy+36),0x00
+    1423:	b7                	or a,a
+    1424:	ed 62             	sbc hl,hl
+    1426:	6b                	ld l,e
+    1427:	5c                	ld e,h
+    1428:	dd e1             	pop ix
+    142a:	c9                	ret
+
+0000142b <__ZN5suite8Recorder7publishEv>:
+    142b:	21 73 ff ff       	ld hl,0xffff73
+    142f:	cd 00 00 00       	call 0x0000
+			1430: r_imm24	__frameset
+    1433:	dd 31 06          	ld iy,(ix+6)
+    1436:	01 ff ff ff       	ld bc,0xffffff
+    143a:	78                	ld a,b
+    143b:	16 00             	ld d,0x00
+    143d:	fd 27 67          	ld hl,(iy+103)
+    1440:	fd 5e 6a          	ld e,(iy+106)
+    1443:	dd 0f fd          	ld (ix-3),bc
+    1446:	01 77 ff ff       	ld bc,0xffff77
+    144a:	ed 55 00          	lea iy,ix+0
+    144d:	fd 09             	add iy,bc
+    144f:	fd 2f 00          	ld (iy+0),hl
+    1452:	dd 07 fd          	ld bc,(ix-3)
+    1455:	cd 00 00 00       	call 0x0000
+			1456: r_imm24	__lcmpu
+    1459:	20 0b             	jr nz,0x1466
+    145b:	dd 31 06          	ld iy,(ix+6)
+    145e:	fd 36 73 01       	ld (iy+115),0x01
+    1462:	c3 79 16 00       	jp 0x1679
+			1463: r_imm24	.text+0x1679
+    1466:	01 7a ff ff       	ld bc,0xffff7a
+    146a:	ed 55 00          	lea iy,ix+0
+    146d:	fd 09             	add iy,bc
+    146f:	ed 23 27          	lea hl,iy+39
+    1472:	dd e5             	push ix
+    1474:	01 74 ff ff       	ld bc,0xffff74
+    1478:	dd 09             	add ix,bc
+    147a:	dd 3e 00          	ld (ix+0),iy
+    147d:	dd e1             	pop ix
+    147f:	dd 36 a1 00       	ld (ix-95),0x00
+    1483:	dd e5             	push ix
+    1485:	0b                	dec bc
+    1486:	dd 09             	add ix,bc
+    1488:	dd 73 00          	ld (ix+0),e
+    148b:	dd e1             	pop ix
+    148d:	7a                	ld a,d
+    148e:	e5                	push hl
+    148f:	d1                	pop de
+    1490:	13                	inc de
+    1491:	01 58 00 00       	ld bc,0x0058
+    1495:	ed b0             	ldir
+    1497:	21 4d 53 54       	ld hl,0x54534d
+    149b:	dd e5             	push ix
+    149d:	01 7a ff ff       	ld bc,0xffff7a
+    14a1:	dd 09             	add ix,bc
+    14a3:	dd 2f 00          	ld (ix+0),hl
+    14a6:	dd e1             	pop ix
+    14a8:	01 7d ff ff       	ld bc,0xffff7d
+    14ac:	ed 22 00          	lea hl,ix+0
+    14af:	09                	add hl,bc
+    14b0:	36 43             	ld (hl),0x43
+    14b2:	dd e5             	push ix
+    14b4:	03                	inc bc
+    14b5:	dd 09             	add ix,bc
+    14b7:	dd 36 00 01       	ld (ix+0),0x01
+    14bb:	dd e1             	pop ix
+    14bd:	dd e5             	push ix
+    14bf:	03                	inc bc
+    14c0:	dd 09             	add ix,bc
+    14c2:	dd 36 00 00       	ld (ix+0),0x00
+    14c6:	dd e1             	pop ix
+    14c8:	dd 36 80 80       	ld (ix-128),0x80
+    14cc:	dd 36 81 00       	ld (ix-127),0x00
+    14d0:	ed 13 08          	lea de,iy+8
+    14d3:	dd 27 06          	ld hl,(ix+6)
+    14d6:	e5                	push hl
+    14d7:	fd e1             	pop iy
+    14d9:	ed 23 0f          	lea hl,iy+15
+    14dc:	01 10 00 00       	ld bc,0x0010
+    14e0:	ed b0             	ldir
+    14e2:	01 77 ff ff       	ld bc,0xffff77
+    14e6:	ed 22 00          	lea hl,ix+0
+    14e9:	09                	add hl,bc
+    14ea:	ed 27             	ld hl,(hl)
+    14ec:	dd e5             	push ix
+    14ee:	01 73 ff ff       	ld bc,0xffff73
+    14f2:	dd 09             	add ix,bc
+    14f4:	dd 5e 00          	ld e,(ix+0)
+    14f7:	dd e1             	pop ix
+    14f9:	01 01 00 00       	ld bc,0x0001
+    14fd:	cd 00 00 00       	call 0x0000
+			14fe: r_imm24	__ladd
+    1501:	fd 2f 67          	ld (iy+103),hl
+    1504:	fd 73 6a          	ld (iy+106),e
+    1507:	dd 75 92          	ld (ix-110),l
+    150a:	7c                	ld a,h
+    150b:	e5                	push hl
+    150c:	fd e1             	pop iy
+    150e:	dd 77 93          	ld (ix-109),a
+    1511:	2e 10             	ld l,0x10
+    1513:	ed 03 00          	lea bc,iy+0
+    1516:	7b                	ld a,e
+    1517:	cd 00 00 00       	call 0x0000
+			1518: r_imm24	__lshru
+    151b:	79                	ld a,c
+    151c:	dd 77 94          	ld (ix-108),a
+    151f:	2e 18             	ld l,0x18
+    1521:	ed 03 00          	lea bc,iy+0
+    1524:	7b                	ld a,e
+    1525:	cd 00 00 00       	call 0x0000
+			1526: r_imm24	__lshru
+    1529:	79                	ld a,c
+    152a:	dd 77 95          	ld (ix-107),a
+    152d:	dd 31 06          	ld iy,(ix+6)
+    1530:	fd 17 5f          	ld de,(iy+95)
+    1533:	fd 66 62          	ld h,(iy+98)
+    1536:	7b                	ld a,e
+    1537:	dd 77 96          	ld (ix-106),a
+    153a:	7a                	ld a,d
+    153b:	dd 77 97          	ld (ix-105),a
+    153e:	d5                	push de
+    153f:	c1                	pop bc
+    1540:	7c                	ld a,h
+    1541:	2e 10             	ld l,0x10
+    1543:	cd 00 00 00       	call 0x0000
+			1544: r_imm24	__lshru
+    1547:	79                	ld a,c
+    1548:	dd 77 98          	ld (ix-104),a
+    154b:	d5                	push de
+    154c:	c1                	pop bc
+    154d:	7c                	ld a,h
+    154e:	2e 18             	ld l,0x18
+    1550:	cd 00 00 00       	call 0x0000
+			1551: r_imm24	__lshru
+    1554:	79                	ld a,c
+    1555:	dd 77 99          	ld (ix-103),a
+    1558:	fd 17 63          	ld de,(iy+99)
+    155b:	fd 66 66          	ld h,(iy+102)
+    155e:	7b                	ld a,e
+    155f:	dd 77 9a          	ld (ix-102),a
+    1562:	7a                	ld a,d
+    1563:	dd 77 9b          	ld (ix-101),a
+    1566:	d5                	push de
+    1567:	c1                	pop bc
+    1568:	7c                	ld a,h
+    1569:	2e 10             	ld l,0x10
+    156b:	cd 00 00 00       	call 0x0000
+			156c: r_imm24	__lshru
+    156f:	79                	ld a,c
+    1570:	dd 77 9c          	ld (ix-100),a
+    1573:	d5                	push de
+    1574:	c1                	pop bc
+    1575:	7c                	ld a,h
+    1576:	2e 18             	ld l,0x18
+    1578:	cd 00 00 00       	call 0x0000
+			1579: r_imm24	__lshru
+    157c:	79                	ld a,c
+    157d:	dd 77 9d          	ld (ix-99),a
+    1580:	fd 27 6f          	ld hl,(iy+111)
+    1583:	7d                	ld a,l
+    1584:	dd 77 9e          	ld (ix-98),a
+    1587:	7c                	ld a,h
+    1588:	dd 77 9f          	ld (ix-97),a
+    158b:	fd 7e 71          	ld a,(iy+113)
+    158e:	dd 77 a0          	ld (ix-96),a
+    1591:	fd 17 6b          	ld de,(iy+107)
+    1594:	fd 66 6e          	ld h,(iy+110)
+    1597:	7b                	ld a,e
+    1598:	dd 77 a2          	ld (ix-94),a
+    159b:	7a                	ld a,d
+    159c:	dd 77 a3          	ld (ix-93),a
+    159f:	d5                	push de
+    15a0:	c1                	pop bc
+    15a1:	7c                	ld a,h
+    15a2:	2e 10             	ld l,0x10
+    15a4:	cd 00 00 00       	call 0x0000
+			15a5: r_imm24	__lshru
+    15a8:	79                	ld a,c
+    15a9:	dd 77 a4          	ld (ix-92),a
+    15ac:	d5                	push de
+    15ad:	c1                	pop bc
+    15ae:	7c                	ld a,h
+    15af:	2e 18             	ld l,0x18
+    15b1:	cd 00 00 00       	call 0x0000
+			15b2: r_imm24	__lshru
+    15b5:	79                	ld a,c
+    15b6:	dd 77 a5          	ld (ix-91),a
+    15b9:	01 74 ff ff       	ld bc,0xffff74
+    15bd:	ed 55 00          	lea iy,ix+0
+    15c0:	fd 09             	add iy,bc
+    15c2:	fd 37 00          	ld iy,(iy+0)
+    15c5:	ed 13 2c          	lea de,iy+44
+    15c8:	dd 31 06          	ld iy,(ix+6)
+    15cb:	ed 23 1f          	lea hl,iy+31
+    15ce:	01 20 00 00       	ld bc,0x0020
+    15d2:	ed b0             	ldir
+    15d4:	01 74 ff ff       	ld bc,0xffff74
+    15d8:	ed 22 00          	lea hl,ix+0
+    15db:	09                	add hl,bc
+    15dc:	ed 31             	ld iy,(hl)
+    15de:	ed 13 4c          	lea de,iy+76
+    15e1:	dd 31 06          	ld iy,(ix+6)
+    15e4:	ed 23 3f          	lea hl,iy+63
+    15e7:	01 20 00 00       	ld bc,0x0020
+    15eb:	ed b0             	ldir
+    15ed:	21 78 00 00       	ld hl,0x0078
+    15f1:	e5                	push hl
+    15f2:	01 74 ff ff       	ld bc,0xffff74
+    15f6:	ed 22 00          	lea hl,ix+0
+    15f9:	09                	add hl,bc
+    15fa:	ed 27             	ld hl,(hl)
+    15fc:	e5                	push hl
+    15fd:	cd 00 00 00       	call 0x0000
+			15fe: r_imm24	__ZN5suite4wire3crcEPKhj
+    1601:	e5                	push hl
+    1602:	fd e1             	pop iy
+    1604:	e1                	pop hl
+    1605:	e1                	pop hl
+    1606:	fd 7d             	ld a,iyl
+    1608:	dd 77 f2          	ld (ix-14),a
+    160b:	fd 7c             	ld a,iyh
+    160d:	dd 77 f3          	ld (ix-13),a
+    1610:	ed 03 00          	lea bc,iy+0
+    1613:	7b                	ld a,e
+    1614:	2e 10             	ld l,0x10
+    1616:	cd 00 00 00       	call 0x0000
+			1617: r_imm24	__lshru
+    161a:	79                	ld a,c
+    161b:	dd 77 f4          	ld (ix-12),a
+    161e:	ed 03 00          	lea bc,iy+0
+    1621:	7b                	ld a,e
+    1622:	2e 18             	ld l,0x18
+    1624:	cd 00 00 00       	call 0x0000
+			1625: r_imm24	__lshru
+    1628:	79                	ld a,c
+    1629:	dd 77 f5          	ld (ix-11),a
+    162c:	dd 36 f6 a5       	ld (ix-10),0xa5
+    1630:	dd 31 06          	ld iy,(ix+6)
+    1633:	fd 7e 72          	ld a,(iy+114)
+    1636:	ee 01             	xor a,0x01
+    1638:	fd 77 72          	ld (iy+114),a
+    163b:	b7                	or a,a
+    163c:	ed 62             	sbc hl,hl
+    163e:	6f                	ld l,a
+    163f:	0e 07             	ld c,0x07
+    1641:	cd 00 00 00       	call 0x0000
+			1642: r_imm24	__ishl
+    1645:	11 7c 00 00       	ld de,0x007c
+    1649:	d5                	push de
+    164a:	11 80 00 00       	ld de,0x0080
+    164e:	d5                	push de
+    164f:	dd 0f fd          	ld (ix-3),bc
+    1652:	dd e5             	push ix
+    1654:	01 74 ff ff       	ld bc,0xffff74
+    1658:	dd 09             	add ix,bc
+    165a:	dd 17 00          	ld de,(ix+0)
+    165d:	dd e1             	pop ix
+    165f:	d5                	push de
+    1660:	e5                	push hl
+    1661:	fd e5             	push iy
+    1663:	dd 07 fd          	ld bc,(ix-3)
+    1666:	cd 00 00 00       	call 0x0000
+			1667: r_imm24	__ZN5suite8Recorder13publish_bytesEjPKhjj
+    166a:	01 73 ff ff       	ld bc,0xffff73
+    166e:	ed 22 00          	lea hl,ix+0
+    1671:	09                	add hl,bc
+    1672:	5e                	ld e,(hl)
+    1673:	78                	ld a,b
+    1674:	e1                	pop hl
+    1675:	e1                	pop hl
+    1676:	e1                	pop hl
+    1677:	e1                	pop hl
+    1678:	e1                	pop hl
+    1679:	01 77 ff ff       	ld bc,0xffff77
+    167d:	ed 22 00          	lea hl,ix+0
+    1680:	09                	add hl,bc
+    1681:	ed 27             	ld hl,(hl)
+    1683:	01 ff ff ff       	ld bc,0xffffff
+    1687:	cd 00 00 00       	call 0x0000
+			1688: r_imm24	__lcmpu
+    168b:	20 04             	jr nz,0x1691
+    168d:	3e 00             	ld a,0x00
+    168f:	18 02             	jr 0x1693
+    1691:	3e ff             	ld a,0xff
+    1693:	dd f9             	ld sp,ix
+    1695:	dd e1             	pop ix
+    1697:	c9                	ret
+
+00001698 <__ZN5suite4wire3crcEPKhj>:
+    1698:	21 f4 ff ff       	ld hl,0xfffff4
+    169c:	cd 00 00 00       	call 0x0000
+			169d: r_imm24	__frameset
+    16a0:	dd 27 06          	ld hl,(ix+6)
+    16a3:	dd 2f fd          	ld (ix-3),hl
+    16a6:	dd 27 09          	ld hl,(ix+9)
+    16a9:	fd 21 ff ff ff    	ld iy,0xffffff
+    16ae:	fd 5c             	ld e,iyh
+    16b0:	09                	add hl,bc
+    16b1:	b7                	or a,a
+    16b2:	ed 42             	sbc hl,bc
+    16b4:	28 71             	jr z,0x1727
+    16b6:	2b                	dec hl
+    16b7:	dd 2f fa          	ld (ix-6),hl
+    16ba:	01 00 00 00       	ld bc,0x0000
+    16be:	dd 27 fd          	ld hl,(ix-3)
+    16c1:	4e                	ld c,(hl)
+    16c2:	af                	xor a,a
+    16c3:	ed 23 00          	lea hl,iy+0
+    16c6:	cd 00 00 00       	call 0x0000
+			16c7: r_imm24	__lxor
+    16ca:	e5                	push hl
+    16cb:	fd e1             	pop iy
+    16cd:	21 08 00 00       	ld hl,0x0008
+    16d1:	09                	add hl,bc
+    16d2:	b7                	or a,a
+    16d3:	ed 42             	sbc hl,bc
+    16d5:	28 44             	jr z,0x171b
+    16d7:	dd 2f f7          	ld (ix-9),hl
+    16da:	ed 03 00          	lea bc,iy+0
+    16dd:	7b                	ld a,e
+    16de:	2e 01             	ld l,0x01
+    16e0:	cd 00 00 00       	call 0x0000
+			16e1: r_imm24	__lshru
+    16e4:	dd 0f f4          	ld (ix-12),bc
+    16e7:	57                	ld d,a
+    16e8:	ed 23 00          	lea hl,iy+0
+    16eb:	01 01 00 00       	ld bc,0x0001
+    16ef:	af                	xor a,a
+    16f0:	cd 00 00 00       	call 0x0000
+			16f1: r_imm24	__land
+    16f4:	7d                	ld a,l
+    16f5:	a9                	xor a,c
+    16f6:	cb 47             	bit 0,a
+    16f8:	21 00 00 00       	ld hl,0x0000
+    16fc:	20 04             	jr nz,0x1702
+    16fe:	21 20 83 b8       	ld hl,0xb88320
+    1702:	cb 47             	bit 0,a
+    1704:	1e 00             	ld e,0x00
+    1706:	20 02             	jr nz,0x170a
+    1708:	1e ed             	ld e,0xed
+    170a:	dd 07 f4          	ld bc,(ix-12)
+    170d:	7a                	ld a,d
+    170e:	cd 00 00 00       	call 0x0000
+			170f: r_imm24	__lxor
+    1712:	e5                	push hl
+    1713:	fd e1             	pop iy
+    1715:	dd 27 f7          	ld hl,(ix-9)
+    1718:	2b                	dec hl
+    1719:	18 b6             	jr 0x16d1
+    171b:	dd 27 fd          	ld hl,(ix-3)
+    171e:	23                	inc hl
+    171f:	dd 2f fd          	ld (ix-3),hl
+    1722:	dd 27 fa          	ld hl,(ix-6)
+    1725:	18 89             	jr 0x16b0
+    1727:	ed 23 00          	lea hl,iy+0
+    172a:	cd 00 00 00       	call 0x0000
+			172b: r_imm24	__lnot
+    172e:	dd f9             	ld sp,ix
+    1730:	dd e1             	pop ix
+    1732:	c9                	ret
+
+00001733 <__ZN5suite8Recorder13publish_bytesEjPKhjj>:
+    1733:	21 f1 ff ff       	ld hl,0xfffff1
+    1737:	cd 00 00 00       	call 0x0000
+			1738: r_imm24	__frameset
+    173b:	dd 31 06          	ld iy,(ix+6)
+    173e:	dd 17 09          	ld de,(ix+9)
+    1741:	dd 27 12          	ld hl,(ix+18)
+    1744:	dd 2f fd          	ld (ix-3),hl
+    1747:	19                	add hl,de
+    1748:	e5                	push hl
+    1749:	c1                	pop bc
+    174a:	fd 27 00          	ld hl,(iy+0)
+    174d:	dd 0f f7          	ld (ix-9),bc
+    1750:	09                	add hl,bc
+    1751:	36 00             	ld (hl),0x00
+    1753:	fd 27 74          	ld hl,(iy+116)
+    1756:	09                	add hl,bc
+    1757:	b7                	or a,a
+    1758:	ed 42             	sbc hl,bc
+    175a:	28 14             	jr z,0x1770
+    175c:	fd 17 77          	ld de,(iy+119)
+    175f:	dd 07 f7          	ld bc,(ix-9)
+    1762:	c5                	push bc
+    1763:	d5                	push de
+    1764:	cd 00 00 00       	call 0x0000
+			1765: r_imm24	__indcallhl
+    1768:	dd 17 09          	ld de,(ix+9)
+    176b:	dd 31 06          	ld iy,(ix+6)
+    176e:	e1                	pop hl
+    176f:	e1                	pop hl
+    1770:	dd 27 0c          	ld hl,(ix+12)
+    1773:	dd 2f fa          	ld (ix-6),hl
+    1776:	dd 27 0f          	ld hl,(ix+15)
+    1779:	dd 2f f4          	ld (ix-12),hl
+    177c:	09                	add hl,bc
+    177d:	b7                	or a,a
+    177e:	ed 42             	sbc hl,bc
+    1780:	28 4a             	jr z,0x17cc
+    1782:	dd 27 fd          	ld hl,(ix-3)
+    1785:	09                	add hl,bc
+    1786:	b7                	or a,a
+    1787:	ed 42             	sbc hl,bc
+    1789:	28 2a             	jr z,0x17b5
+    178b:	dd 27 fa          	ld hl,(ix-6)
+    178e:	7e                	ld a,(hl)
+    178f:	fd 27 00          	ld hl,(iy+0)
+    1792:	19                	add hl,de
+    1793:	77                	ld (hl),a
+    1794:	fd 27 74          	ld hl,(iy+116)
+    1797:	09                	add hl,bc
+    1798:	b7                	or a,a
+    1799:	ed 42             	sbc hl,bc
+    179b:	28 18             	jr z,0x17b5
+    179d:	dd 1f f1          	ld (ix-15),de
+    17a0:	fd 37 77          	ld iy,(iy+119)
+    17a3:	dd 17 f1          	ld de,(ix-15)
+    17a6:	d5                	push de
+    17a7:	fd e5             	push iy
+    17a9:	cd 00 00 00       	call 0x0000
+			17aa: r_imm24	__indcallhl
+    17ad:	dd 17 f1          	ld de,(ix-15)
+    17b0:	dd 31 06          	ld iy,(ix+6)
+    17b3:	e1                	pop hl
+    17b4:	e1                	pop hl
+    17b5:	dd 07 f4          	ld bc,(ix-12)
+    17b8:	0b                	dec bc
+    17b9:	13                	inc de
+    17ba:	dd 27 fa          	ld hl,(ix-6)
+    17bd:	23                	inc hl
+    17be:	dd 2f fa          	ld (ix-6),hl
+    17c1:	dd 27 fd          	ld hl,(ix-3)
+    17c4:	2b                	dec hl
+    17c5:	dd 2f fd          	ld (ix-3),hl
+    17c8:	c5                	push bc
+    17c9:	e1                	pop hl
+    17ca:	18 ad             	jr 0x1779
+    17cc:	fd 27 00          	ld hl,(iy+0)
+    17cf:	dd 17 f7          	ld de,(ix-9)
+    17d2:	19                	add hl,de
+    17d3:	36 a5             	ld (hl),0xa5
+    17d5:	fd 27 74          	ld hl,(iy+116)
+    17d8:	09                	add hl,bc
+    17d9:	b7                	or a,a
+    17da:	ed 42             	sbc hl,bc
+    17dc:	28 0e             	jr z,0x17ec
+    17de:	fd 17 77          	ld de,(iy+119)
+    17e1:	dd 07 f7          	ld bc,(ix-9)
+    17e4:	c5                	push bc
+    17e5:	d5                	push de
+    17e6:	cd 00 00 00       	call 0x0000
+			17e7: r_imm24	__indcallhl
+    17ea:	e1                	pop hl
+    17eb:	e1                	pop hl
+    17ec:	dd f9             	ld sp,ix
+    17ee:	dd e1             	pop ix
+    17f0:	c9                	ret
+
+000017f1 <__ZN5suite4wire6encodeEPhhPKhmmRKNS0_7PayloadE>:
+    17f1:	21 f7 ff ff       	ld hl,0xfffff7
+    17f5:	cd 00 00 00       	call 0x0000
+			17f6: r_imm24	__frameset
+    17f9:	40 fd 21 00 00    	ld.sis iy,0x0000
+    17fe:	dd 7e 09          	ld a,(ix+9)
+    1801:	c6 f9             	add a,0xf9
+    1803:	fe fa             	cp a,0xfa
+    1805:	da 7c 19 00       	jp c,0x197c
+			1806: r_imm24	.text+0x197c
+    1809:	dd 27 1b          	ld hl,(ix+27)
+    180c:	11 00 04 00       	ld de,0x0400
+    1810:	19                	add hl,de
+    1811:	ed 07             	ld bc,(hl)
+    1813:	40 11 02 00       	ld.sis de,0x0002
+    1817:	69                	ld l,c
+    1818:	60                	ld h,b
+    1819:	b7                	or a,a
+    181a:	40 ed 52          	sbc.sis hl,de
+    181d:	da 7c 19 00       	jp c,0x197c
+			181e: r_imm24	.text+0x197c
+    1821:	dd 27 0f          	ld hl,(ix+15)
+    1824:	dd 7e 12          	ld a,(ix+18)
+    1827:	5f                	ld e,a
+    1828:	cd 00 00 00       	call 0x0000
+			1829: r_imm24	__lcmpzero
+    182c:	ca 7c 19 00       	jp z,0x197c
+			182d: r_imm24	.text+0x197c
+    1830:	40 11 01 04       	ld.sis de,0x0401
+    1834:	69                	ld l,c
+    1835:	60                	ld h,b
+    1836:	b7                	or a,a
+    1837:	40 ed 52          	sbc.sis hl,de
+    183a:	d2 7c 19 00       	jp nc,0x197c
+			183b: r_imm24	.text+0x197c
+    183e:	dd 31 06          	ld iy,(ix+6)
+    1841:	ed 23 08          	lea hl,iy+8
+    1844:	fd 36 08 00       	ld (iy+8),0x00
+    1848:	e5                	push hl
+    1849:	d1                	pop de
+    184a:	dd 2f fd          	ld (ix-3),hl
+    184d:	13                	inc de
+    184e:	01 1f 00 00       	ld bc,0x001f
+    1852:	ed b0             	ldir
+    1854:	21 4d 53 54       	ld hl,0x54534d
+    1858:	fd 2f 00          	ld (iy+0),hl
+    185b:	fd 36 03 52       	ld (iy+3),0x52
+    185f:	fd 36 04 01       	ld (iy+4),0x01
+    1863:	dd 6e 09          	ld l,(ix+9)
+    1866:	fd 75 05          	ld (iy+5),l
+    1869:	fd 36 06 28       	ld (iy+6),0x28
+    186d:	fd 36 07 00       	ld (iy+7),0x00
+    1871:	dd 17 fd          	ld de,(ix-3)
+    1874:	dd 27 0c          	ld hl,(ix+12)
+    1877:	01 10 00 00       	ld bc,0x0010
+    187b:	ed b0             	ldir
+    187d:	dd 17 0f          	ld de,(ix+15)
+    1880:	67                	ld h,a
+    1881:	7b                	ld a,e
+    1882:	fd 77 18          	ld (iy+24),a
+    1885:	7a                	ld a,d
+    1886:	fd 77 19          	ld (iy+25),a
+    1889:	2e 10             	ld l,0x10
+    188b:	d5                	push de
+    188c:	c1                	pop bc
+    188d:	7c                	ld a,h
+    188e:	cd 00 00 00       	call 0x0000
+			188f: r_imm24	__lshru
+    1892:	79                	ld a,c
+    1893:	fd 77 1a          	ld (iy+26),a
+    1896:	2e 18             	ld l,0x18
+    1898:	d5                	push de
+    1899:	c1                	pop bc
+    189a:	7c                	ld a,h
+    189b:	cd 00 00 00       	call 0x0000
+			189c: r_imm24	__lshru
+    189f:	79                	ld a,c
+    18a0:	fd 77 1b          	ld (iy+27),a
+    18a3:	dd 07 15          	ld bc,(ix+21)
+    18a6:	79                	ld a,c
+    18a7:	fd 77 1c          	ld (iy+28),a
+    18aa:	78                	ld a,b
+    18ab:	fd 77 1d          	ld (iy+29),a
+    18ae:	c5                	push bc
+    18af:	d1                	pop de
+    18b0:	dd 66 18          	ld h,(ix+24)
+    18b3:	7c                	ld a,h
+    18b4:	2e 10             	ld l,0x10
+    18b6:	cd 00 00 00       	call 0x0000
+			18b7: r_imm24	__lshru
+    18ba:	79                	ld a,c
+    18bb:	fd 77 1e          	ld (iy+30),a
+    18be:	d5                	push de
+    18bf:	c1                	pop bc
+    18c0:	7c                	ld a,h
+    18c1:	2e 18             	ld l,0x18
+    18c3:	cd 00 00 00       	call 0x0000
+			18c4: r_imm24	__lshru
+    18c7:	79                	ld a,c
+    18c8:	fd 77 1f          	ld (iy+31),a
+    18cb:	dd 27 1b          	ld hl,(ix+27)
+    18ce:	11 00 04 00       	ld de,0x0400
+    18d2:	19                	add hl,de
+    18d3:	dd 2f fa          	ld (ix-6),hl
+    18d6:	ed 17             	ld de,(hl)
+    18d8:	7b                	ld a,e
+    18d9:	fd 77 20          	ld (iy+32),a
+    18dc:	7a                	ld a,d
+    18dd:	fd 77 21          	ld (iy+33),a
+    18e0:	fd 36 22 00       	ld (iy+34),0x00
+    18e4:	fd 36 23 00       	ld (iy+35),0x00
+    18e8:	ed 03 28          	lea bc,iy+40
+    18eb:	dd 0f fd          	ld (ix-3),bc
+    18ee:	ed 31             	ld iy,(hl)
+    18f0:	11 00 00 00       	ld de,0x0000
+    18f4:	fd 5d             	ld e,iyl
+    18f6:	fd 54             	ld d,iyh
+    18f8:	d5                	push de
+    18f9:	dd 27 1b          	ld hl,(ix+27)
+    18fc:	e5                	push hl
+    18fd:	c5                	push bc
+    18fe:	cd 00 00 00       	call 0x0000
+			18ff: r_imm24	_memcpy
+    1902:	e1                	pop hl
+    1903:	e1                	pop hl
+    1904:	e1                	pop hl
+    1905:	dd 27 fa          	ld hl,(ix-6)
+    1908:	ed 17             	ld de,(hl)
+    190a:	b7                	or a,a
+    190b:	ed 62             	sbc hl,hl
+    190d:	e5                	push hl
+    190e:	fd e1             	pop iy
+    1910:	fd 6b             	ld iyl,e
+    1912:	fd 62             	ld iyh,d
+    1914:	ed 13 00          	lea de,iy+0
+    1917:	dd 27 fd          	ld hl,(ix-3)
+    191a:	19                	add hl,de
+    191b:	dd 2f fd          	ld (ix-3),hl
+    191e:	11 28 00 00       	ld de,0x0028
+    1922:	fd 19             	add iy,de
+    1924:	fd e5             	push iy
+    1926:	dd 27 06          	ld hl,(ix+6)
+    1929:	e5                	push hl
+    192a:	cd 00 00 00       	call 0x0000
+			192b: r_imm24	__ZN5suite4wire3crcEPKhj
+    192e:	e5                	push hl
+    192f:	c1                	pop bc
+    1930:	e1                	pop hl
+    1931:	e1                	pop hl
+    1932:	dd 0f f7          	ld (ix-9),bc
+    1935:	79                	ld a,c
+    1936:	dd 31 fd          	ld iy,(ix-3)
+    1939:	fd 77 00          	ld (iy+0),a
+    193c:	78                	ld a,b
+    193d:	fd 77 01          	ld (iy+1),a
+    1940:	7b                	ld a,e
+    1941:	2e 10             	ld l,0x10
+    1943:	cd 00 00 00       	call 0x0000
+			1944: r_imm24	__lshru
+    1947:	79                	ld a,c
+    1948:	fd 77 02          	ld (iy+2),a
+    194b:	dd 07 f7          	ld bc,(ix-9)
+    194e:	7b                	ld a,e
+    194f:	2e 18             	ld l,0x18
+    1951:	cd 00 00 00       	call 0x0000
+			1952: r_imm24	__lshru
+    1955:	79                	ld a,c
+    1956:	fd 77 03          	ld (iy+3),a
+    1959:	dd 31 fa          	ld iy,(ix-6)
+    195c:	fd 27 00          	ld hl,(iy+0)
+    195f:	ed 03 00          	lea bc,iy+0
+    1962:	11 00 00 00       	ld de,0x0000
+    1966:	5d                	ld e,l
+    1967:	54                	ld d,h
+    1968:	dd 31 06          	ld iy,(ix+6)
+    196b:	fd 19             	add iy,de
+    196d:	fd 36 2c a5       	ld (iy+44),0xa5
+    1971:	c5                	push bc
+    1972:	e1                	pop hl
+    1973:	ed 31             	ld iy,(hl)
+    1975:	40 11 2d 00       	ld.sis de,0x002d
+    1979:	40 fd 19          	add.sis iy,de
+    197c:	eb                	ex de,hl
+    197d:	fd 5d             	ld e,iyl
+    197f:	fd 54             	ld d,iyh
+    1981:	eb                	ex de,hl
+    1982:	dd f9             	ld sp,ix
+    1984:	dd e1             	pop ix
+    1986:	c9                	ret
+
+00001987 <__ZN5suite5validERKNS_6ResultE>:
+    1987:	21 fc ff ff       	ld hl,0xfffffc
+    198b:	cd 00 00 00       	call 0x0000
+			198c: r_imm24	__frameset
+    198f:	dd 31 06          	ld iy,(ix+6)
+    1992:	2e 00             	ld l,0x00
+    1994:	fd 56 00          	ld d,(iy+0)
+    1997:	7a                	ld a,d
+    1998:	c6 f7             	add a,0xf7
+    199a:	fe f8             	cp a,0xf8
+    199c:	da f7 19 00       	jp c,0x19f7
+			199d: r_imm24	.text+0x19f7
+    19a0:	fd 07 05          	ld bc,(iy+5)
+    19a3:	fd 7e 08          	ld a,(iy+8)
+    19a6:	fd 27 01          	ld hl,(iy+1)
+    19a9:	fd 5e 04          	ld e,(iy+4)
+    19ac:	cd 00 00 00       	call 0x0000
+			19ad: r_imm24	__lcmpu
+    19b0:	da f5 19 00       	jp c,0x19f5
+			19b1: r_imm24	.text+0x19f5
+    19b4:	dd 2f fc          	ld (ix-4),hl
+    19b7:	dd 77 ff          	ld (ix-1),a
+    19ba:	7a                	ld a,d
+    19bb:	fe 01             	cp a,0x01
+    19bd:	c2 ec 19 00       	jp nz,0x19ec
+			19be: r_imm24	.text+0x19ec
+    19c1:	dd 27 fc          	ld hl,(ix-4)
+    19c4:	cd 00 00 00       	call 0x0000
+			19c5: r_imm24	__lcmpzero
+    19c8:	16 01             	ld d,0x01
+    19ca:	fd 2e 00          	ld iyl,0x00
+    19cd:	7a                	ld a,d
+    19ce:	20 02             	jr nz,0x19d2
+    19d0:	fd 7d             	ld a,iyl
+    19d2:	c5                	push bc
+    19d3:	e1                	pop hl
+    19d4:	dd 5e ff          	ld e,(ix-1)
+    19d7:	cd 00 00 00       	call 0x0000
+			19d8: r_imm24	__lcmpzero
+    19db:	28 02             	jr z,0x19df
+    19dd:	fd 55             	ld d,iyl
+    19df:	cb 0f             	rrc a
+    19e1:	9f                	sbc a,a
+    19e2:	6f                	ld l,a
+    19e3:	cb 0a             	rrc d
+    19e5:	9f                	sbc a,a
+    19e6:	5f                	ld e,a
+    19e7:	7d                	ld a,l
+    19e8:	a3                	and a,e
+    19e9:	6f                	ld l,a
+    19ea:	18 0b             	jr 0x19f7
+    19ec:	fd 27 09          	ld hl,(iy+9)
+    19ef:	09                	add hl,bc
+    19f0:	b7                	or a,a
+    19f1:	ed 42             	sbc hl,bc
+    19f3:	20 08             	jr nz,0x19fd
+    19f5:	2e 00             	ld l,0x00
+    19f7:	7d                	ld a,l
+    19f8:	dd f9             	ld sp,ix
+    19fa:	dd e1             	pop ix
+    19fc:	c9                	ret
+    19fd:	7e                	ld a,(hl)
+    19fe:	b7                	or a,a
+    19ff:	2e 00             	ld l,0x00
+    1a01:	28 f4             	jr z,0x19f7
+    1a03:	7a                	ld a,d
+    1a04:	fe 02             	cp a,0x02
+    1a06:	20 0f             	jr nz,0x1a17
+    1a08:	c5                	push bc
+    1a09:	e1                	pop hl
+    1a0a:	dd 5e ff          	ld e,(ix-1)
+    1a0d:	cd 00 00 00       	call 0x0000
+			1a0e: r_imm24	__lcmpzero
+    1a11:	28 e2             	jr z,0x19f5
+    1a13:	2e ff             	ld l,0xff
+    1a15:	18 e0             	jr 0x19f7
+    1a17:	7a                	ld a,d
+    1a18:	c6 fd             	add a,0xfd
+    1a1a:	fe 04             	cp a,0x04
+    1a1c:	30 15             	jr nc,0x1a33
+    1a1e:	dd 27 fc          	ld hl,(ix-4)
+    1a21:	cd 00 00 00       	call 0x0000
+			1a22: r_imm24	__lcmpzero
+    1a25:	16 01             	ld d,0x01
+    1a27:	fd 2e 00          	ld iyl,0x00
+    1a2a:	7a                	ld a,d
+    1a2b:	c2 d0 19 00       	jp nz,0x19d0
+			1a2c: r_imm24	.text+0x19d0
+    1a2f:	c3 d2 19 00       	jp 0x19d2
+			1a30: r_imm24	.text+0x19d2
+    1a33:	2e 01             	ld l,0x01
+    1a35:	18 c0             	jr 0x19f7
+
+00001a37 <__ZN5suite17RecordedLifecycle5startEPvRKNS_4CaseE>:
+    1a37:	21 f5 fb ff       	ld hl,0xfffbf5
+    1a3b:	cd 00 00 00       	call 0x0000
+			1a3c: r_imm24	__frameset
+    1a3f:	01 f8 fb ff       	ld bc,0xfffbf8
+    1a43:	ed 22 00          	lea hl,ix+0
+    1a46:	09                	add hl,bc
+    1a47:	e5                	push hl
+    1a48:	fd e1             	pop iy
+    1a4a:	ed 13 00          	lea de,iy+0
+    1a4d:	fd 36 00 00       	ld (iy+0),0x00
+    1a51:	d5                	push de
+    1a52:	e1                	pop hl
+    1a53:	01 f5 fb ff       	ld bc,0xfffbf5
+    1a57:	ed 55 00          	lea iy,ix+0
+    1a5a:	fd 09             	add iy,bc
+    1a5c:	fd 2f 00          	ld (iy+0),hl
+    1a5f:	13                	inc de
+    1a60:	01 01 04 00       	ld bc,0x0401
+    1a64:	ed b0             	ldir
+    1a66:	dd 27 06          	ld hl,(ix+6)
+    1a69:	e5                	push hl
+    1a6a:	fd e1             	pop iy
+    1a6c:	b7                	or a,a
+    1a6d:	ed 62             	sbc hl,hl
+    1a6f:	fd 2f 0f          	ld (iy+15),hl
+    1a72:	ed 23 00          	lea hl,iy+0
+    1a75:	eb                	ex de,hl
+    1a76:	d5                	push de
+    1a77:	fd e1             	pop iy
+    1a79:	fd 36 12 00       	ld (iy+18),0x00
+    1a7d:	fd 27 06          	ld hl,(iy+6)
+    1a80:	fd 17 03          	ld de,(iy+3)
+    1a83:	dd 1f fd          	ld (ix-3),de
+    1a86:	11 f5 fb ff       	ld de,0xfffbf5
+    1a8a:	ed 55 00          	lea iy,ix+0
+    1a8d:	fd 19             	add iy,de
+    1a8f:	fd 07 00          	ld bc,(iy+0)
+    1a92:	c5                	push bc
+    1a93:	dd 07 09          	ld bc,(ix+9)
+    1a96:	c5                	push bc
+    1a97:	dd 17 fd          	ld de,(ix-3)
+    1a9a:	d5                	push de
+    1a9b:	cd 00 00 00       	call 0x0000
+			1a9c: r_imm24	__indcallhl
+    1a9f:	e1                	pop hl
+    1aa0:	e1                	pop hl
+    1aa1:	e1                	pop hl
+    1aa2:	cb 47             	bit 0,a
+    1aa4:	3e 00             	ld a,0x00
+    1aa6:	28 30             	jr z,0x1ad8
+    1aa8:	dd 27 06          	ld hl,(ix+6)
+    1aab:	ed 27             	ld hl,(hl)
+    1aad:	dd 17 09          	ld de,(ix+9)
+    1ab0:	d5                	push de
+    1ab1:	fd e1             	pop iy
+    1ab3:	fd 17 00          	ld de,(iy+0)
+    1ab6:	fd 7e 03          	ld a,(iy+3)
+    1ab9:	dd 1f fd          	ld (ix-3),de
+    1abc:	11 f5 fb ff       	ld de,0xfffbf5
+    1ac0:	ed 55 00          	lea iy,ix+0
+    1ac3:	fd 19             	add iy,de
+    1ac5:	fd 07 00          	ld bc,(iy+0)
+    1ac8:	c5                	push bc
+    1ac9:	4f                	ld c,a
+    1aca:	c5                	push bc
+    1acb:	dd 17 fd          	ld de,(ix-3)
+    1ace:	d5                	push de
+    1acf:	e5                	push hl
+    1ad0:	cd 00 00 00       	call 0x0000
+			1ad1: r_imm24	__ZN5suite8Recorder10start_caseEmRKNS_4wire7PayloadE
+    1ad4:	e1                	pop hl
+    1ad5:	e1                	pop hl
+    1ad6:	e1                	pop hl
+    1ad7:	e1                	pop hl
+    1ad8:	dd f9             	ld sp,ix
+    1ada:	dd e1             	pop ix
+    1adc:	c9                	ret
+
+00001add <__ZN5suite17RecordedLifecycle7executeEPvRKNS_4CaseE>:
+    1add:	21 fa ff ff       	ld hl,0xfffffa
+    1ae1:	cd 00 00 00       	call 0x0000
+			1ae2: r_imm24	__frameset
+    1ae5:	dd 27 06          	ld hl,(ix+6)
+    1ae8:	dd 2f fd          	ld (ix-3),hl
+    1aeb:	dd 31 09          	ld iy,(ix+9)
+    1aee:	dd 27 0c          	ld hl,(ix+12)
+    1af1:	dd 2f fa          	ld (ix-6),hl
+    1af4:	fd 17 09          	ld de,(iy+9)
+    1af7:	fd 27 03          	ld hl,(iy+3)
+    1afa:	dd 07 fd          	ld bc,(ix-3)
+    1afd:	dd 0f 06          	ld (ix+6),bc
+    1b00:	dd 2f 09          	ld (ix+9),hl
+    1b03:	dd 27 fa          	ld hl,(ix-6)
+    1b06:	dd 2f 0c          	ld (ix+12),hl
+    1b09:	eb                	ex de,hl
+    1b0a:	dd f9             	ld sp,ix
+    1b0c:	dd e1             	pop ix
+    1b0e:	e9                	jp (hl)
+
+00001b0f <__ZN5suite17RecordedLifecycle6finishEPvRKNS_4CaseERKNS_6ResultE>:
+    1b0f:	21 ee fb ff       	ld hl,0xfffbee
+    1b13:	cd 00 00 00       	call 0x0000
+			1b14: r_imm24	__frameset
+    1b17:	01 f8 fb ff       	ld bc,0xfffbf8
+    1b1b:	ed 55 00          	lea iy,ix+0
+    1b1e:	fd 09             	add iy,bc
+    1b20:	ed 23 00          	lea hl,iy+0
+    1b23:	fd 36 00 00       	ld (iy+0),0x00
+    1b27:	e5                	push hl
+    1b28:	d1                	pop de
+    1b29:	13                	inc de
+    1b2a:	01 01 04 00       	ld bc,0x0401
+    1b2e:	dd 0f fd          	ld (ix-3),bc
+    1b31:	01 f5 fb ff       	ld bc,0xfffbf5
+    1b35:	ed 55 00          	lea iy,ix+0
+    1b38:	fd 09             	add iy,bc
+    1b3a:	fd 2f 00          	ld (iy+0),hl
+    1b3d:	dd 07 fd          	ld bc,(ix-3)
+    1b40:	ed b0             	ldir
+    1b42:	dd 31 0c          	ld iy,(ix+12)
+    1b45:	fd 7e 00          	ld a,(iy+0)
+    1b48:	11 f4 fb ff       	ld de,0xfffbf4
+    1b4c:	ed 22 00          	lea hl,ix+0
+    1b4f:	19                	add hl,de
+    1b50:	77                	ld (hl),a
+    1b51:	fd 27 01          	ld hl,(iy+1)
+    1b54:	dd e5             	push ix
+    1b56:	11 f1 fb ff       	ld de,0xfffbf1
+    1b5a:	dd 19             	add ix,de
+    1b5c:	dd 2f 00          	ld (ix+0),hl
+    1b5f:	dd e1             	pop ix
+    1b61:	fd 4e 04          	ld c,(iy+4)
+    1b64:	fd 27 05          	ld hl,(iy+5)
+    1b67:	dd e5             	push ix
+    1b69:	11 ee fb ff       	ld de,0xfffbee
+    1b6d:	dd 19             	add ix,de
+    1b6f:	dd 2f 00          	ld (ix+0),hl
+    1b72:	dd e1             	pop ix
+    1b74:	fd 46 08          	ld b,(iy+8)
+    1b77:	ed 23 00          	lea hl,iy+0
+    1b7a:	dd 31 06          	ld iy,(ix+6)
+    1b7d:	fd 17 0f          	ld de,(iy+15)
+    1b80:	fd 7e 12          	ld a,(iy+18)
+    1b83:	e5                	push hl
+    1b84:	fd e1             	pop iy
+    1b86:	fd 27 09          	ld hl,(iy+9)
+    1b89:	09                	add hl,bc
+    1b8a:	b7                	or a,a
+    1b8b:	ed 42             	sbc hl,bc
+    1b8d:	20 04             	jr nz,0x1b93
+    1b8f:	21 1e 00 00       	ld hl,0x001e
+			1b90: r_imm24	.rodata+0x1e
+    1b93:	e5                	push hl
+    1b94:	6f                	ld l,a
+    1b95:	e5                	push hl
+    1b96:	d5                	push de
+    1b97:	68                	ld l,b
+    1b98:	e5                	push hl
+    1b99:	11 ee fb ff       	ld de,0xfffbee
+    1b9d:	ed 22 00          	lea hl,ix+0
+    1ba0:	19                	add hl,de
+    1ba1:	ed 27             	ld hl,(hl)
+    1ba3:	e5                	push hl
+    1ba4:	69                	ld l,c
+    1ba5:	e5                	push hl
+    1ba6:	01 f1 fb ff       	ld bc,0xfffbf1
+    1baa:	ed 22 00          	lea hl,ix+0
+    1bad:	09                	add hl,bc
+    1bae:	ed 27             	ld hl,(hl)
+    1bb0:	e5                	push hl
+    1bb1:	01 f4 fb ff       	ld bc,0xfffbf4
+    1bb5:	ed 22 00          	lea hl,ix+0
+    1bb8:	09                	add hl,bc
+    1bb9:	6e                	ld l,(hl)
+    1bba:	e5                	push hl
+    1bbb:	03                	inc bc
+    1bbc:	ed 22 00          	lea hl,ix+0
+    1bbf:	09                	add hl,bc
+    1bc0:	ed 27             	ld hl,(hl)
+    1bc2:	e5                	push hl
+    1bc3:	cd 00 00 00       	call 0x0000
+			1bc4: r_imm24	__ZN5suite4wire7Payload8case_endEhmmmPKc
+    1bc7:	21 1b 00 00       	ld hl,0x001b
+    1bcb:	39                	add hl,sp
+    1bcc:	f9                	ld sp,hl
+    1bcd:	cb 47             	bit 0,a
+    1bcf:	3e 00             	ld a,0x00
+    1bd1:	28 19             	jr z,0x1bec
+    1bd3:	dd 27 06          	ld hl,(ix+6)
+    1bd6:	ed 27             	ld hl,(hl)
+    1bd8:	01 f5 fb ff       	ld bc,0xfffbf5
+    1bdc:	ed 55 00          	lea iy,ix+0
+    1bdf:	fd 09             	add iy,bc
+    1be1:	fd 17 00          	ld de,(iy+0)
+    1be4:	d5                	push de
+    1be5:	e5                	push hl
+    1be6:	cd 00 00 00       	call 0x0000
+			1be7: r_imm24	__ZN5suite8Recorder11finish_caseERKNS_4wire7PayloadE
+    1bea:	e1                	pop hl
+    1beb:	e1                	pop hl
+    1bec:	dd f9             	ld sp,ix
+    1bee:	dd e1             	pop ix
+    1bf0:	c9                	ret
+
+00001bf1 <__ZN5suite17RecordedLifecycle7cleanupEPvRKNS_4CaseE>:
+    1bf1:	cd 00 00 00       	call 0x0000
+			1bf2: r_imm24	__frameset0
+    1bf5:	dd 31 06          	ld iy,(ix+6)
+    1bf8:	dd 27 09          	ld hl,(ix+9)
+    1bfb:	fd 07 0c          	ld bc,(iy+12)
+    1bfe:	fd 17 03          	ld de,(iy+3)
+    1c01:	dd 1f 06          	ld (ix+6),de
+    1c04:	dd 2f 09          	ld (ix+9),hl
+    1c07:	c5                	push bc
+    1c08:	e1                	pop hl
+    1c09:	dd e1             	pop ix
+    1c0b:	e9                	jp (hl)
+
+00001c0c <__ZN5suite8Recorder10start_caseEmRKNS_4wire7PayloadE>:
+    1c0c:	21 fd ff ff       	ld hl,0xfffffd
+    1c10:	cd 00 00 00       	call 0x0000
+			1c11: r_imm24	__frameset
+    1c14:	dd 31 06          	ld iy,(ix+6)
+    1c17:	0e 00             	ld c,0x00
+    1c19:	fd cb 73 46       	bit 0,(iy+115)
+    1c1d:	20 56             	jr nz,0x1c75
+    1c1f:	fd 7e 71          	ld a,(iy+113)
+    1c22:	fe 06             	cp a,0x06
+    1c24:	28 4f             	jr z,0x1c75
+    1c26:	dd 27 09          	ld hl,(ix+9)
+    1c29:	dd 7e 0c          	ld a,(ix+12)
+    1c2c:	fd 17 6b          	ld de,(iy+107)
+    1c2f:	dd 1f fd          	ld (ix-3),de
+    1c32:	fd 56 6e          	ld d,(iy+110)
+    1c35:	5f                	ld e,a
+    1c36:	cd 00 00 00       	call 0x0000
+			1c37: r_imm24	__lcmpzero
+    1c3a:	28 39             	jr z,0x1c75
+    1c3c:	dd 27 fd          	ld hl,(ix-3)
+    1c3f:	5a                	ld e,d
+    1c40:	cd 00 00 00       	call 0x0000
+			1c41: r_imm24	__lcmpzero
+    1c44:	20 2f             	jr nz,0x1c75
+    1c46:	dd 27 0f          	ld hl,(ix+15)
+    1c49:	dd 17 09          	ld de,(ix+9)
+    1c4c:	fd 1f 6b          	ld (iy+107),de
+    1c4f:	fd 77 6e          	ld (iy+110),a
+    1c52:	fd 36 71 02       	ld (iy+113),0x02
+    1c56:	e5                	push hl
+    1c57:	21 02 00 00       	ld hl,0x0002
+    1c5b:	e5                	push hl
+    1c5c:	fd e5             	push iy
+    1c5e:	cd 00 00 00       	call 0x0000
+			1c5f: r_imm24	__ZN5suite8Recorder6appendEhRKNS_4wire7PayloadE
+    1c62:	0e 00             	ld c,0x00
+    1c64:	e1                	pop hl
+    1c65:	e1                	pop hl
+    1c66:	e1                	pop hl
+    1c67:	cb 47             	bit 0,a
+    1c69:	28 0a             	jr z,0x1c75
+    1c6b:	dd 27 06          	ld hl,(ix+6)
+    1c6e:	e5                	push hl
+    1c6f:	cd 00 00 00       	call 0x0000
+			1c70: r_imm24	__ZN5suite8Recorder10checkpointEv
+    1c73:	4f                	ld c,a
+    1c74:	e1                	pop hl
+    1c75:	79                	ld a,c
+    1c76:	e1                	pop hl
+    1c77:	dd e1             	pop ix
+    1c79:	c9                	ret
+
+00001c7a <__ZN5suite4wire7Payload8case_endEhmmmPKc>:
+    1c7a:	21 f9 ff ff       	ld hl,0xfffff9
+    1c7e:	cd 00 00 00       	call 0x0000
+			1c7f: r_imm24	__frameset
+    1c82:	dd 27 1e          	ld hl,(ix+30)
+    1c85:	af                	xor a,a
+    1c86:	dd 77 ff          	ld (ix-1),a
+    1c89:	e5                	push hl
+    1c8a:	cd 00 00 00       	call 0x0000
+			1c8b: r_imm24	_strlen
+    1c8e:	e5                	push hl
+    1c8f:	c1                	pop bc
+    1c90:	e1                	pop hl
+    1c91:	11 ed 03 00       	ld de,0x03ed
+    1c95:	c5                	push bc
+    1c96:	e1                	pop hl
+    1c97:	b7                	or a,a
+    1c98:	ed 52             	sbc hl,de
+    1c9a:	30 35             	jr nc,0x1cd1
+    1c9c:	dd 0f fc          	ld (ix-4),bc
+    1c9f:	c5                	push bc
+    1ca0:	dd 27 1e          	ld hl,(ix+30)
+    1ca3:	e5                	push hl
+    1ca4:	cd 00 00 00       	call 0x0000
+			1ca5: r_imm24	__ZN5suite4wire4utf8EPKcj
+    1ca8:	fd 6f             	ld iyl,a
+    1caa:	e1                	pop hl
+    1cab:	e1                	pop hl
+    1cac:	dd 7e 09          	ld a,(ix+9)
+    1caf:	c6 f7             	add a,0xf7
+    1cb1:	57                	ld d,a
+    1cb2:	dd 27 0c          	ld hl,(ix+12)
+    1cb5:	dd 5e 0f          	ld e,(ix+15)
+    1cb8:	dd 07 12          	ld bc,(ix+18)
+    1cbb:	dd 7e 15          	ld a,(ix+21)
+    1cbe:	cd 00 00 00       	call 0x0000
+			1cbf: r_imm24	__lcmpu
+    1cc2:	38 0d             	jr c,0x1cd1
+    1cc4:	7a                	ld a,d
+    1cc5:	fe f8             	cp a,0xf8
+    1cc7:	38 08             	jr c,0x1cd1
+    1cc9:	fd 7d             	ld a,iyl
+    1ccb:	cb 47             	bit 0,a
+    1ccd:	c2 d9 1c 00       	jp nz,0x1cd9
+			1cce: r_imm24	.text+0x1cd9
+    1cd1:	dd 7e ff          	ld a,(ix-1)
+    1cd4:	dd f9             	ld sp,ix
+    1cd6:	dd e1             	pop ix
+    1cd8:	c9                	ret
+    1cd9:	dd 7e 09          	ld a,(ix+9)
+    1cdc:	fe 01             	cp a,0x01
+    1cde:	20 29             	jr nz,0x1d09
+    1ce0:	dd 27 0c          	ld hl,(ix+12)
+    1ce3:	dd 5e 0f          	ld e,(ix+15)
+    1ce6:	cd 00 00 00       	call 0x0000
+			1ce7: r_imm24	__lcmpzero
+    1cea:	ca d1 1c 00       	jp z,0x1cd1
+			1ceb: r_imm24	.text+0x1cd1
+    1cee:	dd 27 12          	ld hl,(ix+18)
+    1cf1:	dd 5e 15          	ld e,(ix+21)
+    1cf4:	cd 00 00 00       	call 0x0000
+			1cf5: r_imm24	__lcmpzero
+    1cf8:	c2 d1 1c 00       	jp nz,0x1cd1
+			1cf9: r_imm24	.text+0x1cd1
+    1cfc:	dd 27 fc          	ld hl,(ix-4)
+    1cff:	09                	add hl,bc
+    1d00:	b7                	or a,a
+    1d01:	ed 42             	sbc hl,bc
+    1d03:	c2 d1 1c 00       	jp nz,0x1cd1
+			1d04: r_imm24	.text+0x1cd1
+    1d07:	18 50             	jr 0x1d59
+    1d09:	dd 27 fc          	ld hl,(ix-4)
+    1d0c:	09                	add hl,bc
+    1d0d:	b7                	or a,a
+    1d0e:	ed 42             	sbc hl,bc
+    1d10:	ca d1 1c 00       	jp z,0x1cd1
+			1d11: r_imm24	.text+0x1cd1
+    1d14:	dd 7e 09          	ld a,(ix+9)
+    1d17:	fe 02             	cp a,0x02
+    1d19:	dd 27 12          	ld hl,(ix+18)
+    1d1c:	dd 5e 15          	ld e,(ix+21)
+    1d1f:	20 08             	jr nz,0x1d29
+    1d21:	cd 00 00 00       	call 0x0000
+			1d22: r_imm24	__lcmpzero
+    1d25:	ca d1 1c 00       	jp z,0x1cd1
+			1d26: r_imm24	.text+0x1cd1
+    1d29:	dd 7e 09          	ld a,(ix+9)
+    1d2c:	c6 fd             	add a,0xfd
+    1d2e:	fe 04             	cp a,0x04
+    1d30:	30 27             	jr nc,0x1d59
+    1d32:	dd 07 0c          	ld bc,(ix+12)
+    1d35:	dd 7e 0f          	ld a,(ix+15)
+    1d38:	cd 00 00 00       	call 0x0000
+			1d39: r_imm24	__lor
+    1d3c:	cd 00 00 00       	call 0x0000
+			1d3d: r_imm24	__lcmpzero
+    1d40:	c2 d1 1c 00       	jp nz,0x1cd1
+			1d41: r_imm24	.text+0x1cd1
+    1d44:	dd 7e 09          	ld a,(ix+9)
+    1d47:	fe 04             	cp a,0x04
+    1d49:	38 0e             	jr c,0x1d59
+    1d4b:	dd 27 18          	ld hl,(ix+24)
+    1d4e:	dd 5e 1b          	ld e,(ix+27)
+    1d51:	cd 00 00 00       	call 0x0000
+			1d52: r_imm24	__lcmpzero
+    1d55:	c2 d1 1c 00       	jp nz,0x1cd1
+			1d56: r_imm24	.text+0x1cd1
+    1d59:	dd 31 06          	ld iy,(ix+6)
+    1d5c:	3e 01             	ld a,0x01
+    1d5e:	dd 77 ff          	ld (ix-1),a
+    1d61:	40 11 14 00       	ld.sis de,0x0014
+    1d65:	dd 27 fc          	ld hl,(ix-4)
+    1d68:	40 19             	add.sis hl,de
+    1d6a:	dd 2f f9          	ld (ix-7),hl
+    1d6d:	ed 23 03          	lea hl,iy+3
+    1d70:	fd 72 03          	ld (iy+3),d
+    1d73:	e5                	push hl
+    1d74:	d1                	pop de
+    1d75:	13                	inc de
+    1d76:	01 fc 03 00       	ld bc,0x03fc
+    1d7a:	ed b0             	ldir
+    1d7c:	01 00 04 00       	ld bc,0x0400
+    1d80:	ed 13 00          	lea de,iy+0
+    1d83:	fd 09             	add iy,bc
+    1d85:	dd 27 f9          	ld hl,(ix-7)
+    1d88:	fd 75 00          	ld (iy+0),l
+    1d8b:	fd 74 01          	ld (iy+1),h
+    1d8e:	d5                	push de
+    1d8f:	fd e1             	pop iy
+    1d91:	fd 77 00          	ld (iy+0),a
+    1d94:	fd 71 01          	ld (iy+1),c
+    1d97:	dd 7e 09          	ld a,(ix+9)
+    1d9a:	fd 77 02          	ld (iy+2),a
+    1d9d:	dd 17 0c          	ld de,(ix+12)
+    1da0:	7b                	ld a,e
+    1da1:	fd 77 04          	ld (iy+4),a
+    1da4:	7a                	ld a,d
+    1da5:	fd 77 05          	ld (iy+5),a
+    1da8:	2e 10             	ld l,0x10
+    1daa:	d5                	push de
+    1dab:	c1                	pop bc
+    1dac:	dd 66 0f          	ld h,(ix+15)
+    1daf:	7c                	ld a,h
+    1db0:	cd 00 00 00       	call 0x0000
+			1db1: r_imm24	__lshru
+    1db4:	79                	ld a,c
+    1db5:	fd 77 06          	ld (iy+6),a
+    1db8:	2e 18             	ld l,0x18
+    1dba:	d5                	push de
+    1dbb:	c1                	pop bc
+    1dbc:	7c                	ld a,h
+    1dbd:	65                	ld h,l
+    1dbe:	cd 00 00 00       	call 0x0000
+			1dbf: r_imm24	__lshru
+    1dc2:	79                	ld a,c
+    1dc3:	fd 77 07          	ld (iy+7),a
+    1dc6:	dd 07 12          	ld bc,(ix+18)
+    1dc9:	79                	ld a,c
+    1dca:	fd 77 08          	ld (iy+8),a
+    1dcd:	78                	ld a,b
+    1dce:	fd 77 09          	ld (iy+9),a
+    1dd1:	dd 5e 15          	ld e,(ix+21)
+    1dd4:	7b                	ld a,e
+    1dd5:	2e 10             	ld l,0x10
+    1dd7:	cd 00 00 00       	call 0x0000
+			1dd8: r_imm24	__lshru
+    1ddb:	79                	ld a,c
+    1ddc:	dd 31 06          	ld iy,(ix+6)
+    1ddf:	fd 77 0a          	ld (iy+10),a
+    1de2:	dd 07 12          	ld bc,(ix+18)
+    1de5:	7b                	ld a,e
+    1de6:	6c                	ld l,h
+    1de7:	cd 00 00 00       	call 0x0000
+			1de8: r_imm24	__lshru
+    1deb:	79                	ld a,c
+    1dec:	dd 31 06          	ld iy,(ix+6)
+    1def:	fd 77 0b          	ld (iy+11),a
+    1df2:	dd 17 18          	ld de,(ix+24)
+    1df5:	7b                	ld a,e
+    1df6:	fd 77 0c          	ld (iy+12),a
+    1df9:	7a                	ld a,d
+    1dfa:	fd 77 0d          	ld (iy+13),a
+    1dfd:	d5                	push de
+    1dfe:	c1                	pop bc
+    1dff:	dd 66 1b          	ld h,(ix+27)
+    1e02:	7c                	ld a,h
+    1e03:	2e 10             	ld l,0x10
+    1e05:	cd 00 00 00       	call 0x0000
+			1e06: r_imm24	__lshru
+    1e09:	79                	ld a,c
+    1e0a:	dd 31 06          	ld iy,(ix+6)
+    1e0d:	fd 77 0e          	ld (iy+14),a
+    1e10:	d5                	push de
+    1e11:	c1                	pop bc
+    1e12:	7c                	ld a,h
+    1e13:	2e 18             	ld l,0x18
+    1e15:	cd 00 00 00       	call 0x0000
+			1e16: r_imm24	__lshru
+    1e19:	79                	ld a,c
+    1e1a:	dd 31 06          	ld iy,(ix+6)
+    1e1d:	fd 77 0f          	ld (iy+15),a
+    1e20:	dd 27 fc          	ld hl,(ix-4)
+    1e23:	7d                	ld a,l
+    1e24:	fd 77 10          	ld (iy+16),a
+    1e27:	7c                	ld a,h
+    1e28:	fd 77 11          	ld (iy+17),a
+    1e2b:	e5                	push hl
+    1e2c:	dd 27 1e          	ld hl,(ix+30)
+    1e2f:	e5                	push hl
+    1e30:	ed 66 14          	pea iy+20
+    1e33:	cd 00 00 00       	call 0x0000
+			1e34: r_imm24	_memcpy
+    1e37:	e1                	pop hl
+    1e38:	e1                	pop hl
+    1e39:	e1                	pop hl
+    1e3a:	c3 d1 1c 00       	jp 0x1cd1
+			1e3b: r_imm24	.text+0x1cd1
+
+00001e3e <__ZN5suite8Recorder11finish_caseERKNS_4wire7PayloadE>:
+    1e3e:	cd 00 00 00       	call 0x0000
+			1e3f: r_imm24	__frameset0
+    1e42:	dd 31 06          	ld iy,(ix+6)
+    1e45:	af                	xor a,a
+    1e46:	fd cb 73 46       	bit 0,(iy+115)
+    1e4a:	20 4b             	jr nz,0x1e97
+    1e4c:	fd 27 6b          	ld hl,(iy+107)
+    1e4f:	fd 5e 6e          	ld e,(iy+110)
+    1e52:	cd 00 00 00       	call 0x0000
+			1e53: r_imm24	__lcmpzero
+    1e56:	28 3f             	jr z,0x1e97
+    1e58:	dd 27 09          	ld hl,(ix+9)
+    1e5b:	e5                	push hl
+    1e5c:	21 04 00 00       	ld hl,0x0004
+    1e60:	e5                	push hl
+    1e61:	fd e5             	push iy
+    1e63:	cd 00 00 00       	call 0x0000
+			1e64: r_imm24	__ZN5suite8Recorder6appendEhRKNS_4wire7PayloadE
+    1e67:	e1                	pop hl
+    1e68:	e1                	pop hl
+    1e69:	e1                	pop hl
+    1e6a:	cb 47             	bit 0,a
+    1e6c:	28 28             	jr z,0x1e96
+    1e6e:	dd 27 06          	ld hl,(ix+6)
+    1e71:	e5                	push hl
+    1e72:	cd 00 00 00       	call 0x0000
+			1e73: r_imm24	__ZN5suite8Recorder10checkpointEv
+    1e76:	e1                	pop hl
+    1e77:	cb 47             	bit 0,a
+    1e79:	3e 00             	ld a,0x00
+    1e7b:	28 1a             	jr z,0x1e97
+    1e7d:	dd 31 06          	ld iy,(ix+6)
+    1e80:	b7                	or a,a
+    1e81:	ed 62             	sbc hl,hl
+    1e83:	fd 2f 6b          	ld (iy+107),hl
+    1e86:	fd 74 6e          	ld (iy+110),h
+    1e89:	fd 36 71 01       	ld (iy+113),0x01
+    1e8d:	fd e5             	push iy
+    1e8f:	cd 00 00 00       	call 0x0000
+			1e90: r_imm24	__ZN5suite8Recorder7publishEv
+    1e93:	e1                	pop hl
+    1e94:	18 01             	jr 0x1e97
+    1e96:	af                	xor a,a
+    1e97:	dd e1             	pop ix
+    1e99:	c9                	ret
+
+00001e9a <__ZN5suite4wire4utf8EPKcj>:
+    1e9a:	21 f6 ff ff       	ld hl,0xfffff6
+    1e9e:	cd 00 00 00       	call 0x0000
+			1e9f: r_imm24	__frameset
+    1ea2:	dd 31 06          	ld iy,(ix+6)
+    1ea5:	01 00 00 00       	ld bc,0x0000
+    1ea9:	c5                	push bc
+    1eaa:	d1                	pop de
+    1eab:	d5                	push de
+    1eac:	e1                	pop hl
+    1ead:	dd 07 09          	ld bc,(ix+9)
+    1eb0:	b7                	or a,a
+    1eb1:	ed 42             	sbc hl,bc
+    1eb3:	d2 91 1f 00       	jp nc,0x1f91
+			1eb4: r_imm24	.text+0x1f91
+    1eb7:	d5                	push de
+    1eb8:	c1                	pop bc
+    1eb9:	13                	inc de
+    1eba:	ed 23 00          	lea hl,iy+0
+    1ebd:	dd 0f fd          	ld (ix-3),bc
+    1ec0:	09                	add hl,bc
+    1ec1:	d5                	push de
+    1ec2:	c1                	pop bc
+    1ec3:	dd 2f fa          	ld (ix-6),hl
+    1ec6:	5e                	ld e,(hl)
+    1ec7:	7b                	ld a,e
+    1ec8:	fe 00             	cp a,0x00
+    1eca:	ec 00 00 00       	call pe,0x0000
+			1ecb: r_imm24	__setflag
+    1ece:	f2 a9 1e 00       	jp p,0x1ea9
+			1ecf: r_imm24	.text+0x1ea9
+    1ed2:	dd 0f f7          	ld (ix-9),bc
+    1ed5:	dd 31 09          	ld iy,(ix+9)
+    1ed8:	7b                	ld a,e
+    1ed9:	c6 3e             	add a,0x3e
+    1edb:	fe 1e             	cp a,0x1e
+    1edd:	21 01 00 00       	ld hl,0x0001
+    1ee1:	e5                	push hl
+    1ee2:	c1                	pop bc
+    1ee3:	38 1f             	jr c,0x1f04
+    1ee5:	7b                	ld a,e
+    1ee6:	e6 f0             	and a,0xf0
+    1ee8:	fe e0             	cp a,0xe0
+    1eea:	21 02 00 00       	ld hl,0x0002
+    1eee:	e5                	push hl
+    1eef:	c1                	pop bc
+    1ef0:	28 12             	jr z,0x1f04
+    1ef2:	7b                	ld a,e
+    1ef3:	c6 10             	add a,0x10
+    1ef5:	fe 05             	cp a,0x05
+    1ef7:	21 03 00 00       	ld hl,0x0003
+    1efb:	e5                	push hl
+    1efc:	c1                	pop bc
+    1efd:	38 05             	jr c,0x1f04
+    1eff:	b7                	or a,a
+    1f00:	ed 62             	sbc hl,hl
+    1f02:	e5                	push hl
+    1f03:	c1                	pop bc
+    1f04:	dd 73 f6          	ld (ix-10),e
+    1f07:	ed 23 00          	lea hl,iy+0
+    1f0a:	dd 17 f7          	ld de,(ix-9)
+    1f0d:	b7                	or a,a
+    1f0e:	ed 52             	sbc hl,de
+    1f10:	dd 0f f7          	ld (ix-9),bc
+    1f13:	79                	ld a,c
+    1f14:	ed 03 00          	lea bc,iy+0
+    1f17:	b7                	or a,a
+    1f18:	dd 17 fd          	ld de,(ix-3)
+    1f1b:	28 74             	jr z,0x1f91
+    1f1d:	dd 07 f7          	ld bc,(ix-9)
+    1f20:	b7                	or a,a
+    1f21:	ed 42             	sbc hl,bc
+    1f23:	dd 07 09          	ld bc,(ix+9)
+    1f26:	38 69             	jr c,0x1f91
+    1f28:	dd 31 fa          	ld iy,(ix-6)
+    1f2b:	fd 6e 01          	ld l,(iy+1)
+    1f2e:	dd 31 06          	ld iy,(ix+6)
+    1f31:	dd 7e f6          	ld a,(ix-10)
+    1f34:	fe e0             	cp a,0xe0
+    1f36:	20 05             	jr nz,0x1f3d
+    1f38:	7d                	ld a,l
+    1f39:	fe a0             	cp a,0xa0
+    1f3b:	38 54             	jr c,0x1f91
+    1f3d:	dd 7e f6          	ld a,(ix-10)
+    1f40:	fe ed             	cp a,0xed
+    1f42:	20 05             	jr nz,0x1f49
+    1f44:	7d                	ld a,l
+    1f45:	fe a0             	cp a,0xa0
+    1f47:	30 48             	jr nc,0x1f91
+    1f49:	dd 7e f6          	ld a,(ix-10)
+    1f4c:	fe f0             	cp a,0xf0
+    1f4e:	20 05             	jr nz,0x1f55
+    1f50:	7d                	ld a,l
+    1f51:	fe 90             	cp a,0x90
+    1f53:	38 3c             	jr c,0x1f91
+    1f55:	dd 7e f6          	ld a,(ix-10)
+    1f58:	fe f4             	cp a,0xf4
+    1f5a:	20 05             	jr nz,0x1f61
+    1f5c:	7d                	ld a,l
+    1f5d:	fe 90             	cp a,0x90
+    1f5f:	30 30             	jr nc,0x1f91
+    1f61:	dd 07 f7          	ld bc,(ix-9)
+    1f64:	c5                	push bc
+    1f65:	e1                	pop hl
+    1f66:	23                	inc hl
+    1f67:	19                	add hl,de
+    1f68:	dd 2f fa          	ld (ix-6),hl
+    1f6b:	fd 19             	add iy,de
+    1f6d:	c5                	push bc
+    1f6e:	e1                	pop hl
+    1f6f:	fd 23             	inc iy
+    1f71:	09                	add hl,bc
+    1f72:	b7                	or a,a
+    1f73:	ed 42             	sbc hl,bc
+    1f75:	28 10             	jr z,0x1f87
+    1f77:	2b                	dec hl
+    1f78:	fd 7e 00          	ld a,(iy+0)
+    1f7b:	e6 c0             	and a,0xc0
+    1f7d:	fd 23             	inc iy
+    1f7f:	fe 80             	cp a,0x80
+    1f81:	28 ee             	jr z,0x1f71
+    1f83:	c3 9c 1f 00       	jp 0x1f9c
+			1f84: r_imm24	.text+0x1f9c
+    1f87:	dd 07 fa          	ld bc,(ix-6)
+    1f8a:	dd 31 06          	ld iy,(ix+6)
+    1f8d:	c3 a9 1e 00       	jp 0x1ea9
+			1f8e: r_imm24	.text+0x1ea9
+    1f91:	eb                	ex de,hl
+    1f92:	b7                	or a,a
+    1f93:	ed 42             	sbc hl,bc
+    1f95:	3f                	ccf
+    1f96:	9f                	sbc a,a
+    1f97:	dd f9             	ld sp,ix
+    1f99:	dd e1             	pop ix
+    1f9b:	c9                	ret
+    1f9c:	af                	xor a,a
+    1f9d:	18 f8             	jr 0x1f97

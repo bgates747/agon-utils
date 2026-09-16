@@ -1,0 +1,32 @@
+{
+  "backend": "Linux headless raw SD image",
+  "binary": "b8fa65a8c4a2973cccd6e5c5cc4b252d399f34cf19d9f82b3d563e7bee4bdf4c",
+  "map": "cac371159d090db23accfebed45add18f64a338480772504bd94c7d7b979e31b",
+  "symbols": {
+    "_recording_done": 262664,
+    "_recording_status": 272385
+  },
+  "compiler_sha256": "34670dda66966bc83b59bafe97bbe84fd7ca20ad15728eb3f3753097d22dc51d",
+  "sources": {
+    "apps/runner/include/capture.h": "5019699499e8d1950b6b1413139da336d446b8af334796d36bafa4dd8407d1a9",
+    "apps/runner/include/catalogue_generated.h": "ee36ed45e35b068654e05deec64d5a3025e13c4dee3bd6d57e03ca84ca69d884",
+    "apps/runner/include/lifecycle.h": "d9109154945713c04894c320cbeea2ac7e2515fb5cc6375a139cfef6bea2fab7",
+    "apps/runner/include/mos_storage.h": "c5fd76495879b6865e1025040c9d2c4326f899ad72dbb71eb0a98da11ada56cf",
+    "apps/runner/include/recorded_lifecycle.h": "0f473ecbc67c0470304bb4e5660abffcd6312f0b9089073a408d8cce221f271a",
+    "apps/runner/include/recording.h": "5459822601fea30c54829d0e78efac0af564af0f3124905ea2252a902c5d2f29",
+    "apps/runner/src/capture.asm": "fbc740169d0f699fc8751f1610fe6e6314b95f3d881130cbba71836c1294d231",
+    "apps/runner/src/storage.asm": "cd7d2995e6b95f276d2767574aac651d6c206a33b9ad612c42dfe884a5b2a2ef",
+    "apps/recording-controls/src/main.cpp": "035249b52b07958bb74aa93d87890a956e1506d3a750484625c1966a53881012",
+    "apps/recording-controls/src/probe.asm": "0c3b616fd0e3e387b6094687acb5cfe2fcfc60a5a4af690155d9d41f2d02c672"
+  },
+  "runtime": {
+    "fab-agon-emulator.bin": "a96ca0e6f5f51ba6b750bd6fcf96efcaed88e61c431171f79a7db5f29877f17e",
+    "firmware/mos_platform.bin": "d564243283972690933a4554296ad6202ca4ef54572279533a942960846bebae",
+    "firmware/mos_platform.map": "d69e60bbce61a7b4b3eef318ba395f11c4e1a5b585755755113992dc94edcb86",
+    "firmware/vdp_platform.so": "bc7a8a6a28e176c9679c96de4bda16010b765074ec8ba155fccde189c1051955"
+  },
+  "limits": [
+    "synthetic fixture hashes; not an authenticated general suite run",
+    "hardware untested"
+  ]
+}

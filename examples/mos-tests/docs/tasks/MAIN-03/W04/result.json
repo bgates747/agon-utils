@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "records": 8,
+  "captured_cases": 2,
+  "prior_result_preserved_on_collision": true,
+  "confirmed_sequence": 8,
+  "guards_intact": true,
+  "native": "PASSED: 191 interrupted emergency publications.\nPASSED: six frozen records and control slot; typed payloads/bounds; 22 failure controls; 873 interrupted SRAM publications.\n",
+  "limitations": [
+    "hardware untested",
+    "no power-loss durability claim",
+    "full decoder qualification continues in W05",
+    "synthetic fixture identity only"
+  ]
+}
