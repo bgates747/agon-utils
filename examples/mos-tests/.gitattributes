@@ -3,3 +3,6 @@
 *.sram binary
 *.raw.txt binary
 docs/tasks/**/debugger*.txt binary
+# Captured tool output retains original trailing spaces and line endings.
+docs/tasks/**/*.txt -text -whitespace
+docs/tasks/**/*.map -text -whitespace

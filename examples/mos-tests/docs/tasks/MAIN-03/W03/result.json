@@ -1,0 +1,690 @@
+{
+  "passed": true,
+  "controls": [
+    {
+      "control": {
+        "index": 0,
+        "seed": 0,
+        "name": "preserve",
+        "offset": null,
+        "xor": 0,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0302010605040908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 1,
+        "seed": 0,
+        "name": "BC0",
+        "offset": 2,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a8302010605040908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 2,
+        "seed": 0,
+        "name": "BC1",
+        "offset": 3,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0382010605040908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 3,
+        "seed": 0,
+        "name": "BC2",
+        "offset": 4,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0302810605040908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 4,
+        "seed": 0,
+        "name": "DE0",
+        "offset": 5,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0302018605040908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 5,
+        "seed": 0,
+        "name": "DE1",
+        "offset": 6,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0302010685040908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 6,
+        "seed": 0,
+        "name": "DE2",
+        "offset": 7,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0302010605840908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 7,
+        "seed": 0,
+        "name": "HL0",
+        "offset": 8,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0302010605048908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 8,
+        "seed": 0,
+        "name": "HL1",
+        "offset": 9,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0302010605040988070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 9,
+        "seed": 0,
+        "name": "HL2",
+        "offset": 10,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0302010605040908870c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 10,
+        "seed": 0,
+        "name": "IX0",
+        "offset": 11,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0302010605040908078c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 11,
+        "seed": 0,
+        "name": "IX1",
+        "offset": 12,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0302010605040908070c8b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 12,
+        "seed": 0,
+        "name": "IX2",
+        "offset": 13,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0302010605040908070c0b8a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 13,
+        "seed": 0,
+        "name": "IY0",
+        "offset": 14,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0302010605040908070c0b0a8f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 14,
+        "seed": 0,
+        "name": "IY1",
+        "offset": 15,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0302010605040908070c0b0a0f8e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 15,
+        "seed": 0,
+        "name": "IY2",
+        "offset": 16,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0302010605040908070c0b0a0f0e8deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 16,
+        "seed": 0,
+        "name": "A",
+        "offset": 1,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a5da0302010605040908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 17,
+        "seed": 0,
+        "name": "flag0",
+        "offset": 0,
+        "xor": 1,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a45a0302010605040908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 18,
+        "seed": 0,
+        "name": "flag1",
+        "offset": 0,
+        "xor": 2,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a75a0302010605040908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 19,
+        "seed": 0,
+        "name": "flag2",
+        "offset": 0,
+        "xor": 4,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a15a0302010605040908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 20,
+        "seed": 0,
+        "name": "flag3",
+        "offset": 0,
+        "xor": 8,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "ad5a0302010605040908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 21,
+        "seed": 0,
+        "name": "flag4",
+        "offset": 0,
+        "xor": 16,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "b55a0302010605040908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 22,
+        "seed": 0,
+        "name": "flag5",
+        "offset": 0,
+        "xor": 32,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "855a0302010605040908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 23,
+        "seed": 0,
+        "name": "flag6",
+        "offset": 0,
+        "xor": 64,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "e55a0302010605040908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 24,
+        "seed": 0,
+        "name": "flag7",
+        "offset": 0,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "255a0302010605040908070c0b0a0f0e0deeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 25,
+        "seed": 0,
+        "name": "SP",
+        "offset": 17,
+        "xor": 128,
+        "sp_delta": 3
+      },
+      "entry": "a55a0302010605040908070c0b0a0f0e0deeff0ae80e04000100ff0300000000",
+      "exit": "a55a0302010605040908070c0b0a0f0e0df1ff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 26,
+        "seed": 1,
+        "name": "preserve",
+        "offset": null,
+        "xor": 0,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 27,
+        "seed": 1,
+        "name": "BC0",
+        "offset": 2,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa57cfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 28,
+        "seed": 1,
+        "name": "BC1",
+        "offset": 3,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fc7dfef9fafbf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 29,
+        "seed": 1,
+        "name": "BC2",
+        "offset": 4,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fcfd7ef9fafbf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 30,
+        "seed": 1,
+        "name": "DE0",
+        "offset": 5,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fcfdfe79fafbf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 31,
+        "seed": 1,
+        "name": "DE1",
+        "offset": 6,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fcfdfef97afbf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 32,
+        "seed": 1,
+        "name": "DE2",
+        "offset": 7,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fcfdfef9fa7bf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 33,
+        "seed": 1,
+        "name": "HL0",
+        "offset": 8,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fcfdfef9fafb76f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 34,
+        "seed": 1,
+        "name": "HL1",
+        "offset": 9,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fcfdfef9fafbf677f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 35,
+        "seed": 1,
+        "name": "HL2",
+        "offset": 10,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fcfdfef9fafbf6f778f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 36,
+        "seed": 1,
+        "name": "IX0",
+        "offset": 11,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fcfdfef9fafbf6f7f873f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 37,
+        "seed": 1,
+        "name": "IX1",
+        "offset": 12,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fcfdfef9fafbf6f7f8f374f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 38,
+        "seed": 1,
+        "name": "IX2",
+        "offset": 13,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fcfdfef9fafbf6f7f8f3f475f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 39,
+        "seed": 1,
+        "name": "IY0",
+        "offset": 14,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fcfdfef9fafbf6f7f8f3f4f570f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 40,
+        "seed": 1,
+        "name": "IY1",
+        "offset": 15,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fcfdfef9fafbf6f7f8f3f4f5f071f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 41,
+        "seed": 1,
+        "name": "IY2",
+        "offset": 16,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f172eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 42,
+        "seed": 1,
+        "name": "A",
+        "offset": 1,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5a25fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 43,
+        "seed": 1,
+        "name": "flag0",
+        "offset": 0,
+        "xor": 1,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5ba5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 44,
+        "seed": 1,
+        "name": "flag1",
+        "offset": 0,
+        "xor": 2,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "58a5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 45,
+        "seed": 1,
+        "name": "flag2",
+        "offset": 0,
+        "xor": 4,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5ea5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 46,
+        "seed": 1,
+        "name": "flag3",
+        "offset": 0,
+        "xor": 8,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "52a5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 47,
+        "seed": 1,
+        "name": "flag4",
+        "offset": 0,
+        "xor": 16,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "4aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 48,
+        "seed": 1,
+        "name": "flag5",
+        "offset": 0,
+        "xor": 32,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "7aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 49,
+        "seed": 1,
+        "name": "flag6",
+        "offset": 0,
+        "xor": 64,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "1aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 50,
+        "seed": 1,
+        "name": "flag7",
+        "offset": 0,
+        "xor": 128,
+        "sp_delta": 0
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "daa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0a520f04000100ff0300000000",
+      "passed": true
+    },
+    {
+      "control": {
+        "index": 51,
+        "seed": 1,
+        "name": "SP",
+        "offset": 17,
+        "xor": 128,
+        "sp_delta": 3
+      },
+      "entry": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2eeff0ae80e04000100ff0300000000",
+      "exit": "5aa5fcfdfef9fafbf6f7f8f3f4f5f0f1f2f1ff0a520f04000100ff0300000000",
+      "passed": true
+    }
+  ],
+  "mapping": "b780",
+  "guards_intact": true,
+  "capture_survived_reporting_clobbers": true,
+  "limitations": [
+    "IFF unavailable",
+    "alternate registers not captured",
+    "SP deviation injected after return",
+    "hardware untested"
+  ]
+}

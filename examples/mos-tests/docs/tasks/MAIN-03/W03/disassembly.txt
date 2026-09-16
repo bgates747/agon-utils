@@ -1,0 +1,1319 @@
+
+/home/smith/Agon/mystuff/agon-utils/examples/mos-tests/apps/capture-controls/obj/probe.o:     file format elf32-z80
+
+
+Disassembly of section .text:
+
+00000000 <_run_capture_controls>:
+   0:	dd e5             	push ix
+   2:	fd e5             	push iy
+   4:	ed 73 05 00 00    	ld (0x0005),sp
+			6: r_imm24	.data+0x5
+   9:	21 00 e0 b7       	ld hl,0xb7e000
+   d:	11 01 e0 b7       	ld de,0xb7e001
+  11:	01 ff 1f 00       	ld bc,0x1fff
+  15:	36 c7             	ld (hl),0xc7
+  17:	ed b0             	ldir
+  19:	ed 38 b5          	in0 a,(0xb5)
+  1c:	32 03 00 00       	ld (0x0003),a
+			1d: r_imm24	.data+0x3
+  20:	ed 38 b4          	in0 a,(0xb4)
+  23:	32 04 00 00       	ld (0x0004),a
+			24: r_imm24	.data+0x4
+  27:	21 00 00 00       	ld hl,0x0000
+  2b:	22 00 00 00       	ld (0x0000),hl
+			2c: r_imm24	.data
+  2f:	21 a5 5a 00       	ld hl,0x5aa5
+  33:	e5                	push hl
+  34:	f1                	pop af
+  35:	01 03 02 01       	ld bc,0x10203
+  39:	11 06 05 04       	ld de,0x40506
+  3d:	21 09 08 07       	ld hl,0x70809
+  41:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+  46:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+  4b:	cd 07 0d 00       	call 0x0d07
+			4c: r_imm24	.text+0xd07
+  4f:	cd 71 0d 00       	call 0x0d71
+			50: r_imm24	.text+0xd71
+  53:	ed 7b 05 00 00    	ld sp,(0x0005)
+			55: r_imm24	.data+0x5
+  58:	cd ef 0c 00       	call 0x0cef
+			59: r_imm24	.text+0xcef
+  5c:	cd ee 0c 00       	call 0x0cee
+			5d: r_imm24	.text+0xcee
+  60:	21 01 00 00       	ld hl,0x0001
+  64:	22 00 00 00       	ld (0x0000),hl
+			65: r_imm24	.data
+  68:	21 a5 5a 00       	ld hl,0x5aa5
+  6c:	e5                	push hl
+  6d:	f1                	pop af
+  6e:	01 03 02 01       	ld bc,0x10203
+  72:	11 06 05 04       	ld de,0x40506
+  76:	21 09 08 07       	ld hl,0x70809
+  7a:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+  7f:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+  84:	cd 07 0d 00       	call 0x0d07
+			85: r_imm24	.text+0xd07
+  88:	01 83 02 01       	ld bc,0x10283
+  8c:	cd 71 0d 00       	call 0x0d71
+			8d: r_imm24	.text+0xd71
+  90:	ed 7b 05 00 00    	ld sp,(0x0005)
+			92: r_imm24	.data+0x5
+  95:	cd ef 0c 00       	call 0x0cef
+			96: r_imm24	.text+0xcef
+  99:	cd ee 0c 00       	call 0x0cee
+			9a: r_imm24	.text+0xcee
+  9d:	21 02 00 00       	ld hl,0x0002
+  a1:	22 00 00 00       	ld (0x0000),hl
+			a2: r_imm24	.data
+  a5:	21 a5 5a 00       	ld hl,0x5aa5
+  a9:	e5                	push hl
+  aa:	f1                	pop af
+  ab:	01 03 02 01       	ld bc,0x10203
+  af:	11 06 05 04       	ld de,0x40506
+  b3:	21 09 08 07       	ld hl,0x70809
+  b7:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+  bc:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+  c1:	cd 07 0d 00       	call 0x0d07
+			c2: r_imm24	.text+0xd07
+  c5:	01 03 82 01       	ld bc,0x18203
+  c9:	cd 71 0d 00       	call 0x0d71
+			ca: r_imm24	.text+0xd71
+  cd:	ed 7b 05 00 00    	ld sp,(0x0005)
+			cf: r_imm24	.data+0x5
+  d2:	cd ef 0c 00       	call 0x0cef
+			d3: r_imm24	.text+0xcef
+  d6:	cd ee 0c 00       	call 0x0cee
+			d7: r_imm24	.text+0xcee
+  da:	21 03 00 00       	ld hl,0x0003
+  de:	22 00 00 00       	ld (0x0000),hl
+			df: r_imm24	.data
+  e2:	21 a5 5a 00       	ld hl,0x5aa5
+  e6:	e5                	push hl
+  e7:	f1                	pop af
+  e8:	01 03 02 01       	ld bc,0x10203
+  ec:	11 06 05 04       	ld de,0x40506
+  f0:	21 09 08 07       	ld hl,0x70809
+  f4:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+  f9:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+  fe:	cd 07 0d 00       	call 0x0d07
+			ff: r_imm24	.text+0xd07
+ 102:	01 03 02 81       	ld bc,0x810203
+ 106:	cd 71 0d 00       	call 0x0d71
+			107: r_imm24	.text+0xd71
+ 10a:	ed 7b 05 00 00    	ld sp,(0x0005)
+			10c: r_imm24	.data+0x5
+ 10f:	cd ef 0c 00       	call 0x0cef
+			110: r_imm24	.text+0xcef
+ 113:	cd ee 0c 00       	call 0x0cee
+			114: r_imm24	.text+0xcee
+ 117:	21 04 00 00       	ld hl,0x0004
+ 11b:	22 00 00 00       	ld (0x0000),hl
+			11c: r_imm24	.data
+ 11f:	21 a5 5a 00       	ld hl,0x5aa5
+ 123:	e5                	push hl
+ 124:	f1                	pop af
+ 125:	01 03 02 01       	ld bc,0x10203
+ 129:	11 06 05 04       	ld de,0x40506
+ 12d:	21 09 08 07       	ld hl,0x70809
+ 131:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 136:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 13b:	cd 07 0d 00       	call 0x0d07
+			13c: r_imm24	.text+0xd07
+ 13f:	11 86 05 04       	ld de,0x40586
+ 143:	cd 71 0d 00       	call 0x0d71
+			144: r_imm24	.text+0xd71
+ 147:	ed 7b 05 00 00    	ld sp,(0x0005)
+			149: r_imm24	.data+0x5
+ 14c:	cd ef 0c 00       	call 0x0cef
+			14d: r_imm24	.text+0xcef
+ 150:	cd ee 0c 00       	call 0x0cee
+			151: r_imm24	.text+0xcee
+ 154:	21 05 00 00       	ld hl,0x0005
+ 158:	22 00 00 00       	ld (0x0000),hl
+			159: r_imm24	.data
+ 15c:	21 a5 5a 00       	ld hl,0x5aa5
+ 160:	e5                	push hl
+ 161:	f1                	pop af
+ 162:	01 03 02 01       	ld bc,0x10203
+ 166:	11 06 05 04       	ld de,0x40506
+ 16a:	21 09 08 07       	ld hl,0x70809
+ 16e:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 173:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 178:	cd 07 0d 00       	call 0x0d07
+			179: r_imm24	.text+0xd07
+ 17c:	11 06 85 04       	ld de,0x48506
+ 180:	cd 71 0d 00       	call 0x0d71
+			181: r_imm24	.text+0xd71
+ 184:	ed 7b 05 00 00    	ld sp,(0x0005)
+			186: r_imm24	.data+0x5
+ 189:	cd ef 0c 00       	call 0x0cef
+			18a: r_imm24	.text+0xcef
+ 18d:	cd ee 0c 00       	call 0x0cee
+			18e: r_imm24	.text+0xcee
+ 191:	21 06 00 00       	ld hl,0x0006
+ 195:	22 00 00 00       	ld (0x0000),hl
+			196: r_imm24	.data
+ 199:	21 a5 5a 00       	ld hl,0x5aa5
+ 19d:	e5                	push hl
+ 19e:	f1                	pop af
+ 19f:	01 03 02 01       	ld bc,0x10203
+ 1a3:	11 06 05 04       	ld de,0x40506
+ 1a7:	21 09 08 07       	ld hl,0x70809
+ 1ab:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 1b0:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 1b5:	cd 07 0d 00       	call 0x0d07
+			1b6: r_imm24	.text+0xd07
+ 1b9:	11 06 05 84       	ld de,0x840506
+ 1bd:	cd 71 0d 00       	call 0x0d71
+			1be: r_imm24	.text+0xd71
+ 1c1:	ed 7b 05 00 00    	ld sp,(0x0005)
+			1c3: r_imm24	.data+0x5
+ 1c6:	cd ef 0c 00       	call 0x0cef
+			1c7: r_imm24	.text+0xcef
+ 1ca:	cd ee 0c 00       	call 0x0cee
+			1cb: r_imm24	.text+0xcee
+ 1ce:	21 07 00 00       	ld hl,0x0007
+ 1d2:	22 00 00 00       	ld (0x0000),hl
+			1d3: r_imm24	.data
+ 1d6:	21 a5 5a 00       	ld hl,0x5aa5
+ 1da:	e5                	push hl
+ 1db:	f1                	pop af
+ 1dc:	01 03 02 01       	ld bc,0x10203
+ 1e0:	11 06 05 04       	ld de,0x40506
+ 1e4:	21 09 08 07       	ld hl,0x70809
+ 1e8:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 1ed:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 1f2:	cd 07 0d 00       	call 0x0d07
+			1f3: r_imm24	.text+0xd07
+ 1f6:	21 89 08 07       	ld hl,0x70889
+ 1fa:	cd 71 0d 00       	call 0x0d71
+			1fb: r_imm24	.text+0xd71
+ 1fe:	ed 7b 05 00 00    	ld sp,(0x0005)
+			200: r_imm24	.data+0x5
+ 203:	cd ef 0c 00       	call 0x0cef
+			204: r_imm24	.text+0xcef
+ 207:	cd ee 0c 00       	call 0x0cee
+			208: r_imm24	.text+0xcee
+ 20b:	21 08 00 00       	ld hl,0x0008
+ 20f:	22 00 00 00       	ld (0x0000),hl
+			210: r_imm24	.data
+ 213:	21 a5 5a 00       	ld hl,0x5aa5
+ 217:	e5                	push hl
+ 218:	f1                	pop af
+ 219:	01 03 02 01       	ld bc,0x10203
+ 21d:	11 06 05 04       	ld de,0x40506
+ 221:	21 09 08 07       	ld hl,0x70809
+ 225:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 22a:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 22f:	cd 07 0d 00       	call 0x0d07
+			230: r_imm24	.text+0xd07
+ 233:	21 09 88 07       	ld hl,0x78809
+ 237:	cd 71 0d 00       	call 0x0d71
+			238: r_imm24	.text+0xd71
+ 23b:	ed 7b 05 00 00    	ld sp,(0x0005)
+			23d: r_imm24	.data+0x5
+ 240:	cd ef 0c 00       	call 0x0cef
+			241: r_imm24	.text+0xcef
+ 244:	cd ee 0c 00       	call 0x0cee
+			245: r_imm24	.text+0xcee
+ 248:	21 09 00 00       	ld hl,0x0009
+ 24c:	22 00 00 00       	ld (0x0000),hl
+			24d: r_imm24	.data
+ 250:	21 a5 5a 00       	ld hl,0x5aa5
+ 254:	e5                	push hl
+ 255:	f1                	pop af
+ 256:	01 03 02 01       	ld bc,0x10203
+ 25a:	11 06 05 04       	ld de,0x40506
+ 25e:	21 09 08 07       	ld hl,0x70809
+ 262:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 267:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 26c:	cd 07 0d 00       	call 0x0d07
+			26d: r_imm24	.text+0xd07
+ 270:	21 09 08 87       	ld hl,0x870809
+ 274:	cd 71 0d 00       	call 0x0d71
+			275: r_imm24	.text+0xd71
+ 278:	ed 7b 05 00 00    	ld sp,(0x0005)
+			27a: r_imm24	.data+0x5
+ 27d:	cd ef 0c 00       	call 0x0cef
+			27e: r_imm24	.text+0xcef
+ 281:	cd ee 0c 00       	call 0x0cee
+			282: r_imm24	.text+0xcee
+ 285:	21 0a 00 00       	ld hl,0x000a
+ 289:	22 00 00 00       	ld (0x0000),hl
+			28a: r_imm24	.data
+ 28d:	21 a5 5a 00       	ld hl,0x5aa5
+ 291:	e5                	push hl
+ 292:	f1                	pop af
+ 293:	01 03 02 01       	ld bc,0x10203
+ 297:	11 06 05 04       	ld de,0x40506
+ 29b:	21 09 08 07       	ld hl,0x70809
+ 29f:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 2a4:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 2a9:	cd 07 0d 00       	call 0x0d07
+			2aa: r_imm24	.text+0xd07
+ 2ad:	dd 21 8c 0b 0a    	ld ix,0xa0b8c
+ 2b2:	cd 71 0d 00       	call 0x0d71
+			2b3: r_imm24	.text+0xd71
+ 2b6:	ed 7b 05 00 00    	ld sp,(0x0005)
+			2b8: r_imm24	.data+0x5
+ 2bb:	cd ef 0c 00       	call 0x0cef
+			2bc: r_imm24	.text+0xcef
+ 2bf:	cd ee 0c 00       	call 0x0cee
+			2c0: r_imm24	.text+0xcee
+ 2c3:	21 0b 00 00       	ld hl,0x000b
+ 2c7:	22 00 00 00       	ld (0x0000),hl
+			2c8: r_imm24	.data
+ 2cb:	21 a5 5a 00       	ld hl,0x5aa5
+ 2cf:	e5                	push hl
+ 2d0:	f1                	pop af
+ 2d1:	01 03 02 01       	ld bc,0x10203
+ 2d5:	11 06 05 04       	ld de,0x40506
+ 2d9:	21 09 08 07       	ld hl,0x70809
+ 2dd:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 2e2:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 2e7:	cd 07 0d 00       	call 0x0d07
+			2e8: r_imm24	.text+0xd07
+ 2eb:	dd 21 0c 8b 0a    	ld ix,0xa8b0c
+ 2f0:	cd 71 0d 00       	call 0x0d71
+			2f1: r_imm24	.text+0xd71
+ 2f4:	ed 7b 05 00 00    	ld sp,(0x0005)
+			2f6: r_imm24	.data+0x5
+ 2f9:	cd ef 0c 00       	call 0x0cef
+			2fa: r_imm24	.text+0xcef
+ 2fd:	cd ee 0c 00       	call 0x0cee
+			2fe: r_imm24	.text+0xcee
+ 301:	21 0c 00 00       	ld hl,0x000c
+ 305:	22 00 00 00       	ld (0x0000),hl
+			306: r_imm24	.data
+ 309:	21 a5 5a 00       	ld hl,0x5aa5
+ 30d:	e5                	push hl
+ 30e:	f1                	pop af
+ 30f:	01 03 02 01       	ld bc,0x10203
+ 313:	11 06 05 04       	ld de,0x40506
+ 317:	21 09 08 07       	ld hl,0x70809
+ 31b:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 320:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 325:	cd 07 0d 00       	call 0x0d07
+			326: r_imm24	.text+0xd07
+ 329:	dd 21 0c 0b 8a    	ld ix,0x8a0b0c
+ 32e:	cd 71 0d 00       	call 0x0d71
+			32f: r_imm24	.text+0xd71
+ 332:	ed 7b 05 00 00    	ld sp,(0x0005)
+			334: r_imm24	.data+0x5
+ 337:	cd ef 0c 00       	call 0x0cef
+			338: r_imm24	.text+0xcef
+ 33b:	cd ee 0c 00       	call 0x0cee
+			33c: r_imm24	.text+0xcee
+ 33f:	21 0d 00 00       	ld hl,0x000d
+ 343:	22 00 00 00       	ld (0x0000),hl
+			344: r_imm24	.data
+ 347:	21 a5 5a 00       	ld hl,0x5aa5
+ 34b:	e5                	push hl
+ 34c:	f1                	pop af
+ 34d:	01 03 02 01       	ld bc,0x10203
+ 351:	11 06 05 04       	ld de,0x40506
+ 355:	21 09 08 07       	ld hl,0x70809
+ 359:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 35e:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 363:	cd 07 0d 00       	call 0x0d07
+			364: r_imm24	.text+0xd07
+ 367:	fd 21 8f 0e 0d    	ld iy,0xd0e8f
+ 36c:	cd 71 0d 00       	call 0x0d71
+			36d: r_imm24	.text+0xd71
+ 370:	ed 7b 05 00 00    	ld sp,(0x0005)
+			372: r_imm24	.data+0x5
+ 375:	cd ef 0c 00       	call 0x0cef
+			376: r_imm24	.text+0xcef
+ 379:	cd ee 0c 00       	call 0x0cee
+			37a: r_imm24	.text+0xcee
+ 37d:	21 0e 00 00       	ld hl,0x000e
+ 381:	22 00 00 00       	ld (0x0000),hl
+			382: r_imm24	.data
+ 385:	21 a5 5a 00       	ld hl,0x5aa5
+ 389:	e5                	push hl
+ 38a:	f1                	pop af
+ 38b:	01 03 02 01       	ld bc,0x10203
+ 38f:	11 06 05 04       	ld de,0x40506
+ 393:	21 09 08 07       	ld hl,0x70809
+ 397:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 39c:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 3a1:	cd 07 0d 00       	call 0x0d07
+			3a2: r_imm24	.text+0xd07
+ 3a5:	fd 21 0f 8e 0d    	ld iy,0xd8e0f
+ 3aa:	cd 71 0d 00       	call 0x0d71
+			3ab: r_imm24	.text+0xd71
+ 3ae:	ed 7b 05 00 00    	ld sp,(0x0005)
+			3b0: r_imm24	.data+0x5
+ 3b3:	cd ef 0c 00       	call 0x0cef
+			3b4: r_imm24	.text+0xcef
+ 3b7:	cd ee 0c 00       	call 0x0cee
+			3b8: r_imm24	.text+0xcee
+ 3bb:	21 0f 00 00       	ld hl,0x000f
+ 3bf:	22 00 00 00       	ld (0x0000),hl
+			3c0: r_imm24	.data
+ 3c3:	21 a5 5a 00       	ld hl,0x5aa5
+ 3c7:	e5                	push hl
+ 3c8:	f1                	pop af
+ 3c9:	01 03 02 01       	ld bc,0x10203
+ 3cd:	11 06 05 04       	ld de,0x40506
+ 3d1:	21 09 08 07       	ld hl,0x70809
+ 3d5:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 3da:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 3df:	cd 07 0d 00       	call 0x0d07
+			3e0: r_imm24	.text+0xd07
+ 3e3:	fd 21 0f 0e 8d    	ld iy,0x8d0e0f
+ 3e8:	cd 71 0d 00       	call 0x0d71
+			3e9: r_imm24	.text+0xd71
+ 3ec:	ed 7b 05 00 00    	ld sp,(0x0005)
+			3ee: r_imm24	.data+0x5
+ 3f1:	cd ef 0c 00       	call 0x0cef
+			3f2: r_imm24	.text+0xcef
+ 3f5:	cd ee 0c 00       	call 0x0cee
+			3f6: r_imm24	.text+0xcee
+ 3f9:	21 10 00 00       	ld hl,0x0010
+ 3fd:	22 00 00 00       	ld (0x0000),hl
+			3fe: r_imm24	.data
+ 401:	21 a5 5a 00       	ld hl,0x5aa5
+ 405:	e5                	push hl
+ 406:	f1                	pop af
+ 407:	01 03 02 01       	ld bc,0x10203
+ 40b:	11 06 05 04       	ld de,0x40506
+ 40f:	21 09 08 07       	ld hl,0x70809
+ 413:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 418:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 41d:	cd 07 0d 00       	call 0x0d07
+			41e: r_imm24	.text+0xd07
+ 421:	3e da             	ld a,0xda
+ 423:	cd 71 0d 00       	call 0x0d71
+			424: r_imm24	.text+0xd71
+ 427:	ed 7b 05 00 00    	ld sp,(0x0005)
+			429: r_imm24	.data+0x5
+ 42c:	cd ef 0c 00       	call 0x0cef
+			42d: r_imm24	.text+0xcef
+ 430:	cd ee 0c 00       	call 0x0cee
+			431: r_imm24	.text+0xcee
+ 434:	21 11 00 00       	ld hl,0x0011
+ 438:	22 00 00 00       	ld (0x0000),hl
+			439: r_imm24	.data
+ 43c:	21 a5 5a 00       	ld hl,0x5aa5
+ 440:	e5                	push hl
+ 441:	f1                	pop af
+ 442:	01 03 02 01       	ld bc,0x10203
+ 446:	11 06 05 04       	ld de,0x40506
+ 44a:	21 09 08 07       	ld hl,0x70809
+ 44e:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 453:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 458:	cd 07 0d 00       	call 0x0d07
+			459: r_imm24	.text+0xd07
+ 45c:	21 a4 5a 00       	ld hl,0x5aa4
+ 460:	e5                	push hl
+ 461:	f1                	pop af
+ 462:	21 09 08 07       	ld hl,0x70809
+ 466:	cd 71 0d 00       	call 0x0d71
+			467: r_imm24	.text+0xd71
+ 46a:	ed 7b 05 00 00    	ld sp,(0x0005)
+			46c: r_imm24	.data+0x5
+ 46f:	cd ef 0c 00       	call 0x0cef
+			470: r_imm24	.text+0xcef
+ 473:	cd ee 0c 00       	call 0x0cee
+			474: r_imm24	.text+0xcee
+ 477:	21 12 00 00       	ld hl,0x0012
+ 47b:	22 00 00 00       	ld (0x0000),hl
+			47c: r_imm24	.data
+ 47f:	21 a5 5a 00       	ld hl,0x5aa5
+ 483:	e5                	push hl
+ 484:	f1                	pop af
+ 485:	01 03 02 01       	ld bc,0x10203
+ 489:	11 06 05 04       	ld de,0x40506
+ 48d:	21 09 08 07       	ld hl,0x70809
+ 491:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 496:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 49b:	cd 07 0d 00       	call 0x0d07
+			49c: r_imm24	.text+0xd07
+ 49f:	21 a7 5a 00       	ld hl,0x5aa7
+ 4a3:	e5                	push hl
+ 4a4:	f1                	pop af
+ 4a5:	21 09 08 07       	ld hl,0x70809
+ 4a9:	cd 71 0d 00       	call 0x0d71
+			4aa: r_imm24	.text+0xd71
+ 4ad:	ed 7b 05 00 00    	ld sp,(0x0005)
+			4af: r_imm24	.data+0x5
+ 4b2:	cd ef 0c 00       	call 0x0cef
+			4b3: r_imm24	.text+0xcef
+ 4b6:	cd ee 0c 00       	call 0x0cee
+			4b7: r_imm24	.text+0xcee
+ 4ba:	21 13 00 00       	ld hl,0x0013
+ 4be:	22 00 00 00       	ld (0x0000),hl
+			4bf: r_imm24	.data
+ 4c2:	21 a5 5a 00       	ld hl,0x5aa5
+ 4c6:	e5                	push hl
+ 4c7:	f1                	pop af
+ 4c8:	01 03 02 01       	ld bc,0x10203
+ 4cc:	11 06 05 04       	ld de,0x40506
+ 4d0:	21 09 08 07       	ld hl,0x70809
+ 4d4:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 4d9:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 4de:	cd 07 0d 00       	call 0x0d07
+			4df: r_imm24	.text+0xd07
+ 4e2:	21 a1 5a 00       	ld hl,0x5aa1
+ 4e6:	e5                	push hl
+ 4e7:	f1                	pop af
+ 4e8:	21 09 08 07       	ld hl,0x70809
+ 4ec:	cd 71 0d 00       	call 0x0d71
+			4ed: r_imm24	.text+0xd71
+ 4f0:	ed 7b 05 00 00    	ld sp,(0x0005)
+			4f2: r_imm24	.data+0x5
+ 4f5:	cd ef 0c 00       	call 0x0cef
+			4f6: r_imm24	.text+0xcef
+ 4f9:	cd ee 0c 00       	call 0x0cee
+			4fa: r_imm24	.text+0xcee
+ 4fd:	21 14 00 00       	ld hl,0x0014
+ 501:	22 00 00 00       	ld (0x0000),hl
+			502: r_imm24	.data
+ 505:	21 a5 5a 00       	ld hl,0x5aa5
+ 509:	e5                	push hl
+ 50a:	f1                	pop af
+ 50b:	01 03 02 01       	ld bc,0x10203
+ 50f:	11 06 05 04       	ld de,0x40506
+ 513:	21 09 08 07       	ld hl,0x70809
+ 517:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 51c:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 521:	cd 07 0d 00       	call 0x0d07
+			522: r_imm24	.text+0xd07
+ 525:	21 ad 5a 00       	ld hl,0x5aad
+ 529:	e5                	push hl
+ 52a:	f1                	pop af
+ 52b:	21 09 08 07       	ld hl,0x70809
+ 52f:	cd 71 0d 00       	call 0x0d71
+			530: r_imm24	.text+0xd71
+ 533:	ed 7b 05 00 00    	ld sp,(0x0005)
+			535: r_imm24	.data+0x5
+ 538:	cd ef 0c 00       	call 0x0cef
+			539: r_imm24	.text+0xcef
+ 53c:	cd ee 0c 00       	call 0x0cee
+			53d: r_imm24	.text+0xcee
+ 540:	21 15 00 00       	ld hl,0x0015
+ 544:	22 00 00 00       	ld (0x0000),hl
+			545: r_imm24	.data
+ 548:	21 a5 5a 00       	ld hl,0x5aa5
+ 54c:	e5                	push hl
+ 54d:	f1                	pop af
+ 54e:	01 03 02 01       	ld bc,0x10203
+ 552:	11 06 05 04       	ld de,0x40506
+ 556:	21 09 08 07       	ld hl,0x70809
+ 55a:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 55f:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 564:	cd 07 0d 00       	call 0x0d07
+			565: r_imm24	.text+0xd07
+ 568:	21 b5 5a 00       	ld hl,0x5ab5
+ 56c:	e5                	push hl
+ 56d:	f1                	pop af
+ 56e:	21 09 08 07       	ld hl,0x70809
+ 572:	cd 71 0d 00       	call 0x0d71
+			573: r_imm24	.text+0xd71
+ 576:	ed 7b 05 00 00    	ld sp,(0x0005)
+			578: r_imm24	.data+0x5
+ 57b:	cd ef 0c 00       	call 0x0cef
+			57c: r_imm24	.text+0xcef
+ 57f:	cd ee 0c 00       	call 0x0cee
+			580: r_imm24	.text+0xcee
+ 583:	21 16 00 00       	ld hl,0x0016
+ 587:	22 00 00 00       	ld (0x0000),hl
+			588: r_imm24	.data
+ 58b:	21 a5 5a 00       	ld hl,0x5aa5
+ 58f:	e5                	push hl
+ 590:	f1                	pop af
+ 591:	01 03 02 01       	ld bc,0x10203
+ 595:	11 06 05 04       	ld de,0x40506
+ 599:	21 09 08 07       	ld hl,0x70809
+ 59d:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 5a2:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 5a7:	cd 07 0d 00       	call 0x0d07
+			5a8: r_imm24	.text+0xd07
+ 5ab:	21 85 5a 00       	ld hl,0x5a85
+ 5af:	e5                	push hl
+ 5b0:	f1                	pop af
+ 5b1:	21 09 08 07       	ld hl,0x70809
+ 5b5:	cd 71 0d 00       	call 0x0d71
+			5b6: r_imm24	.text+0xd71
+ 5b9:	ed 7b 05 00 00    	ld sp,(0x0005)
+			5bb: r_imm24	.data+0x5
+ 5be:	cd ef 0c 00       	call 0x0cef
+			5bf: r_imm24	.text+0xcef
+ 5c2:	cd ee 0c 00       	call 0x0cee
+			5c3: r_imm24	.text+0xcee
+ 5c6:	21 17 00 00       	ld hl,0x0017
+ 5ca:	22 00 00 00       	ld (0x0000),hl
+			5cb: r_imm24	.data
+ 5ce:	21 a5 5a 00       	ld hl,0x5aa5
+ 5d2:	e5                	push hl
+ 5d3:	f1                	pop af
+ 5d4:	01 03 02 01       	ld bc,0x10203
+ 5d8:	11 06 05 04       	ld de,0x40506
+ 5dc:	21 09 08 07       	ld hl,0x70809
+ 5e0:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 5e5:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 5ea:	cd 07 0d 00       	call 0x0d07
+			5eb: r_imm24	.text+0xd07
+ 5ee:	21 e5 5a 00       	ld hl,0x5ae5
+ 5f2:	e5                	push hl
+ 5f3:	f1                	pop af
+ 5f4:	21 09 08 07       	ld hl,0x70809
+ 5f8:	cd 71 0d 00       	call 0x0d71
+			5f9: r_imm24	.text+0xd71
+ 5fc:	ed 7b 05 00 00    	ld sp,(0x0005)
+			5fe: r_imm24	.data+0x5
+ 601:	cd ef 0c 00       	call 0x0cef
+			602: r_imm24	.text+0xcef
+ 605:	cd ee 0c 00       	call 0x0cee
+			606: r_imm24	.text+0xcee
+ 609:	21 18 00 00       	ld hl,0x0018
+ 60d:	22 00 00 00       	ld (0x0000),hl
+			60e: r_imm24	.data
+ 611:	21 a5 5a 00       	ld hl,0x5aa5
+ 615:	e5                	push hl
+ 616:	f1                	pop af
+ 617:	01 03 02 01       	ld bc,0x10203
+ 61b:	11 06 05 04       	ld de,0x40506
+ 61f:	21 09 08 07       	ld hl,0x70809
+ 623:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 628:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 62d:	cd 07 0d 00       	call 0x0d07
+			62e: r_imm24	.text+0xd07
+ 631:	21 25 5a 00       	ld hl,0x5a25
+ 635:	e5                	push hl
+ 636:	f1                	pop af
+ 637:	21 09 08 07       	ld hl,0x70809
+ 63b:	cd 71 0d 00       	call 0x0d71
+			63c: r_imm24	.text+0xd71
+ 63f:	ed 7b 05 00 00    	ld sp,(0x0005)
+			641: r_imm24	.data+0x5
+ 644:	cd ef 0c 00       	call 0x0cef
+			645: r_imm24	.text+0xcef
+ 648:	cd ee 0c 00       	call 0x0cee
+			649: r_imm24	.text+0xcee
+ 64c:	21 19 00 00       	ld hl,0x0019
+ 650:	22 00 00 00       	ld (0x0000),hl
+			651: r_imm24	.data
+ 654:	21 a5 5a 00       	ld hl,0x5aa5
+ 658:	e5                	push hl
+ 659:	f1                	pop af
+ 65a:	01 03 02 01       	ld bc,0x10203
+ 65e:	11 06 05 04       	ld de,0x40506
+ 662:	21 09 08 07       	ld hl,0x70809
+ 666:	dd 21 0c 0b 0a    	ld ix,0xa0b0c
+ 66b:	fd 21 0f 0e 0d    	ld iy,0xd0e0f
+ 670:	cd 07 0d 00       	call 0x0d07
+			671: r_imm24	.text+0xd07
+ 674:	33                	inc sp
+ 675:	33                	inc sp
+ 676:	33                	inc sp
+ 677:	cd 71 0d 00       	call 0x0d71
+			678: r_imm24	.text+0xd71
+ 67b:	ed 7b 05 00 00    	ld sp,(0x0005)
+			67d: r_imm24	.data+0x5
+ 680:	cd ef 0c 00       	call 0x0cef
+			681: r_imm24	.text+0xcef
+ 684:	cd ee 0c 00       	call 0x0cee
+			685: r_imm24	.text+0xcee
+ 688:	21 1a 00 00       	ld hl,0x001a
+ 68c:	22 00 00 00       	ld (0x0000),hl
+			68d: r_imm24	.data
+ 690:	21 5a a5 00       	ld hl,0xa55a
+ 694:	e5                	push hl
+ 695:	f1                	pop af
+ 696:	01 fc fd fe       	ld bc,0xfefdfc
+ 69a:	11 f9 fa fb       	ld de,0xfbfaf9
+ 69e:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ 6a2:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ 6a7:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ 6ac:	cd 07 0d 00       	call 0x0d07
+			6ad: r_imm24	.text+0xd07
+ 6b0:	cd 71 0d 00       	call 0x0d71
+			6b1: r_imm24	.text+0xd71
+ 6b4:	ed 7b 05 00 00    	ld sp,(0x0005)
+			6b6: r_imm24	.data+0x5
+ 6b9:	cd ef 0c 00       	call 0x0cef
+			6ba: r_imm24	.text+0xcef
+ 6bd:	cd ee 0c 00       	call 0x0cee
+			6be: r_imm24	.text+0xcee
+ 6c1:	21 1b 00 00       	ld hl,0x001b
+ 6c5:	22 00 00 00       	ld (0x0000),hl
+			6c6: r_imm24	.data
+ 6c9:	21 5a a5 00       	ld hl,0xa55a
+ 6cd:	e5                	push hl
+ 6ce:	f1                	pop af
+ 6cf:	01 fc fd fe       	ld bc,0xfefdfc
+ 6d3:	11 f9 fa fb       	ld de,0xfbfaf9
+ 6d7:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ 6db:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ 6e0:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ 6e5:	cd 07 0d 00       	call 0x0d07
+			6e6: r_imm24	.text+0xd07
+ 6e9:	01 7c fd fe       	ld bc,0xfefd7c
+ 6ed:	cd 71 0d 00       	call 0x0d71
+			6ee: r_imm24	.text+0xd71
+ 6f1:	ed 7b 05 00 00    	ld sp,(0x0005)
+			6f3: r_imm24	.data+0x5
+ 6f6:	cd ef 0c 00       	call 0x0cef
+			6f7: r_imm24	.text+0xcef
+ 6fa:	cd ee 0c 00       	call 0x0cee
+			6fb: r_imm24	.text+0xcee
+ 6fe:	21 1c 00 00       	ld hl,0x001c
+ 702:	22 00 00 00       	ld (0x0000),hl
+			703: r_imm24	.data
+ 706:	21 5a a5 00       	ld hl,0xa55a
+ 70a:	e5                	push hl
+ 70b:	f1                	pop af
+ 70c:	01 fc fd fe       	ld bc,0xfefdfc
+ 710:	11 f9 fa fb       	ld de,0xfbfaf9
+ 714:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ 718:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ 71d:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ 722:	cd 07 0d 00       	call 0x0d07
+			723: r_imm24	.text+0xd07
+ 726:	01 fc 7d fe       	ld bc,0xfe7dfc
+ 72a:	cd 71 0d 00       	call 0x0d71
+			72b: r_imm24	.text+0xd71
+ 72e:	ed 7b 05 00 00    	ld sp,(0x0005)
+			730: r_imm24	.data+0x5
+ 733:	cd ef 0c 00       	call 0x0cef
+			734: r_imm24	.text+0xcef
+ 737:	cd ee 0c 00       	call 0x0cee
+			738: r_imm24	.text+0xcee
+ 73b:	21 1d 00 00       	ld hl,0x001d
+ 73f:	22 00 00 00       	ld (0x0000),hl
+			740: r_imm24	.data
+ 743:	21 5a a5 00       	ld hl,0xa55a
+ 747:	e5                	push hl
+ 748:	f1                	pop af
+ 749:	01 fc fd fe       	ld bc,0xfefdfc
+ 74d:	11 f9 fa fb       	ld de,0xfbfaf9
+ 751:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ 755:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ 75a:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ 75f:	cd 07 0d 00       	call 0x0d07
+			760: r_imm24	.text+0xd07
+ 763:	01 fc fd 7e       	ld bc,0x7efdfc
+ 767:	cd 71 0d 00       	call 0x0d71
+			768: r_imm24	.text+0xd71
+ 76b:	ed 7b 05 00 00    	ld sp,(0x0005)
+			76d: r_imm24	.data+0x5
+ 770:	cd ef 0c 00       	call 0x0cef
+			771: r_imm24	.text+0xcef
+ 774:	cd ee 0c 00       	call 0x0cee
+			775: r_imm24	.text+0xcee
+ 778:	21 1e 00 00       	ld hl,0x001e
+ 77c:	22 00 00 00       	ld (0x0000),hl
+			77d: r_imm24	.data
+ 780:	21 5a a5 00       	ld hl,0xa55a
+ 784:	e5                	push hl
+ 785:	f1                	pop af
+ 786:	01 fc fd fe       	ld bc,0xfefdfc
+ 78a:	11 f9 fa fb       	ld de,0xfbfaf9
+ 78e:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ 792:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ 797:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ 79c:	cd 07 0d 00       	call 0x0d07
+			79d: r_imm24	.text+0xd07
+ 7a0:	11 79 fa fb       	ld de,0xfbfa79
+ 7a4:	cd 71 0d 00       	call 0x0d71
+			7a5: r_imm24	.text+0xd71
+ 7a8:	ed 7b 05 00 00    	ld sp,(0x0005)
+			7aa: r_imm24	.data+0x5
+ 7ad:	cd ef 0c 00       	call 0x0cef
+			7ae: r_imm24	.text+0xcef
+ 7b1:	cd ee 0c 00       	call 0x0cee
+			7b2: r_imm24	.text+0xcee
+ 7b5:	21 1f 00 00       	ld hl,0x001f
+ 7b9:	22 00 00 00       	ld (0x0000),hl
+			7ba: r_imm24	.data
+ 7bd:	21 5a a5 00       	ld hl,0xa55a
+ 7c1:	e5                	push hl
+ 7c2:	f1                	pop af
+ 7c3:	01 fc fd fe       	ld bc,0xfefdfc
+ 7c7:	11 f9 fa fb       	ld de,0xfbfaf9
+ 7cb:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ 7cf:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ 7d4:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ 7d9:	cd 07 0d 00       	call 0x0d07
+			7da: r_imm24	.text+0xd07
+ 7dd:	11 f9 7a fb       	ld de,0xfb7af9
+ 7e1:	cd 71 0d 00       	call 0x0d71
+			7e2: r_imm24	.text+0xd71
+ 7e5:	ed 7b 05 00 00    	ld sp,(0x0005)
+			7e7: r_imm24	.data+0x5
+ 7ea:	cd ef 0c 00       	call 0x0cef
+			7eb: r_imm24	.text+0xcef
+ 7ee:	cd ee 0c 00       	call 0x0cee
+			7ef: r_imm24	.text+0xcee
+ 7f2:	21 20 00 00       	ld hl,0x0020
+ 7f6:	22 00 00 00       	ld (0x0000),hl
+			7f7: r_imm24	.data
+ 7fa:	21 5a a5 00       	ld hl,0xa55a
+ 7fe:	e5                	push hl
+ 7ff:	f1                	pop af
+ 800:	01 fc fd fe       	ld bc,0xfefdfc
+ 804:	11 f9 fa fb       	ld de,0xfbfaf9
+ 808:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ 80c:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ 811:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ 816:	cd 07 0d 00       	call 0x0d07
+			817: r_imm24	.text+0xd07
+ 81a:	11 f9 fa 7b       	ld de,0x7bfaf9
+ 81e:	cd 71 0d 00       	call 0x0d71
+			81f: r_imm24	.text+0xd71
+ 822:	ed 7b 05 00 00    	ld sp,(0x0005)
+			824: r_imm24	.data+0x5
+ 827:	cd ef 0c 00       	call 0x0cef
+			828: r_imm24	.text+0xcef
+ 82b:	cd ee 0c 00       	call 0x0cee
+			82c: r_imm24	.text+0xcee
+ 82f:	21 21 00 00       	ld hl,0x0021
+ 833:	22 00 00 00       	ld (0x0000),hl
+			834: r_imm24	.data
+ 837:	21 5a a5 00       	ld hl,0xa55a
+ 83b:	e5                	push hl
+ 83c:	f1                	pop af
+ 83d:	01 fc fd fe       	ld bc,0xfefdfc
+ 841:	11 f9 fa fb       	ld de,0xfbfaf9
+ 845:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ 849:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ 84e:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ 853:	cd 07 0d 00       	call 0x0d07
+			854: r_imm24	.text+0xd07
+ 857:	21 76 f7 f8       	ld hl,0xf8f776
+ 85b:	cd 71 0d 00       	call 0x0d71
+			85c: r_imm24	.text+0xd71
+ 85f:	ed 7b 05 00 00    	ld sp,(0x0005)
+			861: r_imm24	.data+0x5
+ 864:	cd ef 0c 00       	call 0x0cef
+			865: r_imm24	.text+0xcef
+ 868:	cd ee 0c 00       	call 0x0cee
+			869: r_imm24	.text+0xcee
+ 86c:	21 22 00 00       	ld hl,0x0022
+ 870:	22 00 00 00       	ld (0x0000),hl
+			871: r_imm24	.data
+ 874:	21 5a a5 00       	ld hl,0xa55a
+ 878:	e5                	push hl
+ 879:	f1                	pop af
+ 87a:	01 fc fd fe       	ld bc,0xfefdfc
+ 87e:	11 f9 fa fb       	ld de,0xfbfaf9
+ 882:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ 886:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ 88b:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ 890:	cd 07 0d 00       	call 0x0d07
+			891: r_imm24	.text+0xd07
+ 894:	21 f6 77 f8       	ld hl,0xf877f6
+ 898:	cd 71 0d 00       	call 0x0d71
+			899: r_imm24	.text+0xd71
+ 89c:	ed 7b 05 00 00    	ld sp,(0x0005)
+			89e: r_imm24	.data+0x5
+ 8a1:	cd ef 0c 00       	call 0x0cef
+			8a2: r_imm24	.text+0xcef
+ 8a5:	cd ee 0c 00       	call 0x0cee
+			8a6: r_imm24	.text+0xcee
+ 8a9:	21 23 00 00       	ld hl,0x0023
+ 8ad:	22 00 00 00       	ld (0x0000),hl
+			8ae: r_imm24	.data
+ 8b1:	21 5a a5 00       	ld hl,0xa55a
+ 8b5:	e5                	push hl
+ 8b6:	f1                	pop af
+ 8b7:	01 fc fd fe       	ld bc,0xfefdfc
+ 8bb:	11 f9 fa fb       	ld de,0xfbfaf9
+ 8bf:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ 8c3:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ 8c8:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ 8cd:	cd 07 0d 00       	call 0x0d07
+			8ce: r_imm24	.text+0xd07
+ 8d1:	21 f6 f7 78       	ld hl,0x78f7f6
+ 8d5:	cd 71 0d 00       	call 0x0d71
+			8d6: r_imm24	.text+0xd71
+ 8d9:	ed 7b 05 00 00    	ld sp,(0x0005)
+			8db: r_imm24	.data+0x5
+ 8de:	cd ef 0c 00       	call 0x0cef
+			8df: r_imm24	.text+0xcef
+ 8e2:	cd ee 0c 00       	call 0x0cee
+			8e3: r_imm24	.text+0xcee
+ 8e6:	21 24 00 00       	ld hl,0x0024
+ 8ea:	22 00 00 00       	ld (0x0000),hl
+			8eb: r_imm24	.data
+ 8ee:	21 5a a5 00       	ld hl,0xa55a
+ 8f2:	e5                	push hl
+ 8f3:	f1                	pop af
+ 8f4:	01 fc fd fe       	ld bc,0xfefdfc
+ 8f8:	11 f9 fa fb       	ld de,0xfbfaf9
+ 8fc:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ 900:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ 905:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ 90a:	cd 07 0d 00       	call 0x0d07
+			90b: r_imm24	.text+0xd07
+ 90e:	dd 21 73 f4 f5    	ld ix,0xf5f473
+ 913:	cd 71 0d 00       	call 0x0d71
+			914: r_imm24	.text+0xd71
+ 917:	ed 7b 05 00 00    	ld sp,(0x0005)
+			919: r_imm24	.data+0x5
+ 91c:	cd ef 0c 00       	call 0x0cef
+			91d: r_imm24	.text+0xcef
+ 920:	cd ee 0c 00       	call 0x0cee
+			921: r_imm24	.text+0xcee
+ 924:	21 25 00 00       	ld hl,0x0025
+ 928:	22 00 00 00       	ld (0x0000),hl
+			929: r_imm24	.data
+ 92c:	21 5a a5 00       	ld hl,0xa55a
+ 930:	e5                	push hl
+ 931:	f1                	pop af
+ 932:	01 fc fd fe       	ld bc,0xfefdfc
+ 936:	11 f9 fa fb       	ld de,0xfbfaf9
+ 93a:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ 93e:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ 943:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ 948:	cd 07 0d 00       	call 0x0d07
+			949: r_imm24	.text+0xd07
+ 94c:	dd 21 f3 74 f5    	ld ix,0xf574f3
+ 951:	cd 71 0d 00       	call 0x0d71
+			952: r_imm24	.text+0xd71
+ 955:	ed 7b 05 00 00    	ld sp,(0x0005)
+			957: r_imm24	.data+0x5
+ 95a:	cd ef 0c 00       	call 0x0cef
+			95b: r_imm24	.text+0xcef
+ 95e:	cd ee 0c 00       	call 0x0cee
+			95f: r_imm24	.text+0xcee
+ 962:	21 26 00 00       	ld hl,0x0026
+ 966:	22 00 00 00       	ld (0x0000),hl
+			967: r_imm24	.data
+ 96a:	21 5a a5 00       	ld hl,0xa55a
+ 96e:	e5                	push hl
+ 96f:	f1                	pop af
+ 970:	01 fc fd fe       	ld bc,0xfefdfc
+ 974:	11 f9 fa fb       	ld de,0xfbfaf9
+ 978:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ 97c:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ 981:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ 986:	cd 07 0d 00       	call 0x0d07
+			987: r_imm24	.text+0xd07
+ 98a:	dd 21 f3 f4 75    	ld ix,0x75f4f3
+ 98f:	cd 71 0d 00       	call 0x0d71
+			990: r_imm24	.text+0xd71
+ 993:	ed 7b 05 00 00    	ld sp,(0x0005)
+			995: r_imm24	.data+0x5
+ 998:	cd ef 0c 00       	call 0x0cef
+			999: r_imm24	.text+0xcef
+ 99c:	cd ee 0c 00       	call 0x0cee
+			99d: r_imm24	.text+0xcee
+ 9a0:	21 27 00 00       	ld hl,0x0027
+ 9a4:	22 00 00 00       	ld (0x0000),hl
+			9a5: r_imm24	.data
+ 9a8:	21 5a a5 00       	ld hl,0xa55a
+ 9ac:	e5                	push hl
+ 9ad:	f1                	pop af
+ 9ae:	01 fc fd fe       	ld bc,0xfefdfc
+ 9b2:	11 f9 fa fb       	ld de,0xfbfaf9
+ 9b6:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ 9ba:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ 9bf:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ 9c4:	cd 07 0d 00       	call 0x0d07
+			9c5: r_imm24	.text+0xd07
+ 9c8:	fd 21 70 f1 f2    	ld iy,0xf2f170
+ 9cd:	cd 71 0d 00       	call 0x0d71
+			9ce: r_imm24	.text+0xd71
+ 9d1:	ed 7b 05 00 00    	ld sp,(0x0005)
+			9d3: r_imm24	.data+0x5
+ 9d6:	cd ef 0c 00       	call 0x0cef
+			9d7: r_imm24	.text+0xcef
+ 9da:	cd ee 0c 00       	call 0x0cee
+			9db: r_imm24	.text+0xcee
+ 9de:	21 28 00 00       	ld hl,0x0028
+ 9e2:	22 00 00 00       	ld (0x0000),hl
+			9e3: r_imm24	.data
+ 9e6:	21 5a a5 00       	ld hl,0xa55a
+ 9ea:	e5                	push hl
+ 9eb:	f1                	pop af
+ 9ec:	01 fc fd fe       	ld bc,0xfefdfc
+ 9f0:	11 f9 fa fb       	ld de,0xfbfaf9
+ 9f4:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ 9f8:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ 9fd:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ a02:	cd 07 0d 00       	call 0x0d07
+			a03: r_imm24	.text+0xd07
+ a06:	fd 21 f0 71 f2    	ld iy,0xf271f0
+ a0b:	cd 71 0d 00       	call 0x0d71
+			a0c: r_imm24	.text+0xd71
+ a0f:	ed 7b 05 00 00    	ld sp,(0x0005)
+			a11: r_imm24	.data+0x5
+ a14:	cd ef 0c 00       	call 0x0cef
+			a15: r_imm24	.text+0xcef
+ a18:	cd ee 0c 00       	call 0x0cee
+			a19: r_imm24	.text+0xcee
+ a1c:	21 29 00 00       	ld hl,0x0029
+ a20:	22 00 00 00       	ld (0x0000),hl
+			a21: r_imm24	.data
+ a24:	21 5a a5 00       	ld hl,0xa55a
+ a28:	e5                	push hl
+ a29:	f1                	pop af
+ a2a:	01 fc fd fe       	ld bc,0xfefdfc
+ a2e:	11 f9 fa fb       	ld de,0xfbfaf9
+ a32:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ a36:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ a3b:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ a40:	cd 07 0d 00       	call 0x0d07
+			a41: r_imm24	.text+0xd07
+ a44:	fd 21 f0 f1 72    	ld iy,0x72f1f0
+ a49:	cd 71 0d 00       	call 0x0d71
+			a4a: r_imm24	.text+0xd71
+ a4d:	ed 7b 05 00 00    	ld sp,(0x0005)
+			a4f: r_imm24	.data+0x5
+ a52:	cd ef 0c 00       	call 0x0cef
+			a53: r_imm24	.text+0xcef
+ a56:	cd ee 0c 00       	call 0x0cee
+			a57: r_imm24	.text+0xcee
+ a5a:	21 2a 00 00       	ld hl,0x002a
+ a5e:	22 00 00 00       	ld (0x0000),hl
+			a5f: r_imm24	.data
+ a62:	21 5a a5 00       	ld hl,0xa55a
+ a66:	e5                	push hl
+ a67:	f1                	pop af
+ a68:	01 fc fd fe       	ld bc,0xfefdfc
+ a6c:	11 f9 fa fb       	ld de,0xfbfaf9
+ a70:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ a74:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ a79:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ a7e:	cd 07 0d 00       	call 0x0d07
+			a7f: r_imm24	.text+0xd07
+ a82:	3e 25             	ld a,0x25
+ a84:	cd 71 0d 00       	call 0x0d71
+			a85: r_imm24	.text+0xd71
+ a88:	ed 7b 05 00 00    	ld sp,(0x0005)
+			a8a: r_imm24	.data+0x5
+ a8d:	cd ef 0c 00       	call 0x0cef
+			a8e: r_imm24	.text+0xcef
+ a91:	cd ee 0c 00       	call 0x0cee
+			a92: r_imm24	.text+0xcee
+ a95:	21 2b 00 00       	ld hl,0x002b
+ a99:	22 00 00 00       	ld (0x0000),hl
+			a9a: r_imm24	.data
+ a9d:	21 5a a5 00       	ld hl,0xa55a
+ aa1:	e5                	push hl
+ aa2:	f1                	pop af
+ aa3:	01 fc fd fe       	ld bc,0xfefdfc
+ aa7:	11 f9 fa fb       	ld de,0xfbfaf9
+ aab:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ aaf:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ ab4:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ ab9:	cd 07 0d 00       	call 0x0d07
+			aba: r_imm24	.text+0xd07
+ abd:	21 5b a5 00       	ld hl,0xa55b
+ ac1:	e5                	push hl
+ ac2:	f1                	pop af
+ ac3:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ ac7:	cd 71 0d 00       	call 0x0d71
+			ac8: r_imm24	.text+0xd71
+ acb:	ed 7b 05 00 00    	ld sp,(0x0005)
+			acd: r_imm24	.data+0x5
+ ad0:	cd ef 0c 00       	call 0x0cef
+			ad1: r_imm24	.text+0xcef
+ ad4:	cd ee 0c 00       	call 0x0cee
+			ad5: r_imm24	.text+0xcee
+ ad8:	21 2c 00 00       	ld hl,0x002c
+ adc:	22 00 00 00       	ld (0x0000),hl
+			add: r_imm24	.data
+ ae0:	21 5a a5 00       	ld hl,0xa55a
+ ae4:	e5                	push hl
+ ae5:	f1                	pop af
+ ae6:	01 fc fd fe       	ld bc,0xfefdfc
+ aea:	11 f9 fa fb       	ld de,0xfbfaf9
+ aee:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ af2:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ af7:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ afc:	cd 07 0d 00       	call 0x0d07
+			afd: r_imm24	.text+0xd07
+ b00:	21 58 a5 00       	ld hl,0xa558
+ b04:	e5                	push hl
+ b05:	f1                	pop af
+ b06:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ b0a:	cd 71 0d 00       	call 0x0d71
+			b0b: r_imm24	.text+0xd71
+ b0e:	ed 7b 05 00 00    	ld sp,(0x0005)
+			b10: r_imm24	.data+0x5
+ b13:	cd ef 0c 00       	call 0x0cef
+			b14: r_imm24	.text+0xcef
+ b17:	cd ee 0c 00       	call 0x0cee
+			b18: r_imm24	.text+0xcee
+ b1b:	21 2d 00 00       	ld hl,0x002d
+ b1f:	22 00 00 00       	ld (0x0000),hl
+			b20: r_imm24	.data
+ b23:	21 5a a5 00       	ld hl,0xa55a
+ b27:	e5                	push hl
+ b28:	f1                	pop af
+ b29:	01 fc fd fe       	ld bc,0xfefdfc
+ b2d:	11 f9 fa fb       	ld de,0xfbfaf9
+ b31:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ b35:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ b3a:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ b3f:	cd 07 0d 00       	call 0x0d07
+			b40: r_imm24	.text+0xd07
+ b43:	21 5e a5 00       	ld hl,0xa55e
+ b47:	e5                	push hl
+ b48:	f1                	pop af
+ b49:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ b4d:	cd 71 0d 00       	call 0x0d71
+			b4e: r_imm24	.text+0xd71
+ b51:	ed 7b 05 00 00    	ld sp,(0x0005)
+			b53: r_imm24	.data+0x5
+ b56:	cd ef 0c 00       	call 0x0cef
+			b57: r_imm24	.text+0xcef
+ b5a:	cd ee 0c 00       	call 0x0cee
+			b5b: r_imm24	.text+0xcee
+ b5e:	21 2e 00 00       	ld hl,0x002e
+ b62:	22 00 00 00       	ld (0x0000),hl
+			b63: r_imm24	.data
+ b66:	21 5a a5 00       	ld hl,0xa55a
+ b6a:	e5                	push hl
+ b6b:	f1                	pop af
+ b6c:	01 fc fd fe       	ld bc,0xfefdfc
+ b70:	11 f9 fa fb       	ld de,0xfbfaf9
+ b74:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ b78:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ b7d:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ b82:	cd 07 0d 00       	call 0x0d07
+			b83: r_imm24	.text+0xd07
+ b86:	21 52 a5 00       	ld hl,0xa552
+ b8a:	e5                	push hl
+ b8b:	f1                	pop af
+ b8c:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ b90:	cd 71 0d 00       	call 0x0d71
+			b91: r_imm24	.text+0xd71
+ b94:	ed 7b 05 00 00    	ld sp,(0x0005)
+			b96: r_imm24	.data+0x5
+ b99:	cd ef 0c 00       	call 0x0cef
+			b9a: r_imm24	.text+0xcef
+ b9d:	cd ee 0c 00       	call 0x0cee
+			b9e: r_imm24	.text+0xcee
+ ba1:	21 2f 00 00       	ld hl,0x002f
+ ba5:	22 00 00 00       	ld (0x0000),hl
+			ba6: r_imm24	.data
+ ba9:	21 5a a5 00       	ld hl,0xa55a
+ bad:	e5                	push hl
+ bae:	f1                	pop af
+ baf:	01 fc fd fe       	ld bc,0xfefdfc
+ bb3:	11 f9 fa fb       	ld de,0xfbfaf9
+ bb7:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ bbb:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ bc0:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ bc5:	cd 07 0d 00       	call 0x0d07
+			bc6: r_imm24	.text+0xd07
+ bc9:	21 4a a5 00       	ld hl,0xa54a
+ bcd:	e5                	push hl
+ bce:	f1                	pop af
+ bcf:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ bd3:	cd 71 0d 00       	call 0x0d71
+			bd4: r_imm24	.text+0xd71
+ bd7:	ed 7b 05 00 00    	ld sp,(0x0005)
+			bd9: r_imm24	.data+0x5
+ bdc:	cd ef 0c 00       	call 0x0cef
+			bdd: r_imm24	.text+0xcef
+ be0:	cd ee 0c 00       	call 0x0cee
+			be1: r_imm24	.text+0xcee
+ be4:	21 30 00 00       	ld hl,0x0030
+ be8:	22 00 00 00       	ld (0x0000),hl
+			be9: r_imm24	.data
+ bec:	21 5a a5 00       	ld hl,0xa55a
+ bf0:	e5                	push hl
+ bf1:	f1                	pop af
+ bf2:	01 fc fd fe       	ld bc,0xfefdfc
+ bf6:	11 f9 fa fb       	ld de,0xfbfaf9
+ bfa:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ bfe:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ c03:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ c08:	cd 07 0d 00       	call 0x0d07
+			c09: r_imm24	.text+0xd07
+ c0c:	21 7a a5 00       	ld hl,0xa57a
+ c10:	e5                	push hl
+ c11:	f1                	pop af
+ c12:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ c16:	cd 71 0d 00       	call 0x0d71
+			c17: r_imm24	.text+0xd71
+ c1a:	ed 7b 05 00 00    	ld sp,(0x0005)
+			c1c: r_imm24	.data+0x5
+ c1f:	cd ef 0c 00       	call 0x0cef
+			c20: r_imm24	.text+0xcef
+ c23:	cd ee 0c 00       	call 0x0cee
+			c24: r_imm24	.text+0xcee
+ c27:	21 31 00 00       	ld hl,0x0031
+ c2b:	22 00 00 00       	ld (0x0000),hl
+			c2c: r_imm24	.data
+ c2f:	21 5a a5 00       	ld hl,0xa55a
+ c33:	e5                	push hl
+ c34:	f1                	pop af
+ c35:	01 fc fd fe       	ld bc,0xfefdfc
+ c39:	11 f9 fa fb       	ld de,0xfbfaf9
+ c3d:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ c41:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ c46:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ c4b:	cd 07 0d 00       	call 0x0d07
+			c4c: r_imm24	.text+0xd07
+ c4f:	21 1a a5 00       	ld hl,0xa51a
+ c53:	e5                	push hl
+ c54:	f1                	pop af
+ c55:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ c59:	cd 71 0d 00       	call 0x0d71
+			c5a: r_imm24	.text+0xd71
+ c5d:	ed 7b 05 00 00    	ld sp,(0x0005)
+			c5f: r_imm24	.data+0x5
+ c62:	cd ef 0c 00       	call 0x0cef
+			c63: r_imm24	.text+0xcef
+ c66:	cd ee 0c 00       	call 0x0cee
+			c67: r_imm24	.text+0xcee
+ c6a:	21 32 00 00       	ld hl,0x0032
+ c6e:	22 00 00 00       	ld (0x0000),hl
+			c6f: r_imm24	.data
+ c72:	21 5a a5 00       	ld hl,0xa55a
+ c76:	e5                	push hl
+ c77:	f1                	pop af
+ c78:	01 fc fd fe       	ld bc,0xfefdfc
+ c7c:	11 f9 fa fb       	ld de,0xfbfaf9
+ c80:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ c84:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ c89:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ c8e:	cd 07 0d 00       	call 0x0d07
+			c8f: r_imm24	.text+0xd07
+ c92:	21 da a5 00       	ld hl,0xa5da
+ c96:	e5                	push hl
+ c97:	f1                	pop af
+ c98:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ c9c:	cd 71 0d 00       	call 0x0d71
+			c9d: r_imm24	.text+0xd71
+ ca0:	ed 7b 05 00 00    	ld sp,(0x0005)
+			ca2: r_imm24	.data+0x5
+ ca5:	cd ef 0c 00       	call 0x0cef
+			ca6: r_imm24	.text+0xcef
+ ca9:	cd ee 0c 00       	call 0x0cee
+			caa: r_imm24	.text+0xcee
+ cad:	21 33 00 00       	ld hl,0x0033
+ cb1:	22 00 00 00       	ld (0x0000),hl
+			cb2: r_imm24	.data
+ cb5:	21 5a a5 00       	ld hl,0xa55a
+ cb9:	e5                	push hl
+ cba:	f1                	pop af
+ cbb:	01 fc fd fe       	ld bc,0xfefdfc
+ cbf:	11 f9 fa fb       	ld de,0xfbfaf9
+ cc3:	21 f6 f7 f8       	ld hl,0xf8f7f6
+ cc7:	dd 21 f3 f4 f5    	ld ix,0xf5f4f3
+ ccc:	fd 21 f0 f1 f2    	ld iy,0xf2f1f0
+ cd1:	cd 07 0d 00       	call 0x0d07
+			cd2: r_imm24	.text+0xd07
+ cd5:	33                	inc sp
+ cd6:	33                	inc sp
+ cd7:	33                	inc sp
+ cd8:	cd 71 0d 00       	call 0x0d71
+			cd9: r_imm24	.text+0xd71
+ cdc:	ed 7b 05 00 00    	ld sp,(0x0005)
+			cde: r_imm24	.data+0x5
+ ce1:	cd ef 0c 00       	call 0x0cef
+			ce2: r_imm24	.text+0xcef
+ ce5:	cd ee 0c 00       	call 0x0cee
+			ce6: r_imm24	.text+0xcee
+
+00000ce9 <_controls_done>:
+ ce9:	fd e1             	pop iy
+ ceb:	dd e1             	pop ix
+ ced:	c9                	ret
+
+00000cee <_sample_done>:
+ cee:	c9                	ret
+
+00000cef <_clobber_after_capture>:
+ cef:	21 00 00 00       	ld hl,0x0000
+ cf3:	01 00 00 00       	ld bc,0x0000
+ cf7:	11 00 00 00       	ld de,0x0000
+ cfb:	dd 21 00 00 00    	ld ix,0x0000
+ d00:	fd 21 00 00 00    	ld iy,0x0000
+ d05:	af                	xor a,a
+ d06:	c9                	ret
+
+00000d07 <_capture_before>:
+ d07:	22 08 e9 b7       	ld (0xb7e908),hl
+ d0b:	f5                	push af
+ d0c:	e1                	pop hl
+ d0d:	22 00 e9 b7       	ld (0xb7e900),hl
+ d11:	ed 43 02 e9 b7    	ld (0xb7e902),bc
+ d16:	ed 53 05 e9 b7    	ld (0xb7e905),de
+ d1b:	dd 22 0b e9 b7    	ld (0xb7e90b),ix
+ d20:	fd 22 0e e9 b7    	ld (0xb7e90e),iy
+ d25:	ed 73 11 e9 b7    	ld (0xb7e911),sp
+ d2a:	2a 11 e9 b7       	ld hl,(0xb7e911)
+ d2e:	23                	inc hl
+ d2f:	23                	inc hl
+ d30:	23                	inc hl
+ d31:	22 11 e9 b7       	ld (0xb7e911),hl
+ d35:	21 07 0d 00       	ld hl,0x0d07
+			d36: r_imm24	.text+0xd07
+ d39:	22 14 e9 b7       	ld (0xb7e914),hl
+ d3d:	ed 6e             	ld a,mb
+ d3f:	32 17 e9 b7       	ld (0xb7e917),a
+ d43:	3e 01             	ld a,0x01
+ d45:	32 18 e9 b7       	ld (0xb7e918),a
+ d49:	af                	xor a,a
+ d4a:	32 19 e9 b7       	ld (0xb7e919),a
+ d4e:	32 1c e9 b7       	ld (0xb7e91c),a
+ d52:	32 1d e9 b7       	ld (0xb7e91d),a
+ d56:	32 1e e9 b7       	ld (0xb7e91e),a
+ d5a:	32 1f e9 b7       	ld (0xb7e91f),a
+ d5e:	21 ff 03 00       	ld hl,0x03ff
+ d62:	22 1a e9 b7       	ld (0xb7e91a),hl
+ d66:	2a 00 e9 b7       	ld hl,(0xb7e900)
+ d6a:	e5                	push hl
+ d6b:	f1                	pop af
+ d6c:	2a 08 e9 b7       	ld hl,(0xb7e908)
+ d70:	c9                	ret
+
+00000d71 <_capture_after>:
+ d71:	22 28 e9 b7       	ld (0xb7e928),hl
+ d75:	f5                	push af
+ d76:	e1                	pop hl
+ d77:	22 20 e9 b7       	ld (0xb7e920),hl
+ d7b:	ed 43 22 e9 b7    	ld (0xb7e922),bc
+ d80:	ed 53 25 e9 b7    	ld (0xb7e925),de
+ d85:	dd 22 2b e9 b7    	ld (0xb7e92b),ix
+ d8a:	fd 22 2e e9 b7    	ld (0xb7e92e),iy
+ d8f:	ed 73 31 e9 b7    	ld (0xb7e931),sp
+ d94:	2a 31 e9 b7       	ld hl,(0xb7e931)
+ d98:	23                	inc hl
+ d99:	23                	inc hl
+ d9a:	23                	inc hl
+ d9b:	22 31 e9 b7       	ld (0xb7e931),hl
+ d9f:	21 71 0d 00       	ld hl,0x0d71
+			da0: r_imm24	.text+0xd71
+ da3:	22 34 e9 b7       	ld (0xb7e934),hl
+ da7:	ed 6e             	ld a,mb
+ da9:	32 37 e9 b7       	ld (0xb7e937),a
+ dad:	3e 01             	ld a,0x01
+ daf:	32 38 e9 b7       	ld (0xb7e938),a
+ db3:	af                	xor a,a
+ db4:	32 39 e9 b7       	ld (0xb7e939),a
+ db8:	32 3c e9 b7       	ld (0xb7e93c),a
+ dbc:	32 3d e9 b7       	ld (0xb7e93d),a
+ dc0:	32 3e e9 b7       	ld (0xb7e93e),a
+ dc4:	32 3f e9 b7       	ld (0xb7e93f),a
+ dc8:	21 ff 03 00       	ld hl,0x03ff
+ dcc:	22 3a e9 b7       	ld (0xb7e93a),hl
+ dd0:	2a 20 e9 b7       	ld hl,(0xb7e920)
+ dd4:	e5                	push hl
+ dd5:	f1                	pop af
+ dd6:	2a 28 e9 b7       	ld hl,(0xb7e928)
+ dda:	c9                	ret
+
+00000ddb <_capture_available>:
+ ddb:	ed 38 b5          	in0 a,(0xb5)
+ dde:	fe b7             	cp a,0xb7
+ de0:	20 0c             	jr nz,0x0dee
+ de2:	ed 38 b4          	in0 a,(0xb4)
+ de5:	e6 80             	and a,0x80
+ de7:	28 05             	jr z,0x0dee
+ de9:	21 01 00 00       	ld hl,0x0001
+ ded:	c9                	ret
+
+00000dee <capture_unavailable>:
+ dee:	21 00 00 00       	ld hl,0x0000
+ df2:	c9                	ret

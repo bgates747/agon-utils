@@ -1,0 +1,1234 @@
+
+[1mAgon EZ80 Debugger[0m
+
+[36mbr[eak] <address>             [37mSet a breakpoint at the hex address
+[36mc[ontinue]                    [37mResume (un-pause) Agon CPU
+[36mdelete <address>              [37mDelete a breakpoint
+[36mdis[assemble] [start] [end]   [37mDisassemble in current ADL mode
+[36mdis16 [start] [end]           [37mDisassemble in ADL=0 (Z80) mode
+[36mdis24 [start] [end]           [37mDisassemble in ADL=1 (24-bit) mode
+[36mexit                          [37mQuit from Agon Light Emulator
+[36minfo breakpoints              [37mList breakpoints
+[36m[mem]ory <start> [len]        [37mDump memory. <start> can be a register
+[36mn[ext]                        [37mStep over function calls
+[36mpause                         [37mPause execution and enter debugger
+[36mstate                         [37mShow CPU state
+[36m.                             [37mShow CPU state
+[36ms[tep]                        [37mExecute one instuction
+[36mtrace on                      [37mEnable logging every instruction
+[36mtrace off                     [37mDisable logging every instruction
+[36mtrigger <address> cmd1 : cmd2 : ...[37m
+    Perform debugger commands when <address> is reached
+    eg: break $123 is equivalent to:
+        trigger $123 pause:"CPU paused at breakpoint":state
+
+[36mtriggers                      [37mList triggers
+
+The previous command can be repeated by pressing return.
+
+[32mCPU running. Press <CTRL-C> to pause
+[39m
+[33mCPU paused (breakpoint)[39m
+* 000000: DI                   AF:ffff BC:000000 DE:000000 HL:000000 SPS:0000 SPL:000000 IX:000000 IY:000000 ADL:0
+Video driver: dummy (can override with SDL_VIDEO_DRIVER environment variable)
+[?2004h[K[36m>> [3Ctrigger $40ee8 state[?2004l
+[?2004h[K[36m>> [3Ctrigger $40f52 state[?2004l
+[?2004h[K[36m>> [3Cbreak $40ecf[?2004l
+[?2004h[K[36m>> [3Cbreak $40eca[?2004l
+[?2004h[K[36m>> [3Cdelete $0[?2004l
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[39m[39m[39m[39m[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 00 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:010283 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 83 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 01 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:018203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 82 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 02 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:810203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 02 81 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 03 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:010203 DE:040586 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 02 01 86 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 04 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:010203 DE:048506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 02 01 06 85 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 05 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:010203 DE:840506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 02 01 06 05 84 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 06 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:010203 DE:040506 HL:070889 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 02 01 06 05 04 89 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 07 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:010203 DE:040506 HL:078809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 02 01 06 05 04 09 88 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 08 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:010203 DE:040506 HL:870809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 02 01 06 05 04 09 08 87 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 09 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b8c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 02 01 06 05 04 09 08 07 8c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 0a 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a8b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 02 01 06 05 04 09 08 07 0c 8b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 0b 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:8a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 8a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 0c 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e8f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 8f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 0d 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d8e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 8e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 0e 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:8d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 8d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 0f 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:daa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 da 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |                 
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 10 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa4 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a4 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 11 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa7 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a7 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 12 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa1 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a1 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 13 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aad BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: ad 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 14 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5ab5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: b5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 15 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5a85 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 85 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 16 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5ae5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: e5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 17 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5a25 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 25 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e | %Z              
+b7e930: 0d ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 18 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affeb IX:0a0b0c IY:0d0e0f ADL:1
+* 040f52: LD ($b7e928), HL     AF:5aa5 BC:010203 DE:040506 HL:070809 SPS:0000 SPL:0affee IX:0a0b0c IY:0d0e0f ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e910: 0d ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: a5 5a 03 02 01 06 05 04 09 08 07 0c 0b 0a 0f 0e |  Z              
+b7e930: 0d f1 ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 19 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 1a 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fefd7c DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 7c fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z |             
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 1b 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fe7dfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc 7d fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z  }            
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 1c 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:7efdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd 7e f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z   ~           
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 1d 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fefdfc DE:fbfa79 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd fe 79 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z    y          
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 1e 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fefdfc DE:fb7af9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd fe f9 7a fb f6 f7 f8 f3 f4 f5 f0 f1 | Z     z         
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 1f 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fefdfc DE:7bfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd fe f9 fa 7b f6 f7 f8 f3 f4 f5 f0 f1 | Z      {        
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 20 00 00 |    
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f776 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd fe f9 fa fb 76 f7 f8 f3 f4 f5 f0 f1 | Z       v       
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 21 00 00 | !  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f877f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd fe f9 fa fb f6 77 f8 f3 f4 f5 f0 f1 | Z        w      
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 22 00 00 | "  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:78f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd fe f9 fa fb f6 f7 78 f3 f4 f5 f0 f1 | Z         x     
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 23 00 00 | #  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f473 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd fe f9 fa fb f6 f7 f8 73 f4 f5 f0 f1 | Z          s    
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 24 00 00 | $  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f574f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 74 f5 f0 f1 | Z           t   
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 25 00 00 | %  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:75f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 75 f0 f1 | Z            u  
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 26 00 00 | &  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f170 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 70 f1 | Z             p 
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 27 00 00 | '  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f271f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 71 | Z              q
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 28 00 00 | (  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:72f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e930: 72 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 | r   R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 29 00 00 | )  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:255a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a 25 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z%              
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 2a 00 00 | *  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55b BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5b a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | [               
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 2b 00 00 | +  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a558 BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 58 a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | X               
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 2c 00 00 | ,  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55e BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5e a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | ^               
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 2d 00 00 | -  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a552 BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 52 a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | R               
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 2e 00 00 | .  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a54a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 4a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | J               
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 2f 00 00 | /  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a57a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 7a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | z               
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 30 00 00 | 0  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a51a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 1a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 |                 
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 31 00 00 | 1  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a5da BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: da a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 |                 
+b7e930: f2 ee ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 32 00 00 | 2  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+* 040ee8: LD ($b7e908), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affeb IX:f5f4f3 IY:f2f1f0 ADL:1
+* 040f52: LD ($b7e928), HL     AF:a55a BC:fefdfc DE:fbfaf9 HL:f8f7f6 SPS:0000 SPL:0affee IX:f5f4f3 IY:f2f1f0 ADL:1
+[33mCPU paused (breakpoint)[39m
+* 040ecf: RET                  AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affeb IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e900 64[?2004l
+[39mb7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e930: f2 f1 ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+[?2004h[K[36m>> [3Cmem $4120e 3[?2004l
+[39m04120e: 33 00 00 | 3  
+[?2004h[K[36m>> [3Cc[?2004l
+[39m[32mCPU running[39m
+[33mCPU paused (breakpoint)[39m
+* 040eca: POP IY               AF:0044 BC:000000 DE:000000 HL:000000 SPS:0000 SPL:0affee IX:000000 IY:000000 ADL:1
+[?2004h[K[36m>> [3Cmem $b7e000 8192[?2004l
+[39mb7e000: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e010: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e020: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e030: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e040: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e050: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e060: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e070: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e080: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e090: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e0a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e0b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e0c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e0d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e0e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e0f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e100: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e110: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e120: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e130: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e140: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e150: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e160: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e170: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e180: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e190: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e1a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e1b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e1c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e1d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e1e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e1f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e200: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e210: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e220: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e230: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e240: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e250: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e260: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e270: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e280: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e290: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e2a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e2b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e2c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e2d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e2e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e2f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e300: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e310: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e320: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e330: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e340: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e350: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e360: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e370: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e380: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e390: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e3a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e3b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e3c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e3d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e3e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e3f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e400: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e410: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e420: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e430: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e440: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e450: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e460: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e470: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e480: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e490: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e4a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e4b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e4c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e4d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e4e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e4f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e500: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e510: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e520: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e530: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e540: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e550: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e560: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e570: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e580: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e590: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e5a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e5b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e5c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e5d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e5e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e5f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e600: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e610: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e620: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e630: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e640: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e650: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e660: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e670: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e680: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e690: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e6a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e6b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e6c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e6d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e6e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e6f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e700: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e710: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e720: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e730: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e740: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e750: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e760: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e770: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e780: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e790: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e7a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e7b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e7c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e7d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e7e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e7f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e800: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e810: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e820: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e830: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e840: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e850: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e860: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e870: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e880: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e890: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e8a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e8b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e8c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e8d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e8e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e8f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e900: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e910: f2 ee ff 0a e8 0e 04 00 01 00 ff 03 00 00 00 00 |                 
+b7e920: 5a a5 fc fd fe f9 fa fb f6 f7 f8 f3 f4 f5 f0 f1 | Z               
+b7e930: f2 f1 ff 0a 52 0f 04 00 01 00 ff 03 00 00 00 00 |     R           
+b7e940: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e950: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e960: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e970: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e980: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e990: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e9a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e9b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e9c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e9d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e9e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7e9f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ea00: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ea10: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ea20: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ea30: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ea40: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ea50: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ea60: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ea70: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ea80: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ea90: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eaa0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eab0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eac0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ead0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eae0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eaf0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eb00: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eb10: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eb20: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eb30: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eb40: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eb50: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eb60: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eb70: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eb80: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eb90: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eba0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ebb0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ebc0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ebd0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ebe0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ebf0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ec00: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ec10: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ec20: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ec30: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ec40: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ec50: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ec60: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ec70: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ec80: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ec90: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eca0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ecb0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ecc0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ecd0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ece0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ecf0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ed00: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ed10: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ed20: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ed30: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ed40: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ed50: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ed60: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ed70: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ed80: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ed90: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eda0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7edb0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7edc0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7edd0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ede0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7edf0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ee00: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ee10: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ee20: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ee30: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ee40: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ee50: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ee60: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ee70: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ee80: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ee90: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eea0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eeb0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eec0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eed0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eee0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eef0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ef00: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ef10: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ef20: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ef30: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ef40: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ef50: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ef60: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ef70: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ef80: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ef90: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7efa0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7efb0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7efc0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7efd0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7efe0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7eff0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f000: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f010: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f020: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f030: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f040: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f050: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f060: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f070: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f080: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f090: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f0a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f0b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f0c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f0d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f0e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f0f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f100: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f110: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f120: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f130: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f140: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f150: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f160: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f170: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f180: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f190: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f1a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f1b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f1c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f1d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f1e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f1f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f200: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f210: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f220: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f230: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f240: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f250: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f260: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f270: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f280: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f290: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f2a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f2b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f2c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f2d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f2e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f2f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f300: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f310: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f320: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f330: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f340: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f350: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f360: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f370: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f380: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f390: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f3a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f3b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f3c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f3d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f3e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f3f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f400: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f410: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f420: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f430: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f440: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f450: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f460: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f470: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f480: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f490: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f4a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f4b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f4c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f4d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f4e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f4f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f500: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f510: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f520: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f530: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f540: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f550: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f560: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f570: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f580: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f590: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f5a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f5b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f5c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f5d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f5e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f5f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f600: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f610: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f620: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f630: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f640: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f650: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f660: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f670: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f680: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f690: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f6a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f6b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f6c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f6d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f6e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f6f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f700: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f710: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f720: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f730: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f740: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f750: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f760: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f770: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f780: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f790: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f7a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f7b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f7c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f7d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f7e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f7f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f800: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f810: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f820: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f830: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f840: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f850: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f860: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f870: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f880: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f890: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f8a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f8b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f8c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f8d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f8e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f8f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f900: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f910: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f920: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f930: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f940: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f950: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f960: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f970: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f980: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f990: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f9a0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f9b0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f9c0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f9d0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f9e0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7f9f0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fa00: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fa10: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fa20: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fa30: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fa40: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fa50: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fa60: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fa70: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fa80: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fa90: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7faa0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fab0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fac0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fad0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fae0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7faf0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fb00: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fb10: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fb20: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fb30: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fb40: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fb50: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fb60: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fb70: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fb80: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fb90: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fba0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fbb0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fbc0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fbd0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fbe0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fbf0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fc00: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fc10: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fc20: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fc30: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fc40: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fc50: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fc60: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fc70: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fc80: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fc90: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fca0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fcb0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fcc0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fcd0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fce0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fcf0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fd00: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fd10: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fd20: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fd30: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fd40: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fd50: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fd60: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fd70: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fd80: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fd90: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fda0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fdb0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fdc0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fdd0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fde0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fdf0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fe00: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fe10: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fe20: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fe30: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fe40: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fe50: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fe60: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fe70: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fe80: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fe90: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fea0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7feb0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fec0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fed0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fee0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fef0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ff00: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ff10: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ff20: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ff30: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ff40: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ff50: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ff60: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ff70: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ff80: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ff90: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ffa0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ffb0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ffc0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ffd0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7ffe0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+b7fff0: c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 c7 |                 
+[?2004h[K[36m>> [3Cmem $41211 2[?2004l
+[39m041211: b7 80 |   
+[?2004h[K[36m>> [3C

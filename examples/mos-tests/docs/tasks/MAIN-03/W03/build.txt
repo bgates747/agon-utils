@@ -1,0 +1,10 @@
+[assembling src/probe.asm]
+/home/smith/Agon/agondev/release/bin/ez80-none-elf-as -march=ez80+full -I /home/smith/Agon/agondev/release/include src/probe.asm -o obj/probe.o
+[compiling src/main.cpp]
+/home/smith/Agon/agondev/release/bin/ez80-none-elf-clang -mllvm -z80-gas-style -mllvm -z80-print-zero-offset -nostdinc -I./include -isystem /home/smith/Agon/agondev/release/include -target ez80-none-elf -DAGONDEV -Oz -Wa,-march=ez80+full -fno-threadsafe-statics -fcolor-diagnostics -isystem /home/smith/Agon/agondev/release/include/c++ -std=c++14 src/main.cpp -c -o obj/main.o
+[Linking bin/capture-controls.noname.bin]
+/home/smith/Agon/agondev/release/bin/ez80-none-elf-ld -defsym=RAM_START=0x40000 -defsym=RAM_SIZE=0x70000  -defsym=_has_exit_handler=0 -Map=bin/capture-controls.map -T /home/smith/Agon/agondev/release/config/linker.conf --oformat binary -o bin/capture-controls.noname.bin  obj/probe.o     obj/main.o -L./lib  -L/home/smith/Agon/agondev/release/lib -l agon 
+[Start address 0x40000]
+[Setting name 'capture-controls.bin' in binary]
+/home/smith/Agon/agondev/release/bin/agondev-setname bin/capture-controls.bin >/dev/null
+[Done]

@@ -9,7 +9,7 @@ it does not test MOS conformance or authorize firmware changes.
 
 ## State
 
-Reconstructed contract checkpoint. Completed items: W01.
+Reconstructed contract checkpoint. Completed items: W01, W02.
 Remaining work is frozen and unstarted at this checkpoint. The subproject TODO
 owns unfinished task indexing. This is a retrospective grouping, not an exact
 previous edit version or a backdated acceptance record.
@@ -25,7 +25,7 @@ previous edit version or a backdated acceptance record.
   fixtures/format-v1 (six record types, 44 capture vectors, 14 report scenarios)
   and [W01 checks](TEST-01/W01/validation.txt). These define independent
   expectations; production encoding/capture/report qualification remains pending.
-- W02 [ ] Qualify the assembly capture boundary.
+- W02 [x] Qualify the assembly capture boundary.
   Exercise preserving controls and intentional changes to each captured register,
   upper byte and promised flag; check known return values and stack accounting.
   Use at least two valid seeds and reporting code that clobbers registers after
@@ -33,6 +33,9 @@ previous edit version or a backdated acceptance record.
   observations/disassembly where useful. Isolate deliberate stack deviations so
   the control does not silently corrupt the runner. Distinguish untested state
   such as alternate registers from qualified primary-register coverage.
+  **Completed** — [W02 qualification](TEST-01/W02/validation.md), with 52
+  synthetic controls, independent CPU-state comparisons and guarded SRAM retrieval.
+  Limits include IFF, alternate registers/modes and hardware; no MOS claim.
 - W03 [ ] Validate record encoding, decoding and recovery interpretation.
   Check golden records, zero/max payloads and boundaries, unsupported versions,
   invalid lengths/CRC/commit markers, truncation at each structural boundary,

@@ -10,7 +10,7 @@ through the existing human/agent entry points. Qualify each component with
 
 ## State and scope
 
-Reconstructed contract checkpoint. Completed items: W01, W02.
+Reconstructed contract checkpoint. Completed items: W01, W02, W03.
 Remaining work is frozen and unstarted at this checkpoint. The subproject TODO
 owns unfinished task indexing. This is a retrospective grouping, not an exact
 previous edit version or a backdated acceptance record.
@@ -39,13 +39,17 @@ previous edit version or a backdated acceptance record.
   maintained locations. [W02 checks](MAIN-03/W02/validation.txt) cover native
   lifecycle/selection failures and the AgonDev build. Plans remain unexecuted;
   capture, durable hooks and binary run records connect in subsequent items.
-- W03 [ ] Implement and qualify immediate register capture and SRAM staging.
+- W03 [x] Implement and qualify immediate register capture and SRAM staging.
   Use the agreed $B7E000–$B7FFFF user-owned layout, explicit mapping checks and
   guarded boundaries. Capture full-width entry/exit registers, applicable flags
   and stack context before reporting. Retain disassembly and probe accounting.
   Integrate TEST-01 W02 preserving/clobbering controls; do not trust register
   discrepancies until those controls pass. Record intentional user writes so
   SRAM ownership-violation findings can be attributed correctly.
+  **Completed** — [capture contract](../register-capture.md) and
+  [W03 evidence](MAIN-03/W03/validation.md): 52 controls passed with independent
+  debugger observations and intact SRAM guards. ADL/MB0 primary state qualified;
+  IFF, alternate state and hardware remain unqualified. Record framing follows W04.
 - W04 [ ] Implement binary recording and frequent SD checkpoints.
   Serialize v1 records, CRC and commit marker; sync case-start before entry and
   observations/end before advancing. Track confirmed progress, preserve emergency
