@@ -47,3 +47,19 @@ copying their subtask checklists.
 
 The task-silo layout follows `agon-extender/docs/tasks`; permanent task-local subtask IDs
 and disposition rules reflect the Author's project-specific instructions.
+
+## Task namespaces
+
+`MAIN-*` covers core suite work. `TEST-*` is reserved for testing the tests.
+`MOS-*` covers firmware defects. Subtask identifiers remain task-local.
+
+## Freeze, implement, accept, checkpoint
+
+Follow the acceptance checkpoint cycle in ../../AGENTS.md. Commit the next work
+item's scope/IDs, acceptance criteria and validation plan before implementation.
+On acceptance, commit its results/evidence/disposition together with the next
+frozen contract, or commit that next contract separately before starting it.
+A rollback must retain both the accepted baseline and the original next-work
+instructions. Contract changes are explicit committed revisions, not silent
+changes made to fit implementation. Never accumulate several accepted work items
+without checkpointing. Existing Author authorization need not be requested again.

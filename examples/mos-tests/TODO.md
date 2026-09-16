@@ -1,8 +1,9 @@
 # MOS tests TODO
 
-This file, `agon-utils/examples/mos-tests/TODO.md`, is the sole authoritative
-index of unfinished MOS tests work. Authority is scoped to this subproject,
-not the agon-utils repository root. Details and acceptance criteria live in
-linked task records, without duplicate task checklists.
+This subproject-root file is the sole unfinished-task index.
 
-- [ ] **MOS-01** — [Fix missing-OBEY cleanup and prepare an upstream PR](docs/tasks/MOS-01.md).
+- [ ] **MAIN-01** — [Frozen strategy contract](docs/tasks/MAIN-01.md).
+
+- [ ] **MAIN-02** — [Frozen tooling contract](docs/tasks/MAIN-02.md).
+
+- [ ] **MOS-01** — [Parked firmware issue](docs/tasks/MOS-01.md); retain !boot.obey.

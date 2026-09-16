@@ -1,10 +1,5 @@
 # Documentation
 
-Current project operation lives in `../HANDOFF.md`; project intent lives in
-`../README.md`. `../TODO.md` owns unfinished work. Task records live in
-`tasks/`, and chronological evidence and decisions live in `development/`.
-Promote recurring task outputs into subject-named documentation or tools when
-accepted; keep task records as provenance.
+Task contracts live in tasks/; TODO at the subproject root owns unfinished work.
 
-See [emulator debugging](emulator-debugging.md) for headless launch, commands,
-triggers, diagnostic hooks, automation, and test-integration patterns.
+[Build](build.md), [emulator debugging](emulator-debugging.md).

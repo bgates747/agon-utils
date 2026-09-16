@@ -62,3 +62,27 @@ automation; use its command, fidelity, and evidence conventions.
 Jeroen Venema's BBC BASIC V ADL is deployed as `bbc-basic-v-adl.bin` to
 avoid ambiguity with other BASIC ports. Preserve its upstream source filename
 and version/hash in provenance; do not rename files in the upstream checkout.
+
+## Acceptance checkpoints and frozen work contracts
+
+1. Before implementation, freeze the next work item's scope, stable IDs,
+   acceptance criteria and validation plan in a commit. A proposed change to that
+   contract must be recorded and committed before implementing the changed scope.
+2. Work only against that committed contract. Retain implementation, experiments,
+   validation and limitations with the same task/work-item identifiers.
+3. On Author acceptance, commit the completed item's implementation, evidence and
+   disposition together with the frozen contract for the next item. Do not begin
+   the next item until this checkpoint exists. This keeps rollback points aligned
+   with known-good results and preserves the original instructions for later work.
+4. If the next contract is not ready, commit the accepted results, then commit the
+   next contract separately before implementation. Do not let accepted work collect
+   across multiple uncommitted items. Acceptance/commit authorization may already
+   be explicit in the conversation; do not request it a second time.
+5. Preserve task identifiers and disposition history. Scope changes never erase
+   the contract that motivated work. Keep unrelated repository changes out of
+   these commits, and do not push without authorization. A commit does not imply
+   unperformed hardware or visual validation.
+6. For the 2026-09-16 backlog only, the Author explicitly authorized reconstructing
+   logical contract/result commits. Identify that reconstruction, use real current
+   commit dates, and preserve the original evidence and its limitations. This is
+   not permission to invent historical approvals, test runs or exact edit versions.

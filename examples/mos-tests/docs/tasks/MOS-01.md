@@ -10,6 +10,8 @@ an upstream PR with a minimal reproducer and regression evidence.
 
 Planned separately from SETUP-01. The subproject-root TODO.md owns task status.
 The Author authorized recording this follow-up; implementation is not started.
+Parked at the Author's request while the !boot.obey workaround allows suite
+development to proceed. MAIN-01 is the next core task.
 
 ## Work
 
