@@ -1,5 +1,16 @@
 # MOS tests handoff
 
+## Current checkpoint and work
+
+W01 and the accepted foundation are pushed through 8fa4b5a. MAIN-05 W02 is
+implemented and qualified, awaiting acceptance/commit. Read human/recovery.md
+and docs/tasks/MAIN-05/W02/validation.md. Startup now inspects a dual-slot SD
+journal and retained evidence before allocation or execution; unresolved state
+blocks repeated boots. RUN . inspect is read-only. No retry/continue tooling yet
+(W03); do not clear journals or counters to bypass the gate. Seventeen final
+headless raw-image boots passed, as did journal and regression checks. Hardware
+is untested. Remaining sections retain earlier checkpoint context.
+
 SETUP-01 is complete and accepted; the Author approved committing on 2026-09-15.
 C++, independent assembly, and BBC BASIC checks passed headlessly on raw SD
 images. MOS-01 remains open for the missing-OBEY cleanup defect and upstream PR.
@@ -113,3 +124,10 @@ The Author requested “push, then do your next work.” This accepts W01 for it
 result checkpoint, freezes W02 implementation/validation scope, and authorizes
 pushing these commits before implementing the gate. W03 dispositions remain
 separate. No hardware execution or firmware repair is authorized.
+
+## W02 accepted; W03 authorized
+
+The Author explicitly accepted W02 and requested commit then next work. This
+checkpoint records accepted W02 results and freezes the W03 integration contract
+(requests, acceptance certificates and child schema2) before implementation.
+No push is requested for this checkpoint. Hardware remains unqualified.

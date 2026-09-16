@@ -25,3 +25,6 @@ It saves plans only; use the startup workflow above to execute synthetic control
 `report-check` qualifies the host decoder without launching an emulator.
 
 [Foundation qualification](qualification.md) gives the complete synthetic check procedure and evidence limits.
+
+[Restart recovery](recovery.md) explains interrupted-run blocking, read-only
+inspection and current recovery limits.

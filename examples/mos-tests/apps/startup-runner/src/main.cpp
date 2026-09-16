@@ -27,8 +27,10 @@ static void path(char* dest,const char* name){snprintf(dest,128,"%s/%s",session.
 static void remember(){memcpy(session.magic,"MSTS",4);session.crc=wire::crc(reinterpret_cast<const uint8_t*>(&session),offsetof(Session,crc));for(size_t i=0;i<sizeof session;++i)ram[0xa00+i]=reinterpret_cast<const uint8_t*>(&session)[i];}
 static bool recall(){for(size_t i=0;i<sizeof session;++i)reinterpret_cast<uint8_t*>(&session)[i]=ram[0xa00+i];return !memcmp(session.magic,"MSTS",4)&&session.crc==wire::crc(reinterpret_cast<const uint8_t*>(&session),offsetof(Session,crc))&&session.directory[63]==0;}
 static bool script_selection(Selection& selection,uint8_t digest[32]){size_t n=0;if(!readfile("/autoexec.txt",script,8192,n))return false;Sha256 h;h.add(script,n);h.finish(digest);script[n]=0;return parse_script(script,n,FUNCTIONS,selection);}
+static bool allocation_intent();
 static bool allocate(){uint8_t b[24];size_t n=0;if(!readfile("/mos-tests/install.bin",b,sizeof b,n)||n!=24||memcmp(b+20,"MSTI",4)||wire::get32(b+16)!=wire::crc(b,16))return false;
  uint64_t count=0;for(unsigned i=0;i<8;++i)count|=uint64_t(b[8+i])<<(8*i);if(count==UINT64_MAX)return false;++count;for(unsigned i=0;i<8;++i)b[8+i]=count>>(8*i);wire::put32(b+16,wire::crc(b,16));
+ memcpy(session.id,b,16);if(!allocation_intent())return false;
  FIL f={};if(ffs_fopen(&f,"/mos-tests/install.bin",FA_WRITE))return false;uint8_t status=0;bool ok=recording_write(&f,reinterpret_cast<char*>(b),24,&status)==24&&!status;ok=!ffs_fsync(&f)&&ok;ok=ffs_fclose(&f)==0&&ok;if(!ok)return false;
  memcpy(session.id,b,16);char id[33];hex(b,16,id);snprintf(session.directory,sizeof session.directory,"/mos-tests/runs/%s",id);return ffs_mkdir(session.directory)==0;
 }
@@ -62,30 +64,34 @@ static Result execute(void* data,const Case& c){auto& context=*static_cast<Conte
  return failed?Result{Outcome::Failed,3,failed,"synthetic control did not match its expected register effect (or deliberate qualification failure)"}:Result{Outcome::Passed,2,0,""};
 }
 static bool cleanup(void*,const Case&){return true;}
+#include "recovery_target.h"
+static bool allocation_intent(){return recovery_target::publish(recovery::ALLOCATING,0,0,0);}
 static int command(int argc,char** argv){if(argc<2||!capture_available())return 19;
+ if(argc==2&&!strcmp(argv[1],"inspect")){if(!recovery_target::gate())return 41;printf("READY: recovery inspection permits a new run; no tests executed.\n");return 0;}
  Selection selection;uint8_t script_hash[32];if(!script_selection(selection,script_hash))return 20;
  bool begin=strcmp(argv[1],"begin")==0;
- if(begin){if(argc!=2)return 21;memset(&session,0,sizeof session);session.mask=selection.mask;memcpy(session.script,script_hash,32);if(!allocate()||!prepare_files())return 22;
+ if(begin){if(argc!=2)return 21;if(!recovery_target::gate())return 41;memset(&session,0,sizeof session);session.mask=selection.mask;memcpy(session.script,script_hash,32);if(!allocate()||!prepare_files())return 22;
   MosStorage disk;char file[128];path(file,"results.bin");if(disk.open(file))return 23;Recorder r(ram,disk.adapter(),session.id,session.hashes+32,session.hashes+64);wire::Payload p;
   if(!r.begin()||!p.run_start(BACKEND,selection.count,session.hashes)||!r.append(1,p)||!r.checkpoint())return 24;
-  uint32_t length=0;if(ffs_fsize(&disk.file,&length)||MosStorage::close(&disk)){r.fail(3,1,r.next-1);return 25;}session.length=length;remember();
+  uint32_t length=0;if(ffs_fsize(&disk.file,&length)||MosStorage::close(&disk)){r.fail(3,1,r.next-1);return 25;}session.length=length;if(!recovery_target::publish(recovery::BETWEEN,0,r.confirmed,length))return 42;remember();
   uint8_t fault=0;size_t fault_size=0;if(!readfile("/mos-tests/fault.bin",&fault,1,fault_size)||fault_size!=1)return 38;
   // Explicit qualification-only artifact: change a comment after plan persistence.
   if(fault==3){FIL change={};if(ffs_fopen(&change,"/autoexec.txt",FA_WRITE)||ffs_flseek(&change,2))return 39;uint8_t error=0;bool ok=recording_write(&change,"X",1,&error)==1&&!error;ok=ffs_fsync(&change)==0&&ok;ok=ffs_fclose(&change)==0&&ok;if(!ok)return 40;}
   printf("STARTED: %u synthetic tests; results in %s\n",selection.count,session.directory);return 0;
  }
  if(!recall()||session.mask!=selection.mask||memcmp(session.script,script_hash,32))return 26;
+ if(!recovery_target::same_boot()){recovery_target::diagnose(9);return 43;}
  bool final=strcmp(argv[1],"finalize")==0;unsigned index=3;
  if(final){if(argc!=2||session.index!=selection.count)return 27;}
  else {if(argc!=3||strcmp(argv[1],"function"))return 28;for(unsigned i=0;i<3;++i)if(!strcmp(argv[2],FUNCTIONS[i]))index=i;if(session.index>=selection.count||index!=selection.order[session.index])return 29;}
- MosStorage disk;Recorder r(ram,disk.adapter(),session.id,session.hashes+32,session.hashes+64);if(!restore_ready(r))return 30;char file[128];path(file,"results.bin");
+ MosStorage disk;Recorder r(ram,disk.adapter(),session.id,session.hashes+32,session.hashes+64);if(!restore_ready(r)||r.confirmed!=recovery_target::latest().sequence())return 30;char file[128];path(file,"results.bin");
  if(ffs_fopen(&disk.file,file,FA_WRITE))return 31;disk.opened=true;uint32_t length=0;if(ffs_fsize(&disk.file,&length)||length!=session.length||ffs_flseek(&disk.file,length)){r.fail(5,6,r.next);return 32;}
- if(final){wire::Payload p;p.run_end(session.counts,session.hashes+64);if(!r.finish_run(p))return 33;memset(session.magic,0,4);for(unsigned i=0;i<4;++i)ram[0xa00+i]=0;printf("COMPLETE: %lu passed, %lu failed, %lu unsupported. Decode saved evidence for the final report.\n",(unsigned long)session.counts[0],(unsigned long)session.counts[1],(unsigned long)session.counts[4]);return 0;}
+ if(final){if(!recovery_target::publish(recovery::FINALIZING,0,r.confirmed,session.length))return 42;wire::Payload p;p.run_end(session.counts,session.hashes+64);if(!r.finish_run(p))return 33;FILINFO info={};if(ffs_stat(&info,file)||!recovery_target::publish(recovery::COMPLETE,0,r.confirmed,info.fsize))return 42;memset(session.magic,0,4);for(unsigned i=0;i<4;++i)ram[0xa00+i]=0;printf("COMPLETE: %lu passed, %lu failed, %lu unsupported. Decode saved evidence for the final report.\n",(unsigned long)session.counts[0],(unsigned long)session.counts[1],(unsigned long)session.counts[4]);return 0;}
  uint8_t fault=0;size_t size=0;if(!readfile("/mos-tests/fault.bin",&fault,1,size)||size!=1)return 34;
  if(fault==2){r.fail(5,7,r.next);return 35;}
- Context context{nullptr,fault};RecordedLifecycle bridge(r,&context,metadata,execute,cleanup);context.bridge=&bridge;const Case* chosen[]={&CASES[index]};auto totals=run(chosen,1,1,bridge.hooks());if(!totals.complete)return 36;
+ Context context{nullptr,fault};RecordedLifecycle bridge(r,&context,metadata,execute,cleanup);context.bridge=&bridge;const Case* chosen[]={&CASES[index]};auto hooks=bridge.hooks();hooks.start=recovery_target::case_start;hooks.finish=recovery_target::case_finish;auto totals=run(chosen,1,1,hooks);if(!totals.complete)return 36;
  for(unsigned i=0;i<8;++i)session.counts[i]+=totals.counts[i];++session.index;
- if(ffs_fsize(&disk.file,&length)||MosStorage::close(&disk)){r.fail(3,1,r.next-1);return 37;}session.length=length;remember();
+ if(ffs_fsize(&disk.file,&length)||MosStorage::close(&disk)){r.fail(3,1,r.next-1);return 37;}session.length=length;if(!recovery_target::publish(recovery::BETWEEN,0,r.confirmed,length))return 42;remember();
  const char* outcome=totals.counts[0]?"PASSED":totals.counts[1]?"FAILED":"UNSUPPORTED";
  printf("%s: %s - %s\n",outcome,CASES[index].id,totals.counts[0]?(index==1?"changed only the expected IX upper bit in both samples":"preserved primary registers in both samples"):totals.counts[1]?"recorded a synthetic discrepancy; continuing selected groups":"required UART fixture is unavailable");return 0;
 }

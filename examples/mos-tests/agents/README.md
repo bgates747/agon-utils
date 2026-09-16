@@ -34,3 +34,7 @@ report the planner's success or the target build as execution of selected tests.
 startup-check front ends. W06 is accepted; its checkpoint precedes W07.
 
 For complete qualification, follow [the human procedure](../human/qualification.md). Run shared-profile emulator checks sequentially and retain all expected negative-case evidence.
+
+Use [human recovery guidance](../human/recovery.md). Preserve stopped images;
+never clear a journal or allocation counter to bypass the gate. W03 explicit
+disposition tools are not available yet. Reuse recovery-check for gate changes.

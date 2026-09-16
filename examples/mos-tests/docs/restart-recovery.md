@@ -5,7 +5,8 @@
 A boot must inspect durable recovery state before allocating or executing a run.
 Unresolved or ambiguous evidence stops automatic execution. Explicit disposition
 can park a run or authorize one new linked retry/continuation. This is a planned
-contract, not an implemented feature or a physical power-loss guarantee.
+contract. W02 now implements the restricted synthetic-profile gate; W03
+dispositions remain planned. No physical power-loss guarantee is made.
 
 The result wire format remains [v1](result-format-v1.md). This document adds an
 SD journal and disposition sidecars; it does not change record meanings. MAIN-05
@@ -203,3 +204,20 @@ hardware resets or physical card power loss.
 Before-reset Fab SRAM/register/trace capture remains complementary. Restart uses
 SD only and never assumes SRAM survives. Hardware, arbitrary crash recovery,
 storage atomicity and a trusted reset-reason source remain unqualified.
+
+## W02 implementation status
+
+See human/recovery.md and docs/tasks/MAIN-05/W02/validation.md. The gate and
+journal publication are implemented; dispositions are unavailable. W02 requires
+canonical same-bundle artifacts for the three synthetic controls and uses the
+existing wire primitives with stricter streaming validation. It may reject valid
+but unsupported host-decodable evidence. Additional operational bounds are 1 MiB
+per hashed artifact and 64 MiB aggregate hashed bytes per inspection. W03 must
+freeze any receipt/manifest integration changes before implementing dispositions.
+
+## W03 integration extension
+
+The frozen [W03 contract](tasks/MAIN-05/W03/contract.md) adds durable acceptance
+certificates and child run schema2, preventing orphan receipts from becoming
+authorizations after the journal advances. It specifies the shared request
+interface, selected continuation and explicit interrupted-disposition retry.

@@ -46,6 +46,10 @@ def build(out,script=None,backend='emulator',target=None,fault=0,image=True):
     (folder/'files.lst').write_text(''.join(f'{f.name} {sha(f)}\n' for f in files))
     write(folder/'bundle.json',{'schema':1,'catalogue_sha256':sha(CAT),'artifacts':[{'path':f.name,'size':f.stat().st_size,'sha256':sha(f)} for f in files+[folder/'files.lst']]})
     namespace=uuid.uuid4().bytes[:8];counter=namespace+bytes(8);(folder/'install.bin').write_bytes(counter+struct.pack('<I',zlib.crc32(counter))+b'MSTI')
+    for slot,generation in [('recovery-a.bin',1),('recovery-b.bin',2)]:
+        journal=bytearray(256);journal[:4]=b'MSTJ';struct.pack_into('<HH',journal,4,1,256);journal[8:16]=namespace
+        struct.pack_into('<Q',journal,16,generation);struct.pack_into('<I',journal,248,zlib.crc32(journal[:248]));journal[252]=0xa5
+        (folder/slot).write_bytes(journal)
     (sd/'autoexec.txt').write_bytes(script.read_bytes() if script else script_text([c['function'] for c in cases]).encode())
     (sd/'!boot.obey').write_bytes(b'SET KEYBOARD 1\nEXEC /autoexec.txt\n')
     write(out/'bundle-receipt.json',{'bundle_sha256':sha(folder/'bundle.json'),'namespace':namespace.hex(),'backend':backend,'fault_injection':fault,'initial_script_sha256':sha(sd/'autoexec.txt'),'binary_sha256':sha(folder/'runner.bin'),'map_sha256':sha(out/'runner.map')})

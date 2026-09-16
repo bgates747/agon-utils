@@ -84,8 +84,9 @@ Card results live under /mos-tests/runs/<run-id>/. Every run carries the catalog
 plan, target, bundle and run manifests, their referenced artifacts, selection
 script and results.bin. A host-prepared installation namespace plus a persisted
 64-bit counter allocates run IDs before tests execute. Existing run directories
-are never overwritten. Reboot starts a new run; it does not resume an uncertain
-file tail. Never reset or replace install.bin while reusing the same installation
+are never overwritten. After a verified complete run, reboot starts a new run. An interrupted or
+ambiguous run blocks startup; see [recovery instructions](recovery.md). It never
+resumes an uncertain file tail. Never reset or replace install.bin while reusing the same installation
 namespace. A malformed allocation file stops execution.
 
 For an emulator, edit the source script and prepare a fresh bundle/image, or reuse
@@ -118,3 +119,8 @@ full/single/commented selections, intentional discrepancy continuation,
 infrastructure stopping, script changes, unknown functions, missing group/end
 execution, and repeat-boot identity/preservation. Qualification fault modes are
 explicit artifacts in test bundles; ordinary bundles use fault.bin=0.
+
+New bundles provision two recovery journal files outside immutable artifact
+hashes. Old bundles do not gain recovery merely by using a newer host observer.
+Run recovery-check after changing the journal/gate; the host observer retrieves
+its decision and preserves prior reports.

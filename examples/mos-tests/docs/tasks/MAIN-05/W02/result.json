@@ -1,0 +1,165 @@
+{
+  "passed": true,
+  "checkpoint": "8fa4b5a902822d0d3110b05fb1a56fc4114a0afc",
+  "headless_boots": 17,
+  "boot_seconds_total": 189.62884331499663,
+  "runs": [
+    {
+      "path": "check-04/entry-stopped/result.json",
+      "statuses": [
+        0
+      ],
+      "seconds": 10.882157765001466,
+      "returned_to_mos_prompt": false
+    },
+    {
+      "path": "check-04/entry-blocked/result.json",
+      "statuses": [
+        41
+      ],
+      "seconds": 11.572409179996612,
+      "returned_to_mos_prompt": true
+    },
+    {
+      "path": "check-04/failed-blocked/result.json",
+      "statuses": [
+        41
+      ],
+      "seconds": 11.581490811000549,
+      "returned_to_mos_prompt": true
+    },
+    {
+      "path": "check-04/damaged-results/result.json",
+      "statuses": [
+        41
+      ],
+      "seconds": 11.66878580300181,
+      "returned_to_mos_prompt": true
+    },
+    {
+      "path": "check-04/blocked-again/result.json",
+      "statuses": [
+        41
+      ],
+      "seconds": 11.65573273499831,
+      "returned_to_mos_prompt": true
+    },
+    {
+      "path": "check-04/missing-slot/result.json",
+      "statuses": [
+        41
+      ],
+      "seconds": 1.353305669999827,
+      "returned_to_mos_prompt": true
+    },
+    {
+      "path": "check-04/interrupted/result.json",
+      "statuses": [
+        0,
+        0
+      ],
+      "seconds": 11.240632904999075,
+      "returned_to_mos_prompt": false
+    },
+    {
+      "path": "check-04/complete-failure/result.json",
+      "statuses": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "seconds": 11.926137255999492,
+      "returned_to_mos_prompt": true
+    },
+    {
+      "path": "check-04/corrupt-slot/result.json",
+      "statuses": [
+        41
+      ],
+      "seconds": 1.4087758870009566,
+      "returned_to_mos_prompt": true
+    },
+    {
+      "path": "check-04/blocked/result.json",
+      "statuses": [
+        41
+      ],
+      "seconds": 11.663436433002062,
+      "returned_to_mos_prompt": true
+    },
+    {
+      "path": "check-04/inspect/result.json",
+      "statuses": [
+        0
+      ],
+      "seconds": 21.88100931200097,
+      "returned_to_mos_prompt": true
+    },
+    {
+      "path": "check-04/failed-interrupted/result.json",
+      "statuses": [
+        0,
+        0
+      ],
+      "seconds": 10.94164827900022,
+      "returned_to_mos_prompt": false
+    },
+    {
+      "path": "check-04/damaged-manifest/result.json",
+      "statuses": [
+        41
+      ],
+      "seconds": 2.623289384999225,
+      "returned_to_mos_prompt": true
+    },
+    {
+      "path": "check-04/clean/result.json",
+      "statuses": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "seconds": 11.945962849000352,
+      "returned_to_mos_prompt": true
+    },
+    {
+      "path": "check-04/repeat/result.json",
+      "statuses": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "seconds": 22.565525038997293,
+      "returned_to_mos_prompt": true
+    },
+    {
+      "path": "check-04/complete-failure-repeat/result.json",
+      "statuses": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "seconds": 22.117298639997898,
+      "returned_to_mos_prompt": true
+    },
+    {
+      "path": "check-04/oversize-manifest/result.json",
+      "statuses": [
+        41
+      ],
+      "seconds": 2.601245366000512,
+      "returned_to_mos_prompt": true
+    }
+  ],
+  "owned_emulators_remaining": [],
+  "regressions": {
+    "startup": true,
+    "reports": true,
+    "smoke": "see smoke-regression/summary.txt and result.json"
+  },
+  "hardware_tested": false
+}

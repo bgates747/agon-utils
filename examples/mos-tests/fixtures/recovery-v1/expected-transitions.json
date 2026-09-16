@@ -1,0 +1,182 @@
+[
+  {
+    "id": "R01",
+    "condition": "Provisioned IDLE pair; counter 0; runs empty",
+    "gate": "ALLOW_NEW",
+    "meaning": "No prior run"
+  },
+  {
+    "id": "R02",
+    "condition": "Journal missing on otherwise empty card",
+    "gate": "BLOCK",
+    "meaning": "Not a provisioned installation"
+  },
+  {
+    "id": "R03",
+    "condition": "One valid COMPLETE slot; other slot corrupt",
+    "gate": "BLOCK",
+    "meaning": "Older clean state cannot authorize execution"
+  },
+  {
+    "id": "R04",
+    "condition": "Equal generation with different slot bytes",
+    "gate": "BLOCK",
+    "meaning": "Conflicting journal"
+  },
+  {
+    "id": "R05",
+    "condition": "Adjacent valid COMPLETE; matching complete run; reconciled history",
+    "gate": "ALLOW_NEW",
+    "meaning": "Verdict remains independent of gate"
+  },
+  {
+    "id": "R06",
+    "condition": "COMPLETE claims bytes beyond valid record prefix",
+    "gate": "BLOCK",
+    "meaning": "Confirmed evidence unavailable"
+  },
+  {
+    "id": "R07",
+    "condition": "ALLOCATING published; counter not advanced",
+    "gate": "BLOCK",
+    "meaning": "Preparation interrupted before allocation"
+  },
+  {
+    "id": "R08",
+    "condition": "Counter advanced; directory or manifests incomplete",
+    "gate": "BLOCK",
+    "meaning": "Allocation interrupted"
+  },
+  {
+    "id": "R09",
+    "condition": "CASE_INTENT; CASE_START absent",
+    "gate": "BLOCK",
+    "meaning": "Case intended; entry not established"
+  },
+  {
+    "id": "R10",
+    "condition": "CASE_INTENT; valid CASE_START present",
+    "gate": "BLOCK",
+    "meaning": "Started record found; payload entry not established"
+  },
+  {
+    "id": "R11",
+    "condition": "IN_CASE; no CASE_END",
+    "gate": "BLOCK",
+    "meaning": "Last started case incomplete"
+  },
+  {
+    "id": "R12",
+    "condition": "IN_CASE; CASE_END synced; journal not advanced",
+    "gate": "BLOCK",
+    "meaning": "Retain valid case result; run unresolved"
+  },
+  {
+    "id": "R13",
+    "condition": "CASE_DONE; cleanup interrupted",
+    "gate": "BLOCK",
+    "meaning": "Retain case outcome; cleanup uncertain"
+  },
+  {
+    "id": "R14",
+    "condition": "BETWEEN on cold boot",
+    "gate": "BLOCK",
+    "meaning": "Interrupted between groups; no implicit resume"
+  },
+  {
+    "id": "R15",
+    "condition": "FINALIZING; valid RUN_END present",
+    "gate": "BLOCK",
+    "meaning": "Close or final publication uncertain"
+  },
+  {
+    "id": "R16",
+    "condition": "Truncated/corrupt record tail",
+    "gate": "BLOCK",
+    "meaning": "Retain valid prefix and confirmed failures"
+  },
+  {
+    "id": "R17",
+    "condition": "Unknown run entry, counter gap, or foreign namespace",
+    "gate": "BLOCK",
+    "meaning": "History cannot reconcile"
+  },
+  {
+    "id": "R18",
+    "condition": "Inspection limit exceeded or read fails",
+    "gate": "BLOCK",
+    "meaning": "No partial scan can authorize execution"
+  },
+  {
+    "id": "R19",
+    "condition": "DISPOSING; receipt absent, partial or complete",
+    "gate": "BLOCK",
+    "meaning": "Disposition publication unfinished"
+  },
+  {
+    "id": "R20",
+    "condition": "PARKED with valid receipt; repeated boot",
+    "gate": "BLOCK",
+    "meaning": "Acknowledgement never re-arms"
+  },
+  {
+    "id": "R21",
+    "condition": "ARMED retry; matching receipt, script, selection, prerequisites",
+    "gate": "ALLOW_LINKED_ONCE",
+    "meaning": "Publish child ALLOCATING before counter change"
+  },
+  {
+    "id": "R22",
+    "condition": "ARMED continuation; changed script or absent receipt",
+    "gate": "BLOCK",
+    "meaning": "Authorization does not match deployment"
+  },
+  {
+    "id": "R23",
+    "condition": "Child ALLOCATING interrupted; stale ARMED in older slot",
+    "gate": "BLOCK",
+    "meaning": "Authorization consumed; do not retry"
+  },
+  {
+    "id": "R24",
+    "condition": "Retry succeeds with subset selection",
+    "gate": "ALLOW_NEW",
+    "meaning": "Child verdict covers child plan only"
+  },
+  {
+    "id": "R25",
+    "condition": "Generation exhausted or unknown schema/phase/action",
+    "gate": "BLOCK",
+    "meaning": "No wrap or reinterpretation"
+  },
+  {
+    "id": "R26",
+    "condition": "Completed run has test failures but valid completion",
+    "gate": "ALLOW_NEW",
+    "meaning": "Report failures; completion is not all-pass"
+  },
+  {
+    "id": "R27",
+    "condition": "Missing journal on legacy installation",
+    "gate": "BLOCK",
+    "meaning": "Explicit migration required"
+  },
+  {
+    "id": "R28",
+    "condition": "Same-boot function invocation has foreign session/run/plan",
+    "gate": "BLOCK",
+    "meaning": "Cannot bypass begin gate"
+  },
+  {
+    "id": "R29",
+    "condition": "Write/sync/close/readback failure during journal update",
+    "gate": "BLOCK",
+    "meaning": "No action dependent on publication"
+  },
+  {
+    "id": "R30",
+    "condition": "Reset during explicit recovery retry",
+    "gate": "BLOCK",
+    "meaning": "No automatic replay of operator action"
+  }
+]

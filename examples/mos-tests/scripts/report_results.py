@@ -209,7 +209,7 @@ def render(report,colour=False):
     return '\n'.join(lines)+'\n'
 
 def main():
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--run',required=True,type=Path);ap.add_argument('--output',required=True,type=Path);ap.add_argument('--records',type=Path);ap.add_argument('--recovered',action='append',default=[],type=Path);ap.add_argument('--sram',type=Path);ap.add_argument('--recovery-note');ap.add_argument('--forensic',action='store_true');ap.add_argument('--colour',choices=['auto','always','never'],default='auto');a=ap.parse_args()
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--run',required=True,type=Path);ap.add_argument('--output',required=True,type=Path);ap.add_argument('--records',type=Path);ap.add_argument('--recovered',action='append',default=[],type=Path);ap.add_argument('--sram',type=Path);ap.add_argument('--recovery-note');ap.add_argument('--forensic',action='store_true');ap.add_argument('--incomplete-reason',help='additional observer evidence that prevents a completion claim');ap.add_argument('--colour',choices=['auto','always','never'],default='auto');a=ap.parse_args()
     if (a.recovered or a.sram or a.forensic) and not a.recovery_note:ap.error('recovery requires --recovery-note describing source/backend and acquisition before reset')
     a.output.mkdir(parents=True,exist_ok=False);sources=[];rows=[]
     try:
@@ -225,10 +225,11 @@ def main():
                 last=max([r['sequence'] for r in rows],default=0)
                 if control['confirmed']>last:issues.append('SRAM claims confirmation beyond supplied evidence')
                 if control['state']==6 and (control['confirmed']!=last or control['next']!=last+1):issues.append('ended SRAM progress disagrees with supplied evidence')
+        if a.incomplete_reason:issues.append('Observer: '+a.incomplete_reason)
         report=evaluate(m,rows,issues,a.forensic)
     except (OSError,ValueError,KeyError,TypeError,UnicodeError) as e:
         report=dict(verdict='CONFIGURATION ERROR',selected=0,counts={n:0 for n in NAMES},failed_tests=0,failed_ids=[],issues=[str(e)],details=[],backend='unverified')
-    report.update(sources=sources,recovery_note=a.recovery_note,forensic=a.forensic)
+    report.update(sources=sources,recovery_note=a.recovery_note,forensic=a.forensic,observer_incomplete_reason=a.incomplete_reason)
     decoded=[{k:(v.hex() if isinstance(v,bytes) else v) for k,v in r.items() if k!='raw'} for r in rows]
     (a.output/'decoded-records.json').write_text(json.dumps(decoded,indent=2)+'\n')
     (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n');(a.output/'summary.txt').write_text(render(report))

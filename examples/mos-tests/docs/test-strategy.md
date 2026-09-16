@@ -351,12 +351,13 @@ limits and elapsed measurements are recorded, not treated as hardware equivalenc
 
 The [restart recovery contract](restart-recovery.md) defines MAIN-05 W01 journal
 bytes, transition ordering, bounded reconciliation and explicit dispositions.
-It is designed but not yet implemented; result-format v1 remains unchanged.
+W02 implements its restricted startup gate; W03 dispositions are not yet
+implemented. Result-format v1 remains unchanged.
 
 Run recovery inspection from the normal startup helper, before allocating a new
 run or executing any test group. This applies to both emulator and hardware
-autoexec workflows; it must not depend on an agent being present. Current startup
-preserves previous runs but does not yet implement this gate.
+autoexec workflows; it must not depend on an agent being present. Newly prepared startup bundles now implement the restricted W02 gate; older
+bundles do not acquire it merely by updating host tooling.
 
 Before entering a case, persist and sync its run/case identity and CASE_START.
 Use a small versioned, checksummed alternating-slot SD journal to locate the

@@ -18,6 +18,7 @@ outputs and the dedicated profile.
 ./human/mos-tests recording-check --output .emulator/review/recording
 ./human/mos-tests report-check --output .emulator/review/reports
 ./human/mos-tests startup-check --output .emulator/review/startup
+./human/mos-tests recovery-check --output .emulator/review/recovery
 ./human/mos-tests smoke --output .emulator/review/smoke
 ```
 
