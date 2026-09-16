@@ -1,0 +1,8 @@
+PASS: 100 unique named selectors matched pinned documentation sections.
+PASS: full 00-A6 dispatcher table (167 entries), A7-FF range exclusion recorded.
+PASS: 18 C-function slots including two reserved NULL slots.
+PASS: all retained source/document hashes verified.
+PASS: deployed MOS binary/map SHA256 match SETUP-01.
+No runtime test, historical version verification or exhaustive path proof claimed.
+PASS: historical archive members byte-identical to original inputs; snapshot hashes verified before loose copies removed.
+PASS: compact register retains all 100 named selectors and 18 C-function slots, without copied contract fields.

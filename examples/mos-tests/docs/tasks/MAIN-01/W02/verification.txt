@@ -1,0 +1,6 @@
+PASS: pinned source/docs revisions match W01; both checkouts clean.
+PASS: 100 unique named selectors; all non-stub selectors have bespoke scenarios.
+PASS: 10 stubs explicitly covered; 156 unnamed selectors separately accounted for.
+PASS: 18 C-function slots covered, including two NULL lookup-only entries.
+PASS: every named row has fixture/backend and preservation/reference fields.
+Planning validation only; no emulator/hardware test performed.

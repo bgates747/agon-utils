@@ -1,0 +1,96 @@
+{
+  "mos_revision": "8336409351ee5314e02801a7b72a4f1bb5282519",
+  "mos_tag": "v3.0.2",
+  "documentation_revision": "f9806bd3cbff6ed5d1c08bef1d51fed11764b86b",
+  "files": {
+    "references/mos/src/mos_api.asm": {
+      "original": "/home/smith/Agon/agon-mos/src/mos_api.asm",
+      "sha256": "85d930816d0d80831d8ad1fa47194bb2b4b9c825c6b402b8badbce929add4bab"
+    },
+    "references/mos/src/mos_api.inc": {
+      "original": "/home/smith/Agon/agon-mos/src/mos_api.inc",
+      "sha256": "71713320e619c7d8e8d90885e14706a00c6b07509ee644e75ebb033fd1cdc669"
+    },
+    "references/mos/src/defines.h": {
+      "original": "/home/smith/Agon/agon-mos/src/defines.h",
+      "sha256": "43403dbda34d91a58aa355d8b67d0fe5d228fd130a96931abc728e2b2a84be70"
+    },
+    "references/mos/src/mos.h": {
+      "original": "/home/smith/Agon/agon-mos/src/mos.h",
+      "sha256": "5de92100151c569751a4f4d99786f259978613befc4c3f2b93c8c4e9afd2ff30"
+    },
+    "references/mos/src/mos.c": {
+      "original": "/home/smith/Agon/agon-mos/src/mos.c",
+      "sha256": "37b1e644a380a727c0d0fcf3e5494eadf9a5143cb6d07e437319b6c5e5bed9a0"
+    },
+    "references/mos/src/mos_file.c": {
+      "original": "/home/smith/Agon/agon-mos/src/mos_file.c",
+      "sha256": "6339d3ada02522e707c7dcc03fcbce0c2fc01aea47d8c973e83ba1b8372d6eda"
+    },
+    "references/mos/src/mos_sysvars.c": {
+      "original": "/home/smith/Agon/agon-mos/src/mos_sysvars.c",
+      "sha256": "712c6f62babb0f156a5ba400b4340e33b48173b55f0ba0e74db4afbef0b77df8"
+    },
+    "references/mos/src/strings.c": {
+      "original": "/home/smith/Agon/agon-mos/src/strings.c",
+      "sha256": "cd6ed04b69708ad7ac1ca7875b64e21d23d5743ea392e1e34eec3047a3f5bc4c"
+    },
+    "references/mos/src/sd.asm": {
+      "original": "/home/smith/Agon/agon-mos/src/sd.asm",
+      "sha256": "dcdb5806ff9edf2bf2cdacdf1a196428b1fc8c2591cbdc7309fd8da626cadbd2"
+    },
+    "references/mos/src/sd.h": {
+      "original": "/home/smith/Agon/agon-mos/src/sd.h",
+      "sha256": "032148657e8c5a6aca63467ac19a1db7e1a8be71d7eaacb2c9e5f117a02c976d"
+    },
+    "references/mos/src/misc.asm": {
+      "original": "/home/smith/Agon/agon-mos/src/misc.asm",
+      "sha256": "e147e4a350ceca6c5f8f77becec7148c76bb322d16cde777fb73cb4fd9f945fb"
+    },
+    "references/mos/src_startup/vectors16.asm": {
+      "original": "/home/smith/Agon/agon-mos/src_startup/vectors16.asm",
+      "sha256": "851971ea9299555c3a9905901c2c47ed6358cc7b23169c9d65eb6a3fcb3390c0"
+    },
+    "references/mos/src_startup/globals.asm": {
+      "original": "/home/smith/Agon/agon-mos/src_startup/globals.asm",
+      "sha256": "c98bc967c118ee01eed06e507543b6865c29686e0a6e890cb5893d5a669f826c"
+    },
+    "references/mos/src_fatfs/ff.h": {
+      "original": "/home/smith/Agon/agon-mos/src_fatfs/ff.h",
+      "sha256": "4c884d57f86b5ed0ddabd3e24b4b58017716e6b020dc45fadc2f7e0afc3f2c18"
+    },
+    "references/mos/src_fatfs/ffconf.h": {
+      "original": "/home/smith/Agon/agon-mos/src_fatfs/ffconf.h",
+      "sha256": "bc1e2179cb6a1c7f859a79804f10d2b99c5cd1317ec9174f76c2493a43b15ef9"
+    },
+    "references/mos/src/version.h": {
+      "original": "/home/smith/Agon/agon-mos/src/version.h",
+      "sha256": "6ae1129abac9e2b2292313715cff5b0978ac49a95fe5f35b7f305e92ed04d82c"
+    },
+    "references/mos/LICENSE": {
+      "original": "/home/smith/Agon/agon-mos/LICENSE",
+      "sha256": "fae2cacdc47dc5ed8efbd052201834108167942f0b524b8238327e9fbe13fd25"
+    },
+    "references/documentation/docs/mos/API.md": {
+      "original": "/home/smith/Agon/agon-docs/docs/mos/API.md",
+      "sha256": "5f2e68201ee0e4799562583f8e81153482651695fe3f89e4900e193ebd3b8d25"
+    },
+    "references/documentation/docs/mos/C-Functions.md": {
+      "original": "/home/smith/Agon/agon-docs/docs/mos/C-Functions.md",
+      "sha256": "1a26c69f6042d1bebc4721852c383a2fe6184dcc8b86761c46e24084dc259148"
+    },
+    "references/documentation/docs/mos/System-Variables.md": {
+      "original": "/home/smith/Agon/agon-docs/docs/mos/System-Variables.md",
+      "sha256": "f31065a8ce0ee12ffae378e392dc82e7010a29d8c84085ca7d38959e806187c3"
+    },
+    "mos_platform.bin": {
+      "original": "/home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/firmware/mos_platform.bin",
+      "sha256": "d564243283972690933a4554296ad6202ca4ef54572279533a942960846bebae"
+    },
+    "mos_platform.map": {
+      "original": "/home/smith/Agon/mystuff/AgonJukebox/.emulator/runtime/fab-1.2.4/firmware/mos_platform.map",
+      "sha256": "d69e60bbce61a7b4b3eef318ba395f11c4e1a5b585755755113992dc94edcb86"
+    }
+  },
+  "notice": "Historical W01 manifest. references/* paths are archive member names in historical-reference.tar.gz, not live project paths."
+}

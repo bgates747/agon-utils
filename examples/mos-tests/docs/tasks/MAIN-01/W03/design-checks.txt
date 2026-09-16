@@ -1,0 +1,4 @@
+PASS: contiguous SRAM regions total 8192 bytes, no gaps/overlaps.
+PASS: binary header fields total 40 bytes; max record 1069 bytes fits staging.
+PASS: CRC-32 known-answer value CBF43926 independently checked with Python zlib.
+Design arithmetic checks only; no encoder, decoder or probe implementation tested.

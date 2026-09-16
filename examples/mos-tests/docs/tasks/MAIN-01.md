@@ -14,14 +14,14 @@ listed functions have been tested or implement the full suite.
 
 ## State and ownership
 
-Reconstructed contract checkpoint. Completed items: none.
+Reconstructed contract checkpoint. Completed items: W01, W02, W03, W04.
 Remaining work is frozen and unstarted at this checkpoint. The subproject TODO
 owns unfinished task indexing. This is a retrospective grouping, not an exact
 previous edit version or a backdated acceptance record.
 
 ## Work
 
-- W01 [ ] Inventory the pinned MOS API and its contracts.
+- W01 [x] Inventory the pinned MOS API and its contracts.
   Start from the SETUP-01 MOS 3.0.2 Arthur baseline and record the exact source,
   binary, symbol-map and official documentation identities used. Enumerate
   public calls, selectors/subfunctions, version availability and related entry
@@ -30,7 +30,13 @@ previous edit version or a backdated acceptance record.
   implementation; identify disagreement and unspecified behavior explicitly.
   Distinguish MOS calls from VDP protocols, shell commands and library helpers;
   record dependencies without silently expanding the API scope.
-- W02 [ ] Define the function-by-function coverage matrix.
+  **Completed** — [pinned API inventory](../mos-api-inventory.md) and
+  [W01 evidence](MAIN-01/W01/README.md) account for 100 named selectors,
+  all dispatcher slots and 18 C-function slots. Ten named selectors are stubs;
+  source/document discrepancies are explicit and not runtime-qualified.
+  Copied prose is archived as historical evidence; the maintained inventory
+  links to upstream contracts instead of duplicating them.
+- W02 [x] Define the function-by-function coverage matrix.
   Give each inventory entry normal, boundary and documented failure cases,
   prerequisites, fixtures, expected results, observation method, implementation
   route, isolation requirements and execution capability (headless emulator,
@@ -46,7 +52,12 @@ previous edit version or a backdated acceptance record.
   including upper bytes and IX/IY, promised flags and stack balance where
   applicable. Also identify advertised defaults and omitted default behavior;
   distinguish an explicit default, observed default and unspecified behavior.
-- W03 [ ] Specify fixtures, assertions, isolation and evidence.
+  **Completed** — [coverage matrix](../mos-coverage-matrix.md) and
+  [W02 evidence](MAIN-01/W02/README.md) cover all 100 named selectors, 18
+  C-function slots, unnamed dispatcher values and public RST routes. Proposed
+  paths, expectations, preservation/default checks and fixture/backend limits
+  are explicit. All cases remain planned; this is not runtime qualification.
+- W03 [x] Specify fixtures, assertions, isolation and evidence.
   Define C++/AgonDev calls and direct assembly comparators against independently
   stated expectations; use BBC BASIC V ADL where it adds meaningful coverage.
   Record shared dependencies so agreement is not mistaken for independence.
@@ -69,7 +80,11 @@ previous edit version or a backdated acceptance record.
   inputs and path, before/after register values and changed bytes/bits, target
   identities and a minimal reproducer. Label observations without an advertised
   promise as documentation omissions, not automatically conformance failures.
-- W04 [ ] Select and sequence the first implementation batch.
+  **Completed** — [test strategy](../test-strategy.md) specifies shared tooling,
+  startup selection, register capture, isolation, SRAM budget, binary envelope,
+  checkpoint/recovery and reporting policies. [W03 notes](MAIN-01/W03/README.md)
+  distinguish design decisions from future implementation qualification.
+- W04 [x] Select and sequence the first implementation batch.
   Choose a small batch of deterministic calls that exercises the proposed
   harness and has useful independently checkable results. Treat register
   preservation auditing as a strong candidate for this first batch. Explain dependencies
@@ -79,6 +94,12 @@ previous edit version or a backdated acceptance record.
   into maintained project documents, retain research provenance in the task
   silo, and propose bounded MAIN-* follow-ups for Author review. Do not create
   an implementation task per API call or start firmware repairs under this task.
+  **Completed** — [strategy sequencing](../test-strategy.md) selects a 12-case
+  deterministic slice and orders MAIN-02 scaffolding, proposed runner foundation,
+  TEST-* harness qualification and first-slice implementation. Hardware/peripheral
+  dependencies and deferred enhancements are explicit. See [W04](MAIN-01/W04/README.md).
+
+
 ## Human and agent use
 
 Hardware is the final authority for real-machine behavior. Emulator results are

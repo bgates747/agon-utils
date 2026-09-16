@@ -1,0 +1,1007 @@
+{
+  "baseline": "8336409351ee5314e02801a7b72a4f1bb5282519",
+  "documentation": "f9806bd3cbff6ed5d1c08bef1d51fed11764b86b",
+  "state": "planning only; no cases executed",
+  "rows": [
+    {
+      "selector": "00",
+      "name": "mos_getkey",
+      "state": "planned",
+      "fixture": "K",
+      "backend": "H; E conditional",
+      "scenarios": "Press/release A then Enter: expected character sequence; no key: remains blocked until controlled input; modifier/non-ASCII keys: record delivered code against fixture mapping.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 164
+    },
+    {
+      "selector": "01",
+      "name": "mos_load",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Load known 0/1/511/512/513-byte files into guarded RAM: exact bytes; exact capacity succeeds, undersized capacity reports failure without guard damage; missing file/path distinguish status 4/5. Capture carry discrepancy separately.",
+      "preservation": "`HL(U)`, `DE(U)`, `BC(U)`",
+      "documentation_line": 176
+    },
+    {
+      "selector": "02",
+      "name": "mos_save",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Save 0/1/511/512/513 known bytes: image contains exact data; existing destination behavior checked against contract; missing parent fails; no buffer guard mutation. Capture carry separately.",
+      "preservation": "`HL(U)`, `DE(U)`, `BC(U)`",
+      "documentation_line": 193
+    },
+    {
+      "selector": "03",
+      "name": "mos_cd",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Change to existing directory: subsequent relative lookup resolves there; missing directory fails; root and parent traversal; verify no unexpected cwd change on failure.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 210
+    },
+    {
+      "selector": "04",
+      "name": "mos_dir",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "List empty and populated directories: expected entry set at output boundary; missing path errors; ordering and formatting without promises remain observations.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 224
+    },
+    {
+      "selector": "05",
+      "name": "mos_del",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Delete existing file: disappears; missing file fails; directory/read-only cases use documented permitted behavior and preserve unrelated files.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 240
+    },
+    {
+      "selector": "06",
+      "name": "mos_ren",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Rename/move known file: bytes unchanged, old path absent; missing source and occupied destination: status and image changes; case-only name handling characterized.",
+      "preservation": "`HL(U)`, `DE(U)`",
+      "documentation_line": 254
+    },
+    {
+      "selector": "07",
+      "name": "mos_mkdir",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Create directory: exists and empty; existing name and missing parent errors; root-relative versus cwd-relative path.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 271
+    },
+    {
+      "selector": "08",
+      "name": "mos_sysvars",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Returned pointer identifies pinned sysvars; read known stable fields and changing counters; do not assert equality of asynchronous fields between captures.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 285
+    },
+    {
+      "selector": "09",
+      "name": "mos_editline",
+      "state": "planned",
+      "fixture": "K",
+      "backend": "H; E conditional",
+      "scenarios": "Enter and Escape yield 13/27; supplied text retained with flags zero and cleared with bit0; capacity-edge editing preserves guards; exercise tab/history/hotkey flags individually with scripted input.",
+      "preservation": "`HL(U)`, `BC(U)`, `DE(U)`",
+      "documentation_line": 297
+    },
+    {
+      "selector": "0A",
+      "name": "mos_fopen",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Each supported open mode on existing/missing files: handle or zero plus create/truncate/append effects; exhaust handle pool in isolated run; release all acquired handles.",
+      "preservation": "`HL(U)`, `BC(U)`, `DE(U)`, `IX(U)`, `IY(U)`",
+      "documentation_line": 325
+    },
+    {
+      "selector": "0B",
+      "name": "mos_fclose",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Close one open handle then reuse slot; handle zero closes all per contract; already-closed handle characterized without dereferencing arbitrary objects.",
+      "preservation": "`HL(U)`, `BC(U)`, `DE(U)`, `IX(U)`, `IY(U)`",
+      "documentation_line": 360
+    },
+    {
+      "selector": "0C",
+      "name": "mos_fgetc",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Read empty/one/two-byte files: bytes and carry before/at last byte and after EOF; distinguish byte zero from EOF; invalid handle result characterized separately.",
+      "preservation": "`HL(U)`, `BC(U)`, `DE(U)`, `IX(U)`, `IY(U)`",
+      "documentation_line": 374
+    },
+    {
+      "selector": "0D",
+      "name": "mos_fputc",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Write 00/7F/80/FF bytes through writable handle: exact bytes after checkpoint; read-only/closed handle observations with no invented returned status.",
+      "preservation": "`HL(U)`, `BC(U)`, `DE(U)`, `IX(U)`, `IY(U)`",
+      "documentation_line": 389
+    },
+    {
+      "selector": "0E",
+      "name": "mos_feof",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Empty file true; nonempty before end false, at end true; seek backward clears EOF; invalid handle classified separately.",
+      "preservation": "`HL(U)`, `BC(U)`, `DE(U)`, `IX(U)`, `IY(U)`",
+      "documentation_line": 404
+    },
+    {
+      "selector": "0F",
+      "name": "mos_getError",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Codes 0\u201326: expected pinned message bytes; exact/short/zero buffer capacity with guards; out-of-range code observation, no invented error return.",
+      "preservation": "`DE(U)`, `HL(U)`, `BC(U)`",
+      "documentation_line": 418
+    },
+    {
+      "selector": "10",
+      "name": "mos_oscli",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Controlled benign command and small known-return program: returned status and effect; unknown command returns 20; vary unused BC/DE to audit stale documented parameters; no exhaustive shell grammar scope.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 434
+    },
+    {
+      "selector": "11",
+      "name": "mos_copy",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Copy empty/multisector file: exact destination and intact source; missing source; wildcard source into directory yields expected set; invalid wildcard destination/error behavior recorded.",
+      "preservation": "`HL(U)`, `BC(U)`, `DE(U)`, `IX(U)`, `IY(U)`",
+      "documentation_line": 450
+    },
+    {
+      "selector": "12",
+      "name": "mos_getrtc",
+      "state": "planned",
+      "fixture": "V",
+      "backend": "E+H conditional",
+      "scenarios": "Known RTC setting produces corresponding string and length in >=32-byte guarded buffer; rollover uses bounded interval comparison, not exact host-clock equality.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 471
+    },
+    {
+      "selector": "13",
+      "name": "mos_setrtc",
+      "state": "planned",
+      "fixture": "V",
+      "backend": "E+H conditional",
+      "scenarios": "Set valid date/time then read back within elapsed tolerance; leap-day and year transition; malformed date values are characterization unless validation is promised; restore baseline time.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 485
+    },
+    {
+      "selector": "14",
+      "name": "mos_setintvector",
+      "state": "planned",
+      "fixture": "I",
+      "backend": "H; E conditional",
+      "scenarios": "Install safe handler on permitted vector, check returned old handler and invocation then restore; invalid vector returns documented rejection; callbacks capture minimal state without MOS reporting.",
+      "preservation": "`HLU`, `DEU`",
+      "documentation_line": 508
+    },
+    {
+      "selector": "15",
+      "name": "mos_uopen",
+      "state": "planned",
+      "fixture": "U",
+      "backend": "H; E conditional",
+      "scenarios": "Open with explicit supported baud/data/parity/flow settings: A=0 and loopback behavior; capture configuration variation; unsupported settings characterized, not presumed rejected.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 523
+    },
+    {
+      "selector": "16",
+      "name": "mos_uclose",
+      "state": "planned",
+      "fixture": "U",
+      "backend": "H; E conditional",
+      "scenarios": "Close initialized UART and reopen: no stale transfer state; repeated close characterization; no invented success status.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 557
+    },
+    {
+      "selector": "17",
+      "name": "mos_ugetc",
+      "state": "planned",
+      "fixture": "U",
+      "backend": "H; E conditional",
+      "scenarios": "Peer supplies 00/7F/80/FF: exact receive values; absent data exposes documented blocking behavior under external timeout.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 561
+    },
+    {
+      "selector": "18",
+      "name": "mos_uputc",
+      "state": "planned",
+      "fixture": "U",
+      "backend": "H; E conditional",
+      "scenarios": "Transmit 00/7F/80/FF: external peer receives exact bytes; flow-control stall/release; record status per pinned contract.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 572
+    },
+    {
+      "selector": "19",
+      "name": "mos_getfil",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Open handle maps to valid FIL with expected size/offset; zero/closed/out-of-range handles return documented null behavior; never pass invalid pointer onward.",
+      "preservation": "`BC(U)`",
+      "documentation_line": 584
+    },
+    {
+      "selector": "1A",
+      "name": "mos_fread",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Read lengths 0/1/511/512/513 and beyond EOF: exact bytes and returned count; buffer guards intact; read-only valid handle normal, invalid handle separate.",
+      "preservation": "`HL(U)`, `BC(U)`",
+      "documentation_line": 600
+    },
+    {
+      "selector": "1B",
+      "name": "mos_fwrite",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Write lengths 0/1/511/512/513: returned count and exact file contents; read-only handle/disk-full checkpoint failures distinguished from test writes.",
+      "preservation": "`HL(U)`, `BC(U)`",
+      "documentation_line": 616
+    },
+    {
+      "selector": "1C",
+      "name": "mos_flseek",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Split-register seeks to zero/middle/end and >24-bit offset on suitable image; verify offset and next byte; read-only past-end versus writable expansion; expanded bytes unspecified.",
+      "preservation": "`HL(U)`, `BC(U)`, `DE(U)`",
+      "documentation_line": 632
+    },
+    {
+      "selector": "1D",
+      "name": "mos_setkbvector",
+      "state": "planned",
+      "fixture": "I",
+      "backend": "H; E conditional",
+      "scenarios": "Install keyboard callback, deliver key events, record callback and returned old pointer as contracted; restore; null/reset behavior only as documented.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 654
+    },
+    {
+      "selector": "1E",
+      "name": "mos_getkbmap",
+      "state": "planned",
+      "fixture": "K",
+      "backend": "H; E conditional",
+      "scenarios": "Returned bitmap changes for controlled press/release and multiple keys; guard read bounds; correlate key identifiers with pinned keyboard definitions.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 670
+    },
+    {
+      "selector": "1F",
+      "name": "mos_i2c_open",
+      "state": "planned",
+      "fixture": "Q",
+      "backend": "H; E conditional",
+      "scenarios": "Each documented frequency ID: verify actual bus clock with peer/analyzer; zero/out-of-range IDs characterized; preserve promised registers.",
+      "preservation": "`HL(U)`, `BC(U)`, `DE(U)`, `IX(U)`, `IY(U)`",
+      "documentation_line": 682
+    },
+    {
+      "selector": "20",
+      "name": "mos_i2c_close",
+      "state": "planned",
+      "fixture": "Q",
+      "backend": "H; E conditional",
+      "scenarios": "Close initialized bus: observe disabled behavior then reopen; repeat-close observation without invented return status.",
+      "preservation": "`HL(U)`, `BC(U)`, `DE(U)`, `IX(U)`, `IY(U)`",
+      "documentation_line": 694
+    },
+    {
+      "selector": "21",
+      "name": "mos_i2c_write",
+      "state": "planned",
+      "fixture": "Q",
+      "backend": "H; E conditional",
+      "scenarios": "Acking peer receives exact 1/32-byte data; address NACK/data NACK scenarios produce documented status; zero/>32 count needs contract decision before execution.",
+      "preservation": "`HL(U)`, `DE(U)`, `IX(U)`, `IY(U)`",
+      "documentation_line": 704
+    },
+    {
+      "selector": "22",
+      "name": "mos_i2c_read",
+      "state": "planned",
+      "fixture": "Q",
+      "backend": "H; E conditional",
+      "scenarios": "Peer returns exact 1/32 bytes and guards stay intact; absent peer/NACK; bus arbitration/error cases only with controlled equipment.",
+      "preservation": "`HL(U)`, `DE(U)`, `IX(U)`, `IY(U)`",
+      "documentation_line": 725
+    },
+    {
+      "selector": "23",
+      "name": "mos_unpackrtc",
+      "state": "planned",
+      "fixture": "V",
+      "backend": "E+H conditional",
+      "scenarios": "Flags zero unpacks a known cached RTC; before-refresh uses fresh time, after-refresh returns cached data then updates asynchronously; flags combination and 10-byte guards.",
+      "preservation": "`HL(U)`, `BC(U)`",
+      "documentation_line": 746
+    },
+    {
+      "selector": "24",
+      "name": "mos_flseek_p",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Pointer-based 32-bit seek zero/middle/end/>24-bit; exact offset/next byte; read-only clipping and writable expansion; no expectations for newly expanded byte contents.",
+      "preservation": "`HL(U)`, `BC(U)`",
+      "documentation_line": 785
+    },
+    {
+      "selector": "28",
+      "name": "mos_pmatch",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Literal equal/unequal and empty strings; one case per flag and meaningful interactions for case/star/hash/dot/prefix/space; assert match or ordering sign, not arbitrary mismatch magnitude.",
+      "preservation": "`HL(U)`, `DE(U)` and `BC(U)`",
+      "documentation_line": 812
+    },
+    {
+      "selector": "29",
+      "name": "mos_getargument",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Known argument sequence: exact start/end pointer offsets; first/last/missing index; spaces and quoted arguments; index origin follows pinned contract/source, ambiguity recorded before concrete fixture.",
+      "preservation": "`BC(U)`",
+      "documentation_line": 844
+    },
+    {
+      "selector": "2A",
+      "name": "mos_extractstring",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Null divider versus explicit space; custom divider; each defined flag and quoting interactions; unmatched quote returns 25, no result 19; verify source mutation/returned offsets and guards.",
+      "preservation": "`BC(U)`",
+      "documentation_line": 860
+    },
+    {
+      "selector": "2B",
+      "name": "mos_extractnumber",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Zero/positive/negative and supported bases: numeric value/end pointer; flags for decimal/positive/h suffix; invalid syntax returns 19; 24-bit limits and overflow classified by contract.",
+      "preservation": "`BC(U)`",
+      "documentation_line": 889
+    },
+    {
+      "selector": "2C",
+      "name": "mos_escapestring",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Printable/control/pipe inputs: literal expected escaped bytes; null destination measures length; exact and short buffer, short returns 22 with expected prefix and intact guards.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 917
+    },
+    {
+      "selector": "30",
+      "name": "mos_setvarval",
+      "state": "planned",
+      "fixture": "S",
+      "backend": "E+H",
+      "scenarios": "Set/read string, number, macro, literal and supported expanded forms; wildcard iteration; delete with type255; returned actual type/name; protected code-variable deletion and missing names.",
+      "preservation": "Other registers preserved (interpret against listed outputs).",
+      "documentation_line": 944
+    },
+    {
+      "selector": "31",
+      "name": "mos_readvarval",
+      "state": "planned",
+      "fixture": "S",
+      "backend": "E+H",
+      "scenarios": "Read each type, numeric 3-byte buffer, expansion flag3; null buffer length query; short buffer returns 22 with full required length; missing variable and wildcard iteration.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 983
+    },
+    {
+      "selector": "32",
+      "name": "mos_gsinit",
+      "state": "planned",
+      "fixture": "S",
+      "backend": "E+H",
+      "scenarios": "Initialize literal/variable/control-code translation; flags zero and each valid bit; finish every translation; tracked reinit versus explicitly completed no-tracking contexts, no deliberate leaked context in normal batch.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1008
+    },
+    {
+      "selector": "33",
+      "name": "mos_gsread",
+      "state": "planned",
+      "fixture": "S",
+      "backend": "E+H",
+      "scenarios": "Read initialized translation to final C=0: exact byte sequence and A status; malformed source propagates error; do not use freed/completed context again.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1044
+    },
+    {
+      "selector": "34",
+      "name": "mos_gstrans",
+      "state": "planned",
+      "fixture": "S",
+      "backend": "E+H",
+      "scenarios": "Literal/variable translation: exact expected bytes and total length; null destination measures; short destination succeeds with truncation per advertised contract; no-tracking bit ignored.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1059
+    },
+    {
+      "selector": "35",
+      "name": "mos_substituteargs",
+      "state": "planned",
+      "fixture": "S",
+      "backend": "E+H",
+      "scenarios": "Template with referenced and unused args: default appends rest, bit0 omits rest; null destination length; exact/short buffers, resulting prefix and full calculated length.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1081
+    },
+    {
+      "selector": "36",
+      "name": "mos_evaluateexpression",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Call named unsupported selector: advertised A=23; record HL=23 as source observation, not invented preservation; no underlying filesystem operation expected.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1101
+    },
+    {
+      "selector": "38",
+      "name": "mos_resolvepath",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Resolve explicit/prefixed/variable paths; wildcard iteration as a set, not alphabetical order; flags zero includes all attributes; missing file=4, missing directory=5, short buffer=22; count-only and prefix index iteration.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1113
+    },
+    {
+      "selector": "39",
+      "name": "mos_getdirforpath",
+      "state": "planned",
+      "fixture": "S",
+      "backend": "E+H",
+      "scenarios": "Resolve directory part using prefix indices; no filesystem existence check; null count-only and short buffer; missing prefix/index rejection, trailing leaf omitted.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1175
+    },
+    {
+      "selector": "3A",
+      "name": "mos_getleafname",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Plain/absolute/prefixed path: returned pointer to leaf; empty and trailing slash/colon point to terminator; nonexistent path still purely lexical.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1197
+    },
+    {
+      "selector": "3B",
+      "name": "mos_isdirectory",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Existing directory=0; file/missing path=5; only fully resolved input in conformance cases.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1213
+    },
+    {
+      "selector": "3C",
+      "name": "mos_getabsolutepath",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Relative dot/parent path yields expected absolute path; short buffer=22; null destination in ADL=19; missing path/file outcomes; classic null-pointer crash probe excluded from normal batch.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1228
+    },
+    {
+      "selector": "40",
+      "name": "mos_clearvdpflags",
+      "state": "planned",
+      "fixture": "V",
+      "backend": "E+H conditional",
+      "scenarios": "Known flags then clear mask: A equals remaining bits; zero mask leaves flags; account for asynchronous packet arrival rather than assuming no concurrent events.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1256
+    },
+    {
+      "selector": "41",
+      "name": "mos_waitforvdpflags",
+      "state": "planned",
+      "fixture": "V",
+      "backend": "E+H conditional",
+      "scenarios": "Requested response yields A=0; deliberately absent response yields 15 near documented timeout; already-set flags and zero/multi-bit mask semantics characterized; no strict emulator wall-time equivalence.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1272
+    },
+    {
+      "selector": "50",
+      "name": "mos_getfunction",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "All B=00\u201311 with C=0; 03/04 succeed with null; flags nonzero return19; B>=12 source19 versus prose20 discrepancy; classic caller rejection20 via isolated fixture.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1290
+    },
+    {
+      "selector": "70",
+      "name": "sd_getunlockcode",
+      "state": "planned",
+      "fixture": "R",
+      "backend": "E+H isolated",
+      "scenarios": "Fetch unlock token into guarded three-byte area; use it in paired raw requests; token numeric value is opaque and not fixed expectation.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1324
+    },
+    {
+      "selector": "71",
+      "name": "sd_init",
+      "state": "planned",
+      "fixture": "R",
+      "backend": "E+H isolated",
+      "scenarios": "Valid token init succeeds; wrong token returns2; absent/bad media error requires controlled backend; initialization changes filesystem state, no active report file.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1336
+    },
+    {
+      "selector": "72",
+      "name": "sd_readblocks",
+      "state": "planned",
+      "fixture": "R",
+      "backend": "E+H isolated",
+      "scenarios": "Read 1/2 blocks from known LBA: exact 512-byte blocks and guard bytes; wrong unlock=2; zero count characterize; invalid media/bounds use disposable controlled image.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1351
+    },
+    {
+      "selector": "73",
+      "name": "sd_writeblocks",
+      "state": "planned",
+      "fixture": "R",
+      "backend": "E+H isolated",
+      "scenarios": "Write 1/2 known blocks then inspect raw image: only intended sectors changed; wrong unlock=2 with unchanged data; no writes to active report or boot volume regions.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1367
+    },
+    {
+      "selector": "80",
+      "name": "ffs_fopen",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Open each supported mode with caller-owned empty FIL: status, contents and lifecycle; missing path/file, existing create-new; keep MOS handle and direct FIL ownership separate.",
+      "preservation": "`HL(U)`, `DE(U)`, `C`",
+      "documentation_line": 1400
+    },
+    {
+      "selector": "81",
+      "name": "ffs_fclose",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Close directly opened FIL and verify persisted writes; invalid/closed initialized object only where FatFS documents behavior; never close a MOS-managed handle's FIL directly.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 1439
+    },
+    {
+      "selector": "82",
+      "name": "ffs_fread",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Read direct FIL with 0/1/511/512/513 bytes and past EOF: exact bytes, status and returned count; guarded output; no arbitrary invalid FIL pointers.",
+      "preservation": "`HL(U)`, `DE(U)`",
+      "documentation_line": 1457
+    },
+    {
+      "selector": "83",
+      "name": "ffs_fwrite",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Write direct FIL with boundary lengths: exact bytes/count/status; read-only and full-image cases; preserve separate reporting route.",
+      "preservation": "`HL(U)`, `DE(U)`",
+      "documentation_line": 1476
+    },
+    {
+      "selector": "84",
+      "name": "ffs_flseek",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Legacy split offset seek zero/middle/end/>24-bit: position and next byte; writable expansion versus read-only constraints; mark mode limitations.",
+      "preservation": "`HL(U)`, `DE(U)`, `BC(U)`",
+      "documentation_line": 1512
+    },
+    {
+      "selector": "85",
+      "name": "ffs_ftruncate",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Truncate at middle/zero/end: size and prefix exact; read-only error; observe persistence after close.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 1532
+    },
+    {
+      "selector": "86",
+      "name": "ffs_fsync",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Write then sync: verify image after orderly release; repeated sync and read-only valid file; no power-loss durability claim from a successful return alone.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1548
+    },
+    {
+      "selector": "87",
+      "name": "ffs_fforward",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Call named unsupported selector: advertised A=23; record HL=23 as source observation, not invented preservation; no underlying filesystem operation expected.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1564
+    },
+    {
+      "selector": "88",
+      "name": "ffs_fexpand",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Call named unsupported selector: advertised A=23; record HL=23 as source observation, not invented preservation; no underlying filesystem operation expected.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1574
+    },
+    {
+      "selector": "89",
+      "name": "ffs_fgets",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Read lines including LF/CRLF, empty file and final unterminated line; length1/exact/short buffer; returned pointer/null and guarded bytes against configured FatFS string rules.",
+      "preservation": "`HL(U)`, `BC(U)`",
+      "documentation_line": 1584
+    },
+    {
+      "selector": "8A",
+      "name": "ffs_fputc",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Write character using direct FIL: bytes and signed count/error result; read-only/full media cases, don't confuse negative result with large unsigned count.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 1604
+    },
+    {
+      "selector": "8B",
+      "name": "ffs_fputs",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Write empty/plain/newline string: exact configured byte behavior and count; read-only/full image result.",
+      "preservation": "`HL(U)`, `DE(U)`",
+      "documentation_line": 1621
+    },
+    {
+      "selector": "8C",
+      "name": "ffs_fprintf",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Call named unsupported selector: advertised A=23; record HL=23 as source observation, not invented preservation; no underlying filesystem operation expected.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1638
+    },
+    {
+      "selector": "8D",
+      "name": "ffs_ftell",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "After open/read/seek: four-byte offset matches known position; documented null argument rejection19 in supported mode; guards and preservation.",
+      "preservation": "`HL(U)`, `DE(U)`",
+      "documentation_line": 1644
+    },
+    {
+      "selector": "8E",
+      "name": "ffs_feof",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Empty/start/end/seek-back: 1/0 EOF predicate; compare documented behavior without depending on L input; valid FIL required.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 1659
+    },
+    {
+      "selector": "8F",
+      "name": "ffs_fsize",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Known sizes including >24-bit on suitable image: exact four-byte size; null argument rejection19; buffer guards.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 1675
+    },
+    {
+      "selector": "90",
+      "name": "ffs_ferror",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Clean FIL error zero; controlled disk fault then inspect latched error; later result after recovery characterized; injection capability required for hard-error branch.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 1690
+    },
+    {
+      "selector": "91",
+      "name": "ffs_dopen",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Open empty/populated directory with blank DIR: success; missing directory failure; object guards and subsequent enumeration.",
+      "preservation": "`HL(U)`, `DE(U)`",
+      "documentation_line": 1706
+    },
+    {
+      "selector": "92",
+      "name": "ffs_dclose",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Close directly opened DIR: success and reusable resources; lifecycle misuse only where documented.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 1721
+    },
+    {
+      "selector": "93",
+      "name": "ffs_dread",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Enumerate known entry set and end marker; empty directory; long names/attributes; order unspecified; validate bounded FILINFO layout.",
+      "preservation": "`HL(U)`, `DE(U)`",
+      "documentation_line": 1735
+    },
+    {
+      "selector": "94",
+      "name": "ffs_dfindfirst",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Find first literal/wildcard match: membership of known set or empty end marker; empty/missing directory; persist DIR for next.",
+      "preservation": "`HL(U)`, `DE(U)`, `BC(U)`, `IX(U)`",
+      "documentation_line": 1750
+    },
+    {
+      "selector": "95",
+      "name": "ffs_dfindnext",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Continue find-first sequence: each expected match once until empty name; no required alphabetical order; valid live DIR only.",
+      "preservation": "`HL(U)`, `DE(U)`",
+      "documentation_line": 1773
+    },
+    {
+      "selector": "96",
+      "name": "ffs_stat",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Known file/directory metadata and size; missing file/path status; guarded FILINFO; timestamps interpreted against configured RTC/time resolution.",
+      "preservation": "`HL(U)`, `DE(U)`",
+      "documentation_line": 1792
+    },
+    {
+      "selector": "97",
+      "name": "ffs_unlink",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Unlink file/empty directory: removed; nonempty directory and read-only rejection; unrelated content survives.",
+      "preservation": "`HL(U)`",
+      "documentation_line": 1820
+    },
+    {
+      "selector": "98",
+      "name": "ffs_rename",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Rename/move direct resolved paths: contents intact; missing source/colliding destination errors; paths with MOS prefixes excluded from native FatFS conformance.",
+      "preservation": "`HL(U)`, `DE(U)`",
+      "documentation_line": 1834
+    },
+    {
+      "selector": "99",
+      "name": "ffs_chmod",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Call named unsupported selector: advertised A=23; record HL=23 as source observation, not invented preservation; no underlying filesystem operation expected.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1851
+    },
+    {
+      "selector": "9A",
+      "name": "ffs_utime",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Call named unsupported selector: advertised A=23; record HL=23 as source observation, not invented preservation; no underlying filesystem operation expected.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1861
+    },
+    {
+      "selector": "9B",
+      "name": "ffs_mkdir",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Create resolved directory: empty entry; existing name/missing parent rejection; metadata check.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1871
+    },
+    {
+      "selector": "9C",
+      "name": "ffs_chdir",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Change resolved cwd and use relative lookup; missing directory failure; restore cwd.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1883
+    },
+    {
+      "selector": "9D",
+      "name": "ffs_chdrive",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Call named unsupported selector: advertised A=23; record HL=23 as source observation, not invented preservation; no underlying filesystem operation expected.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1897
+    },
+    {
+      "selector": "9E",
+      "name": "ffs_getcwd",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Get known cwd into exact/short/large buffer: content/status/guard; boundary including terminator; initial cwd is established by boot script, not universal firmware default.",
+      "preservation": "`HL(U)`, `BC(U)`",
+      "documentation_line": 1901
+    },
+    {
+      "selector": "9F",
+      "name": "ffs_mount",
+      "state": "planned",
+      "fixture": "R",
+      "backend": "E+H isolated",
+      "scenarios": "All-zero arguments remount prepared volume; zero versus valid nonzero ignored parameters; malformed/no-FAT image errors in isolated boot; no open handles or active checkpoint file.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1916
+    },
+    {
+      "selector": "A0",
+      "name": "ffs_mkfs",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Call named unsupported selector: advertised A=23; record HL=23 as source observation, not invented preservation; no underlying filesystem operation expected.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1932
+    },
+    {
+      "selector": "A1",
+      "name": "ffs_fdisk",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Call named unsupported selector: advertised A=23; record HL=23 as source observation, not invented preservation; no underlying filesystem operation expected.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1940
+    },
+    {
+      "selector": "A2",
+      "name": "ffs_getfree",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "NULL and empty path query known image: free clusters and cluster-size units checked against BPB/FAT; before/after allocation change; other path behavior recorded as restricted input.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1948
+    },
+    {
+      "selector": "A3",
+      "name": "ffs_getlabel",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "NULL and empty path yield known label/serial; empty/max11-character label; 23-byte guarded buffer; no undersized buffer conformance probe.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1966
+    },
+    {
+      "selector": "A4",
+      "name": "ffs_setlabel",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Set/remove/max-length label: independently inspect volume changes and returned status; source fallthrough23 highlighted separately from intended FRESULT; invalid label rejection; preserve legacy behavior.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1982
+    },
+    {
+      "selector": "A5",
+      "name": "ffs_setcp",
+      "state": "planned",
+      "fixture": "M",
+      "backend": "E+H",
+      "scenarios": "Call named unsupported selector: advertised A=23; record HL=23 as source observation, not invented preservation; no underlying filesystem operation expected.",
+      "preservation": "No explicit preservation list; observe clobbers without inventing a promise.",
+      "documentation_line": 1998
+    },
+    {
+      "selector": "A6",
+      "name": "ffs_flseek_p",
+      "state": "planned",
+      "fixture": "F",
+      "backend": "E+H",
+      "scenarios": "Pointer-based 32-bit direct FIL seek: zero/middle/end/>24-bit; exact position, read-only limit and writable expansion; no content expectation for expansion.",
+      "preservation": "`HL(U)`, `BC(U)`",
+      "documentation_line": 2008
+    }
+  ]
+}

@@ -27,5 +27,6 @@ work, including MAIN-02. Unfinished W06/W07 work is not accepted as implemented.
 
 ## Created predecessors
 
+- `7d6ef6b` — Freeze mos-tests checkpoint rules and strategy/scaffold contracts.
 
-This tree includes group 1; its successor contract remains frozen in the task documents.
+This tree includes group 2; its successor contract remains frozen in the task documents.

@@ -1,0 +1,1308 @@
+{
+  "rst08_named": [
+    {
+      "selector": "00",
+      "name": "mos_getkey",
+      "status": "implemented",
+      "target": "mos_api_getkey",
+      "source_line": 356,
+      "documentation_line": 164,
+      "calls": []
+    },
+    {
+      "selector": "01",
+      "name": "mos_load",
+      "status": "implemented",
+      "target": "mos_api_load",
+      "source_line": 376,
+      "documentation_line": 176,
+      "calls": [
+        "_mos_LOAD_API"
+      ]
+    },
+    {
+      "selector": "02",
+      "name": "mos_save",
+      "status": "implemented",
+      "target": "mos_api_save",
+      "source_line": 406,
+      "documentation_line": 193,
+      "calls": [
+        "_mos_SAVE_API"
+      ]
+    },
+    {
+      "selector": "03",
+      "name": "mos_cd",
+      "status": "implemented",
+      "target": "mos_api_cd",
+      "source_line": 433,
+      "documentation_line": 210,
+      "calls": [
+        "_mos_CD_API"
+      ]
+    },
+    {
+      "selector": "04",
+      "name": "mos_dir",
+      "status": "implemented",
+      "target": "mos_api_dir",
+      "source_line": 453,
+      "documentation_line": 224,
+      "calls": [
+        "_mos_DIR_API"
+      ]
+    },
+    {
+      "selector": "05",
+      "name": "mos_del",
+      "status": "implemented",
+      "target": "mos_api_del",
+      "source_line": 473,
+      "documentation_line": 240,
+      "calls": [
+        "_mos_DEL"
+      ]
+    },
+    {
+      "selector": "06",
+      "name": "mos_ren",
+      "status": "implemented",
+      "target": "mos_api_ren",
+      "source_line": 494,
+      "documentation_line": 254,
+      "calls": [
+        "_mos_REN_API"
+      ]
+    },
+    {
+      "selector": "07",
+      "name": "mos_mkdir",
+      "status": "implemented",
+      "target": "mos_api_mkdir",
+      "source_line": 543,
+      "documentation_line": 271,
+      "calls": [
+        "_mos_MKDIR_API"
+      ]
+    },
+    {
+      "selector": "08",
+      "name": "mos_sysvars",
+      "status": "implemented",
+      "target": "mos_api_sysvars",
+      "source_line": 562,
+      "documentation_line": 285,
+      "calls": []
+    },
+    {
+      "selector": "09",
+      "name": "mos_editline",
+      "status": "implemented",
+      "target": "mos_api_editline",
+      "source_line": 572,
+      "documentation_line": 297,
+      "calls": [
+        "_mos_EDITLINE"
+      ]
+    },
+    {
+      "selector": "0A",
+      "name": "mos_fopen",
+      "status": "implemented",
+      "target": "mos_api_fopen",
+      "source_line": 596,
+      "documentation_line": 325,
+      "calls": [
+        "_mos_FOPEN"
+      ]
+    },
+    {
+      "selector": "0B",
+      "name": "mos_fclose",
+      "status": "implemented",
+      "target": "mos_api_fclose",
+      "source_line": 631,
+      "documentation_line": 360,
+      "calls": [
+        "_mos_FCLOSE"
+      ]
+    },
+    {
+      "selector": "0C",
+      "name": "mos_fgetc",
+      "status": "implemented",
+      "target": "mos_api_fgetc",
+      "source_line": 658,
+      "documentation_line": 374,
+      "calls": [
+        "_mos_FGETC"
+      ]
+    },
+    {
+      "selector": "0D",
+      "name": "mos_fputc",
+      "status": "implemented",
+      "target": "mos_api_fputc",
+      "source_line": 683,
+      "documentation_line": 389,
+      "calls": [
+        "_mos_FPUTC"
+      ]
+    },
+    {
+      "selector": "0E",
+      "name": "mos_feof",
+      "status": "implemented",
+      "target": "mos_api_feof",
+      "source_line": 712,
+      "documentation_line": 404,
+      "calls": [
+        "_mos_FEOF"
+      ]
+    },
+    {
+      "selector": "0F",
+      "name": "mos_getError",
+      "status": "implemented",
+      "target": "mos_api_getError",
+      "source_line": 736,
+      "documentation_line": 418,
+      "calls": [
+        "_mos_GETERROR"
+      ]
+    },
+    {
+      "selector": "10",
+      "name": "mos_oscli",
+      "status": "implemented",
+      "target": "mos_api_oscli",
+      "source_line": 758,
+      "documentation_line": 434,
+      "calls": [
+        "_mos_OSCLI"
+      ]
+    },
+    {
+      "selector": "11",
+      "name": "mos_copy",
+      "status": "implemented",
+      "target": "mos_api_copy",
+      "source_line": 519,
+      "documentation_line": 450,
+      "calls": [
+        "_mos_COPY_API"
+      ]
+    },
+    {
+      "selector": "12",
+      "name": "mos_getrtc",
+      "status": "implemented",
+      "target": "mos_api_getrtc",
+      "source_line": 775,
+      "documentation_line": 471,
+      "calls": [
+        "_mos_GETRTC"
+      ]
+    },
+    {
+      "selector": "13",
+      "name": "mos_setrtc",
+      "status": "implemented",
+      "target": "mos_api_setrtc",
+      "source_line": 803,
+      "documentation_line": 485,
+      "calls": [
+        "_mos_SETRTC"
+      ]
+    },
+    {
+      "selector": "14",
+      "name": "mos_setintvector",
+      "status": "implemented",
+      "target": "mos_api_setintvector",
+      "source_line": 820,
+      "documentation_line": 508,
+      "calls": [
+        "_mos_SETINTVECTOR"
+      ]
+    },
+    {
+      "selector": "15",
+      "name": "mos_uopen",
+      "status": "implemented",
+      "target": "mos_api_uopen",
+      "source_line": 962,
+      "documentation_line": 523,
+      "calls": [
+        "_open_UART1"
+      ]
+    },
+    {
+      "selector": "16",
+      "name": "mos_uclose",
+      "status": "implemented",
+      "target": "mos_api_uclose",
+      "source_line": 973,
+      "documentation_line": 557,
+      "calls": [
+        "_close_UART1"
+      ]
+    },
+    {
+      "selector": "17",
+      "name": "mos_ugetc",
+      "status": "implemented",
+      "target": "mos_api_ugetc",
+      "source_line": null,
+      "documentation_line": 561,
+      "calls": []
+    },
+    {
+      "selector": "18",
+      "name": "mos_uputc",
+      "status": "implemented",
+      "target": "mos_api_uputc",
+      "source_line": 989,
+      "documentation_line": 572,
+      "calls": []
+    },
+    {
+      "selector": "19",
+      "name": "mos_getfil",
+      "status": "implemented",
+      "target": "mos_api_getfil",
+      "source_line": 997,
+      "documentation_line": 584,
+      "calls": [
+        "_mos_GETFIL"
+      ]
+    },
+    {
+      "selector": "1A",
+      "name": "mos_fread",
+      "status": "implemented",
+      "target": "mos_api_fread",
+      "source_line": 1009,
+      "documentation_line": 600,
+      "calls": [
+        "_mos_FREAD"
+      ]
+    },
+    {
+      "selector": "1B",
+      "name": "mos_fwrite",
+      "status": "implemented",
+      "target": "mos_api_fwrite",
+      "source_line": 1030,
+      "documentation_line": 616,
+      "calls": [
+        "_mos_FWRITE"
+      ]
+    },
+    {
+      "selector": "1C",
+      "name": "mos_flseek",
+      "status": "implemented",
+      "target": "mos_api_flseek",
+      "source_line": 1051,
+      "documentation_line": 632,
+      "calls": [
+        "_mos_FLSEEK"
+      ]
+    },
+    {
+      "selector": "1D",
+      "name": "mos_setkbvector",
+      "status": "implemented",
+      "target": "mos_api_setkbvector",
+      "source_line": 834,
+      "documentation_line": 654,
+      "calls": []
+    },
+    {
+      "selector": "1E",
+      "name": "mos_getkbmap",
+      "status": "implemented",
+      "target": "mos_api_getkbmap",
+      "source_line": 851,
+      "documentation_line": 670,
+      "calls": []
+    },
+    {
+      "selector": "1F",
+      "name": "mos_i2c_open",
+      "status": "implemented",
+      "target": "mos_api_i2c_open",
+      "source_line": 857,
+      "documentation_line": 682,
+      "calls": [
+        "_mos_I2C_OPEN"
+      ]
+    },
+    {
+      "selector": "20",
+      "name": "mos_i2c_close",
+      "status": "implemented",
+      "target": "mos_api_i2c_close",
+      "source_line": 878,
+      "documentation_line": 694,
+      "calls": [
+        "_mos_I2C_CLOSE"
+      ]
+    },
+    {
+      "selector": "21",
+      "name": "mos_i2c_write",
+      "status": "implemented",
+      "target": "mos_api_i2c_write",
+      "source_line": 898,
+      "documentation_line": 704,
+      "calls": [
+        "_mos_I2C_WRITE"
+      ]
+    },
+    {
+      "selector": "22",
+      "name": "mos_i2c_read",
+      "status": "implemented",
+      "target": "mos_api_i2c_read",
+      "source_line": 927,
+      "documentation_line": 725,
+      "calls": [
+        "_mos_I2C_READ"
+      ]
+    },
+    {
+      "selector": "23",
+      "name": "mos_unpackrtc",
+      "status": "implemented",
+      "target": "mos_api_unpackrtc",
+      "source_line": 790,
+      "documentation_line": 746,
+      "calls": [
+        "_mos_UNPACKRTC"
+      ]
+    },
+    {
+      "selector": "24",
+      "name": "mos_flseek_p",
+      "status": "implemented",
+      "target": "mos_api_flseek_p",
+      "source_line": 1066,
+      "documentation_line": 785,
+      "calls": [
+        "_mos_FLSEEKP"
+      ]
+    },
+    {
+      "selector": "28",
+      "name": "mos_pmatch",
+      "status": "implemented",
+      "target": "mos_api_pmatch",
+      "source_line": 1084,
+      "documentation_line": 812,
+      "calls": [
+        "_pmatch"
+      ]
+    },
+    {
+      "selector": "29",
+      "name": "mos_getargument",
+      "status": "implemented",
+      "target": "mos_api_getargument",
+      "source_line": 1108,
+      "documentation_line": 844,
+      "calls": [
+        "_getArgument"
+      ]
+    },
+    {
+      "selector": "2A",
+      "name": "mos_extractstring",
+      "status": "implemented",
+      "target": "mos_api_extractstring",
+      "source_line": 1136,
+      "documentation_line": 860,
+      "calls": [
+        "_extractString"
+      ]
+    },
+    {
+      "selector": "2B",
+      "name": "mos_extractnumber",
+      "status": "implemented",
+      "target": "mos_api_extractnumber",
+      "source_line": 1176,
+      "documentation_line": 889,
+      "calls": [
+        "_extractNumber"
+      ]
+    },
+    {
+      "selector": "2C",
+      "name": "mos_escapestring",
+      "status": "implemented",
+      "target": "mos_api_escapestring",
+      "source_line": 1221,
+      "documentation_line": 917,
+      "calls": [
+        "_escapeString"
+      ]
+    },
+    {
+      "selector": "30",
+      "name": "mos_setvarval",
+      "status": "implemented",
+      "target": "mos_api_setvarval",
+      "source_line": 1256,
+      "documentation_line": 944,
+      "calls": [
+        "_setVarVal"
+      ]
+    },
+    {
+      "selector": "31",
+      "name": "mos_readvarval",
+      "status": "implemented",
+      "target": "mos_api_readvarval",
+      "source_line": 1300,
+      "documentation_line": 983,
+      "calls": [
+        "_readVarVal"
+      ]
+    },
+    {
+      "selector": "32",
+      "name": "mos_gsinit",
+      "status": "implemented",
+      "target": "mos_api_gsinit",
+      "source_line": 1346,
+      "documentation_line": 1008,
+      "calls": [
+        "_gsInit"
+      ]
+    },
+    {
+      "selector": "33",
+      "name": "mos_gsread",
+      "status": "implemented",
+      "target": "mos_api_gsread",
+      "source_line": 1369,
+      "documentation_line": 1044,
+      "calls": [
+        "_gsRead"
+      ]
+    },
+    {
+      "selector": "34",
+      "name": "mos_gstrans",
+      "status": "implemented",
+      "target": "mos_api_gstrans",
+      "source_line": 1396,
+      "documentation_line": 1059,
+      "calls": [
+        "_gsTrans"
+      ]
+    },
+    {
+      "selector": "35",
+      "name": "mos_substituteargs",
+      "status": "implemented",
+      "target": "mos_api_substituteargs",
+      "source_line": 1434,
+      "documentation_line": 1081,
+      "calls": []
+    },
+    {
+      "selector": "36",
+      "name": "mos_evaluateexpression",
+      "status": "stub",
+      "target": "mos_api_not_implemented",
+      "source_line": 347,
+      "documentation_line": 1101,
+      "calls": []
+    },
+    {
+      "selector": "38",
+      "name": "mos_resolvepath",
+      "status": "implemented",
+      "target": "mos_api_resolvepath",
+      "source_line": 1475,
+      "documentation_line": 1113,
+      "calls": []
+    },
+    {
+      "selector": "39",
+      "name": "mos_getdirforpath",
+      "status": "implemented",
+      "target": "mos_api_getdirectoryforpath",
+      "source_line": 1534,
+      "documentation_line": 1175,
+      "calls": [
+        "_getDirectoryForPath"
+      ]
+    },
+    {
+      "selector": "3A",
+      "name": "mos_getleafname",
+      "status": "implemented",
+      "target": "mos_api_getfilepathleafname",
+      "source_line": 1566,
+      "documentation_line": 1197,
+      "calls": [
+        "_getFilepathLeafname"
+      ]
+    },
+    {
+      "selector": "3B",
+      "name": "mos_isdirectory",
+      "status": "implemented",
+      "target": "mos_api_isdirectory",
+      "source_line": 1582,
+      "documentation_line": 1213,
+      "calls": [
+        "_isDirectory"
+      ]
+    },
+    {
+      "selector": "3C",
+      "name": "mos_getabsolutepath",
+      "status": "implemented",
+      "target": "mos_api_getabsolutepath",
+      "source_line": 1607,
+      "documentation_line": 1228,
+      "calls": [
+        "_resolveRelativePath"
+      ]
+    },
+    {
+      "selector": "40",
+      "name": "mos_clearvdpflags",
+      "status": "implemented",
+      "target": "mos_api_clear_vdp_flags",
+      "source_line": 1630,
+      "documentation_line": 1256,
+      "calls": []
+    },
+    {
+      "selector": "41",
+      "name": "mos_waitforvdpflags",
+      "status": "implemented",
+      "target": "mos_api_wait_vdp_flags",
+      "source_line": 1644,
+      "documentation_line": 1272,
+      "calls": [
+        "_wait_VDP"
+      ]
+    },
+    {
+      "selector": "50",
+      "name": "mos_getfunction",
+      "status": "implemented",
+      "target": "mos_api_getfunction",
+      "source_line": 2306,
+      "documentation_line": 1290,
+      "calls": []
+    },
+    {
+      "selector": "70",
+      "name": "sd_getunlockcode",
+      "status": "implemented",
+      "target": "sd_api_getunlockcode",
+      "source_line": 2224,
+      "documentation_line": 1324,
+      "calls": [
+        "_SD_getUnlockCode"
+      ]
+    },
+    {
+      "selector": "71",
+      "name": "sd_init",
+      "status": "implemented",
+      "target": "sd_api_init",
+      "source_line": 2234,
+      "documentation_line": 1336,
+      "calls": [
+        "_SD_init_API"
+      ]
+    },
+    {
+      "selector": "72",
+      "name": "sd_readblocks",
+      "status": "implemented",
+      "target": "sd_api_readblocks",
+      "source_line": 2247,
+      "documentation_line": 1351,
+      "calls": [
+        "_SD_readBlocks_API"
+      ]
+    },
+    {
+      "selector": "73",
+      "name": "sd_writeblocks",
+      "status": "implemented",
+      "target": "sd_api_writeblocks",
+      "source_line": 2268,
+      "documentation_line": 1367,
+      "calls": [
+        "_SD_readBlocks_API"
+      ]
+    },
+    {
+      "selector": "80",
+      "name": "ffs_fopen",
+      "status": "implemented",
+      "target": "ffs_api_fopen",
+      "source_line": 1657,
+      "documentation_line": 1400,
+      "calls": [
+        "_f_open"
+      ]
+    },
+    {
+      "selector": "81",
+      "name": "ffs_fclose",
+      "status": "implemented",
+      "target": "ffs_api_fclose",
+      "source_line": 1677,
+      "documentation_line": 1439,
+      "calls": [
+        "_f_close"
+      ]
+    },
+    {
+      "selector": "82",
+      "name": "ffs_fread",
+      "status": "implemented",
+      "target": "ffs_api_fread",
+      "source_line": 1692,
+      "documentation_line": 1457,
+      "calls": [
+        "_f_read"
+      ]
+    },
+    {
+      "selector": "83",
+      "name": "ffs_fwrite",
+      "status": "implemented",
+      "target": "ffs_api_fwrite",
+      "source_line": 1720,
+      "documentation_line": 1476,
+      "calls": [
+        "_f_write"
+      ]
+    },
+    {
+      "selector": "84",
+      "name": "ffs_flseek",
+      "status": "implemented",
+      "target": "ffs_api_flseek",
+      "source_line": 1747,
+      "documentation_line": 1512,
+      "calls": [
+        "_f_lseek"
+      ]
+    },
+    {
+      "selector": "85",
+      "name": "ffs_ftruncate",
+      "status": "implemented",
+      "target": "ffs_api_ftruncate",
+      "source_line": 1763,
+      "documentation_line": 1532,
+      "calls": [
+        "_f_truncate"
+      ]
+    },
+    {
+      "selector": "86",
+      "name": "ffs_fsync",
+      "status": "implemented",
+      "target": "ffs_api_fsync",
+      "source_line": 1775,
+      "documentation_line": 1548,
+      "calls": [
+        "_f_sync"
+      ]
+    },
+    {
+      "selector": "87",
+      "name": "ffs_fforward",
+      "status": "stub",
+      "target": "ffs_api_fforward",
+      "source_line": 1783,
+      "documentation_line": 1564,
+      "calls": []
+    },
+    {
+      "selector": "88",
+      "name": "ffs_fexpand",
+      "status": "stub",
+      "target": "ffs_api_fexpand",
+      "source_line": 1785,
+      "documentation_line": 1574,
+      "calls": []
+    },
+    {
+      "selector": "89",
+      "name": "ffs_fgets",
+      "status": "implemented",
+      "target": "ffs_api_fgets",
+      "source_line": 1795,
+      "documentation_line": 1584,
+      "calls": [
+        "_f_gets"
+      ]
+    },
+    {
+      "selector": "8A",
+      "name": "ffs_fputc",
+      "status": "implemented",
+      "target": "ffs_api_fputc",
+      "source_line": 1816,
+      "documentation_line": 1604,
+      "calls": [
+        "_f_putc"
+      ]
+    },
+    {
+      "selector": "8B",
+      "name": "ffs_fputs",
+      "status": "implemented",
+      "target": "ffs_api_fputs",
+      "source_line": 1831,
+      "documentation_line": 1621,
+      "calls": [
+        "_f_puts"
+      ]
+    },
+    {
+      "selector": "8C",
+      "name": "ffs_fprintf",
+      "status": "stub",
+      "target": "ffs_api_fprintf",
+      "source_line": 1844,
+      "documentation_line": 1638,
+      "calls": []
+    },
+    {
+      "selector": "8D",
+      "name": "ffs_ftell",
+      "status": "implemented",
+      "target": "ffs_api_ftell",
+      "source_line": 1854,
+      "documentation_line": 1644,
+      "calls": [
+        "_fat_tell"
+      ]
+    },
+    {
+      "selector": "8E",
+      "name": "ffs_feof",
+      "status": "implemented",
+      "target": "ffs_api_feof",
+      "source_line": 1871,
+      "documentation_line": 1659,
+      "calls": [
+        "_fat_EOF"
+      ]
+    },
+    {
+      "selector": "8F",
+      "name": "ffs_fsize",
+      "status": "implemented",
+      "target": "ffs_api_fsize",
+      "source_line": 1884,
+      "documentation_line": 1675,
+      "calls": [
+        "_fat_size"
+      ]
+    },
+    {
+      "selector": "90",
+      "name": "ffs_ferror",
+      "status": "implemented",
+      "target": "ffs_api_ferror",
+      "source_line": 1901,
+      "documentation_line": 1690,
+      "calls": [
+        "_fat_error"
+      ]
+    },
+    {
+      "selector": "91",
+      "name": "ffs_dopen",
+      "status": "implemented",
+      "target": "ffs_api_dopen",
+      "source_line": 1912,
+      "documentation_line": 1706,
+      "calls": [
+        "_f_opendir"
+      ]
+    },
+    {
+      "selector": "92",
+      "name": "ffs_dclose",
+      "status": "implemented",
+      "target": "ffs_api_dclose",
+      "source_line": 1930,
+      "documentation_line": 1721,
+      "calls": [
+        "_f_closedir"
+      ]
+    },
+    {
+      "selector": "93",
+      "name": "ffs_dread",
+      "status": "implemented",
+      "target": "ffs_api_dread",
+      "source_line": 1946,
+      "documentation_line": 1735,
+      "calls": [
+        "_f_readdir"
+      ]
+    },
+    {
+      "selector": "94",
+      "name": "ffs_dfindfirst",
+      "status": "implemented",
+      "target": "ffs_api_dfindfirst",
+      "source_line": 1968,
+      "documentation_line": 1750,
+      "calls": [
+        "_f_findfirst"
+      ]
+    },
+    {
+      "selector": "95",
+      "name": "ffs_dfindnext",
+      "status": "implemented",
+      "target": "ffs_api_dfindnext",
+      "source_line": 1993,
+      "documentation_line": 1773,
+      "calls": [
+        "_f_findnext"
+      ]
+    },
+    {
+      "selector": "96",
+      "name": "ffs_stat",
+      "status": "implemented",
+      "target": "ffs_api_stat",
+      "source_line": 2011,
+      "documentation_line": 1792,
+      "calls": [
+        "_f_stat"
+      ]
+    },
+    {
+      "selector": "97",
+      "name": "ffs_unlink",
+      "status": "implemented",
+      "target": "ffs_api_unlink",
+      "source_line": 2029,
+      "documentation_line": 1820,
+      "calls": [
+        "_f_unlink"
+      ]
+    },
+    {
+      "selector": "98",
+      "name": "ffs_rename",
+      "status": "implemented",
+      "target": "ffs_api_rename",
+      "source_line": 2044,
+      "documentation_line": 1834,
+      "calls": [
+        "_f_rename"
+      ]
+    },
+    {
+      "selector": "99",
+      "name": "ffs_chmod",
+      "status": "stub",
+      "target": "ffs_api_chmod",
+      "source_line": 2058,
+      "documentation_line": 1851,
+      "calls": []
+    },
+    {
+      "selector": "9A",
+      "name": "ffs_utime",
+      "status": "stub",
+      "target": "ffs_api_utime",
+      "source_line": 2060,
+      "documentation_line": 1861,
+      "calls": []
+    },
+    {
+      "selector": "9B",
+      "name": "ffs_mkdir",
+      "status": "implemented",
+      "target": "ffs_api_mkdir",
+      "source_line": 2068,
+      "documentation_line": 1871,
+      "calls": [
+        "_f_mkdir"
+      ]
+    },
+    {
+      "selector": "9C",
+      "name": "ffs_chdir",
+      "status": "implemented",
+      "target": "ffs_api_chdir",
+      "source_line": 2082,
+      "documentation_line": 1883,
+      "calls": [
+        "_f_chdir"
+      ]
+    },
+    {
+      "selector": "9D",
+      "name": "ffs_chdrive",
+      "status": "stub",
+      "target": "ffs_api_chdrive",
+      "source_line": 2091,
+      "documentation_line": 1897,
+      "calls": []
+    },
+    {
+      "selector": "9E",
+      "name": "ffs_getcwd",
+      "status": "implemented",
+      "target": "ffs_api_getcwd",
+      "source_line": 2099,
+      "documentation_line": 1901,
+      "calls": [
+        "_f_getcwd"
+      ]
+    },
+    {
+      "selector": "9F",
+      "name": "ffs_mount",
+      "status": "implemented",
+      "target": "ffs_api_mount",
+      "source_line": 2120,
+      "documentation_line": 1916,
+      "calls": [
+        "_mos_mount"
+      ]
+    },
+    {
+      "selector": "A0",
+      "name": "ffs_mkfs",
+      "status": "stub",
+      "target": "ffs_api_mkfs",
+      "source_line": 2123,
+      "documentation_line": 1932,
+      "calls": []
+    },
+    {
+      "selector": "A1",
+      "name": "ffs_fdisk",
+      "status": "stub",
+      "target": "ffs_api_fdisk",
+      "source_line": 2125,
+      "documentation_line": 1940,
+      "calls": []
+    },
+    {
+      "selector": "A2",
+      "name": "ffs_getfree",
+      "status": "implemented",
+      "target": "ffs_api_getfree",
+      "source_line": 2137,
+      "documentation_line": 1948,
+      "calls": [
+        "_fat_getfree"
+      ]
+    },
+    {
+      "selector": "A3",
+      "name": "ffs_getlabel",
+      "status": "implemented",
+      "target": "ffs_api_getlabel",
+      "source_line": 2164,
+      "documentation_line": 1966,
+      "calls": [
+        "_f_getlabel"
+      ]
+    },
+    {
+      "selector": "A4",
+      "name": "ffs_setlabel",
+      "status": "implemented",
+      "target": "ffs_api_setlabel",
+      "source_line": 2190,
+      "documentation_line": 1982,
+      "calls": [
+        "_f_setlabel"
+      ]
+    },
+    {
+      "selector": "A5",
+      "name": "ffs_setcp",
+      "status": "stub",
+      "target": "ffs_api_setcp",
+      "source_line": 2196,
+      "documentation_line": 1998,
+      "calls": []
+    },
+    {
+      "selector": "A6",
+      "name": "ffs_flseek_p",
+      "status": "implemented",
+      "target": "ffs_api_flseek_p",
+      "source_line": 2205,
+      "documentation_line": 2008,
+      "calls": [
+        "_fat_lseek"
+      ]
+    }
+  ],
+  "rst08_dispatch": {
+    "00": "mos_api_getkey",
+    "01": "mos_api_load",
+    "02": "mos_api_save",
+    "03": "mos_api_cd",
+    "04": "mos_api_dir",
+    "05": "mos_api_del",
+    "06": "mos_api_ren",
+    "07": "mos_api_mkdir",
+    "08": "mos_api_sysvars",
+    "09": "mos_api_editline",
+    "0A": "mos_api_fopen",
+    "0B": "mos_api_fclose",
+    "0C": "mos_api_fgetc",
+    "0D": "mos_api_fputc",
+    "0E": "mos_api_feof",
+    "0F": "mos_api_getError",
+    "10": "mos_api_oscli",
+    "11": "mos_api_copy",
+    "12": "mos_api_getrtc",
+    "13": "mos_api_setrtc",
+    "14": "mos_api_setintvector",
+    "15": "mos_api_uopen",
+    "16": "mos_api_uclose",
+    "17": "mos_api_ugetc",
+    "18": "mos_api_uputc",
+    "19": "mos_api_getfil",
+    "1A": "mos_api_fread",
+    "1B": "mos_api_fwrite",
+    "1C": "mos_api_flseek",
+    "1D": "mos_api_setkbvector",
+    "1E": "mos_api_getkbmap",
+    "1F": "mos_api_i2c_open",
+    "20": "mos_api_i2c_close",
+    "21": "mos_api_i2c_write",
+    "22": "mos_api_i2c_read",
+    "23": "mos_api_unpackrtc",
+    "24": "mos_api_flseek_p",
+    "25": "mos_api_not_implemented",
+    "26": "mos_api_not_implemented",
+    "27": "mos_api_not_implemented",
+    "28": "mos_api_pmatch",
+    "29": "mos_api_getargument",
+    "2A": "mos_api_extractstring",
+    "2B": "mos_api_extractnumber",
+    "2C": "mos_api_escapestring",
+    "2D": "mos_api_not_implemented",
+    "2E": "mos_api_not_implemented",
+    "2F": "mos_api_not_implemented",
+    "30": "mos_api_setvarval",
+    "31": "mos_api_readvarval",
+    "32": "mos_api_gsinit",
+    "33": "mos_api_gsread",
+    "34": "mos_api_gstrans",
+    "35": "mos_api_substituteargs",
+    "36": "mos_api_not_implemented",
+    "37": "mos_api_not_implemented",
+    "38": "mos_api_resolvepath",
+    "39": "mos_api_getdirectoryforpath",
+    "3A": "mos_api_getfilepathleafname",
+    "3B": "mos_api_isdirectory",
+    "3C": "mos_api_getabsolutepath",
+    "3D": "mos_api_not_implemented",
+    "3E": "mos_api_not_implemented",
+    "3F": "mos_api_not_implemented",
+    "40": "mos_api_clear_vdp_flags",
+    "41": "mos_api_wait_vdp_flags",
+    "42": "mos_api_not_implemented",
+    "43": "mos_api_not_implemented",
+    "44": "mos_api_not_implemented",
+    "45": "mos_api_not_implemented",
+    "46": "mos_api_not_implemented",
+    "47": "mos_api_not_implemented",
+    "48": "mos_api_not_implemented",
+    "49": "mos_api_not_implemented",
+    "4A": "mos_api_not_implemented",
+    "4B": "mos_api_not_implemented",
+    "4C": "mos_api_not_implemented",
+    "4D": "mos_api_not_implemented",
+    "4E": "mos_api_not_implemented",
+    "4F": "mos_api_not_implemented",
+    "50": "mos_api_getfunction",
+    "51": "mos_api_not_implemented",
+    "52": "mos_api_not_implemented",
+    "53": "mos_api_not_implemented",
+    "54": "mos_api_not_implemented",
+    "55": "mos_api_not_implemented",
+    "56": "mos_api_not_implemented",
+    "57": "mos_api_not_implemented",
+    "58": "mos_api_not_implemented",
+    "59": "mos_api_not_implemented",
+    "5A": "mos_api_not_implemented",
+    "5B": "mos_api_not_implemented",
+    "5C": "mos_api_not_implemented",
+    "5D": "mos_api_not_implemented",
+    "5E": "mos_api_not_implemented",
+    "5F": "mos_api_not_implemented",
+    "60": "mos_api_not_implemented",
+    "61": "mos_api_not_implemented",
+    "62": "mos_api_not_implemented",
+    "63": "mos_api_not_implemented",
+    "64": "mos_api_not_implemented",
+    "65": "mos_api_not_implemented",
+    "66": "mos_api_not_implemented",
+    "67": "mos_api_not_implemented",
+    "68": "mos_api_not_implemented",
+    "69": "mos_api_not_implemented",
+    "6A": "mos_api_not_implemented",
+    "6B": "mos_api_not_implemented",
+    "6C": "mos_api_not_implemented",
+    "6D": "mos_api_not_implemented",
+    "6E": "mos_api_not_implemented",
+    "6F": "mos_api_not_implemented",
+    "70": "sd_api_getunlockcode",
+    "71": "sd_api_init",
+    "72": "sd_api_readblocks",
+    "73": "sd_api_writeblocks",
+    "74": "mos_api_not_implemented",
+    "75": "mos_api_not_implemented",
+    "76": "mos_api_not_implemented",
+    "77": "mos_api_not_implemented",
+    "78": "mos_api_not_implemented",
+    "79": "mos_api_not_implemented",
+    "7A": "mos_api_not_implemented",
+    "7B": "mos_api_not_implemented",
+    "7C": "mos_api_not_implemented",
+    "7D": "mos_api_not_implemented",
+    "7E": "mos_api_not_implemented",
+    "7F": "mos_api_not_implemented",
+    "80": "ffs_api_fopen",
+    "81": "ffs_api_fclose",
+    "82": "ffs_api_fread",
+    "83": "ffs_api_fwrite",
+    "84": "ffs_api_flseek",
+    "85": "ffs_api_ftruncate",
+    "86": "ffs_api_fsync",
+    "87": "ffs_api_fforward",
+    "88": "ffs_api_fexpand",
+    "89": "ffs_api_fgets",
+    "8A": "ffs_api_fputc",
+    "8B": "ffs_api_fputs",
+    "8C": "ffs_api_fprintf",
+    "8D": "ffs_api_ftell",
+    "8E": "ffs_api_feof",
+    "8F": "ffs_api_fsize",
+    "90": "ffs_api_ferror",
+    "91": "ffs_api_dopen",
+    "92": "ffs_api_dclose",
+    "93": "ffs_api_dread",
+    "94": "ffs_api_dfindfirst",
+    "95": "ffs_api_dfindnext",
+    "96": "ffs_api_stat",
+    "97": "ffs_api_unlink",
+    "98": "ffs_api_rename",
+    "99": "ffs_api_chmod",
+    "9A": "ffs_api_utime",
+    "9B": "ffs_api_mkdir",
+    "9C": "ffs_api_chdir",
+    "9D": "ffs_api_chdrive",
+    "9E": "ffs_api_getcwd",
+    "9F": "ffs_api_mount",
+    "A0": "ffs_api_mkfs",
+    "A1": "ffs_api_fdisk",
+    "A2": "ffs_api_getfree",
+    "A3": "ffs_api_getlabel",
+    "A4": "ffs_api_setlabel",
+    "A5": "ffs_api_setcp",
+    "A6": "ffs_api_flseek_p"
+  },
+  "c_functions": [
+    {
+      "selector": "00",
+      "target": "_SD_init"
+    },
+    {
+      "selector": "01",
+      "target": "_SD_readBlocks"
+    },
+    {
+      "selector": "02",
+      "target": "_SD_writeBlocks"
+    },
+    {
+      "selector": "03",
+      "target": "0"
+    },
+    {
+      "selector": "04",
+      "target": "0"
+    },
+    {
+      "selector": "05",
+      "target": "_f_printf"
+    },
+    {
+      "selector": "06",
+      "target": "_f_findfirst"
+    },
+    {
+      "selector": "07",
+      "target": "_f_findnext"
+    },
+    {
+      "selector": "08",
+      "target": "_open_UART1"
+    },
+    {
+      "selector": "09",
+      "target": "_setVarVal"
+    },
+    {
+      "selector": "0A",
+      "target": "_readVarVal"
+    },
+    {
+      "selector": "0B",
+      "target": "_gsTrans"
+    },
+    {
+      "selector": "0C",
+      "target": "_substituteArgs"
+    },
+    {
+      "selector": "0D",
+      "target": "_resolvePath"
+    },
+    {
+      "selector": "0E",
+      "target": "_getDirectoryForPath"
+    },
+    {
+      "selector": "0F",
+      "target": "_resolveRelativePath"
+    },
+    {
+      "selector": "10",
+      "target": "func_getsysvars"
+    },
+    {
+      "selector": "11",
+      "target": "func_getkbmap"
+    }
+  ],
+  "notice": "Pinned W01 index only. Read upstream contracts for the target version; copied prose exists only in historical-reference.tar.gz."
+}
