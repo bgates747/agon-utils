@@ -10,12 +10,16 @@
 using namespace suite;
 extern "C" void startup_probe();
 extern "C" void startup_command_done();
+extern "C" void recovery_disposing();
+extern "C" void recovery_receipt_written();
+extern "C" void recovery_terminal();
+extern "C" void recovery_child_allocating();
 extern "C" uint8_t startup_sample,startup_kind;
 extern "C" volatile uint8_t startup_status;
 volatile uint8_t startup_status=255;
 static volatile uint8_t* const ram=reinterpret_cast<volatile uint8_t*>(0xb7e000);
 // Private invocation state occupies capture-reserved A00-CFF, not a wire record.
-struct Session {uint8_t magic[4],id[16],hashes[128],script[32];uint8_t mask,index;uint32_t counts[8],length;char directory[64];uint32_t crc;};
+struct Session {uint8_t magic[4],id[16],hashes[128],script[32],parent[16],disposition[32];uint8_t mask,index;uint32_t counts[8],length;char directory[64];uint32_t crc;};
 static_assert(sizeof(Session)<768,"session SRAM reservation");
 static Session session;
 static char scratch[16384],script[8193];
@@ -34,9 +38,17 @@ static bool allocate(){uint8_t b[24];size_t n=0;if(!readfile("/mos-tests/install
  FIL f={};if(ffs_fopen(&f,"/mos-tests/install.bin",FA_WRITE))return false;uint8_t status=0;bool ok=recording_write(&f,reinterpret_cast<char*>(b),24,&status)==24&&!status;ok=!ffs_fsync(&f)&&ok;ok=ffs_fclose(&f)==0&&ok;if(!ok)return false;
  memcpy(session.id,b,16);char id[33];hex(b,16,id);snprintf(session.directory,sizeof session.directory,"/mos-tests/runs/%s",id);return ffs_mkdir(session.directory)==0;
 }
+static bool child_provenance();
+static bool has_parent(){for(unsigned i=0;i<16;++i)if(session.parent[i])return true;return false;}
+static int render_manifest(char* buffer,size_t cap,const uint8_t* id,const uint8_t* parent,const uint8_t* disposition,const uint8_t* hashes){
+ char runid[33],parentid[33],d[65],h[4][65];hex(id,16,runid);hex(parent,16,parentid);hex(disposition,32,d);for(unsigned i=0;i<4;++i)hex(hashes+32*i,32,h[i]);
+ bool child=false;for(unsigned i=0;i<16;++i)if(parent[i])child=true;
+ if(child)return snprintf(buffer,cap,"{\"schema\":2,\"run_id\":\"%s\",\"parent_run_id\":\"%s\",\"bundle_sha256\":\"%s\",\"catalogue_sha256\":\"%s\",\"plan_sha256\":\"%s\",\"target_sha256\":\"%s\",\"disposition_sha256\":\"%s\"}\n",runid,parentid,h[0],h[1],h[2],h[3],d);
+ return snprintf(buffer,cap,"{\"schema\":1,\"run_id\":\"%s\",\"parent_run_id\":null,\"bundle_sha256\":\"%s\",\"catalogue_sha256\":\"%s\",\"plan_sha256\":\"%s\",\"target_sha256\":\"%s\"}\n",runid,h[0],h[1],h[2],h[3]);
+}
 static bool prepare_files(){
  const char* manifests[3]={"bundle.json","catalogue.json","target.json"};const unsigned offsets[3]={0,32,96};char from[128],to[128];
- for(unsigned i=0;i<3;++i){snprintf(from,sizeof from,"/mos-tests/%s",manifests[i]);if(!hashfile(from,session.hashes+offsets[i]))return false;path(to,manifests[i]);if(i==0&&!copyfile(from,to))return false;}
+ for(unsigned i=0;i<3;++i){snprintf(from,sizeof from,"/mos-tests/%s",manifests[i]);if(!hashfile(from,session.hashes+offsets[i]))return false;path(to,manifests[i]);if(i==0&&!has_parent()&&!copyfile(from,to))return false;}
  if(memcmp(session.hashes+32,CATALOGUE_DIGEST,32))return false;
  size_t n=0;if(!readfile("/mos-tests/bundle.json",scratch,sizeof scratch-1,n))return false;scratch[n]=0;
  uint8_t list_hash[32];char list_hex[65];if(!hashfile("/mos-tests/files.lst",list_hash))return false;hex(list_hash,32,list_hex);if(!strstr(scratch,list_hex))return false;
@@ -50,8 +62,9 @@ static bool prepare_files(){
  char marker[65];memset(marker,'@',64);marker[64]=0;char* at=strstr(scratch,marker);if(!at||strstr(at+64,marker))return false;char sh[65];hex(session.script,32,sh);memcpy(at,sh,64);
  Sha256 hash;hash.add(scratch,n);hash.finish(session.hashes+64);path(to,"plan.json");if(!savefile(to,scratch,n))return false;
  path(to,"selection-script.txt");if(!savefile(to,script,strlen(script)))return false;
- char id[33],h[4][65];hex(session.id,16,id);for(unsigned i=0;i<4;++i)hex(session.hashes+32*i,32,h[i]);
- int len=snprintf(scratch,sizeof scratch,"{\"schema\":1,\"run_id\":\"%s\",\"parent_run_id\":null,\"bundle_sha256\":\"%s\",\"catalogue_sha256\":\"%s\",\"plan_sha256\":\"%s\",\"target_sha256\":\"%s\"}\n",id,h[0],h[1],h[2],h[3]);path(to,"run.json");return len>0&&size_t(len)<sizeof scratch&&savefile(to,scratch,len);
+ if(has_parent()&&!child_provenance())return false;
+ int len=render_manifest(scratch,sizeof scratch,session.id,session.parent,session.disposition,session.hashes);
+ path(to,"run.json");return len>0&&size_t(len)<sizeof scratch&&savefile(to,scratch,len);
 }
 struct Context {RecordedLifecycle* bridge;uint8_t fault;};
 static bool metadata(void*,const Case& c,wire::Payload& p){return p.case_start(2,CASE_HASHES[c.key-1]);}
@@ -65,12 +78,15 @@ static Result execute(void* data,const Case& c){auto& context=*static_cast<Conte
 }
 static bool cleanup(void*,const Case&){return true;}
 #include "recovery_target.h"
-static bool allocation_intent(){return recovery_target::publish(recovery::ALLOCATING,0,0,0);}
+#include "recovery_disposition.h"
+static bool child_provenance(){return recovery_target::prepare_child();}
+static bool allocation_intent(){bool ok=recovery_target::publish(recovery::ALLOCATING,0,0,0);if(ok)recovery_child_allocating();return ok;}
 static int command(int argc,char** argv){if(argc<2||!capture_available())return 19;
+ if(argc==2&&!strcmp(argv[1],"recover"))return recovery_target::recover()?0:44;
  if(argc==2&&!strcmp(argv[1],"inspect")){if(!recovery_target::gate())return 41;printf("READY: recovery inspection permits a new run; no tests executed.\n");return 0;}
  Selection selection;uint8_t script_hash[32];if(!script_selection(selection,script_hash))return 20;
  bool begin=strcmp(argv[1],"begin")==0;
- if(begin){if(argc!=2)return 21;if(!recovery_target::gate())return 41;memset(&session,0,sizeof session);session.mask=selection.mask;memcpy(session.script,script_hash,32);if(!allocate()||!prepare_files())return 22;
+ if(begin){if(argc!=2)return 21;if(!recovery_target::gate())return 41;memset(&session,0,sizeof session);session.mask=selection.mask;memcpy(session.script,script_hash,32);if(!recovery_target::configure_child(selection))return 44;if(!allocate()||!prepare_files())return 22;
   MosStorage disk;char file[128];path(file,"results.bin");if(disk.open(file))return 23;Recorder r(ram,disk.adapter(),session.id,session.hashes+32,session.hashes+64);wire::Payload p;
   if(!r.begin()||!p.run_start(BACKEND,selection.count,session.hashes)||!r.append(1,p)||!r.checkpoint())return 24;
   uint32_t length=0;if(ffs_fsize(&disk.file,&length)||MosStorage::close(&disk)){r.fail(3,1,r.next-1);return 25;}session.length=length;if(!recovery_target::publish(recovery::BETWEEN,0,r.confirmed,length))return 42;remember();

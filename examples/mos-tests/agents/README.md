@@ -36,5 +36,7 @@ startup-check front ends. W06 is accepted; its checkpoint precedes W07.
 For complete qualification, follow [the human procedure](../human/qualification.md). Run shared-profile emulator checks sequentially and retain all expected negative-case evidence.
 
 Use [human recovery guidance](../human/recovery.md). Preserve stopped images;
-never clear a journal or allocation counter to bypass the gate. W03 explicit
-disposition tools are not available yet. Reuse recovery-check for gate changes.
+never clear a journal or allocation counter to bypass the gate. Use the shared recover command for explicit dispositions, with a named actor,
+reason, expected subject/generation, selected cases and confirmed prerequisites.
+Never infer retry authorization from an incomplete report. Reuse recovery-check
+and disposition-check; child reports do not replace parent findings.

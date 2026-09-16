@@ -20,7 +20,9 @@ def manifests(root):
     plan,ph=jsonfile(root,'plan.json','schema catalogue_sha256 selectors case_keys backend capabilities script_sha256')
     target,th=jsonfile(root,'target.json','schema backend declared_by mos_binary_sha256 mos_map_sha256 toolchain_manifest_sha256 emulator_binary_sha256 vdp_binary_sha256')
     bundle,bh=jsonfile(root,'bundle.json','schema catalogue_sha256 artifacts')
-    run,rh=jsonfile(root,'run.json','schema run_id parent_run_id bundle_sha256 catalogue_sha256 plan_sha256 target_sha256')
+    raw=(root/'run.json').read_bytes();run=json.loads(raw.decode('utf-8'),object_pairs_hook=pairs);rh=sha(raw)
+    require(isinstance(run,dict) and type(run.get('schema'))is int and run['schema'] in [1,2],'unsupported run manifest version')
+    fields(run,'schema run_id parent_run_id bundle_sha256 catalogue_sha256 plan_sha256 target_sha256'+(' disposition_sha256' if run['schema']==2 else ''))
     require(hx(run['run_id'],32) and int(run['run_id'],16)!=0,'invalid run identity')
     require(run['parent_run_id'] is None or (hx(run['parent_run_id'],32) and int(run['parent_run_id'],16)!=0 and run['parent_run_id']!=run['run_id']),'invalid parent identity')
     require([run[k] for k in ['bundle_sha256','catalogue_sha256','plan_sha256','target_sha256']]==[bh,ch,ph,th],'manifest identity mismatch')
@@ -55,6 +57,24 @@ def manifests(root):
         require(matches,'unknown selector '+s);selected.update(matches)
     require(keys==[k for k in cases if k in selected],'selection order/membership mismatch')
     require(hx(plan['script_sha256']) and sha((root/'selection-script.txt').read_bytes())==plan['script_sha256'],'script identity mismatch')
+    if run['schema']==2:
+        require(hx(run['disposition_sha256']) and 'disposition.json' in paths and run['disposition_sha256'] in hashes,'missing bound disposition artifact')
+        data=(root/'disposition.json').read_bytes();require(sha(data)==run['disposition_sha256'],'disposition identity mismatch')
+        receipt=json.loads(data.decode('utf-8'),object_pairs_hook=pairs)
+        fields(receipt,'schema installation_namespace subject_run_id journal_generation action case_ids selection_script_sha256 evidence_sha256 reason actor prerequisites_confirmed')
+        require(type(receipt['schema'])is int and receipt['schema']==1 and receipt['subject_run_id']==run['parent_run_id'] and hx(run['parent_run_id'],32),'invalid disposition subject')
+        require(receipt['installation_namespace']==run['run_id'][:16]==run['parent_run_id'][:16],'disposition namespace mismatch')
+        require(int.from_bytes(bytes.fromhex(run['run_id'])[8:],'little')>int.from_bytes(bytes.fromhex(run['parent_run_id'])[8:],'little'),'invalid child counter')
+        g=receipt['journal_generation'];require(isinstance(g,str) and re.fullmatch('[1-9][0-9]{0,19}',g) and int(g)<2**64,'invalid disposition generation')
+        require(receipt['action'] in ['retry','continue'] and receipt['prerequisites_confirmed'] is True,'execution was not armed')
+        require(receipt['case_ids']==[cases[k]['id'] for k in keys] and receipt['selection_script_sha256']==plan['script_sha256'],'disposition selection mismatch')
+        require(all(isinstance(receipt[k],str) and receipt[k] for k in ['actor','reason']),'missing disposition provenance')
+        evidence=receipt['evidence_sha256'];require(isinstance(evidence,dict) and bool(evidence),'missing parent evidence commitments')
+        for name,digest in evidence.items():
+            require(isinstance(name,str) and name.startswith(('runs/','recovery/')) and all(p not in ['','..','.'] for p in name.split('/')) and '\\' not in name and hx(digest),'invalid evidence commitment')
+        prefix='runs/'+run['parent_run_id']+'/'
+        required=[prefix+'run.json',prefix+'results.bin']+['recovery/'+format(int(g),'016x')+suffix for suffix in ['-a.bin','-b.bin']]
+        require(all(p in evidence for p in required),'incomplete disposition evidence references')
     return dict(cases=cases,keys=keys,run=run,plan=plan,target=target,hashes=[bh,ch,ph,th],manifest_sha256=rh)
 
 def record(data,offset=0):
@@ -190,7 +210,7 @@ def evaluate(m,rows,issues=(),forensic=False):
         e=ends[k]
         if e['outcome']=='PASSED':continue
         details.append(dict(id=m['cases'][k]['id'],function=m['cases'][k]['function'],outcome=e['outcome'],assertions=e['assertions'],failed_assertions=e['failed_assertions'],reason=e['reason'],preservation_changed_offsets=diffs.get(k,[]),observations=[dict(sample=s,id=oid,kind=o['kind'],chunks=[v.hex() for _,v in sorted(o['chunks'].items())]) for (s,oid),o in observations.get(k,{}).items()]))
-    return dict(verdict=verdict,selected=len(m['keys']),counts=counts,failed_tests=len(failed),failed_ids=failed,issues=problems,details=details,run_id=m['run']['run_id'],backend=m['plan']['backend'])
+    return dict(verdict=verdict,selected=len(m['keys']),counts=counts,failed_tests=len(failed),failed_ids=failed,issues=problems,details=details,run_id=m['run']['run_id'],backend=m['plan']['backend'],parent_run_id=m['run']['parent_run_id'])
 
 def render(report,colour=False):
     def badge(word):return ('\x1b[97;42m'+word+'\x1b[0m') if colour and word=='PASSED' else ('\x1b[97;41m'+word+'\x1b[0m') if colour and word=='FAILED' else word
@@ -198,6 +218,7 @@ def render(report,colour=False):
     lines=[headline,f"Selected: {report['selected']}; passed: {report['counts']['PASSED']}; failed tests: {report['failed_tests']}."]
     if report['failed_ids']:lines.append('Failed tests: '+', '.join(map(safe,report['failed_ids'])))
     lines+=['Backend: '+safe(report['backend'])+'. Verdict concerns supplied evidence; hardware and close/power-loss durability are not inferred.']
+    if report.get('parent_run_id'):lines.append('Parent run: '+report['parent_run_id']+'. Parent outcomes are separate; receipt commitments are retained, not re-read from this child-only report.')
     if report['issues']:lines+=['','Evidence problems:']+['- '+safe(i) for i in report['issues']]
     if report['details']:
         lines+=['','Case details (non-passing cases):']

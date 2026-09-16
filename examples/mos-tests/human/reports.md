@@ -65,3 +65,12 @@ absence of an unrecovered error, or power-loss durability.
 
 This is a host-only check on Linux; it does not launch an emulator. See
 [decoder contract](../docs/result-decoding.md) and [W05 evidence](../docs/tasks/MAIN-03/W05/validation.md).
+
+
+## Recovery children
+
+A retry/continuation child carries schema2 run.json and bound disposition.json.
+Its report names the parent and counts only its own selected cases. A passing
+child does not turn a failed or incomplete parent into a pass. Retain both reports.
+Child-only decoding checks receipt linkage and commitments; it does not re-read
+parent files or certify the original card's acceptance state.

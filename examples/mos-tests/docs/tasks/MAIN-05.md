@@ -10,10 +10,11 @@ retrieval is a separate before-reset opportunity.
 ## State and sequencing
 
 W01 accepted and pushed at 8fa4b5a; W02 accepted on 2026-09-16.
-W03 authorized after the W02 result/contract checkpoint.
+W02 and the frozen W03 contract are committed as a4694a9. W03 is completed and accepted on 2026-09-16. W04 is authorized after this
+result/contract checkpoint.
 MAIN-03 W07 and TEST-01 accepted in ecec9b9.
 W01 contract scope was frozen before design; W02 implementation followed the
-accepted 8fa4b5a checkpoint. W03 is not started.
+accepted 8fa4b5a checkpoint. W03 followed its frozen a4694a9 contract.
 Runs **before the proposed MAIN-04 first MOS slice**. MAIN-04 retains its existing
 proposed identity; task numbers do not prescribe execution order.
 W01 delivers docs/restart-recovery.md plus independent transition expectations
@@ -36,7 +37,7 @@ debugger, menu application or claim of power-loss atomicity is included.
   Freeze independent expected outcomes before building the reader/writer.
   **Completed and accepted on 2026-09-16** — [contract](../restart-recovery.md) and
   [W01 review](MAIN-05/W01/validation.md), with 30 independent transition
-  expectations and a 256-byte IDLE slot fixture. W02 is not started.
+  expectations and a 256-byte IDLE slot fixture. At that checkpoint W02 had not started.
 - W02 [x] Implement the shared startup recovery gate.
   Inspect before run allocation and before test execution through autoexec.
   Reuse validated manifests/records; preserve originals and surface interrupted,
@@ -50,13 +51,16 @@ debugger, menu application or claim of power-loss atomicity is included.
   **Completed and accepted on 2026-09-16** — [W02 evidence](MAIN-05/W02/validation.md).
   Seventeen raw-image boots, independent journal controls and startup/report/smoke
   regressions passed. Read-only inspection is available; retry/continue remain W03.
-- W03 [ ] Add explicit recovery dispositions to human tools.
+- W03 [x] Add explicit recovery dispositions to human tools.
   Document and implement retry, selected continuation and acknowledgement/parking
   with durable provenance. New execution gets a new run identity and parent link;
   require fresh fixture prerequisites and explicit selection. Agents invoke the
   same tools. No default retry, uncertain-tail append or silent evidence deletion.
   Frozen [W03 integration contract](MAIN-05/W03/contract.md) specifies requests,
   immutable acceptance certificates, child schema2 and targeted validation.
+  **Completed and accepted on 2026-09-16** — [W03 evidence](MAIN-05/W03/validation.md).
+  Thirty-two focused raw-image boots plus gate/startup/report/smoke regressions
+  passed; originals and parent failures are preserved. W04 remains separate.
 - W04 [ ] Qualify restart and recovery interruption behavior.
   Use independent synthetic controls and fresh/reused raw images. Cover clean
   completion/reboot; interruption before/after synced CASE_START and CASE_END;
@@ -67,6 +71,8 @@ debugger, menu application or claim of power-loss atomicity is included.
   interruption, not proof of a real CPU reset or card power-loss behavior.
   Verify no test re-entry without disposition and no false all-pass. Retain
   exact identities, binary/text evidence and closed-process checks.
+  Frozen [W04 contract](MAIN-05/W04/contract.md) defines Q01–Q05, instrumentation,
+  independent expectations and qualification limits.
 - W05 [ ] Deliver recovery guidance and record qualification limits.
   Promote mature helpers from docs/tasks/MAIN-05/ into maintained locations.
   Update human startup/recovery instructions, agent links, handoff and status.

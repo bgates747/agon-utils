@@ -1,6 +1,6 @@
 """Run an existing raw startup image headlessly, collect card results and decode them."""
 from pathlib import Path
-import argparse,json,os,pty,re,select,subprocess,sys,time
+import argparse,json,os,pty,re,select,subprocess,sys,time,zlib
 ROOT=Path(__file__).resolve().parents[1];sys.path[:0]=[str(ROOT/'scripts'),str(ROOT/'agents')]
 from run_smoke import ANSI,symbol,sha
 from check_capture import memory
@@ -47,6 +47,18 @@ def run(bundle,out,stop_after=None,stop_symbol=None):
         for name in ['recovery-a.bin','recovery-b.bin','install.bin']:
             result=subprocess.run([str(mcopy),'-i',str(image)+'@@1048576','::/mos-tests/'+name,str(out/name)],capture_output=True,text=True)
             if result.returncode:(out/(name+'.retrieval-error.txt')).write_text(result.stderr)
+        # Expose the expected generation for explicit human requests. Target recover
+        # still validates the complete pair/transition and exact subject itself.
+        if diagnostic is not None:
+            valid_slots=[]
+            for name in ['recovery-a.bin','recovery-b.bin']:
+                p=out/name
+                b=p.read_bytes() if p.exists() else b''
+                if len(b)==256 and b[:8]==b'MSTJ\x01\x00\x00\x01' and b[252]==0xa5 and int.from_bytes(b[248:252],'little')==zlib.crc32(b[:248]):
+                    valid_slots.append(b)
+            diagnostic['journal_generation']=str(max(int.from_bytes(b[16:24],'little') for b in valid_slots)) if len(valid_slots)==2 else None
+        recovery_copy=subprocess.run([str(mcopy),'-s','-i',str(image)+'@@1048576','::/mos-tests/recovery',str(out)],capture_output=True,text=True)
+        if recovery_copy.returncode:(out/'recovery.retrieval-note.txt').write_text(recovery_copy.stderr)
         reports=[]
         for folder in sorted((out/'runs').iterdir()):
             if not folder.is_dir():continue
@@ -72,7 +84,7 @@ def main():
     current=next((r for r in result['reports'] if r['run']==result['current_run']),None)
     gate=result.get('recovery_gate')
     if gate and gate['code']:
-        reasons={1:'missing, corrupt or conflicting journal/allocation state',2:'previous execution is unresolved',3:'run history does not reconcile',4:'unreadable, unsupported or invalid saved evidence',5:'record completion is unresolved',6:'recovery storage unavailable',7:'disposition/legacy state needs unsupported recovery action',8:'inspection limit exceeded',9:'same-boot session disagrees with journal'}
+        reasons={1:'missing, corrupt or conflicting journal/allocation state',2:'previous execution is unresolved',3:'run history does not reconcile',4:'unreadable, unsupported or invalid saved evidence',5:'record completion is unresolved',6:'recovery storage unavailable',7:'disposition/legacy state needs unsupported recovery action',8:'inspection limit exceeded',9:'same-boot session disagrees with journal',10:'disposition evidence or publication could not be validated',11:'explicit request or selection was rejected'}
         print('INCOMPLETE: recovery gate blocked test execution — '+reasons.get(gate['code'],'journal publication error')+'.')
         phases=['idle','allocating','between cases','case intent','in case','case completed; cleanup pending','finalizing','complete','disposing','parked','armed']
         phase=phases[gate['phase']] if gate['phase']<len(phases) else 'unverified'
@@ -81,7 +93,8 @@ def main():
         failed=[i+1 for i in range(3) if gate['failed_case_mask']&(1<<i)]
         print('Confirmed failed tests: '+str(len(failed))+(' ('+', '.join(names.get(k,str(k)) for k in failed)+')' if failed else '')+'.')
         print('Retained run: '+gate['run_id']+'; phase: '+phase+'; last active case: '+names.get(gate['case_key'],'none established')+'.')
-        print('No retry was authorized. Original evidence is preserved; explicit dispositions follow in MAIN-05 W03.')
+        print('Expected journal generation: '+str(gate.get('journal_generation'))+'.')
+        print('No retry was authorized. Original evidence is preserved; use the explicit recovery tools after inspection.')
     elif any(result['command_statuses']):
         print('INCOMPLETE: startup stopped with command statuses '+str(result['command_statuses'])+'. A completed file alone does not establish successful journal/close finalization.')
         if current:

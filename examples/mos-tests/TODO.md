@@ -6,8 +6,9 @@ not the agon-utils repository root. Details and acceptance criteria live in
 linked task records, without duplicate task checklists.
 
 - [ ] **MAIN-05** — [Restart recovery gate](docs/tasks/MAIN-05.md).
-  W01 accepted and pushed. W02 accepted; W03 explicit dispositions authorized
-  after the result/contract checkpoint. Recovery precedes
+  W01 accepted and pushed. W02 accepted/committed as a4694a9; W03 explicit
+  dispositions are accepted. W04 broader interruption qualification is authorized
+  after its frozen contract checkpoint. Recovery precedes
   MAIN-04 real MOS cases.
 
 - [ ] **MOS-01** — [Fix missing-OBEY cleanup and prepare an upstream PR](docs/tasks/MOS-01.md).

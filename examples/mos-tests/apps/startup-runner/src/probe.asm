@@ -53,6 +53,18 @@ finish:
  ret
 _startup_command_done:
  ret
+ .global _recovery_disposing
+ .global _recovery_receipt_written
+ .global _recovery_terminal
+ .global _recovery_child_allocating
+_recovery_disposing:
+ ret
+_recovery_receipt_written:
+ ret
+_recovery_terminal:
+ ret
+_recovery_child_allocating:
+ ret
  .section .data
 _startup_sample: db 0
 _startup_kind: db 0

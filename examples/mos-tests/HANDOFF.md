@@ -2,14 +2,12 @@
 
 ## Current checkpoint and work
 
-W01 and the accepted foundation are pushed through 8fa4b5a. MAIN-05 W02 is
-implemented and qualified, awaiting acceptance/commit. Read human/recovery.md
-and docs/tasks/MAIN-05/W02/validation.md. Startup now inspects a dual-slot SD
-journal and retained evidence before allocation or execution; unresolved state
-blocks repeated boots. RUN . inspect is read-only. No retry/continue tooling yet
-(W03); do not clear journals or counters to bypass the gate. Seventeen final
-headless raw-image boots passed, as did journal and regression checks. Hardware
-is untested. Remaining sections retain earlier checkpoint context.
+W03 explicit dispositions are accepted on 2026-09-16. The Author requested
+commit, push and next work. W04's frozen contract is docs/tasks/MAIN-05/W04/contract.md;
+begin its interruption-boundary qualification after this checkpoint is committed
+and pushed. W03 evidence is retained in W03/qualification.tar.gz, with 32 focused
+boots and passing gate/startup/report/smoke regressions. Hardware is unqualified.
+W05 and real MOS cases remain later work.
 
 SETUP-01 is complete and accepted; the Author approved committing on 2026-09-15.
 C++, independent assembly, and BBC BASIC checks passed headlessly on raw SD

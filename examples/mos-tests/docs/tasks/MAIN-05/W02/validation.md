@@ -2,7 +2,7 @@
 
 The gate is implemented and passed headless raw-image qualification on Linux.
 Interrupted or ambiguous state blocks execution before a new run is allocated;
-repeated boots preserve prior evidence. W02 awaits Author acceptance/checkpoint.
+repeated boots preserve prior evidence. W02 was accepted on 2026-09-16 and checkpointed as a4694a9.
 W03 dispositions and W04 broader interruption coverage are still outstanding.
 
 ## Implementation

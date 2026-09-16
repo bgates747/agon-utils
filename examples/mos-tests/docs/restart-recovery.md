@@ -205,15 +205,15 @@ Before-reset Fab SRAM/register/trace capture remains complementary. Restart uses
 SD only and never assumes SRAM survives. Hardware, arbitrary crash recovery,
 storage atomicity and a trusted reset-reason source remain unqualified.
 
-## W02 implementation status
+## Implemented profile
 
 See human/recovery.md and docs/tasks/MAIN-05/W02/validation.md. The gate and
-journal publication are implemented; dispositions are unavailable. W02 requires
+journal publication are implemented; W03 adds explicit dispositions below. The target requires
 canonical same-bundle artifacts for the three synthetic controls and uses the
 existing wire primitives with stricter streaming validation. It may reject valid
 but unsupported host-decodable evidence. Additional operational bounds are 1 MiB
-per hashed artifact and 64 MiB aggregate hashed bytes per inspection. W03 must
-freeze any receipt/manifest integration changes before implementing dispositions.
+per hashed artifact and 64 MiB aggregate hashed bytes per inspection. Unsupported
+corrupt/truncated record tails remain stopped; no general evidence repair exists.
 
 ## W03 integration extension
 
@@ -221,3 +221,9 @@ The frozen [W03 contract](tasks/MAIN-05/W03/contract.md) adds durable acceptance
 certificates and child run schema2, preventing orphan receipts from becoming
 authorizations after the journal advances. It specifies the shared request
 interface, selected continuation and explicit interrupted-disposition retry.
+
+The shared human recover tool now prepares or applies these requests. See
+[human recovery](../human/recovery.md) for the supported profile and bounds.
+Target acceptance requires immutable receipt and certificate validation; merely
+copying a request onto the card does not authorize execution. W04 retains the
+broader interruption-boundary qualification.

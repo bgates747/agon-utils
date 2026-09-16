@@ -27,7 +27,8 @@ a new run with parent identity; it never extends an uncertain file tail.
 
 ## Manifests
 
-JSON objects reject duplicate keys. Each schema is version 1; required fields
+JSON objects reject duplicate keys. The baseline schemas are version 1; the W03 child-run extension below adds
+run.json schema2. Required fields
 below cannot be omitted. Integers must fit their specified widths. Unknown fields
 are rejected in v1 to expose typos. Relative artifact paths use slash separators,
 remain below the bundle/run root, and exclude traversal or symlink escape.
@@ -227,3 +228,24 @@ bytes. Fixture assertions check manual lengths/offsets; future encoders/decoders
 must match frozen files without regenerating expectations during their own test.
 W01 establishes these contracts and controls only. TEST-01 W02–W06 still own
 actual capture, decoder, checkpoint and startup qualification.
+
+
+## MAIN-05 W03 child-run manifest extension
+
+The frozen [integration contract](tasks/MAIN-05/W03/contract.md) adds run.json
+schema2 for an explicitly authorized retry/continuation. All schema1 fields
+remain required; parent_run_id is non-null and disposition_sha256 is added.
+Ordinary runs remain schema1. Binary record envelopes remain version1.
+
+Copy the accepted receipt as disposition.json and add its exact bytes/size/hash
+to the child bundle.json artifact list. RUN_START therefore binds the receipt
+through its bundle digest. The receipt subject equals parent_run_id, shares the
+installation namespace, and has a smaller counter. Its ordered cases and script
+digest equal the child plan; retry/continue and confirmed prerequisites are
+required. Actor, reason, generation and parent/snapshot evidence commitments
+remain attached.
+
+A child-only host report validates these relationships but does not independently
+re-read parent/card evidence or the acceptance certificate. The target startup
+gate performs that reconciliation on the original installation. Report parent
+identity prominently and keep parent outcomes separate from child counts.

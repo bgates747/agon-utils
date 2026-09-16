@@ -6,7 +6,13 @@ namespace recovery_target {
 using namespace recovery;
 static Slot slots[2];static unsigned chosen;static uint8_t allocation[24];
 static char saved_script[8193],compare_text[16384],file_list[16384];
-static uint32_t inspected_bytes=0,hashed_bytes=0;
+static uint32_t inspected_bytes=0,hashed_bytes=0,last_ended=0;static unsigned last_mask=0;
+inline bool collect_receipts(bool allow_orphans=false);
+inline bool accepted_parent(const uint8_t* id);
+inline bool armed_valid();
+inline bool child_metadata(const char* directory,uint8_t* parent,uint8_t* digest,unsigned mask,const uint8_t* script);
+inline bool child_bundle(const char* receipt_path,uint8_t* digest,bool save);
+
 static const char* const slot_paths[2]={"/mos-tests/recovery-a.bin","/mos-tests/recovery-b.bin"};
 inline Slot& latest(){return slots[chosen];}
 inline void diagnose(uint8_t code){
@@ -25,15 +31,7 @@ inline bool load(){
     wire::get32(allocation+16)!=wire::crc(allocation,16)||memcmp(allocation,s.b+8,8))return false;
  return true;
 }
-inline bool publish(uint8_t phase,uint32_t key,uint32_t sequence,uint32_t length){
- Slot next=latest();if(next.generation()==UINT64_MAX)return false;
- put64(next.b+16,next.generation()+1);next.b[120]=phase;wire::put32(next.b+124,key);
- wire::put32(next.b+128,sequence);put64(next.b+132,length);
- if(phase==ALLOCATING){
-  memcpy(next.b+24,session.id,16);memset(next.b+40,0,48);
-  memcpy(next.b+88,session.script,32);put64(next.b+140,u64(session.id+8));
- }else if(phase==BETWEEN)memcpy(next.b+56,session.hashes+64,32);
- next.seal();unsigned destination=chosen^1,selected=0;
+inline bool commit_slot(Slot next){ next.seal();unsigned destination=chosen^1,selected=0;
  if(!pair(latest(),next,selected)||selected!=1)return false;
  FIL f={};if(ffs_fopen(&f,slot_paths[destination],FA_WRITE))return false;
  uint8_t status=0,zero_byte=0,commit=0xa5;
@@ -46,6 +44,19 @@ inline bool publish(uint8_t phase,uint32_t key,uint32_t sequence,uint32_t length
  if(!ok||!closed||!readfile(slot_paths[destination],check.b,256,n)||n!=256||memcmp(next.b,check.b,256))return false;
  slots[destination]=next;chosen=destination;return true;
 }
+inline bool publish(uint8_t phase,uint32_t key,uint32_t sequence,uint32_t length){
+ Slot next=latest();if(next.generation()==UINT64_MAX)return false;
+ put64(next.b+16,next.generation()+1);next.b[120]=phase;wire::put32(next.b+124,key);
+ wire::put32(next.b+128,sequence);put64(next.b+132,length);
+ if(phase==ALLOCATING){
+  memcpy(next.b+24,session.id,16);memcpy(next.b+40,session.parent,16);memset(next.b+56,0,32);
+  if(has_parent())memcpy(next.b+148,session.disposition,32);
+  else {next.b[121]=0;memset(next.b+148,0,32);}
+  memcpy(next.b+88,session.script,32);put64(next.b+140,u64(session.id+8));
+ }else if(phase==BETWEEN)memcpy(next.b+56,session.hashes+64,32);
+ return commit_slot(next);
+}
+
 inline bool checked_hash(const char* pathname,uint8_t* digest,uint32_t maximum){
  FILINFO info={};if(ffs_stat(&info,pathname)||(info.fattrib&0x10)||info.fsize>maximum)return false;
  size_t n=strlen(pathname);if(n>=5&&!strcmp(pathname+n-5,".json")&&info.fsize>16384)return false;
@@ -69,14 +80,17 @@ inline bool from_hex(const char* s,uint8_t* bytes,size_t n){
 // Only canonical manifests produced by this same bundle are supported in W02.
 // Exact template equality is stricter than accepting arbitrary equivalent JSON.
 inline bool inspect_run(const char* directory,const uint8_t* id,bool& complete,uint32_t& seq,uint32_t& length){
- char pathname[160],source[160];uint8_t hashes[128],script_hash[32];size_t n=0;Selection selection;
+ char pathname[160],source[160];uint8_t hashes[128],script_hash[32],base_bundle[32],parent[16]={},disposition[32]={};size_t n=0;Selection selection;
  snprintf(pathname,sizeof pathname,"%s/selection-script.txt",directory);
  if(!readfile(pathname,saved_script,8192,n)||!parse_script(saved_script,n,FUNCTIONS,selection))return false;
- Sha256 sh;sh.add(saved_script,n);sh.finish(script_hash);
+ Sha256 sh;sh.add(saved_script,n);sh.finish(script_hash);last_mask=selection.mask;
+ if(!child_metadata(directory,parent,disposition,selection.mask,script_hash))return false;
  const char* names[3]={"bundle.json","catalogue.json","target.json"};unsigned offsets[3]={0,32,96};
  for(unsigned i=0;i<3;++i){
   snprintf(source,sizeof source,"/mos-tests/%s",names[i]);snprintf(pathname,sizeof pathname,"%s/%s",directory,names[i]);
-  if(!bounded_hash(source,hashes+offsets[i])||!digest_match(pathname,hashes+offsets[i]))return false;
+  if(!bounded_hash(source,hashes+offsets[i]))return false;
+  if(i==0){memcpy(base_bundle,hashes,32);if(!zero(parent,16)){char receipt[160];snprintf(receipt,sizeof receipt,"%s/disposition.json",directory);if(!child_bundle(receipt,hashes,false))return false;}}
+  if(!digest_match(pathname,hashes+offsets[i]))return false;
  }
  if(memcmp(hashes+32,CATALOGUE_DIGEST,32))return false;
  snprintf(source,sizeof source,"/mos-tests/plan-%u.json",selection.mask);
@@ -107,16 +121,15 @@ inline bool inspect_run(const char* directory,const uint8_t* id,bool& complete,u
  char list_hex[65];hex(list_hash,32,list_hex);
  piece_size=snprintf(piece,sizeof piece,",\n    {\n      \"path\": \"files.lst\",\n      \"size\": %lu,\n      \"sha256\": \"%s\"\n    }\n  ]\n}\n",(unsigned long)n,list_hex);
  bundle_check.add(piece,piece_size);uint8_t canonical_bundle[32];bundle_check.finish(canonical_bundle);
- if(!inventory_count||memcmp(canonical_bundle,hashes,32))return false;
- char run_id[33],h[4][65];hex(id,16,run_id);for(unsigned i=0;i<4;++i)hex(hashes+32*i,32,h[i]);
- int size=snprintf(compare_text,sizeof compare_text,"{\"schema\":1,\"run_id\":\"%s\",\"parent_run_id\":null,\"bundle_sha256\":\"%s\",\"catalogue_sha256\":\"%s\",\"plan_sha256\":\"%s\",\"target_sha256\":\"%s\"}\n",run_id,h[0],h[1],h[2],h[3]);
+ if(!inventory_count||memcmp(canonical_bundle,base_bundle,32))return false;
+ int size=render_manifest(compare_text,sizeof compare_text,id,parent,disposition,hashes);
  if(size<0||size_t(size)>=sizeof compare_text)return false;Sha256 manifest;uint8_t expected_run[32];manifest.add(compare_text,size);manifest.finish(expected_run);
  snprintf(pathname,sizeof pathname,"%s/run.json",directory);if(!digest_match(pathname,expected_run))return false;
  // Reject unexplained directory entries, including orphan disposition material.
  DIR dir={};FILINFO entry={};if(ffs_dopen(&dir,directory))return false;bool entries_ok=true;unsigned entries=0;
  while(entries_ok){if(ffs_dread(&dir,&entry)){entries_ok=false;break;}if(!entry.fname[0])break;
   if(++entries>128||(entry.fattrib&0x10)){entries_ok=false;break;}
-  bool known=false;const char* extras[]={"bundle.json","run.json","plan.json","selection-script.txt","results.bin","files.lst"};
+  bool known=!zero(parent,16)&&!strcmp(entry.fname,"disposition.json");const char* extras[]={"bundle.json","run.json","plan.json","selection-script.txt","results.bin","files.lst"};
   for(auto name:extras)if(!strcmp(entry.fname,name))known=true;
   // Inventory was split into nul-terminated name/hash pairs above.
   char* cursor=file_list;while(cursor<file_list+n){
@@ -138,17 +151,16 @@ inline bool inspect_run(const char* directory,const uint8_t* id,bool& complete,u
  ok=!ffs_ferror(&f)&&ok;bool fileclosed=ffs_fclose(&f)==0;complete=ok&&fileclosed&&records.complete;seq=records.sequence;length=records.bytes;
  if(!memcmp(id,latest().b+24,16)){
   recovery_diagnostic[8]=records.failed_mask;wire::put32(recovery_diagnostic+4,records.current);
-  if(memcmp(hashes+64,latest().b+56,32)||memcmp(script_hash,latest().b+88,32)||
+  if(memcmp(hashes+64,latest().b+56,32)||(latest().phase()<DISPOSING&&memcmp(script_hash,latest().b+88,32))||
      latest().sequence()>seq||latest().length()>length)ok=false;
  }
- return ok&&fileclosed;
+ last_ended=records.ended_mask;return ok&&fileclosed;
 }
 inline bool gate(){
  memset(recovery_diagnostic,0,64);recovery_diagnostic[1]=255;inspected_bytes=0;hashed_bytes=0;
  if(!load()){diagnose(1);return false;}
  Slot& s=latest();
- // W03 states/receipts and parent-linked runs are deliberately unsupported.
- if(s.b[121]||!zero(s.b+40,16)||!zero(s.b+148,32)||s.phase()>=DISPOSING){diagnose(7);return false;}
+ if(!collect_receipts()){diagnose(7);return false;}
  uint64_t count=u64(allocation+8);if(count>=4096||s.generation()==UINT64_MAX){diagnose(8);return false;}
  if(s.counter()!=count){diagnose(3);return false;}
  // Verify names/count once; deterministic paths below establish no missing counter.
@@ -158,23 +170,19 @@ inline bool gate(){
   if(++found>4096||!(e.fattrib&0x10)||!from_hex(e.fname,id,16)||memcmp(id,allocation,8)||!u64(id+8)||u64(id+8)>count)okay=false;
  }
  bool closed=ffs_dclose(&d)==0;if(!okay||!closed||found!=count){diagnose(3);return false;}
- // A receipts directory is not provisioned in W02. Any presence needs W03 support.
- DIR receipts={};uint8_t rs=ffs_dopen(&receipts,"/mos-tests/recovery");
- if(!rs){ffs_dclose(&receipts);diagnose(7);return false;}
- if(rs!=4&&rs!=5){diagnose(6);return false;}
  for(uint64_t i=1;i<=count;++i){uint8_t id[16];memcpy(id,allocation,8);put64(id+8,i);char text[33],directory[80];hex(id,16,text);snprintf(directory,sizeof directory,"/mos-tests/runs/%s",text);
   bool complete=false;uint32_t seq=0,length=0;
   if(!inspect_run(directory,id,complete,seq,length)){diagnose(4);return false;}
-  if(!complete){diagnose(5);return false;}
+  if(!complete&&!accepted_parent(id)){diagnose(5);return false;}
   if(i==count&&(s.sequence()!=seq||s.length()!=length)){diagnose(5);return false;}
  }
- if((count==0&&s.phase()!=IDLE)||(count>0&&s.phase()!=COMPLETE)){diagnose(2);return false;}
+ if((count==0&&s.phase()!=IDLE)||(count>0&&s.phase()!=COMPLETE&&!(s.phase()==ARMED&&armed_valid()))){diagnose(2);return false;}
  recovery_diagnostic[0]=0;return true;
 }
 inline bool same_boot(){
  if(!load())return false;
  Slot& s=latest();
- return s.phase()==BETWEEN&&!s.b[121]&&zero(s.b+40,16)&&zero(s.b+148,32)&&
+ return s.phase()==BETWEEN&&!memcmp(s.b+40,session.parent,16)&&!memcmp(s.b+148,session.disposition,32)&&
  !memcmp(s.b+24,session.id,16)&&!memcmp(s.b+56,session.hashes+64,32)&&
  !memcmp(s.b+88,session.script,32)&&s.length()==session.length&&s.counter()==u64(allocation+8);
 }

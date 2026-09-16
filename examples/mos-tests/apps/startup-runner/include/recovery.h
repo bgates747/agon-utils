@@ -22,7 +22,8 @@ struct Slot {
   if(phase()==IDLE)return zero(b+24,224);
   if(zero(b+24,16)||memcmp(b+8,b+24,8)||u64(b+32)!=counter()||!counter()||zero(b+88,32))return false;
   if(phase()<DISPOSING){
-   if(b[121]||!zero(b+40,16)||!zero(b+148,32))return false;
+   if(b[121]==0){if(!zero(b+40,16)||!zero(b+148,32))return false;}
+   else if((b[121]!=2&&b[121]!=3)||zero(b+40,16)||zero(b+148,32)||memcmp(b+40,b+8,8)||u64(b+48)>=counter())return false;
    uint32_t key=wire::get32(b+124);
    if(phase()>=CASE_INTENT&&phase()<=CASE_DONE){if(key<1||key>3)return false;}
    else if(key)return false;
