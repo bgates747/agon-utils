@@ -50,21 +50,10 @@ def parse_int(value: str) -> int:
         raise argparse.ArgumentTypeError(f"invalid integer: {value}") from error
 
 
-def align4(size: int) -> int:
-    return (size + 3) & ~3
-
-
-def make_chunk(chunk_id: bytes, payload: bytes) -> bytes:
-    if len(chunk_id) != 4:
-        raise ValueError(f"RIFF chunk ID must contain four bytes: {chunk_id!r}")
-    if len(payload) > MAX_U32:
-        raise ValueError(f"RIFF payload is too large: {len(payload)} bytes")
-    return (
-        chunk_id
-        + struct.pack("<I", len(payload))
-        + payload
-        + bytes(align4(len(payload)) - len(payload))
-    )
+# Shared framing preserves the established image/audio bytes.
+import sys as _agnb_sys
+_agnb_sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "api"))
+from riff import align4, make_chunk
 
 
 def load_audio_records(start_buffer_id: int) -> list[AudioRecord]:

@@ -91,19 +91,10 @@ class ImageRecord:
     dataSize: int
 
 
-def align4(size: int) -> int:
-    return (size + 3) & ~3
-
-
-def make_chunk(chunk_id: bytes, payload: bytes) -> bytes:
-    """Return one aligned RIFF chunk, including its header and zero padding."""
-    if len(chunk_id) != 4:
-        raise ValueError(f"RIFF chunk ID must contain four bytes: {chunk_id!r}")
-    if len(payload) > MAX_U32:
-        raise ValueError(f"RIFF payload is too large: {len(payload)} bytes")
-
-    padding = bytes(align4(len(payload)) - len(payload))
-    return chunk_id + struct.pack("<I", len(payload)) + payload + padding
+# Shared framing preserves the established image/audio bytes.
+import sys as _agnb_sys
+_agnb_sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "api"))
+from riff import align4, make_chunk
 
 
 def load_image_records() -> list[ImageRecord]:
