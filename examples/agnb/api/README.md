@@ -114,3 +114,13 @@ The independent stock-MOS qualification is recorded under
 identities match. The additive0.3 runtime is released for scoped publication
 under the earlier explicit ownership/commit instruction. Physical hardware
 qualification is not claimed.
+
+## C++ plain-buffer loading
+
+`agnb_buffers.hpp` supplies an application-neutral, bounded reader for0.3;
+`agnb_stdio.hpp` adds file ownership and `agnb_agondev.hpp` supplies MOS submission.
+The caller owns an8KiB workspace. No IDs, setup commands, typed assets or calls
+are invented by the reader. See [C++ API and examples](cpp-reader.md), including
+callback lifetime, transport/partial-load behavior and signed-long file limits.
+The new C++ implementation and target qualification are tracked by AGNB-002;
+its publication gate is independent of the accepted assembly implementation.

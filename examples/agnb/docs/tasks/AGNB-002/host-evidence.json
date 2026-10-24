@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "summary": "20 C++ AGNB format, bounded transfer, callback and failure checks pass.",
+  "container_bytes": 516032,
+  "payload_bytes": 515648,
+  "workspace_bytes": 8192,
+  "sanitizers": [
+    "address",
+    "undefined"
+  ]
+}

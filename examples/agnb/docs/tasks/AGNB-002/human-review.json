@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-23",
+  "task": "GOLEM-046",
+  "generic_task": "AGNB-002",
+  "consumer": "AgonDev C++ streamed loader",
+  "author_report": "works.",
+  "human_review": "accepted",
+  "result_bytes": 95,
+  "results_match_expected": true,
+  "results_sha256": "29c64c9dddc0e913f61a21a0cc526ccbc615ef615f8f8aab07628545909a0b03",
+  "application_log_ends_pass": true,
+  "application_log_sha256": "c9f345e95d81af7a8d23e70a34904715b10bf33b13502b9d4557f764f70ac74f",
+  "runtime_pins_verified": true,
+  "failure_file_absent": true,
+  "profile_stopped": true,
+  "publication_approval": "not supplied by this review message"
+}

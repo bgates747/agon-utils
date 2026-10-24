@@ -1,0 +1,103 @@
+{
+  "date": "2026-10-23",
+  "passed": true,
+  "generic_task": "AGNB-002",
+  "consumer_task": "GOLEM-046",
+  "workspace_bytes": 8192,
+  "targets": [
+    {
+      "host": "oryx-linuxlite",
+      "backend": "buffered",
+      "engine": "native-stock-vdp",
+      "container_bytes": 553664,
+      "app_bytes": 9696,
+      "expected_bytes": 83,
+      "elapsed_seconds": 11.813,
+      "mos_return_observed": false,
+      "rejection_and_recovery_checks": true,
+      "evidence_file": "oryx-linuxlite-buffered-jit-evidence.json"
+    },
+    {
+      "host": "oryx-linuxlite",
+      "backend": "native",
+      "engine": "interp",
+      "container_bytes": 545168,
+      "app_bytes": 10603,
+      "expected_bytes": 95,
+      "elapsed_seconds": 16.12,
+      "mos_return_observed": true,
+      "rejection_and_recovery_checks": true,
+      "evidence_file": "oryx-linuxlite-native-interp-evidence.json"
+    },
+    {
+      "host": "oryx-linuxlite",
+      "backend": "native",
+      "engine": "jit",
+      "container_bytes": 545168,
+      "app_bytes": 10603,
+      "expected_bytes": 95,
+      "elapsed_seconds": 16.909,
+      "mos_return_observed": true,
+      "rejection_and_recovery_checks": true,
+      "evidence_file": "oryx-linuxlite-native-jit-evidence.json"
+    },
+    {
+      "host": "raspberrypi",
+      "backend": "buffered",
+      "engine": "native-stock-vdp",
+      "container_bytes": 553664,
+      "app_bytes": 9696,
+      "expected_bytes": 83,
+      "elapsed_seconds": 11.86,
+      "mos_return_observed": false,
+      "rejection_and_recovery_checks": true,
+      "evidence_file": "raspberrypi-buffered-jit-evidence.json"
+    }
+  ],
+  "builds": {
+    "stock": {
+      "static_ram_bytes": 18090,
+      "native": false,
+      "binary_bytes": 9696,
+      "binary_sha256": "a1c4d8c724daef62c5932a0d427e14767d058ff29764a4326bffb5126227baf0",
+      "workspace_bytes": 8192,
+      "result_bytes": 83,
+      "embedded_data": false,
+      "sdk_and_firmware_changed": false,
+      "sources": {
+        "golem/runtime/agondev/agnb_host.cpp": "28c92253303c98607b23f72310ed4dfb1e18a4b23da55dd3869f46b60ecb3e0e",
+        "agon-utils/examples/agnb/api/agnb_buffers.hpp": "f7b8f50cc15731aeb4c7ca4363babaa3f6a311f8a504c28ab52247a6094bf99c",
+        "agon-utils/examples/agnb/api/agnb_stdio.hpp": "3f5a5165c4df83a2eab9aec33b33a399d839707a45dea0fd0c0ea743e1be9806",
+        "agon-utils/examples/agnb/api/agnb_agondev.hpp": "7fb88a7b9f700465f3114a3ec4cfdff421f601a9ee9d0f26c9cd04ebec5e4b31",
+        "golem/docs/tasks/GOLEM-046/cpp/src/main.cpp": "63ed965791b2e1b02cb6c1b70e5dd6f20959f750935b7c389c32abe4947a98f0",
+        "golem/docs/tasks/GOLEM-046/cpp/src/visual.cpp": "44ee7bc4de9cccffa74fe7132e4fe608d6d61e82555e83bc5a9bd6bcb17beb2d",
+        "golem/docs/tasks/GOLEM-046/large.golem": "4ae860a44618be10bfbf2e4e950b3c0e4dc18d4a25c5468097ed74444497c511",
+        "golem/docs/tasks/GOLEM-046/review.golem": "c3a47d86e3b8495f5c73dc44d9c57237212faa4fe069ce12a13f4bf5e1f76499"
+      }
+    },
+    "native": {
+      "static_ram_bytes": 19001,
+      "native": true,
+      "binary_bytes": 10603,
+      "binary_sha256": "63011366129a0d1668a281a203b473b8ae0aa198d5f5ed1020778607da46a848",
+      "workspace_bytes": 8192,
+      "result_bytes": 95,
+      "embedded_data": false,
+      "sdk_and_firmware_changed": false,
+      "sources": {
+        "golem/runtime/agondev/agnb_host.cpp": "28c92253303c98607b23f72310ed4dfb1e18a4b23da55dd3869f46b60ecb3e0e",
+        "agon-utils/examples/agnb/api/agnb_buffers.hpp": "f7b8f50cc15731aeb4c7ca4363babaa3f6a311f8a504c28ab52247a6094bf99c",
+        "agon-utils/examples/agnb/api/agnb_stdio.hpp": "3f5a5165c4df83a2eab9aec33b33a399d839707a45dea0fd0c0ea743e1be9806",
+        "agon-utils/examples/agnb/api/agnb_agondev.hpp": "7fb88a7b9f700465f3114a3ec4cfdff421f601a9ee9d0f26c9cd04ebec5e4b31",
+        "golem/docs/tasks/GOLEM-046/cpp/src/main.cpp": "63ed965791b2e1b02cb6c1b70e5dd6f20959f750935b7c389c32abe4947a98f0",
+        "golem/docs/tasks/GOLEM-046/cpp/src/visual.cpp": "44ee7bc4de9cccffa74fe7132e4fe608d6d61e82555e83bc5a9bd6bcb17beb2d",
+        "golem/docs/tasks/GOLEM-046/large.golem": "4ae860a44618be10bfbf2e4e950b3c0e4dc18d4a25c5468097ed74444497c511",
+        "golem/docs/tasks/GOLEM-046/review.golem": "c3a47d86e3b8495f5c73dc44d9c57237212faa4fe069ce12a13f4bf5e1f76499"
+      }
+    }
+  },
+  "human_review": "accepted on 2026-10-23; 95 result bytes and completed application log verified",
+  "publication": "pending explicit approval",
+  "physical": false,
+  "human_review_receipt": "human-review.json"
+}

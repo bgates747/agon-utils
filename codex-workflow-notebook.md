@@ -73,3 +73,18 @@ integration remain owned in the Golem repository, GOLEM-046.
 Publish only scoped AGNB changes. The canonical agon-utils branch has unrelated
 divergent history; codex/agnb-plain-buffers is an isolated current-upstream branch
 used to publish cherry-picked AGNB work without altering unrelated history.
+
+
+## AGNB C++ continuation — 2026-10-23
+
+AGNB-002 implements application-neutral0.3 C++ reader/stdio/AgonDev headers under
+examples/agnb/api, with caller-owned8KiB workspace and completed-record callbacks.
+Existing formats/writers/assembly entries are unchanged. Host sanitizer/legacy
+checks and real stock/native consumer qualification pass. The Author accepted
+the C++ review on2026-10-23 ("works."); all95 saved result bytes and the completed
+application log verify, runtime pins match and the emulator is stopped. Explicit
+publication was authorized on2026-10-23 and is scoped to the isolated
+codex/agnb-plain-buffers branch. Keep future generic changes here, with
+Golem-specific hooks and application policy in Golem GOLEM-046. Preserve the
+accepted AGNB-001 history and unrelated utility work; publish only scoped owned
+changes after their gate is satisfied.
