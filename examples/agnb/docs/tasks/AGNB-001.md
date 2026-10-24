@@ -18,9 +18,9 @@ fixtures/scripts/evidence belong under docs/tasks/AGNB-001/ until promoted.
 ## Runtime loader
 
 - LDR-001 [x] Add agnb_load_buffers and callback variant to the canonical eZ80 API using its existing FIL/state/8KiB window/stream/consolidate helpers. Preserve image/audio behavior and entry signatures.
-- QUA-001 [ ] Assemble real consumers and qualify stock MOS/VDP success/failure/consecutive-load paths, payloads spanning transfer windows and aggregate data larger than eZ80 application RAM. Separate file/host validation from target claims and respect human emulator publication gates.
-- DOC-001 [ ] Document buffer/block semantics, limits, callback/error/partial-load behavior and ownership. Keep format/API docs current and append dated results.
-- PUB-001 [ ] Commit/push only owned and qualified changes in logical groups; retain any emulator-coupled work uncommitted until applicable Author validation/approval.
+- QUA-001 [x] Actual stock Fab/MOS qualification passes on Pi and Oryx:515648 payload bytes through8192-byte window in12091-byte app,66 expected observation bytes, consecutive/invalid-ID/descriptor/late/truncation cases. Dedicated Oryx review staged/stopped; human acceptance remains PUB-001.
+- DOC-001 [x] Document buffer/block semantics, limits, callback/error/partial-load behavior and ownership. Keep format/API docs current and append dated results.
+- PUB-001 [x] Commit/push only owned and qualified changes in logical groups; retain any emulator-coupled work uncommitted until applicable Author validation/approval.
 
 ## Boundaries
 
@@ -37,3 +37,19 @@ Pillow repair replaced stale x86_64 wheels with native aarch64 in the project
 venv. A real assembled loader consumer also passes. Runtime implementation is
 additive; actual target/human qualification remains QUA-001. Host-only format/
 writer publication can be separated from pending runtime qualification.
+
+
+Host-only publication: canonical local e6f1bcc, published isolated upstream
+branch `codex/agnb-plain-buffers` commit3edf8bc. This avoids exporting unrelated
+local-history divergence. Runtime loader, qualification/profile artifacts and
+related documentation remain uncommitted for the human gate. See this task's
+README and target/oryx-target evidence for exact scope; no exhaustive target
+payload comparison or hardware throughput claim.
+
+
+Accepted2026-10-23: Author reports the Oryx review "worked". Agent verification
+matches all66 expected result bytes and profile identities; human-review.json
+retains the observation hash/hex and confirmation. The Author's earlier explicit
+assignment includes scoped commits/pushes, now released after the human gate.
+Generic AGNB-001 is complete; remove it from the active register. Golem-specific
+producer/bootstrap/host integration remains GOLEM-046, not an AGNB dependency.

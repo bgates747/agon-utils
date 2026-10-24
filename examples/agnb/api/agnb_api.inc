@@ -1,4 +1,4 @@
-; Canonical AGNB image/audio loader API
+; Canonical AGNB image/audio/plain-buffer loader API
 ; =====================================
 ;
 ; Public entry points:
@@ -1405,4 +1405,261 @@ agnb_finalize_audio:
     call vdu_buffer_to_sound
     xor a
     ld (agnb_last_error),a
+    ret
+
+
+; AGNB 0.3 plain buffers. No payload interpretation or automatic execution.
+; Public: DE=filename; optional HL=completed-record callback; A=0/Z on success.
+; Existing image/audio entry points and bytes remain unchanged.
+agnb_plain_version_major: equ 0
+agnb_plain_version_minor: equ 3
+agnb_id_rawd:             db "RAWD"
+agnb_plain_callback:      dl 0
+
+agnb_load_buffers:
+    ld hl,agnb_plain_callback_noop
+
+; Callback-enabled audio loader.
+; inputs: DE = filename; HL = callback whose result is ignored
+agnb_load_buffers_with_callback:
+    ld (agnb_plain_callback),hl
+    call agnb_open
+    ret nz
+
+    call agnb_read_riff_header
+    jr nz,@load_error
+    call agnb_read_plain_vers
+    jr nz,@load_error
+
+@next_record:
+; Stop only at the exact declared RIFF boundary.
+    ld a,(agnb_state+agnb_state_file_offset+3)
+    ld hl,agnb_state+agnb_state_riff_end+3
+    cp (hl)
+    jr c,@read_record
+    jr nz,@bad_bounds
+    ld hl,(agnb_state+agnb_state_file_offset)
+    ld de,(agnb_state+agnb_state_riff_end)
+    or a
+    sbc hl,de
+    jr z,@success
+    jr nc,@bad_bounds
+
+@read_record:
+    call agnb_read_plain_buffer_list
+    jr nz,@load_error
+    call agnb_stream_data
+    jr nz,@load_error
+
+; A callback is a completed, consolidated and fully bounded record.
+    call agnb_finish_buffer_list
+    jr nz,@load_error
+    call agnb_call_plain_callback
+    jr @next_record
+
+@bad_bounds:
+    ld a,agnb_error_bounds
+    ld (agnb_last_error),a
+@load_error:
+; Preserve the parser/transport error while still closing the file.
+    push af
+    call agnb_close
+    pop af
+    ld (agnb_last_error),a
+    or a
+    ret
+
+@success:
+    jp agnb_close
+
+; Tail-jump to the selected callback so its RET resumes the loader without
+; clobbering BC.
+agnb_call_plain_callback:
+    ld hl,(agnb_plain_callback)
+    jp (hl)
+
+agnb_plain_callback_noop:
+    xor a
+    ret
+
+agnb_read_plain_vers:
+    ld ix,agnb_state+agnb_state_riff_end
+    call agnb_read_chunk_header
+    ret nz
+
+    ld hl,agnb_header+agnb_chunk_id
+    ld de,agnb_id_vers
+    call agnb_compare_fourcc
+    jp nz,@bad_chunk
+
+    ld hl,(agnb_state+agnb_state_chunk_size)
+    ld de,agnb_vers_payload_size
+    or a
+    sbc hl,de
+    jr nz,@bad_version
+    ld a,(agnb_state+agnb_state_chunk_size+3)
+    or a
+    jr nz,@bad_version
+
+; Read the two-byte payload and two required zero padding bytes.
+    ld bc,4
+    ld de,agnb_header
+    call agnb_read_exact
+    ret nz
+    ld a,(agnb_header+agnb_vers_major)
+    cp agnb_plain_version_major
+    jr nz,@bad_version
+    ld a,(agnb_header+agnb_vers_minor)
+    cp agnb_plain_version_minor
+    jr nz,@bad_version
+    ld a,(agnb_header+2)
+    or a
+    jr nz,@bad_chunk
+    ld a,(agnb_header+3)
+    or a
+    jr nz,@bad_chunk
+    xor a
+    ld (agnb_last_error),a
+    ret
+
+@bad_version:
+    ld a,agnb_error_version
+    jr @error
+@bad_chunk:
+    ld a,agnb_error_chunk
+@error:
+    ld (agnb_last_error),a
+    or a
+    ret
+
+agnb_read_plain_buffer_list:
+    xor a
+    ld (agnb_record_flags),a
+
+    ld ix,agnb_state+agnb_state_riff_end
+    call agnb_read_chunk_header
+    ret nz
+    ld hl,agnb_header+agnb_chunk_id
+    ld de,agnb_id_list
+    call agnb_compare_fourcc
+    jp nz,@bad_chunk
+
+; LIST must contain its type and three nested chunk headers at minimum.
+    ld hl,(agnb_state+agnb_state_chunk_size)
+    ld de,3*agnb_chunk_header_size+agnb_list_type_size
+    or a
+    sbc hl,de
+    jp c,@bad_chunk
+    ld hl,(agnb_state+agnb_state_chunk_end)
+    ld (agnb_state+agnb_state_list_end),hl
+    ld a,(agnb_state+agnb_state_chunk_end+3)
+    ld (agnb_state+agnb_state_list_end+3),a
+
+    ld bc,agnb_list_type_size
+    ld de,agnb_header
+    call agnb_read_exact
+    ret nz
+    ld hl,agnb_header
+    ld de,agnb_id_bufr
+    call agnb_compare_fourcc
+    jp nz,@bad_chunk
+
+    call agnb_read_bhdr
+    ret nz
+
+    call agnb_read_rawd
+    ret nz
+
+; Read and validate DATA header, leaving the plain payload unread for streaming.
+    ld ix,agnb_state+agnb_state_list_end
+    call agnb_read_chunk_header
+    ret nz
+    ld hl,agnb_header+agnb_chunk_id
+    ld de,agnb_id_data
+    call agnb_compare_fourcc
+    jp nz,@bad_chunk
+
+    ld hl,(agnb_state+agnb_state_chunk_size)
+    ld (agnb_metadata+agnb_meta_data_size),hl
+    ld a,(agnb_state+agnb_state_chunk_size+3)
+    ld (agnb_metadata+agnb_meta_data_size+3),a
+    call agnb_validate_plain_data
+    ret nz
+
+    ld a,(agnb_record_flags)
+    or 1<<agnb_record_has_data
+    ld (agnb_record_flags),a
+    xor a
+    ld (agnb_last_error),a
+    ret
+
+@bad_chunk:
+    ld a,agnb_error_chunk
+    ld (agnb_last_error),a
+    or a
+    ret
+
+
+; RAWD has one layout byte: 0 = opaque data, consolidated into one block.
+agnb_read_rawd:
+    ld ix,agnb_state+agnb_state_list_end
+    call agnb_read_chunk_header
+    ret nz
+    ld hl,agnb_header+agnb_chunk_id
+    ld de,agnb_id_rawd
+    call agnb_compare_fourcc
+    jr nz,@bad_chunk
+    ld hl,(agnb_state+agnb_state_chunk_size)
+    ld de,1
+    or a
+    sbc hl,de
+    jr nz,@bad_metadata
+    ld a,(agnb_state+agnb_state_chunk_size+3)
+    or a
+    jr nz,@bad_metadata
+    ld bc,4
+    ld de,agnb_header
+    call agnb_read_exact
+    ret nz
+; Descriptor byte and all three padding bytes must be zero.
+    ld a,(agnb_header)
+    or a
+    jr nz,@bad_metadata
+    ld hl,(agnb_header+1)
+    ld de,0
+    or a
+    sbc hl,de
+    jr nz,@bad_chunk
+    ld a,(agnb_record_flags)
+    or 1<<agnb_record_has_imag ; shared descriptor-present bit
+    ld (agnb_record_flags),a
+    xor a
+    ld (agnb_last_error),a
+    ret
+@bad_metadata:
+    ld a,agnb_error_metadata
+    jr @error
+@bad_chunk:
+    ld a,agnb_error_chunk
+@error:
+    ld (agnb_last_error),a
+    or a
+    ret
+
+agnb_validate_plain_data:
+    ld a,(agnb_metadata+agnb_meta_data_size+3)
+    or a
+    jr nz,@bad_size
+    ld hl,(agnb_metadata+agnb_meta_data_size)
+    ld de,0
+    or a
+    sbc hl,de
+    jr z,@bad_size
+    xor a
+    ld (agnb_last_error),a
+    ret
+@bad_size:
+    ld a,agnb_error_data_size
+    ld (agnb_last_error),a
+    or a
     ret

@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "author_confirmation": "worked",
+  "date": "2026-10-23",
+  "observed_bytes": 66,
+  "observed_hex": "8813010000118913ff1f00128a13002000138b13012000148c13ffff00158d13000001168e13007102178f13400d03180089132923005100090a92130700005a0a08",
+  "sha256": "b1cf9200117bd98d59e05c86a71c9707282ffc598fa9f010af9c45841196a929",
+  "scope": "Author Oryx stock Fab/MOS review; agent verified runtime identities and saved results",
+  "publication_authority": "Earlier explicit Author assignment includes scoped commits/pushes; human review now passed",
+  "physical": false
+}

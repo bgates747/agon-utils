@@ -57,3 +57,19 @@ first; update a consumer's submodule or editable installation separately.
 Inspect generated assets and harness targets before staging. Keep environment
 profiles and machine setup scripts in
 `/home/smith/Agon/mystuff/agon-dev-env`, not in this repository.
+
+
+## AGNB plain-buffer ownership and status — 2026-10-23
+
+The Author assigned generic AGNB format/writer/validator/eZ80 loader ownership
+and scoped commit/push duties to the Golem agent. Active register:
+examples/agnb/TODO.md; completed AGNB-001 and evidence under its docs/tasks silo.
+Provisional0.3 BHDR/RAWD/DATA and agnb_load_buffers/callback use the existing
+8KiB window without application setup or implicit execution. Pi/Oryx stock
+qualification and Author review pass; earlier image/audio interfaces and bytes
+are preserved. Golem-specific allocation, package setup/activation and host
+integration remain owned in the Golem repository, GOLEM-046.
+
+Publish only scoped AGNB changes. The canonical agon-utils branch has unrelated
+divergent history; codex/agnb-plain-buffers is an isolated current-upstream branch
+used to publish cherry-picked AGNB work without altering unrelated history.

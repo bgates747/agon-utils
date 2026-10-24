@@ -1,0 +1,29 @@
+{
+  "container_bytes": 516032,
+  "aggregate_payload_bytes": 515648,
+  "app_bytes": 12091,
+  "transfer_window_bytes": 8192,
+  "expected_bytes": 66,
+  "pins": {
+    "fab-agon-emulator": "e822acb348e1be281dce6a80128d3924651f41157b407088b23ea73a4eba728c",
+    "fab-agon-emulator.bin": "c63b5a45b9eec9b989bdde73af6d12add92887e3f4e6ac8ffe9291d98979fb66",
+    "firmware/vdp_platform.so": "ef5cc21d4df685970680bc5a3564852d5d312e8af77a6dfc880735d64c2e4e8e",
+    "mos_platform.bin": "d564243283972690933a4554296ad6202ca4ef54572279533a942960846bebae",
+    "mos_platform.map": "d69e60bbce61a7b4b3eef318ba395f11c4e1a5b585755755113992dc94edcb86",
+    "sdcard/autoexec.txt": "5b7f3790b54e9edf6a9daae1797a27a86ac348812060148d093cbf4df9799e87",
+    "sdcard/agnb/late.agnb": "a0e1f272410fcf31167e9f21c51e1d71fcfd7a7447eb824c288244e07fbcba6e",
+    "sdcard/agnb/again.agnb": "75be985e2c7c6c764558a3431e350c42a65290550113fb62a445d7a7f252090d",
+    "sdcard/agnb/probe.bin": "8aec5d00090c61eea2ec4d1e74726e8e5edee368a221038d5ec8d86516f504f6",
+    "sdcard/agnb/bad-raw.agnb": "89235772bfa57fa120c42f6ce2bd4cf2a78d91243ef3821d92a4d36df50cbff7",
+    "sdcard/agnb/bad-id.agnb": "c67b81d0f979fe0bd3be9f44a6e1959e69c215db5ae470c7ae12b10ecc5d5aa9",
+    "sdcard/agnb/large.agnb": "3f191aa6400675156529daf2b4acce5451511e4975ad1b3b361ffcd806cef9c6",
+    "sdcard/agnb/truncated.agnb": "b86bb293caa2f7bb9800d54593b332bce68a62c563834699d39f6d1dbe6395d0"
+  },
+  "passed": true,
+  "elapsed_seconds": 5.738,
+  "host": "raspberrypi",
+  "scope": "actual stock Fab/MOS loader, explicit IDs, payload samples, multi-window, consecutive load, metadata/late/truncation errors",
+  "graphical_launch": false,
+  "physical": false,
+  "human_review": "pending"
+}
